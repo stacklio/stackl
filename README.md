@@ -1,4 +1,4 @@
-## **STACKL**
+## STACKL
 
 **STACKL **is an open-source software platform that enables users to flexibly model, describe, and automate their applications by
 
