@@ -6,7 +6,7 @@
 *   decoupling data, automation, and platforms and simplifying automated infrastructure management for code and configuration tooling
 *   providing a configuration store as a data lookup store for the IT infrastructure building blocks, application service definitions, and their configuration data
 
-In essence, it allows to Model, Describe, and Automate your application deployment workflow. This unburdens users from manually choosing fitting IT infrastructure, stitching together applications out of heterogeneous services, and picking suitable orchestration tools each time they want to deploy their projects. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL will then transparantly and autonomously use this information to correctly and efficiently orchestrate and automate applications. 
+In essence, it allows to Model, Describe, and Automate your application deployment workflow. This unburdens users from manually choosing fitting IT infrastructure, stitching together applications out of heterogeneous services, and picking suitable orchestration tools, each time they want to deploy their projects. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL will then transparantly and autonomously use this information to correctly and efficiently orchestrate and automate applications across their lifetime and any changes to either them or their IT environment.
 
 **Features**
 
