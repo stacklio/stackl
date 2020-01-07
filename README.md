@@ -1,8 +1,6 @@
 ## STACKL
 
-**STACKL **is an open-source software platform that enables users to flexibly model, describe, and automate their applications by
-
-
+**STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their applications by:
 
 *   forming the “Single Source of Truth” (SSOT) of application configuration data for their available IT environment(s)
 *   decoupling data, automation, and platforms and simplifying automated infrastructure management for code and configuration tooling
