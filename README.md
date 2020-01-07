@@ -36,9 +36,11 @@ See website
 
 ## **Contributing**
 
-See CONTRIBUTING.md to get started
+See [CONTRIBUTING](CONTRIBUTING.md) to get started
 
-Please also read CODE_OF_CONDUCT
+Please also read [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md)
 
 
-## **Authors and acknowledgment**
+## **License**
+
+See [LICENSE](LICENSE)
