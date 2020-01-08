@@ -84,5 +84,5 @@ The code in this project is licensed under the [GLPv3](LICENSE) license.
 
 # Acknowledgments
 
-STACKL was first created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for platform to help provide better services to clients. After some time, it became clear that STACKL could be useful to the general DevOps community aswell so the decision was made to open source it.
+STACKL was initially created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for platform to better provide  services to clients. After some time, it became clear that STACKL could be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
 Hence, thanks to Nubera  and @Yannick Struyf who put in much of the hard initial work.
