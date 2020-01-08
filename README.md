@@ -65,8 +65,11 @@ Give an example
 
 ## Configuration
 
-See website
+## Links to more
 
+Link to  website
+
+Links to comunities
 
 # 🤝 Contributing
 
