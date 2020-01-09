@@ -2,11 +2,11 @@
 
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 
-STACKL supports the automated configuration, coordination, and management of applications and IT infrastructure by:
+STACKL supports the autonomous configuration, coordination, and management of applications and IT infrastructure by:
 
-*   forming the Single Source of Truth (SSOT) configuration data lookup store for your IT environment including infrastructure resources, application definitions, and their characteristics and services
-*   decoupling configuration data, automation strategy, and deployment targets thereby simplifying the automated infrastructure management for code and configuration tooling
-*  enabling the use of pluggable modules for critical backend systems, such as processing and data storage, to flexibly support different scalability and performance requirements
+* forming the Single Source of Truth (SSOT) configuration data lookup store for your IT environment including infrastructure resources, application definitions, and their characteristics and services
+* decoupling configuration data, automation strategy, and deployment targets thereby simplifying the automated infrastructure management for code and configuration tooling
+* providing pluggable modules for backend systems, such as processing and data storage, to support different scalability and performance requirements and enable users to choose their prefered toolings
 
 In essence, it allows to Model, Describe, and Automate your application orchestration workflow. Users are saved from  manual work each time they want to deploy their projects by automating and simplifying IT infrastructure selection, application specification, and choosing suitable orchestration tools. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL then transparantly and autonomously uses this information to correctly and efficiently orchestrate and automate applications in the available IT environment across their lifetime and managing dynamic changes.
 
@@ -14,7 +14,7 @@ In essence, it allows to Model, Describe, and Automate your application orchestr
 
 Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but check out [Asciinema](https://asciinema.org/) for a more sophisticated method) -->
 
-**Badges**
+### Badges
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
