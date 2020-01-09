@@ -1,14 +1,14 @@
 # STACKL
 
-**STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application automation strategy.
+**STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 
-STACKL supports transparent and flexible application orchestration by:
+STACKL supports the automated configuration, coordination, and management of applications and IT infrastructure by:
 
-*   forming the Single Source of Truth (SSOT) of application configuration data for the available IT environment(s)
-*   decoupling data, automation, and platforms and simplifying automated infrastructure management for code and configuration tooling
-*   providing a data lookup store for your IT configuration data including infrastructure resources, application definitions, and their desired services
+*   forming the Single Source of Truth (SSOT) configuration data lookup store for your IT environment including infrastructure resources, application definitions, and their characteristics and services
+*   decoupling configuration data, automation strategy, and deployment targets thereby simplifying the automated infrastructure management for code and configuration tooling
+*  enabling the use of pluggable modules for critical backend systems, such as processing and data storage, to flexibly support different scalability and performance requirements
 
-In essence, it allows to Model, Describe, and Automate your application orchestration workflow. This unburdens users from manually choosing fitting IT infrastructure, stitching together applications out of heterogeneous services, and picking suitable orchestration tools, each time they want to deploy their projects. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL will then transparantly and autonomously use this information to correctly and efficiently orchestrate and automate applications across their lifetime and any changes to either them or their IT environment.
+In essence, it allows to Model, Describe, and Automate your application orchestration workflow. Users are saved from  manual work each time they want to deploy their projects by automating and simplifying IT infrastructure selection, application specification, and choosing suitable orchestration tools. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL then transparantly and autonomously uses this information to correctly and efficiently orchestrate and automate applications in the available IT environment across their lifetime and managing dynamic changes.
 
 <!-- **Features**
 
