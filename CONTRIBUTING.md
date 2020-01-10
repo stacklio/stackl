@@ -8,7 +8,8 @@ How contributors should (or should not) get in touch with you -->
 
 
 # Contributing to STACKL <!-- omit in toc -->
-???? First off, thank you for considering to contribute to STACKL. As an open source project all feedback is welcome and its people like you who make this a great tool! ????
+First off, thank you for considering to contribute to STACKL. As an open source project all feedback is welcome and its people like you who make this a great tool!
+
 
 ## Table of Contents <!-- omit in toc -->
 

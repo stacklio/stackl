@@ -1,4 +1,6 @@
 # STACKL
+<!-- Badges come here -->
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 
@@ -14,9 +16,7 @@ In essence, it allows to Model, Describe, and Automate your application orchestr
 
 Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but check out [Asciinema](https://asciinema.org/) for a more sophisticated method) -->
 
-### Badges
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
 # 🚀 Installation
 This section includes a quick guide to what is required, how to install, and how to do a first test run.
@@ -59,7 +59,10 @@ Explain what these steps do and why
 Give an example
 ```
 
-# Learn more about STACKL
+## Configuration
+
+
+# More info about STACKL 
 
 ## Core goals
 * Open-source and community-oriented
@@ -88,22 +91,24 @@ Give an example
 - Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
 - To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
   
-## Configuration
 
-## Links to more
+## Even more information
 
-Link to  website
-
-Links to comunities
+- See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
+- See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
+<!-- - See [blog.stackl.io](https://blog.stackl.io) for blog posts about OPA and policy.
+- See [ADOPTERS.md](./ADOPTERS.md) for a list of production OPA adopters and use cases. -->
+<!-- - Try [play.openpolicyagent.org](https://play.openpolicyagent.org) to experiment with OPA policies.
+- Join the conversation on [Slack](https://slack.openpolicyagent.org). -->
 
 # 🤝 Contributing
 
-Contributions, issues and feature requests are always more than welcome!
-Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
+Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
+
 
 See [CONTRIBUTING](CONTRIBUTING.md) to get started.
 
-Please also read [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
+Please also read the [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
 
 
 # 📝 License
