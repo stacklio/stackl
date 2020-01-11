@@ -17,25 +17,20 @@ GIT_VERSION=$(git --version)
 # Look at the git tags and generate a list of releases
 # that we want to show docs for.
 if [[ -z ${OFFLINE} ]]; then
-    git fetch --tags ${REPOSITORY_URL:-https://github.com/open-policy-agent/opa.git}
+    git fetch --tags ${REPOSITORY_URL:-https://github.com/stacklio/stackl-dev.git}
 fi
 ALL_RELEASES=$(git tag -l | sort -r -V)
 RELEASES=()
 PREV_MAJOR_VER="-1"
 PREV_MINOR_VER="-1"
+echo "releases: ${ALL_RELEASES}"
+read -p "Press [Enter] key ..."
 for release in ${ALL_RELEASES}; do
     CUR_SEM_VER=${release#"v"}
     SEMVER_REGEX='[^0-9]*\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)\([0-9A-Za-z-]*\)'
     CUR_MAJOR_VER=$(echo ${CUR_SEM_VER} | sed -e "s#${SEMVER_REGEX}#\1#")
     CUR_MINOR_VER=$(echo ${CUR_SEM_VER} | sed -e "s#${SEMVER_REGEX}#\2#")
     CUR_PATCH_VER=$(echo ${CUR_SEM_VER} | sed -e "s#${SEMVER_REGEX}#\3#")
-
-    # ignore versions from before we used this static site generator
-    if [[ (${CUR_MAJOR_VER} -lt 0) || \
-            (${CUR_MAJOR_VER} -le 0 && ${CUR_MINOR_VER} -lt 11) || \
-            (${CUR_MAJOR_VER} -le 0 && ${CUR_MINOR_VER} -le 10 && ${CUR_PATCH_VER} -le 7) ]]; then
-        continue
-    fi
 
     # The releases are sorted in order by semver from newest to oldest, and we only want
     # the latest point release for each minor version
@@ -52,7 +47,7 @@ done
 echo "Git version: ${GIT_VERSION}"
 
 echo "Saving current workspace state"
-STASH_TOKEN=$(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+STASH_TOKEN=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 git stash push --include-untracked -m "${STASH_TOKEN}"
 
 function restore_tree {
@@ -68,7 +63,7 @@ function restore_tree {
 function cleanup {
     EXIT_CODE=$?
 
-    if [[ "${EXIT_CODE}" != "0" ]]; then 
+    if [[ "${EXIT_CODE}" != "0" ]]; then
         # on errors attempt to restore the starting tree state
         restore_tree
 
@@ -115,7 +110,7 @@ for release in "${RELEASES[@]}"; do
     fi
 
     echo "Copying doc content from tag ${release}"
-    cp -r ${ROOT_DIR}/docs/content/* ${version_docs_dir}/
+    sudo cp -r ${ROOT_DIR}/docs/content/* ${version_docs_dir}/
 
 done
 

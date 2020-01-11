@@ -18,9 +18,6 @@
 {{ if or (eq $version $latest) }}
 {{ $docsHomeVersion = "latest" }}
 {{ end }}
-{{ if eq $version "docs" }}
-{{ $docsHomeVersion = "" }}
-{{ end }}
 <a class="docs-nav-item{{ if $isDocsHome }} is-active{{ end }}" href="/docs/{{ $docsHomeVersion }}">
   {{ $docsHome.Name }}
 </a>
