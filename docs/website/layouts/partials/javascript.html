@@ -10,11 +10,11 @@
 {{ $version := index (split .File.Path "/") 1 }}
 {{ $apiKey  := site.Params.algolia_api_key }}
 <script>
-  console.log("You are reading the docs for version {{ $version }} of Open Policy Agent");
+  console.log("You are reading the docs for version {{ $version }} of STACKL");
 
   docsearch({
     apiKey: '{{ $apiKey }}',
-    indexName: 'openpolicyagent',
+    indexName: 'stacklDocs',
     inputSelector: '#search-bar',
     algoliaOptions: { 'facetFilters': ["version:{{ $version }}"] },
     debug: true

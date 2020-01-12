@@ -1,3 +1,7 @@
+# Don't commit system files or dependencies
+*.DS_Store
+node_modules/
+
 # Hugo-generated assets
 public/
 resources/

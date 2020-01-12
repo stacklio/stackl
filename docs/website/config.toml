@@ -16,7 +16,7 @@ ignorefiles = [ "/docs/v.*/code/.*" ]
 [params]
 description = "An open source, end-to-end application orchestration platform"
 tagline = ""
-algolia_api_key = ""
+algolia_api_key = "AW23HXLF2O"
 
 [params.social]
 twitter = "stacklio"
