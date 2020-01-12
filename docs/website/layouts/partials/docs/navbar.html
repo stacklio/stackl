@@ -41,11 +41,7 @@
       {{ partial "docs/navbar-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
       {{ end }}
 
-      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Kubernetes" "section" $kubernetes "pageUrl" $pageUrl "version" $version ) }}
-
-      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Other Use Cases" "section" $tutorials "pageUrl" $pageUrl "version" $version ) }}
-
-      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $operations "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Getting started" "section" $tutorials "pageUrl" $pageUrl "version" $version ) }}
 
       {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}
 

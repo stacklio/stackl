@@ -24,7 +24,7 @@ RELEASES=()
 PREV_MAJOR_VER="-1"
 PREV_MINOR_VER="-1"
 echo "releases: ${ALL_RELEASES}"
-read -p "Press [Enter] key ..."
+
 for release in ${ALL_RELEASES}; do
     CUR_SEM_VER=${release#"v"}
     SEMVER_REGEX='[^0-9]*\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)\([0-9A-Za-z-]*\)'

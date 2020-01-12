@@ -5,7 +5,7 @@ weight: 80
 restrictedtoc: true
 ---
 
-This document is the authoritative specification of the OPA REST API.
+This document is the authoritative specification of the STACKL REST API.
 
 ##  Policy API
 

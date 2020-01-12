@@ -1,7 +1,7 @@
 ---
-title: Security
+title: Authentication
 kind: documentation
-weight: 40
+weight: 41
 ---
 
 This document provides guidelines for deploying OPA inside untrusted

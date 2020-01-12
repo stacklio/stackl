@@ -11,7 +11,7 @@
 {{ $latest     := index site.Data.releases 1 }}
 
 <span class="docs-nav-title">
-  Core Docs
+  Core Documentation
 </span>
 
 {{ $docsHomeVersion := $version }}
@@ -32,15 +32,11 @@
 {{ partial "docs/sidenav-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
 {{ end }}
 
-{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Kubernetes" "section" $kubernetes "pageUrl" $pageUrl "version" $version ) }}
-
-{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Other Use Cases" "section" $tutorials "pageUrl" $pageUrl "version" $version ) }}
-
-{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $operations "pageUrl" $pageUrl "version" $version ) }}
+{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $tutorials "pageUrl" $pageUrl "version" $version ) }}
 
 {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}
 
-<hr class="docs-nav-hr" />
+<!-- <hr class="docs-nav-hr" />
 
 <span class="docs-nav-title">
   Support
@@ -48,4 +44,4 @@
 
 <a class="docs-nav-item" href="https://www.openpolicyagent.org/support.html">
   Enterprise and Commercial
-</a>
+</a> -->
