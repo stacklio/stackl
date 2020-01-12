@@ -1,5 +1,5 @@
 ---
-title: High level design
+title: Architecture
 kind: documentation
 weight: 1
 ---

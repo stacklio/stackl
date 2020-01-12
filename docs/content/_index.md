@@ -19,53 +19,6 @@ In essence, it allows to Model, Describe, and Automate your application orchestr
 Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but check out [Asciinema](https://asciinema.org/) for a more sophisticated method) -->
 
 
-
-# Installation
-This section includes a quick guide to what is required, how to install, and how to do a first test run.
-
-## Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-## Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Getting started
-
-Explain how to do a full use case example in STACKL
-
-### Break down into step-by-step
-
-Explain what these steps do and why
-
-```
-Give an example
-```
-
-## Configuration
-
-
-# More info about STACKL
-
 ## Core goals
 * Open-source and community-oriented
   * Based on coding best practices
@@ -94,30 +47,26 @@ Give an example
 - To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
 
 
-## Even more information
+## Additional information
 
 - See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
 - See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
-<!-- - See [blog.stackl.io](https://blog.stackl.io) for blog posts about OPA and policy.
-- See [ADOPTERS.md](./ADOPTERS.md) for a list of production OPA adopters and use cases. -->
-<!-- - Try [play.openpolicyagent.org](https://play.openpolicyagent.org) to experiment with OPA policies.
-- Join the conversation on [Slack](https://slack.openpolicyagent.org). -->
 
-# Contributing
+## Contributing
 
 Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
 
 
-See [CONTRIBUTING](CONTRIBUTING.md) to get started.
+See [CONTRIBUTING](../CONTRIBUTING) to get started.
 
-Please also read the [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
+Please also read the [CODE_OF_CONDUCT](../CODE_OF_CONDUCT).
 
 
-# License
+## License
 
-The code in this project is licensed under the [GLPv3](LICENSE) license.
+The code in this project is licensed under the [GLPv3](../LICENSE) license.
 
-# Acknowledgments
+## Acknowledgments
 
 STACKL was initially created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for platform to better provide services to clients. After some time, it became clear that STACKL will be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
 Hence, thanks to Nubera and @Yannick Struyf who put in much of the hard initial work.

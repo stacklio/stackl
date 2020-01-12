@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
   tocbot.init({
     tocSelector: '.toc',
     contentSelector: '.content',
-    headingSelector: 'h1, h2, h3, h4, h5',
+    headingSelector: 'h1, h2, h3, h4',
     scrollSmooth: false,
     scrollContainer: ".dashboard-main",
     scrollEndCallback: function(e) {
@@ -46,4 +46,3 @@ document.addEventListener("DOMContentLoaded", function(event) {
   });
 
 });
-

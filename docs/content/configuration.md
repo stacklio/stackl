@@ -1,7 +1,7 @@
 ---
 title: Configuration
 kind: operations
-weight: 10
+weight: 2
 ---
 
 This page defines the format of OPA configuration files. Fields marked as
