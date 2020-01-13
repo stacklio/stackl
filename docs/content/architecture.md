@@ -4,16 +4,19 @@ kind: documentation
 weight: 1
 ---
 
-This document describes the high-level design of STACKL, referring to additional other documents for a detailed of subparts explanation. The design aims to achieve all the goals outlined by STACKL Project Overview.
+This document describes the high-level architecture of STACKL, referring to additional other documents for further explanation. The architecture enables users to flexibly and easily model, describe, and automate their application orchestration workflow.
 
-The design provides for a workflow as follows:
+This workflow is supported as follows:
 
-A producer, which is any entity or user that submits work to STACKL, uses STACKL as a tool to model, describe and automate applications by using it as both(1)  a SSOT datastore of application configuration and infrastructure model data and (2) a platform that enables autonomous application orchestration.
-Authorized producers interact through an API specification that allow (1) to submit the documents that model the desired IT environment and its applications and (2) to instantiate and monitor applications.
-Requests and work are authorized and processed in STACKL through pluggable modules for authorization, storage, task processing, remote agent automation endpoint execution and monitoring and reporting.
-The end result is a SSOT datastore that contains consistent documents with different types that model IT environment configuration, such as production environment or actionable IT entitie, such as stacks, the config files for application orchestration.
+- A producer, a user that submits tasks to STACKL, uses STACKL as a tool to model, describe, and automate applications by using it as (1)  a datastore of application configuration and infrastructure model data and (2) a platform that uses this data to provide autonomous application orchestration.
+- Authorized producers interact through an API specification to submit tasks. Tasks are mainly submitting documents that model the IT environment and describe applications and the instantiation of applications.
+- Tasks are executed in STACKL through pluggable modules for authorization, storage, processing, automation endpoint execution, and monitoring and reporting.
+-  STACKL thus has a Single Source Of Truth (SSOT) datastore that contains the information to provide end-to-end application orchestration for users.
 
 ## Diagram
+
+![Alt](images/architecture_stackl.drawio)
+
 
 ## Description
 This section briefly describes each explicit element in [Diagram](#diagram) and its responsibilities.
