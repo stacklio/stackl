@@ -18,8 +18,8 @@ In essence, it allows to ***Model***, ***Describe***, and ***Automate*** your ap
 
 Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but check out [Asciinema](https://asciinema.org/) for a more sophisticated method) -->
 
-
 ## Core goals
+
 * Open-source and community-oriented
   * Based on coding best practices
   * Consistent use of standards and guidelines
@@ -36,26 +36,25 @@ Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but che
 
 ## Features
 
-- STACKL works with YAML or JSON documents to allow  for easy Key/Value management and uture-proof cross-system compatibility
-- STACKL provides a REST API with a web interface
-- Users supply Stack Application Templates (SATs), which model and describe the desired applications, and Stack Infrastructure Templates (SITs), which specify the IT infrastructure available for use for the application. SITs and SATs can be processed and matched according to specified policies and result in a Stack Template, a Key/Value document that describes the desired state of an application on the infrastructure and can be deployed in the users IT environment by orchestration tools
-- STACKL supports pluggable modules to allow users to use their desired technological backendsL. For instance, the used data store and task processing solutions can be specified by the user
-- STACKL is engineered to allow easy extensions for new technological backends through providing interfaces that enable transparent interaction
-- Entities, i.e., workers, automation platforms, agents, … ,  are fully decoupled and can be distributed to improve fault-tolerance and scalability.
-- The deployment and use of STACKL works with popular DevOps technologies and platforms: docker, kubernetes, ansible, azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
-- Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
-- To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
+* STACKL works with YAML or JSON documents to allow  for easy Key/Value management and uture-proof cross-system compatibility
+* STACKL provides a REST API with a web interface
+* Users supply Stack Application Templates (SATs), which model and describe the desired applications, and Stack Infrastructure Templates (SITs), which specify the IT infrastructure available for use for the application. SITs and SATs can be processed and matched according to specified policies and result in a Stack Template, a Key/Value document that describes the desired state of an application on the infrastructure and can be deployed in the users IT environment by orchestration tools
+* STACKL supports pluggable modules to allow users to use their desired technological backendsL. For instance, the used data store and task processing solutions can be specified by the user
+* STACKL is engineered to allow easy extensions for new technological backends through providing interfaces that enable transparent interaction
+* Entities, i.e., workers, automation platforms, agents, … ,  are fully decoupled and can be distributed to improve fault-tolerance and scalability.
+* The deployment and use of STACKL works with popular DevOps technologies and platforms: docker, kubernetes, ansible, azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
+* Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
+* To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
 
 
 ## Additional information
 
-- See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
-- See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
+* See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
+* See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
 
 ## Contributing
 
 Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
-
 
 See [CONTRIBUTING](../CONTRIBUTING) to get started.
 
