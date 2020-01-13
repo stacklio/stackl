@@ -15,7 +15,7 @@ This workflow is supported as follows:
 
 ## Diagram
 
-![Alt](images/architecture_stackl.drawio)
+![High-level overview of the STACKL Architecture](images/architecture_stackl.png)
 
 
 ## Description
