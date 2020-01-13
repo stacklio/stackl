@@ -8,6 +8,7 @@
 {{ $docsHome  := .CurrentSection }}
 {{ $allDocs   := where site.RegularPages "Section" "docs" }}
 {{ $docs       := where $allDocs ".Params.kind" "eq" "core" }}
+{{ $modules       := where $allDocs ".Params.kind" "eq" "modules" }}
 {{ $kubernetes := where $allDocs ".Params.kind" "eq" "kubernetes" }}
 {{ $tutorials  := where $allDocs ".Params.kind" "eq" "tutorial" }}
 {{ $operations := where $allDocs ".Params.kind" "eq" "operations" }}
@@ -40,6 +41,8 @@
       {{ range $docs }}
       {{ partial "docs/navbar-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
       {{ end }}
+
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Modules" "section" $modules "pageUrl" $pageUrl "version" $version ) }}
 
       {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $operations "pageUrl" $pageUrl "version" $version ) }}
       

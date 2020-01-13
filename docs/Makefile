@@ -22,7 +22,7 @@ hugo-serve:
 		--source $(CURDIR)/website \
 		--contentDir generated \
 		--buildDrafts \
-		--buildFuture
+		--buildFuture \
 
 .PHONY: serve
 serve: production-build

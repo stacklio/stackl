@@ -1,6 +1,6 @@
 ---
 title: Document Datastore
-kind: documentation
+kind: modules
 weight: 2
 ---
 A Datastore is the software system used by STACKL to store and process documents.

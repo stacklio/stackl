@@ -14,6 +14,8 @@ STACKL supports the autonomous configuration, coordination, and management of ap
 
 In essence, it allows to ***Model***, ***Describe***, and ***Automate*** your application orchestration workflow. Users are saved from  manual work each time they want to deploy their projects by automating and simplifying IT infrastructure selection, application specification, and choosing suitable orchestration tools. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL then transparantly and autonomously uses this information to correctly and efficiently orchestrate and automate applications in the available IT environment across their lifetime and managing dynamic changes.
 
+See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
+
 <!-- **Features**
 
 Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but check out [Asciinema](https://asciinema.org/) for a more sophisticated method) -->
@@ -47,10 +49,6 @@ Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but che
 * To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
 
 
-## Additional information
-
-* See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
-* See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
 
 ## Contributing
 
@@ -64,8 +62,3 @@ Please also read the [CODE_OF_CONDUCT](../CODE_OF_CONDUCT).
 ## License
 
 The code in this project is licensed under the [GLPv3](../LICENSE) license.
-
-## Acknowledgments
-
-STACKL was initially created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for platform to better provide services to clients. After some time, it became clear that STACKL will be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
-Hence, thanks to Nubera and @Yannick Struyf who put in much of the hard initial work.

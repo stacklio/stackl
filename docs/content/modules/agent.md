@@ -1,6 +1,6 @@
 ---
-title: Agent entities
-kind: documentation
+title: Agent Interface
+kind: modules
 weight: 4
 ---
 Agents are software entities that operate locally in the user’s IT environment to manage user-side tasks. Each user has one or more agents that interact with Workers in STACKL. Agents access the automation endpoints that live in the user’s IT infrastructure to do application deployment and management through invocations with the orchestration tools. As such, agents are the user-side actors that provide an authorized end-to-end execution of an IT automation strategy through STACKL and help achieve its autonomous operation guidelines. Thus, Agents have a single main responsibility: receiving, performing, and returning reports on user-side aspects of tasks when given by STACKL workers, such as initiating stack instances on automation endpoints.

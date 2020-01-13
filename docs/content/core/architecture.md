@@ -15,7 +15,8 @@ This workflow is supported as follows:
 
 ## Diagram
 
-![High-level overview of the STACKL Architecture](images/architecture_stackl.png)
+{{< figure src="architecture_stackl.png" width="65" caption="High-level overview of the STACKL architecture" >}}
+
 
 
 ## Overview Diagram
