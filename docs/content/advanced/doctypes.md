@@ -1,6 +1,6 @@
 ---
 title: Document Types
-kind: documentation
+kind: advanced
 weight: 3
 ---
 A Document is a text-file in the JSON or YAML format that models IT infrastructure building blocks, application service definitions, and their configuration data.

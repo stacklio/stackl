@@ -1,5 +1,5 @@
 ---
 title: Authentication
-kind: documentation
+kind: advanced
 weight: 41
 ---

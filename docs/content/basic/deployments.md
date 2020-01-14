@@ -1,7 +1,7 @@
 ---
 title: Deployment
-kind: operations
-weight: 1
+kind: basic
+weight: 6
 ---
 
 This document helps you get STACKL up and running in different deployment

@@ -1,6 +1,6 @@
 ---
 title: Task management
-kind: documentation
+kind: advanced
 weight: 3
 ---
 STACKL is a system that performs work given by Producers through API calls. Internally it represents the work as atomic Tasks and uses Workers for processing. Task are submitted for management to the Task Broker (TB) which communicates them with workers through the Message Channel (MC). Depending on the task, the worker may interact with the Datastore and/or external Agents. STACKL manages the full life cycle of the task, ensuring it happens completely or is rolled back, to achieve eventual consistency between itself (i.e., the database and its modelling) and the clients IT environment (i.e., instantiated applications and accessible infrastructure).

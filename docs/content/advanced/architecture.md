@@ -1,7 +1,7 @@
 ---
 title: Architecture
-kind: documentation
-weight: 1
+kind: advanced
+weight: 5
 ---
 
 This document describes the high-level architecture of STACKL, referring to additional other documents for further explanation. The architecture enables users to flexibly and easily model, describe, and automate their application orchestration workflow.

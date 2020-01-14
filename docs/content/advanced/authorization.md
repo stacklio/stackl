@@ -1,5 +1,5 @@
 ---
 title: Authorization
-kind: documentation
+kind: advanced
 weight: 41
 ---
