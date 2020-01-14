@@ -4,6 +4,28 @@ kind: basic
 weight: 2
 ---
 
+STACKL is a versatile platform that compliments your regular CI/CD workflow for application orchestration by tackling the heterogeneity in deploying to infrastructure and configuring your applications.
+It works by allowing users to model their infrastructure and describe their applications using standardised JSON or YAML-based documents.
+These documents are stored by STACKL in a pluggable Single Source of Truth datastore for further management and use.
+Users can then easily give tasks to STACKL to orchestrate their applications.
+Tasks are processed by a pluggable and distributed task manager which will aim for its correct and eventually consistent completion and report back.
+If needed, STACKL can contact pluggable user-side agents to execute parts of the task in the user's IT environment such as invocations on application orchestration tools.
+The process allows for the user to tune the performance of his application orchestration automation strategy by providing multiple choices for pluggable modules as well as hiding the complexity associated with doing so.
+In this way, end-to-end  transparent and flexible application orchestration is achieved by taking a model of the IT infrastructure, a description of the application, and automating the deployment and management of the application..
+
+## Features
+
+* STACKL works with YAML or JSON documents to allow  for easy Key/Value management and future-proof cross-system compatibility
+* STACKL provides a REST API with a web interface
+* Users supply Stack Application Templates (SATs), which model and describe the desired applications, and Stack Infrastructure Templates (SITs), which specify the IT infrastructure available for use for the application. SITs and SATs can be processed and matched according to specified policies and result in a Stack Template, a Key/Value document that describes the desired state of an application on the infrastructure and can be deployed in the users IT environment by orchestration tools
+* STACKL supports pluggable modules to allow users to use their desired technological backendsL. For instance, the used data store and task processing solutions can be specified by the user
+* STACKL is engineered to allow easy extensions for new technological backends through providing interfaces that enable transparent interaction
+* Entities, i.e., workers, automation platforms, agents  are fully decoupled and can be distributed to improve fault-tolerance and scalability.
+* The deployment and use of STACKL works with popular DevOps technologies and platforms: docker, kubernetes, ansible, azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
+* Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
+* To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
+
+
 ## Core goals
 
 * Open-source and community-oriented
@@ -19,29 +41,6 @@ weight: 2
   * Distributable across infrastructure and easy to scale
   * Able to make trade-offs to match different quality-of-service requirements
 * End-to-end support for microservices-based applications and infrastructure management in a DevOps workflow (interesting read: [What is DevOps?](https://www.atlassian.com/devops))
-
-## Features
-
-* STACKL works with YAML or JSON documents to allow  for easy Key/Value management and uture-proof cross-system compatibility
-* STACKL provides a REST API with a web interface
-* Users supply Stack Application Templates (SATs), which model and describe the desired applications, and Stack Infrastructure Templates (SITs), which specify the IT infrastructure available for use for the application. SITs and SATs can be processed and matched according to specified policies and result in a Stack Template, a Key/Value document that describes the desired state of an application on the infrastructure and can be deployed in the users IT environment by orchestration tools
-* STACKL supports pluggable modules to allow users to use their desired technological backendsL. For instance, the used data store and task processing solutions can be specified by the user
-* STACKL is engineered to allow easy extensions for new technological backends through providing interfaces that enable transparent interaction
-* Entities, i.e., workers, automation platforms, agents, … ,  are fully decoupled and can be distributed to improve fault-tolerance and scalability.
-* The deployment and use of STACKL works with popular DevOps technologies and platforms: docker, kubernetes, ansible, azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
-* Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
-* To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
-
-
-
-## Contributing
-
-Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
-
-See [CONTRIBUTING](../CONTRIBUTING) to get started.
-
-Please also read the [CODE_OF_CONDUCT](../CODE_OF_CONDUCT).
-
 
 ## License
 
