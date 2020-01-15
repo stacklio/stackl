@@ -1,0 +1,24 @@
+---
+title: Task Broker Interface
+kind: modules
+weight: 2
+---
+
+
+Work in progress
+
+
+There are many systems that manage tasks.
+A minimal set for the MVP of STACKL are Custom and either Celery or Faust.
+
+Other targets or ideas can be found:
+
+* https://taskqueues.com/ and http://queues.io/
+* Gevent (concurrency) http://charlesleifer.com/blog/ditching-the-task-queue-for-gevent/
+
+Producers have to be able to:
+  * Give a task to the TB
+
+## Custom Task Broker
+The Custom TB accepts tasks and puts them in a monitoring task queue and submits it to the MC.
+The task queue keeps track of all the tasks by monitoring their timeout and changing their status based on worker results. If a task has failed (due to a time out or a negative result task), the TB does a rollback of the task and removes it from the queue. If a task has succeeded, it is removed from the queue.

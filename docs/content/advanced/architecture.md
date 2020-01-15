@@ -15,13 +15,11 @@ This workflow is supported as follows:
 
 ## Diagram
 
-{{< figure src="architecture_stackl.png" width="65" caption="High-level overview of the STACKL architecture" >}}
-
-
+{{< figure src="architecture_stackl.png" width="100" caption="Helicopter view of the STACKL architecture" >}}
 
 ## Overview Diagram
 
-This section describes each element in [Diagram](#diagram) and its responsibilities.
+This section describes each element in the above [diagram](#diagram) and its responsibilities.
 
 A **Producer** is an entity that uses the STACKL API to make requests and receives the result or a confirmation in return. Requests can be queries for information, retrieving documents, storing or changing documents, and application orchestration. A producer can be anything that is capable of issuing HTTP requests, including other tools or actual users.
 

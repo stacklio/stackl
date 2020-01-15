@@ -76,7 +76,7 @@ Category of types for documents that represent a tangible part of the clients IT
 ##### Configurations
 Category of types for documents that model elements related to the clients IT domain. Such as allowed types, authentication documents, etc.
 
-## Deprecated Terminology
+## Deprecated terminology for old users of STACKL
 
 Resources → Services, inline with the microservice architecture approach
 
