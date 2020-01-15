@@ -41,7 +41,3 @@ In this way, end-to-end  transparent and flexible application orchestration is a
   * Distributable across infrastructure and easy to scale
   * Able to make trade-offs to match different quality-of-service requirements
 * End-to-end support for microservices-based applications and infrastructure management in a DevOps workflow (interesting read: [What is DevOps?](https://www.atlassian.com/devops))
-
-## License
-
-The code in this project is licensed under the [GLPv3](../LICENSE) license.
