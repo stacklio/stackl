@@ -21,4 +21,4 @@ Each agent module needs to provide an implementation of the agent interface thro
 Currently, there is a working implementation of an agent as a websocket client and as a GRPC client.
 A future target is an implementation with gitlab-runners.
 Other possibilities are other types of scripts, or making agents installable as autonomous ‘pip install’ modules.
-See [Agent Interface]({{< ref "agent_interface.md" >}}) for information about the available modules and how to create your own.
+<!-- See [Agent Interface]({{< ref "../modules/agent_interface.md" >}}) for information about the available modules and how to create your own. -->

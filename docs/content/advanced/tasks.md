@@ -44,7 +44,7 @@ The Task broker manages tasks atomically: done completely or rolled-back.
 It is a pluggable module that is chosen during the deployment of STACKL.
 The pluggable module is accessed transparently through a general wrapper/interface, the  task broker interface.
 A pluggable task broker implements this interface so that tasks are always interacted with in the same way, independent from the backend, and only the performance characteristics change.
-See [Task Broker Interface]({{< ref "task_broker_interface.md" >}}) for information about the available modules and how to create your own.
+<!-- See [Task Broker Interface]({{< ref "../modules/task_broker_interface.md" >}}) for information about the available modules and how to create your own. -->
 
 The task broker itself does not process tasks but only manages them.
 It accepts the tasks from Producers and communicates them to Workers.
@@ -56,7 +56,7 @@ The message channel is the medium through which STACKL communicates with other p
 It is a pluggable module that is chosen during the deployment of STACKL.
 The pluggable module is accessed transparently through an interface, the message channel interface.
 Each plugged technology, whether custom or third-party, provides an implementation of this interface so that from tasks are communicated in the same way, independent from the backend, and only the performance characteristics change.
-See [Message Channel Interface]({{< ref "message_channel_interface.md" >}}) for information about the available modules and how to create your own.
+<!-- See [Message Channel Interface]({{< ref "../modules/message_channel_interface.md" >}}) for information about the available modules and how to create your own. -->
 
 ## Workers
 
