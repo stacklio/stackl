@@ -2,6 +2,5 @@
 title: Frequently Asked Questions
 navtitle: FAQ
 kind: misc
-weight: 17
+weight: 2
 ---
-

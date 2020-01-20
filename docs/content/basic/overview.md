@@ -11,7 +11,7 @@ Users can then easily give tasks to STACKL to orchestrate their applications.
 Tasks are processed by a pluggable and distributed task manager which will aim for its correct and eventually consistent completion and report back.
 If needed, STACKL can contact pluggable user-side agents to execute parts of the task in the user's IT environment such as invocations on application orchestration tools.
 The process allows for the user to tune the performance of his application orchestration automation strategy by providing multiple choices for pluggable modules as well as hiding the complexity associated with doing so.
-In this way, end-to-end  transparent and flexible application orchestration is achieved by taking a model of the IT infrastructure, a description of the application, and automating the deployment and management of the application..
+In this way, end-to-end  transparent and flexible application orchestration is achieved by taking a model of the IT infrastructure, a description of the application, and automating the deployment and management of the application.
 
 ## Features
 
@@ -24,7 +24,6 @@ In this way, end-to-end  transparent and flexible application orchestration is a
 * The deployment and use of STACKL works with popular DevOps technologies and platforms: docker, kubernetes, ansible, azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
 * Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
 * To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
-
 
 ## Core goals
 
