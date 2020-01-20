@@ -24,13 +24,14 @@ The functional and non-functional dependencies a service has so it performs as d
 
 The configuration packets required of the operating environment for the the service to perform its functions, such as a Linux OS, DNS or Web configuration, or nginx.
 
-##### Non-Functional Requirements	(NFR)
+##### Resource Requirements (RR)
 
-The hardware resource requirements to run the service such as CPU, memory, hard disk capacity, and so on.
+The resource requirements to run the service such as CPU, memory, hard disk capacity, and so on.
 
-##### Extra-Functional Requirements (EFR)
+##### Policies (POL)
 
-Application requirements that go beyond runtime requirements of a single service, such as multiple service instantiations, latency links between services, security guarantees on subparts of the application or availability conditions.
+Service and application requirements that give additional specifications for how the service or applications functions.
+These map to behavioural constraints on and across services, such as high availability of a service through redundancy or a low latency requirement between two services.
 
 ##### Stack
 
@@ -38,7 +39,7 @@ A declarative description of an application and the IT infrastructure it may run
 
 ##### Stack Application Template(SAT)
 
-Template that models the application as a set of services with their requirements, links and any EFRs.
+Template that models the application as a set of services with their requirements, links and any policies.
 
 ##### Stack Infrastructure Template (SIT)
 
@@ -106,6 +107,6 @@ Resources → Services, inline with the microservice architecture approach
 
 Roles → Functional Requirements (i.e., configuration packets for machines so that they can perform certain functions)
 
-Shape → Non-Functional Requirements
+Shape → Resource Requirements
 
 Proxy → Now Agents

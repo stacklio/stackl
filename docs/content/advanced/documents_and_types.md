@@ -35,16 +35,16 @@ Items, in contrast, are actionable elements that are either submitted or generat
 : models IT infrastructure as infrastructure targets originating from the environment, location, and zone and possessing a set of infrastructure capabilities
 
 **Stack_Application_Template**
-: models the application as a set of services with their requirements, links and any EFRs
+: models the application as a set of services with their requirements, links and any policies
 
 **Functional_Requirement**
 : configuration packets required of the operating environment for the service to perform its functions
 
-**Non_Functional_Requirement**
+**Resource_Requirement**
 : hardware resource requirements to run the service such as CPU, memory, hard disk capacity, ...
 
-**Extra_Functional_Requirement**
-: Application requirements that go beyond runtime requirements of a single service, such as multiple service instantiations, service latency links, availability conditions, ...
+**Policy**
+: Service and Application requirements that give additional specifications for how the service or applications functions, such as multiple service instantiations, service latency links, availability conditions, ...
 
 **Authentication**
 : TODO

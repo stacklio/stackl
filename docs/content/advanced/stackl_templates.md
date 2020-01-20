@@ -11,30 +11,33 @@ An instantiation of this ST on the infrastructure is called a Stack Instance (SI
 Stacks are a concept.
 SATs, SITs, STs and SIs are stored documents which are given, processed, tracked, and maintained in the datastore.
 
-Users separately specify their application as a set of modular microservices in SATs and the available infrastructure in SITs. Separate specification decouples applications from the infrastructure, allowing different SATs to be matched to different SITs, promoting flexibility, adaptability, and re-use.
+Users separately specify their application as a set of modular microservices in SATs and the available infrastructure in SITs.
+Separate specification decouples applications from the infrastructure, allowing different SATs to be matched to different SITs, promoting flexibility, adaptability, and re-use.
 Producers can submit a Stack to STACKL as a combination of a SAT and SIT.
-STACKL returns a ST which can become a SI, if desired.
+If the stack is instantiable, STACKLs returns the set of possible instantiations in a ST which can become a SI, or running application.
 
 ## Stack Application Template
 
-A SAT declares the constituent services as software entities with functional and non-functional requirements (FR and NFR) and the extra-functional requirements (EFR) that the application imposes that go beyond a single service.
-Services can be stored in separate documents or specified in the SAT itself.
+A SAT describes the application as a set of constituent services (actual software entities) that have functional and resource requirements (FR and RR) and additional service policies (POL) which describes extra-functional requirements or properties such as count.
+The SAT aggregates the FRs, RRs, and POLs and can specify application-level RRs and POLs as well.
+The resulting set of these requirements and policies are the constraints of the application to be able to run as desired on given infrastructure.
+
+Services are either stored in separate documents or specified in the SAT itself.
 FRs are what the service is supposed to do.
 These map to configuration packets for the software host so that it can perform certain functions.
 FRs can inherit from other FRs.
 K/V pairs of an FR override those of the preceding FR.
 FRs are stored in separate documents.
-FRs have NFRs that, in turn, determine the minimum NFRs of the service.
+FRs have RRs that, in turn, determine the minimum RRs of the service and the service can specify additional RRs.
 FRs also specify the invocation process that is needed to instantiate the FR.
-TODO: FR can depend on a previous FR, such as the sharing of access data of a database FR to an analytic FR.
-How do we ensure the sharing of data between different FRs?
-See Considerations
-NFRs are how the service functions.
-These map to hardware resource requirements.
+
+RRs are what resources the service needs to functions
+These map the resource requirements of the hosting infrastructure.
 These are the minimum set of the requirements of the FRs, if specified, and the specified ones by the service.
-EFRs are how the application functions.
-These map to behavioural constraints across services.
-They can be both derived from the set of FRs or explicitly specified for the application. This also includes duplicating services.
+
+Policies are additional specifications for how the service or applications functions.
+These map to behavioural constraints on and across services, such as high availability of a service through redundancy or a low latency requirement between two services.
+They can be both derived from the set of FRs or explicitly specified for the application. 
 
 ### Example: Simple SAT
 
@@ -167,12 +170,12 @@ They can be both derived from the set of FRs or explicitly specified for the app
 
 ## Stack Infrastructure Template
 
-A SIT models the infrastructure available.
+A SIT models the available infrastructure.
 It describes the infrastructure in terms of the environment, location, and zones and explicitly specifies their relationship in a set of infrastructure targets.
 Environment, location and zones are separate documents.
 An infrastructure target is the result of merging these documents where the K/V pairs of the zone override the location which override the environment.
 Each infrastructure target has capabilities.
-These can vary over time due to dynamic factors (load on a server, power outages, ...).
+These can vary over time due to dynamic factors (e.g., load on a server, power outages, ...).
 As such, each SIT has an update policy which specifies when the capabilities of the infrastructure targets should be determined.
 
 ### Example: Stack Infrastructure Template
@@ -219,21 +222,22 @@ As such, each SIT has an update policy which specifies when the capabilities of 
 
 ## Stack Template and Instance
 
-A ST is the result of processing a submitted Stack, as a SAT and SIT, into a set of viable solutions where services are mapped to the infrastructure that is capable of running it. Each solution can be instantiated as an SI.
-The processing consists of a policy-based SIT update, a two part constraint solver and an actionable result:
+A ST is the result of processing a submitted Stack, as a SAT and SIT, into a set of viable solutions where services are mapped to the infrastructure that is capable of running it.
+Each solution can be instantiated as an SI.
+The processing consists of a policy-based SIT update, a two part constraint solver and an actionable result.
 The SIT is updated, if needed, by retrieving the current capabilities of each infrastructure target.
 After, the SIT is written back as an updated document with the up-to-date capabilities included.
 The first part of constraint solving considers each service in turn.
-The FRs and NFRs of each service are contrasted to the capabilities of each infrastructure targets.
+The FRs and RRs of each service are contrasted to the capabilities of each infrastructure targets.
 The result is a set of targets the service can run on.
-The second part of constraint solving considers the EFRs of the SAT and further filters suitable targets for services.
+The second part of constraint solving considers the policies of the SAT and further filters suitable targets for services.
 For instance, if a same-zone requirement for service_a and service_b cannot be satisfied if service_a is deployed on a target in a zone where service_b cannot be deployed, this target is deleted from the list of suitable targets of service_a.
 The end result is a document that contains the mapping of services to infrastructure and which can be stored and acted upon.
 If any service has no suitable targets, no ST is made since the application is uninstantiable.
-If all services have suitable targets, an ST is made that drops the requirements of the services and capabilities of the targets, since it has been determined that these are satisfied, and keeps the NFRs since these may provide necessary information during stack instantiation, for instance,  picking targets in the same zone
+If all services have suitable targets, an ST is made that drops the requirements of the services and capabilities of the targets, since it has been determined that these are satisfied, and keeps the RRs since these may provide necessary information during stack instantiation, for instance,  picking targets in the same zone
 
 For instantiation, the targets need to be chosen.
-This first needs to take into account the NFRs so that only viable combinations of targets are selected.
+This first needs to take into account the RRs so that only viable combinations of targets are selected.
 If multiple solutions remain, one is chosen according to a policy, e.g., cheapest target first
 
 ### Example: Stack Template Simple
@@ -294,7 +298,7 @@ There are 4 possible SI, one for each target.
 }
 ```
 
-There are two possible SI taking into account the same_zone EFR.
+There are two possible SI taking into account the same_zone policy.
 
 ```json
 #si_complex1.json
