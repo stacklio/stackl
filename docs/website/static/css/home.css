@@ -195,14 +195,14 @@ a {
 .btn-primary {
     border-radius: 30px;
     padding: 10px 50px;
-    background: linear-gradient(#46ccd9, #49a1e2);
+    background: linear-gradient(#36A9E1, #7BCDF1);
     border: none;
     box-shadow: 2px 2px 5px rgba(51, 51, 51, 0.23);
 }
 
 
 .btn-primary:hover {
-    background: linear-gradient(#46ccd9, #49a1e2);
+    background: linear-gradient(#36A9E1, #7BCDF1);
 }
 
 .styraText {
@@ -438,48 +438,8 @@ h3 {
     color: #404040;
 }
 
-#declarative-policy-tabs {
-    width: 100%;
-    min-height: 100px;
-    position: relative;
-    background: #fff;
-    padding-bottom: 70px;
-}
-
-.declarative-policy-tabs-graphic {
-    background-image: url(../img/declarative-graphic-1.png);
-    position: absolute;
-    left: -170px;
-    top: 0%;
-    width: 360px;
-    height: 400px;
-    background-repeat: no-repeat;
-    background-size: cover;
-    z-index: 99;
-}
-
-.declarative-policy-tabs-graphic-2 {
-    background-image: url(../img/declarative-graphic-2.png);
-    position: absolute;
-    right: 0px;
-    top: 50%;
-    width: 630px;
-    height: 660px;
-    background-repeat: no-repeat;
-    background-size: cover;
-
-}
-
 .tab-innerContainer p {
     font-size: 16px;
-}
-
-.declarative-table {
-    width: 100%;
-    min-height: 100px;
-    position: relative;
-    z-index: 9;
-
 }
 
 .btn-primary span {
@@ -805,13 +765,14 @@ h4 {
 #footer {
     width: 100%;
     min-height: 100px;
-    background: #b7b7b7;
+    background: #DEDEDE;
     padding: 100px 0px;
 }
 
 .footer-text {
     font-size: 22px;
-    color: #fff;
+    /* color: #253B8F; */
+    text-align: center;
     padding-bottom: 20px;
 }
 
@@ -834,26 +795,17 @@ h4 {
 }
 
 .footer-bottom {
+    text-align: center;
     font-size: 14px;
-    color: #fff;
+    /* color: #253B8F; */
 }
 
 .marginTopNegative {
     margin-top: -70px;
 }
 
-.policy-sharing {
-    position: relative;
-}
 
-.policy-sharing h4 {
-    /* position: absolute;
-    bottom: 0px;
-    left: 25%; */
-}
-
-
-@media screen and (min-width: 1201px) and (max-width: 1400px) {
+/* @media screen and (min-width: 1201px) and (max-width: 1400px) {
 
 }
 
@@ -887,9 +839,9 @@ h4 {
         line-height: 34px;
     }
 
-}
+} */
 
-@media screen and (min-width: 993px) and (max-width: 1200px) {
+/* @media screen and (min-width: 993px) and (max-width: 1200px) {
 
     .nav-tabs .nav-link {
         padding: 15px 10px;
@@ -905,9 +857,6 @@ h4 {
         width: 50px;
     }
 
-    /* .envoyLogo{
-        width: 50px !important;
-    } */
     .nav-tabs .nav-width {
         width: 140px !important;
         max-width: 140px;
@@ -919,7 +868,7 @@ h4 {
     }
 
 
-}
+} */
 
 @media screen and (min-width: 992px) and (max-width: 1024px) {
     .declarativeImage {
