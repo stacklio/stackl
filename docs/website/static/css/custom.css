@@ -122,9 +122,6 @@ footer {
 }
 
 footer::after {
-  background-image: url(/img/sea-plants.svg);
-  background-repeat: repeat-x;
-  background-size: auto 100%;
   content: "";
   height: 120px;
   position: absolute;
@@ -139,12 +136,12 @@ footer a {
   text-decoration: none;
 }
 
-header {
+/* header {
   background-image: url(/img/cloud.svg);
   background-position: 60% 0;
   background-repeat: no-repeat;
   background-size: 480px;
-}
+} */
 
 main {
   overflow: hidden;
@@ -408,8 +405,6 @@ main {
 }
 
 .headline--wave--bg {
-  background-image: url(/img/wave--headline--bg.svg);
-  background-repeat: repeat-x;
   height: 120px;
   left: 0;
   position: absolute;
@@ -419,11 +414,6 @@ main {
 }
 
 .headline--wave--bg::after {
-  animation: rock 3s ease-in-out alternate infinite;
-  background-image: url(/img/boat.svg);
-  background-position: 66.6667% center;
-  background-repeat: no-repeat;
-  background-size: 320px;
   content: "";
   display: block;
   height: 320px;
@@ -442,8 +432,6 @@ main {
 }
 
 .headline--wave--fg {
-  background-image: url(/img/wave--headline--fg.svg);
-  background-repeat: repeat-x;
   height: 120px;
   left: -11px;
   position: absolute;
@@ -453,7 +441,7 @@ main {
 }
 
 .headline--wave--fg::after {
-  background-color: #0097a7;
+  background-color: #36A9E1;
   content: "";
   height: 290px;
   position: absolute;

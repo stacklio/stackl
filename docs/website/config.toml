@@ -16,7 +16,7 @@ ignorefiles = [ "/docs/v.*/code/.*" ]
 [params]
 description = "An open source, end-to-end application orchestration platform"
 tagline = ""
-algolia_api_key = "AW23HXLF2O"
+algolia_api_key = ""
 
 [params.social]
 twitter = "stacklio"
@@ -24,8 +24,8 @@ slack = "https://stacklio.slack.com/"
 github = "https://github.com/stacklio"
 
 [params.logos]
-sidebar = "/img/logos/opa-horizontal-color.png"
-navbar = "/img/logos/opa-icon-white.png"
+sidebar = "/img/logos/stackl-horizontal-color.png"
+navbar = "/img/logos/stackl-logo-negative.png"
 
 [menu]
 
