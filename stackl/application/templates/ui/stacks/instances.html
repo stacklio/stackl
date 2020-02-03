@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block jsInclude %}
+  <script src="../../static/ui/stacks/instances.js"></script>
+{% endblock %}
+{% block cssInclude %}
+  <style>
+  .popover{
+    max-width: 100%
+  }
+  </style>
+{% endblock %}
+{% block title %}stack_instances{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <!-- modal start -->
+    <div id="snapshotModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Snapshot</h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal" role="form">
+            <div  class="form-group">
+              <label  class="col-sm-2 control-label">Instance</label>
+              <div class="col-sm-10">
+                  <input id ="snapshotStackInstance" type="text" class="form-control" readonly/>
+              </div>
+            </div>
+            <div  class="form-group">
+              <label  class="col-sm-2 control-label">Template</label>
+              <div class="col-sm-10">
+                  <input id ="snapshotStackTemplate" type="text" class="form-control" readonly/>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                      <input id="restoreSnapshot" type="checkbox"/> Restore snapshot
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div id="takeSnapshotDiv">
+              <div class="form-group">
+                <label class="col-sm-2 control-label" >Name</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control"
+                        id="snapshotName" placeholder="snapshot01"/>
+                </div>
+              </div>
+            <div  class="form-group">
+              <label  class="col-sm-2 control-label">Description</label>
+              <div class="col-sm-10">
+                  <input id ="snapshotDescription" type="text" class="form-control" placeholder="Description"/>
+              </div>
+            </div>
+          </div>
+          <div id="restoreSnapshotDiv" style="display: none;">
+          <div class="form-group">
+            <label  class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-10">
+              <select id="restoreSnapshotName" class="form-control">
+              </select>
+            </div>
+          </div>
+        </div>
+          </form>
+          </div>
+          <div class="modal-footer">
+            <button id="submitSnapshot" type="button" class="btn btn-default" data-dismiss="modal">Submit</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- modal end -->
+    <div class="panel-group" id="instances_accordion">
+    </div>
+  </div>
+  <!-- /.row -->
+{% endblock %}

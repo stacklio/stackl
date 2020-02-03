@@ -1,0 +1,95 @@
+version: '3'
+networks:
+  default:
+    external:
+      name: stackl
+  stackl_bridge:
+    external:
+      name: stackl_bridge
+services:
+  stackl-rest:
+    restart: always
+    image: stackl_app
+    container_name: stackl_app
+    networks:
+      - stackl_bridge
+{% if datastore_type == 'LFS' %}
+    volumes:
+      - {{ datastore_lfs_volume }}:/lfs_test_store/
+{% endif %}
+    ports:
+      - {{http_port}}:80
+      - 8888:8888
+    environment:
+      - STACKL_STORE={{ datastore_type }}
+      - STACKL_TASK_BROKER={{ task_broker_type }}
+      - STACKL_AGENT_BROKER={{ agent_broker_type }}
+      - STACKL_AGENT_HOST={{ agent_host }}
+      - GRPC_VERBOSITY="DEBUG"
+      - STACKL_LOGPATH=/var/log/stackl.log
+      - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
+      - STACKL_STACKLRESTHOST=stackl-rest
+      - STACKL_STACKLRESTPORT=80
+      - STACKL_REDISSENTINELHOST=stackl-redis
+      - TCP_PORTS=80
+      - SERVICE_PORTS=80
+      - STACKL_PKIHOST=stackl.stackl.io
+      - STACKL_PKIPORT=8443
+      - STACKL_PKICA=intermCA
+      - STACKL_REDIS_HOST=stackl-redis
+      - LOGLEVEL=DEBUG
+  stackl-worker:
+    restart: always
+    image: stackl_worker
+    networks:
+      - stackl_bridge
+    stdin_open: true
+    tty: true
+{% if datastore_type == 'LFS' %}
+    volumes:
+      - {{ datastore_lfs_volume }}:/lfs_test_store/
+{% endif %}
+    depends_on:
+      - stackl-rest
+      - stackl-redis
+    ports:
+      - 9999:9999
+    environment:
+      - STACKL_STORE={{ datastore_type }}
+      - STACKL_TASK_BROKER={{ task_broker_type }}
+      - STACKL_AGENT_BROKER={{ agent_broker_type }}
+      - STACKL_AGENT_HOST={{ agent_host }}
+      - GRPC_VERBOSITY="DEBUG"
+      - STACKL_LOGPATH=/var/log/stackl.log
+      - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
+      - STACKL_STACKLRESTHOST=stackl-rest
+      - STACKL_STACKLRESTPORT=80
+      - STACKL_REDISSENTINELHOST=stackl-redis
+      - STACKL_ROLE=worker
+      - STACKL_REDIS_HOST=stackl-redis
+      - TCP_PORTS=8888
+      - LOGLEVEL=DEBUG
+  stackl-redis:
+    restart: always
+    image: redis:5.0.5
+    networks:
+      - stackl_bridge
+  stackl-agent:
+    restart: always
+{% if agent_broker_type == 'Local' %}
+    image: local_agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+{% else %}
+    image: grpc_agent
+{% endif %}
+    networks:
+      - stackl_bridge
+    ports:
+      - 8889:8889
+      - 50051:50051
+    environment:
+      - STACKL_HOST=stackl-rest:80
+      - HOST_MACHINE=stackl-agent
+      - TAGS=['common']
+      - TENANT={{ tenant_name }}

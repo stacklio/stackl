@@ -1,0 +1,16 @@
+http:
+  port: 8080
+
+datastore:
+  type: LFS
+  lfs_volume: /example_database/
+
+task_broker:
+  type: Custom
+
+message_channel:
+  type: RedisSingle
+
+agent_broker:
+  type: Local
+  host: stackl-agent:50051

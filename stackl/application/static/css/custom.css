@@ -1,0 +1,182 @@
+html,body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.428571429;
+  color: #333333;
+}
+
+#chart-container {
+  position: relative;
+  display: inline-block;
+  top: 20px;
+  left: 10px;
+  height: 420px;
+  width: calc(100% - 100px);
+  border: none;
+  border-radius: 5px;
+  overflow: auto;
+  text-align: center;
+}
+
+.orgchart {
+  background-image: None;
+  padding: 20px;
+}
+
+.orgchart td.top {
+  border-top: 2px solid #06223A;
+}
+
+.orgchart td.right {
+  border-right: 1px solid #06223A;
+}
+
+.orgchart td.left {
+  border-left: 1px solid #06223A;
+}
+
+.orgchart td>.down {
+  background-color: #06223A;
+}
+
+.root {
+  background-color: #06223A !important;
+}
+
+.environment {
+  background-color: #004470 !important;
+}
+
+.zone {
+  background-color: #7FA1B7 !important;
+}
+
+.location {
+  background-color: #3F7293 !important;
+}
+
+.bootbox-dialog {
+ background-color: rgba(236, 181, 150, 1, 0.1) ;
+}
+
+.nub-button-move{
+    color: #FFFFFF;
+    background-color: #3F7293;
+}
+
+.nub-button-copy{
+    color: #FFFFFF;
+    background-color: #D96B2D;
+}
+
+.orgchart .node .title {
+  border: 1px solid #06223A;
+  background-color: #004470;
+}
+
+.btn-add {
+    background-color: #3F7293;
+}
+
+.btn-add:hover{
+    background-color: #E29061;
+}
+
+.btn-add-pwd {
+    background-color: #3F7293;
+}
+
+.btn-add-pwd:hover {
+    background-color: #E29061;
+}
+
+
+
+.orgchart .add-node-icon {
+    transition: opacity .5s;
+    opacity: 0;
+    right: -5px;
+    top: -5px;
+    z-index: 2;
+    color: #009BFF;
+    font-size: 18px;
+    position: absolute;
+}
+
+.orgchart .del-node-icon {
+    transition: opacity .5s;
+    opacity: 0;
+    right: -5px;
+    bottom: -5px;
+    z-index: 2;
+    color: #009BFF;
+    font-size: 18px;
+    position: absolute;
+}
+
+.orgchart .info-node-icon {
+    transition: opacity .5s;
+    opacity: 0;
+    left: -5px;
+    top: -5px;
+    z-index: 2;
+    color: #009BFF;
+    font-size: 18px;
+    position: absolute;
+}
+
+.orgchart .add-node-icon:hover {
+  color: #004470;
+}
+
+.orgchart .node:hover .add-node-icon {
+  opacity: 1;
+}
+
+.orgchart .del-node-icon:hover {
+  color: #004470;
+}
+
+.orgchart .node:hover .del-node-icon {
+  opacity: 1;
+}
+
+.orgchart .info-node-icon:hover {
+  color: #004470;
+}
+
+.orgchart .node:hover .info-node-icon {
+  opacity: 1;
+}
+
+.orgchart .node .title {
+  text-align: center;
+  height: 25px;
+  line-height: 25px;
+  border-radius: 10px 10px 10px 10px;
+}
+
+.infoModal {
+    width: 835px;
+}
+
+.hideShowPassword-toggle {
+    background-image: url(/static/img/wink.svg);
+    /background-position: 0 center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    height: 100%;
+    overflow: hidden;
+    text-indent: -9999em;
+    width: 44px;
+}
+.hideShowPassword-toggle-hide {
+    background-position: -44px center;
+}

@@ -1,0 +1,5 @@
+{
+  "description": "Example  Environment",
+  "type": "environment",
+  "name": "example"
+}

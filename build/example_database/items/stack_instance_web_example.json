@@ -1,0 +1,21 @@
+{
+    "name": "example_stack1",
+    "type": "stack_instance",
+    "stack_infrastructure_template": "nubera_vmw",
+    "services": [{
+        "name": "webserver",
+        "infrastructure_target": "example.vmw_example.example_user",
+        "provisioning_parameters": {
+            "description": "The VMware of Nubera",
+            "hostname": "https://p00vca01.nubera.local",
+            "username": "administrator@vsphere.local",
+            "password": "PASSWORD!",
+            "folder": "fred_10.10.3.0",
+            "datacenter": "DC01",
+            "cluster": "CL01"
+        }
+    }],
+    "extra_functional_requirements": {},
+    "category": "items",
+    "description": "Stack instance example_stack1"
+}

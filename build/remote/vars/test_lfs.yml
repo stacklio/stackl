@@ -1,0 +1,27 @@
+---
+stackl_container_platform: docker
+redis_master: tm001.stackl.io
+efs_url: fs-c8e2e601.efs.eu-west-1.amazonaws.com:/
+stackl_ca_chain:  certs_test/ca.crt
+stackl_server_cert: certs_test/server.crt
+stackl_server_cert_chain: certs_test/server-chain.crt
+stackl_server_key: certs_test/server.key
+stackl_redis_version: v1.0
+stackl_crl: certs_test/crl.pem
+
+docker_compose_name: docker-compose_lfs_v3.3_pipeline
+docker_compose_path: /root/docker-compose/{{docker_compose_name}}.yml
+pull_source: templates/docker_pull_lfs.j2
+pull_path: /root/pull.sh
+
+stackl_host: tm001.stackl.io
+stackl_url: api.stackl.io
+stackl_api_amount: 1
+stackl_worker_amount: 1
+stackl_use_crl: false
+
+stackl_image_url_app: registry.gitlab.com/stackl-core/v2/stackl2/stackl_app
+stackl_image_url_agent: registry.gitlab.com/stackl-core/v2/stackl2/stackl_agent
+stackl_image_url_worker: registry.gitlab.com/stackl-core/v2/stackl2/stackl_worker
+
+agent_broker_type: grpc_agent

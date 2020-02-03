@@ -1,0 +1,5 @@
+---
+# - import_playbook: deploy_api_k8s.yml
+#   when: stackl_container_platform == 'k8s'
+- import_playbook: deploy_api_docker.yml
+  when: stackl_container_platform == 'docker' #case for test setup

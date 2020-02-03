@@ -1,0 +1,23 @@
+{
+    "name": "linux",
+    "type": "operating_system",
+    "invocation": {
+        "image": "terraform:light",
+        "description": "installs centos"
+    },
+    "input": {
+        "hostname": {
+            "type": "string",
+            "required": true
+        }
+    },
+    "output": {
+        "hostname": {
+            "type": "string"
+        }
+    },
+    "params": {
+        "aws_ami": "ami-12345",
+        "vmw_image": "templates/centos"
+    }
+}

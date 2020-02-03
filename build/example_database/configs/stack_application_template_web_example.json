@@ -1,0 +1,6 @@
+{
+    "name": "example_web",
+    "type": "stack_application_template",
+    "services": ["webserver"],
+    "extra_functional_requirements": {}
+}
