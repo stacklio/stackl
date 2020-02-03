@@ -1,6 +1,7 @@
 # STACKL
 <!-- Badges come here -->
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
+
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 STACKL supports the autonomous configuration, coordination, and management of applications and IT infrastructure by:
 * forming the Single Source of Truth (SSOT) configuration data lookup store for your IT environment including infrastructure resources, application definitions, and their characteristics and services
