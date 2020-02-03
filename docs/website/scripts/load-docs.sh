@@ -17,7 +17,7 @@ GIT_VERSION=$(git --version)
 # Look at the git tags and generate a list of releases
 # that we want to show docs for.
 if [[ -z ${OFFLINE} ]]; then
-    git fetch --tags ${REPOSITORY_URL:-https://github.com/stacklio/stackl-dev.git}
+    git fetch --tags ${REPOSITORY_URL:-https://github.com/stacklio/stackl.git}
 fi
 ALL_RELEASES=$(git tag -l | sort -r -V)
 RELEASES=()
