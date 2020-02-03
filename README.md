@@ -198,6 +198,10 @@ You can then see the status of the stack instance by using the /stack/instances/
 - See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
 # :handshake:Contributing
 Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
+
+STACKL is programmed mainly in Python and meant to follow best-practice coding guidelines.
+As a point-of-reference, we use the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html) for coding and the [Google developer documentation style guide](https://developers.google.com/style) for documentation.
+
 See [CONTRIBUTING](CONTRIBUTING.md) to get started.
 Please also read the [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
 # :memo:License
