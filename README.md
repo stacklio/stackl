@@ -26,7 +26,7 @@ For this example we will create a SIT (Stack Infrastructure Template) and a SAT 
 #### What is a Stack Infrastructure Template
 A stack infrastructure template specifies which IT Infrastructure is available to the application deployment. An SIT needs the following components (documents):
 * Environment
-  <!-- an environment is a definition of the top level object in your infrastructure tree --> TO BE DEFINED
+
   example JSON:
 ```json
 {
@@ -40,7 +40,7 @@ A stack infrastructure template specifies which IT Infrastructure is available t
 }
 ```
 * Location
-  TO BE DEFINED
+
 ```json
 {
     "description": "Brussels DC",
@@ -50,7 +50,7 @@ A stack infrastructure template specifies which IT Infrastructure is available t
 }
 ```
 * Zone
-TO BE DEFINED
+
 ```json
 {
     "description": "Our First Cluster",
@@ -93,8 +93,8 @@ example:
 ```
 #### What is a Stack Application Template
 Stack application templates are templates that define an application. It consist out of the following components: 
-* Function requirement
-TO BE DEFINED
+* Functional requirement
+
 ```json
 {
     "category": "configs",
@@ -113,7 +113,7 @@ TO BE DEFINED
 }
 ```
 * Service
-To be defined 
+
 ```json
 {
     "name": "webserver",
@@ -144,8 +144,29 @@ To be defined
 }
 ```
 ### Uploading the documents to STACKL
+
 Go to the STACKL web interface, (use `kubectl get service` to get the IP address). use the `/documents/{type_name}` endpoint to POST the documents using the correct type.
+
 ### Create stack instances
+
+Use the following payload:
+
+```
+{
+  "parameters": {
+    "replicas": "1",
+    "vm_name": "stackl_vm"
+  },
+  "infrastructure_template_name": "stackl",
+  "application_template_name": "web",
+  "stack_instance_name": "web_example_stack1"
+}
+```
+
+and make a POST-request to /stack/instances, this will instantiate a stack instance and will create a Virtual Machine.
+
+You can then see the status of the stack instance by using the /stack/instances/web_example_stack1 endpoint.
+
 # More info about STACKL
 ## Core goals
 * Open-source and community-oriented
