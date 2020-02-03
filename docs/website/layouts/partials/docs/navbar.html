@@ -3,7 +3,6 @@
 {{ $social    := site.Params.social }}
 {{ $github    := $social.github }}
 {{ $twitter   := printf "https://twitter.com/%s" $social.twitter }}
-{{ $medium    := $social.medium }}
 {{ $slack     := $social.slack }}
 {{ $docsHome  := .CurrentSection }}
 {{ $allDocs   := where site.RegularPages "Section" "docs" }}
@@ -81,11 +80,11 @@
             </span>
           </a>
 
-          <a class="button is-primary" href="{{ $slack }}" target="_blank">
+          <!-- <a class="button is-primary" href="{{ $slack }}" target="_blank">
             <span class="icon has-text-white-bis">
               <i class="fab fa-slack"></i>
             </span>
-          </a>
+          </a> -->
         </div>
       </div>
     </div>
@@ -114,11 +113,11 @@
         </span>
       </a>
 
-      <a class="navbar-item" href="{{ $slack }}" target="_blank">
+      <!-- <a class="navbar-item" href="{{ $slack }}" target="_blank">
         <span class="icon has-text-white-bis">
           <i class="fab fa-slack"></i>
         </span>
-      </a>
+      </a> -->
     </div>
   </div>
 </nav>
