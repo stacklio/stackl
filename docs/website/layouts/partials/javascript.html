@@ -8,7 +8,7 @@
 
 {{ if $isDocsPage }}
 {{ $version := index (split .File.Path "/") 1 }}
-{{ $apiKey  := site.Params.algolia_api_key }}
+{{ $apiKey  := (getenv "ALGOLIA_ADMIN_KEY") }}
 <script>
   console.log("You are reading the docs for version {{ $version }} of STACKL");
 

@@ -1,5 +1,5 @@
 title = "STACKL"
-baseURL = "https://stackl.io/"
+baseURL = "https://www.stackl.io/"
 languageCode = "en"
 disableKinds = ["taxonomy", "taxonomyTerm"]
 googleAnalytics = ""
