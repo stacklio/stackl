@@ -151,11 +151,12 @@ Go to the STACKL web interface, (use `kubectl get service` to get the IP address
 
 Use the following payload:
 
-```
+```json
 {
   "parameters": {
     "replicas": "1",
-    "vm_name": "stackl_vm"
+    "vm_name": "stackl_vm",
+    "folder": "folder1"
   },
   "infrastructure_template_name": "stackl",
   "application_template_name": "web",
