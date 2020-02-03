@@ -105,6 +105,8 @@ Give an example
 
 Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
 
+STACKL is programmed mainly in Python and meant to follow best-practice coding guidelines.
+As a point-of-reference, we use the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html) for coding and the [Google developer documentation style guide](https://developers.google.com/style) for documentation.
 
 See [CONTRIBUTING](CONTRIBUTING.md) to get started.
 
