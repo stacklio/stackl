@@ -110,7 +110,7 @@ for release in "${RELEASES[@]}"; do
     fi
 
     echo "Copying doc content from tag ${release}"
-    sudo cp -r "${ROOT_DIR}/docs/content/"* ${version_docs_dir}/
+    cp -r ${ROOT_DIR}/docs/content/* ${version_docs_dir}/
 
 done
 
