@@ -48,7 +48,7 @@ hugo-production-build:
 		--minify
 
 .PHONY: production-build
-production-build: clean generate hugo-production-build live-blocks-inject
+production-build: clean generate hugo-production-build
 
 .PHONY: preview-build
 preview-build:
@@ -59,10 +59,3 @@ preview-build:
 		--buildDrafts \
 		--buildFuture \
 		--ignoreCache
-	make live-blocks-inject
-
-# The live-blocks-% pattern target will shim to the
-# npm scripts in ./website/scripts/live-blocks
-.PHONY: live-blocks-%
-live-blocks-%:
-	cd $(CURDIR)/website/scripts/live-blocks && npm run --silent $*
