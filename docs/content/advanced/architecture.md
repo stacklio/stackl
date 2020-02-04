@@ -27,11 +27,11 @@ A **Producer** is an entity that uses the STACKL API to make requests and receiv
 Requests can be queries for information, retrieving documents, storing or changing documents, and application orchestration.
 A producer can be anything that is capable of issuing HTTP requests, including other tools or actual users.
 
-The **API Interface** is a frontend for access to STACKL and ensures requests are authorized, submitted to STACKL as tasks, and the result delivered back to the requester.
+The **API Interface** is a frontend for access to STACKL and ensures requests are authorized, submitted to STACKL as tasks, and the result delivered back to the requestor.
 This API is based on HTTP and REST and provides a web frontend.
 
 The **Authorization Module** ensures that requests for STACKL are both allowed and delegated to the correct parties.
-This is a WIP that is intended to be offloaded to policy-driven system managed by an Open Policy Agent.
+This is a WIP that is intended to be offloaded to a policy-driven system managed by an Open Policy Agent.
 
 The **Task Broker** and **Workers**  ensure the correct, consistent, and timely end-to-end processing of the tasks.
 This includes delegating it to multiple workers for horizontal scalability, reporting the result of the work, rolling back any changes in case of failure, and interacting with third parties, such as agents, if needed.
@@ -42,7 +42,7 @@ It ensures typed and eventual consistent documents, and thus forms a SSOT to mod
 
 The **Monitoring Module** assists in the monitoring, logging, and maintenance of the IT enterprise environment and how it is modelled in the document datastore.
 It interacts with the task broker and agents to ensure both are consistent and queryable.
-This is a WIP that is intended to be offloaded to policy-driven system managed by an Open Policy Agent.
+This is a WIP that is intended to be offloaded to a policy-driven system managed by an Open Policy Agent.
 
 The **Agent Broker** and **Agents** enable STACKL to execute work and queries in a (remote) IT enterprise environment.
 The Agent Broker is an interface that allows to interact with user-side agents.
