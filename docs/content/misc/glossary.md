@@ -63,7 +63,7 @@ An instantiation of one of the viable solutions of a ST on the IT infrastructure
 
 ##### Task
 
-An atomic unit of work, done completely or rolled back, given by a Producer to STACKL for processing. E.g., create a stack instance.
+An atomic unit of work, done completely or rolled back, given by an Operator to STACKL for processing. E.g., create a stack instance.
 
 ##### Task Broker (TB)
 
@@ -77,7 +77,7 @@ The messaging system used by STACKL to communicate with other entities for proce
 
 Entities that take care of the client-side execution of tasks given to STACKL. This is mainly the instantiation of stacks instances through automation endpoints on the client’s IT infrastructure.
 
-##### Producer
+##### Operator
 
 The entity that gives work to STACKL. For instance, a user doing a REST API call through the web interface to create a stack.
 

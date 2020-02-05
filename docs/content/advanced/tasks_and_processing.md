@@ -49,7 +49,7 @@ It is a pluggable module that is chosen during the deployment of STACKL.
 The pluggable module is accessed transparently through a general wrapper/interface, the  task broker interface.
 A pluggable task broker implements this interface so that tasks are always interacted with in the same way, independent from the backend, and only the performance characteristics change.
 The task broker itself does not process tasks but only manages them.
-It accepts the tasks from producers and communicates them to workers.
+It accepts the tasks from operators and communicates them to workers.
 Before delegating task for processing, it may add additional information such as communication parameters so that the task is self-contained.
 
 See [Task Broker Interface]({{< ref "../modules/task_broker_interface.md" >}}) for information about the available modules and how to create your own.
