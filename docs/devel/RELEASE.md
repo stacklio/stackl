@@ -2,32 +2,29 @@
 
 ## Overview
 
-The release process consists of three phases: versioning, building, and
-publishing.
+Every release consists of three phases: (1) versioning, (2) building, and (3) publishing.
+We use semantic versioning, see also [semver](https://semver.org/).
 
 Versioning involves maintaining the following files:
 
-- **CHANGELOG.md** - this file contains a list of all the important changes in each release.
-- **Makefile** - the Makefile contains a VERSION variable that defines the version of the project.
-- **docs/website/RELEASES*** - this file determines which versions of documentation are displayed
-  in the public [documentation](https://openpolicyagent.org/docs). __The first entry on the list is
-  considered to be the latest.__
+- **CHANGELOG.md** - a list of all the important changes in each release.
+- **Makefile** - contains the VERSION number for the latest version of the project.
+- **docs/website/RELEASES*** - gives the versions of documentation that are public [documentation](https://www.stackl.io/docs). 
+__The first entry on the list is the latest version.__
 
-The steps below explain how to update these files. In addition, the repository
-should be tagged with the semantic version identifying the release.
+The steps below explain how to update these files.
+In addition, the repository should be tagged with the semantic version identifying the release.
 
-Building involves obtaining a copy of the repository, checking out the release
-tag, and building the binaries.
+Building involves obtaining a copy of the repository and checking out the release tag.
 
-Publishing involves creating a new *Release* on GitHub with the relevant
-CHANGELOG.md snippet and uploading the binaries from the build phase.
+Publishing involves creating a new *Release* on GitHub with the relevant CHANGELOG.md snippet.
 
 ## Versioning
 
-1. Obtain a copy of repository.
+1. Clone the repository.
 
 	```
-	git clone git@github.com:open-policy-agent/opa.git
+	git clone git@github.com:stacklio/stackl.git
 	```
 
 1. Execute the release-patch target to generate boilerplate patch. Give the semantic version of the release:
@@ -88,7 +85,7 @@ CHANGELOG.md snippet and uploading the binaries from the build phase.
 1. Obtain copy of remote repository.
 
 	```
-	git clone git@github.com:open-policy-agent/opa.git
+	git clone git@github.com:stacklio/stackl.git
 	```
 
 1. Execute the release target. The results can be found under _release/VERSION:
@@ -99,20 +96,15 @@ CHANGELOG.md snippet and uploading the binaries from the build phase.
 
 ## Publishing
 
-1. Open browser and go to https://github.com/open-policy-agent/opa/releases
+1. Open browser and go to https://github.com/stacklio/stackl/releases
 
 1. Create a new release for the version.
 	- Copy the changelog content into the message.
-	- Upload the binaries.
-
 
 ## Notes
 
-- The openpolicyagent/opa Docker image is automatically built and published to
-  Docker Hub as part of the Travis-CI pipeline. There are no manual steps
-  involved here.
-- The docs and website should update and be published automatically. If they are not you can
-  trigger one by a couple of methods:
+- The docs and website should update and be published automatically. 
+  If they are not you can trigger one by a couple of methods:
 	- Login to Netlify (requires permission for the project) and manually trigger a build.
 	- Post to the build webhook via:
 		```bash
@@ -158,13 +150,10 @@ other release branches:
 git push origin release-0.14
 ```
 
-Once the Pull Request has been merged you can tag the release at the commit
-created above. Once the tag is pushed to `open-policy-agent/opa`, CI jobs will
-automatically build and publish the Docker images and website updates.
+Once the Pull Request has been merged you can tag the release at the commit created above. 
+<!-- Once the tag is pushed to `open-policy-agent/opa`, CI jobs will automatically build and publish the Docker images and website updates. -->
 
-The last step is to build the release binaries and publish them to the [GitHub
-releases](https://github.com/open-policy-agent/opa/releases) page along with
-updating the CHANGELOG.md file on master.
+The last step is to try a build.
 
 ```
 make release VERSION=0.14.1

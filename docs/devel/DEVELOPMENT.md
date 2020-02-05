@@ -1,4 +1,4 @@
-## Development
+<!-- ## Development
 
 OPA is written in the [Go](https://golang.org) programming language.
 
@@ -164,4 +164,4 @@ code is kept in the repository so that commands such as `go get` work.
 If you need to update the version of Go used to build OPA you must update these
 files in the root of this repository:
 
-* `Makefile`- which is used to produce releases locally. Update the `GOVERSION` variable.
+* `Makefile`- which is used to produce releases locally. Update the `GOVERSION` variable. -->
