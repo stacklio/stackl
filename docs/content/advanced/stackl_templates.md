@@ -13,7 +13,7 @@ SATs, SITs, STs and SIs are stored documents which are given, processed, tracked
 
 Users separately specify their application as a set of modular microservices in SATs and the available infrastructure in SITs.
 Separate specification decouples applications from the infrastructure, allowing different SATs to be matched to different SITs, promoting flexibility, adaptability, and re-use.
-Producers can submit a Stack to STACKL as a combination of a SAT and SIT.
+Operators can submit a Stack to STACKL as a combination of a SAT and SIT.
 If the stack is instantiable, STACKLs returns the set of possible instantiations in a ST which can become a SI, or running application.
 
 ## Stack Application Template
@@ -39,6 +39,8 @@ Policies are additional specifications for how the service or applications funct
 These map to behavioural constraints on and across services, such as high availability of a service through redundancy or a low latency requirement between two services.
 They can be both derived from the set of FRs or explicitly specified for the application.
 
+A default policy that is always present is that the RR of the SAT can be satisfied.
+
 ### Example: Simple SAT
 
 ```json
@@ -49,7 +51,7 @@ They can be both derived from the set of FRs or explicitly specified for the app
    "services": {
         "single_calculator": "Single Calculator"
    },
-   "extra_functional_requirements": {}
+   "policies": {}
 }
 ```
 

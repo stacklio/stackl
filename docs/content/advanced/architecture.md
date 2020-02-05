@@ -9,8 +9,8 @@ The architecture shows how STACKL enables users to flexibly and easily model, de
 
 This workflow is supported as follows:
 
-* A producer, a user that submits tasks to STACKL, uses STACKL as a tool to model, describe, and automate applications by using it as (1)  a datastore of application configuration and infrastructure model data and (2) a platform that uses this data to provide autonomous application orchestration.
-* Authorized producers interact through an API specification to submit tasks.
+* An operator, a user that submits tasks to STACKL, uses STACKL as a tool to model, describe, and automate applications by using it as (1)  a datastore of application configuration and infrastructure model data and (2) a platform that uses this data to provide autonomous application orchestration.
+* Authorized operators interact through an API specification to submit tasks.
 Tasks are mainly submitting documents that model the IT environment and describe applications and that request the instantiation or management of applications.
 * Tasks are executed in STACKL through pluggable modules for authorization, storage, processing, automation endpoint execution, and monitoring and reporting.
 * STACKL thus has a Single Source Of Truth document datastore that contains the information to provide end-to-end application orchestration for users.
@@ -23,9 +23,9 @@ Tasks are mainly submitting documents that model the IT environment and describe
 
 This section describes each element in the above [diagram](#diagram) and its responsibilities.
 
-A **Producer** is an entity that uses the STACKL API to make requests and receives the result or a confirmation in return.
+An **Operator** is an entity that uses the STACKL API to make requests and receives the result or a confirmation in return.
 Requests can be queries for information, retrieving documents, storing or changing documents, and application orchestration.
-A producer can be anything that is capable of issuing HTTP requests, including other tools or actual users.
+A operator can be anything that is capable of issuing HTTP requests, including other tools or actual users.
 
 The **API Interface** is a frontend for access to STACKL and ensures requests are authorized, submitted to STACKL as tasks, and the result delivered back to the requestor.
 This API is based on HTTP and REST and provides a web frontend.

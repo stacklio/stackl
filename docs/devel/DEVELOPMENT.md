@@ -1,4 +1,4 @@
-## Development
+<!-- ## Development
 
 STACKL is written in the [Python](https://www.python.org) programming language.
 
@@ -68,3 +68,4 @@ Requirements:
 ### Tool Dependencies
 
 > placeholder
+

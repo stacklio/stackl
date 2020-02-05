@@ -2,29 +2,26 @@
 
 ## Overview
 
-The release process consists of three phases: versioning, building, and
-publishing.
+Every release consists of three phases: (1) versioning, (2) building, and (3) publishing.
+We use semantic versioning, see also [semver](https://semver.org/).
 
 Versioning involves maintaining the following files:
 
-- **CHANGELOG.md** - this file contains a list of all the important changes in each release.
-- **Makefile** - the Makefile contains a VERSION variable that defines the version of the project.
-- **docs/website/RELEASES*** - this file determines which versions of documentation are displayed
-  in the public [documentation](https://stackl.io/docs). __The first entry on the list is
-  considered to be the latest.__
+- **CHANGELOG.md** - a list of all the important changes in each release.
+- **Makefile** - contains the VERSION number for the latest version of the project.
+- **docs/website/RELEASES*** - gives the versions of documentation that are public [documentation](https://www.stackl.io/docs). 
+__The first entry on the list is the latest version.__
 
-The steps below explain how to update these files. In addition, the repository
-should be tagged with the semantic version identifying the release.
+The steps below explain how to update these files.
+In addition, the repository should be tagged with the semantic version identifying the release.
 
-Building involves obtaining a copy of the repository, checking out the release
-tag, and building the binaries.
+Building involves obtaining a copy of the repository and checking out the release tag.
 
-Publishing involves creating a new *Release* on GitHub with the relevant
-CHANGELOG.md snippet and uploading the binaries from the build phase.
+Publishing involves creating a new *Release* on GitHub with the relevant CHANGELOG.md snippet.
 
 ## Versioning
 
-1. Obtain a copy of repository.
+1. Clone the repository.
 
 	```
 	git clone git@github.com:stacklio/stackl.git

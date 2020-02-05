@@ -205,6 +205,10 @@ As a point-of-reference, we use the [Google Python Style Guide](https://google.g
 
 See [CONTRIBUTING](CONTRIBUTING.md) to get started.
 Please also read the [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
+
+For a list of changes, see [Changelog](CHANGELOG.md).
+For the releases, see [Github Releases](https://github.com/stacklio/stackl/releases).
+
 # :memo:License
 The code in this project is licensed under the [GLPv3](LICENSE) license.
 # Acknowledgments
