@@ -2,7 +2,7 @@ title = "STACKL"
 baseURL = "https://stackl.io/"
 languageCode = "en"
 disableKinds = ["taxonomy", "taxonomyTerm"]
-googleAnalytics = ""
+googleAnalytics = "UA-105077363-1"
 
 pygmentsCodeFences = true
 pygmentsUseClasses = false
@@ -20,7 +20,7 @@ algolia_api_key = ""
 
 [params.social]
 twitter = "stacklio"
-slack = "https://stacklio.slack.com/"
+# slack = "https://stacklio.slack.com/"
 github = "https://github.com/stacklio"
 
 [params.logos]

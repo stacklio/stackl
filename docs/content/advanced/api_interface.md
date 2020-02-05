@@ -29,7 +29,7 @@ For instance, these can be used to add or change config data or items (such as S
 
 All operations related to items and their K/Vs.
 This interface serves to correctly retrieve and process item-type documents.
-As items are actionable elements that can be the result of a hiera K/V lookup of its constituent documents, the item or its subparts (such as a K/V pair) might not be directly stored and need to be resolved from its constituent sub-documents.
+As items are actionable elements that can be the result of a hierarchical K/V lookup of its constituent documents, the item or its subparts (such as a K/V pair) might not be directly stored and need to be resolved from its constituent sub-documents.
 The difference with document operations is that these operations require processing beyond datastore manipulations.
 
 ## Stack operations

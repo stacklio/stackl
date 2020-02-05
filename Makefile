@@ -1,4 +1,22 @@
-build_core: 
+# Copyright 2020 The STACKL Authors.  All rights reserved.
+# Use of this source code is governed by an GPLv3
+# license that can be found in the LICENSE file.
+
+
+######################################################
+#
+# Documentation targets
+#
+######################################################
+
+# The docs-% pattern target will shim to the
+# makefile in ./docs
+.PHONY: docs-%
+docs-%:
+	$(MAKE) -C docs $*
+
+
+build_core:
 	@echo "Building stackl core"
 	cd stackl/application; docker build -t stackl_app -f Dockerfile_app .
 	@echo "stackl_app ready"

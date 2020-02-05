@@ -4,7 +4,7 @@ kind: advanced
 weight: 3
 ---
 
-A Stack is declarative description of an application and the IT infrastructure it may run on.
+A Stack is a declarative description of an application and the IT infrastructure it may run on.
 Stacks consist out of two concerns which are separated into a **Stack Application Template (SAT)** and a **Stack Infrastructure Template (SIT)**.
 STACKL creates a Stack Template (ST) by constraint solving the SAT and SIT of the Stack, thus creating a valid mapping of an application to the IT infrastructure at that point in time.
 An instantiation of this ST on the infrastructure is called a Stack Instance (SI).
@@ -38,6 +38,7 @@ These are the minimum set of the requirements of the FRs, if specified, and the 
 Policies are additional specifications for how the service or applications functions.
 These map to behavioural constraints on and across services, such as high availability of a service through redundancy or a low latency requirement between two services.
 They can be both derived from the set of FRs or explicitly specified for the application.
+
 A default policy that is always present is that the RR of the SAT can be satisfied.
 
 ### Example: Simple SAT
@@ -229,7 +230,7 @@ The processing consists of a policy-based SIT update, a two part constraint solv
 The SIT is updated, if needed, by retrieving the current capabilities of each infrastructure target.
 After, the SIT is written back as an updated document with the up-to-date capabilities included.
 The first part of constraint solving considers each service in turn.
-The FRs and RRs of each service are contrasted to the capabilities of each infrastructure targets.
+The FRs and RRs of each service are contrasted to the capabilities of each infrastructure target.
 The result is a set of targets the service can run on.
 The second part of constraint solving considers the policies of the SAT and further filters suitable targets for services.
 For instance, if a same-zone requirement for service_a and service_b cannot be satisfied if service_a is deployed on a target in a zone where service_b cannot be deployed, this target is deleted from the list of suitable targets of service_a.

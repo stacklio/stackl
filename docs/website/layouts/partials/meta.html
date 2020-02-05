@@ -3,7 +3,7 @@
 {{ $title       := cond $isHome site.Title .Title }}
 {{ $description := .Param "description" }}
 {{ $pageType    := cond $isHome "website" "article" }}
-{{ $imageUrl    := "/img/logos/opa-horizontal-color.png" | absURL }}
+{{ $imageUrl    := "/img/logos/stackl-horizontal-color.png" | absURL }}
 {{ $twitter     := site.Params.social.twitter }}
 {{ $version     := index (split .File.Path "/") 1 }}
 

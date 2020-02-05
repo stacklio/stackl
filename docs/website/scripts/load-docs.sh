@@ -17,7 +17,9 @@ GIT_VERSION=$(git --version)
 # Look at the git tags and generate a list of releases
 # that we want to show docs for.
 if [[ -z ${OFFLINE} ]]; then
-    git fetch --tags ${REPOSITORY_URL:-https://github.com/stacklio/stackl-dev.git}
+    # Temporarily changed as the repo is not public yet
+    # git fetch --tags ${REPOSITORY_URL:-https://github.com/stacklio/stackl.git}
+    git fetch --tags ${URL:-https://github.com/stacklio/stackl.git}
 fi
 ALL_RELEASES=$(git tag -l | sort -r -V)
 RELEASES=()
@@ -110,7 +112,7 @@ for release in "${RELEASES[@]}"; do
     fi
 
     echo "Copying doc content from tag ${release}"
-    sudo cp -r ${ROOT_DIR}/docs/content/* ${version_docs_dir}/
+    cp -r ${ROOT_DIR}/docs/content/* ${version_docs_dir}/
 
 done
 
