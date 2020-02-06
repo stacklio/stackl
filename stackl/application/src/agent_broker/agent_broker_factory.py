@@ -1,9 +1,7 @@
-import sys
-
-
 from logger import Logger
-from utils.stackl_singleton import Singleton
 from utils.general_utils import get_config_key
+from utils.stackl_singleton import Singleton
+
 
 class AgentBrokerFactory(metaclass=Singleton):
 

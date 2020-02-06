@@ -5,18 +5,17 @@ from flask import Flask, Blueprint
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_cors import CORS
-import sys
+
 import threading
 import time
 
 from task_broker.task_broker_factory import TaskBrokerFactory
 import globals
 from logger import Logger
-
 from agent_broker.agent_broker_factory import AgentBrokerFactory
-from handler.task_handler import TaskHandler
 from manager.manager_factory import ManagerFactory
 from utils.general_utils import get_hostname
+
 
 def stackl_alive_counter():
     while True:
@@ -25,13 +24,13 @@ def stackl_alive_counter():
         globals.set_alive_count(count)
         time.sleep(30)
 
-### Start initialisation of Application Logic
+
+# Start initialisation of Application Logic
 try:
     logger = Logger("STACKL_APP")
     logger.info("@@@@@@@@@@@@@@@@@ STARTING STACKL_APP @@@@@@@@@@@@@@@@@@")
 
     globals.initialize()
-
 
     manager_factory = ManagerFactory()
     task_broker_factory = TaskBrokerFactory()
@@ -40,16 +39,17 @@ try:
     agent_broker = agent_broker_factory.agent_broker
     task_broker = task_broker_factory.get_task_broker()
 
-    agent_broker_thread = threading.Thread(name = "Agent Broker Thread", target=agent_broker.start, args=[])
+    agent_broker_thread = threading.Thread(name="Agent Broker Thread", target=agent_broker.start, args=[])
     agent_broker_thread.daemon = True
     agent_broker_thread.start()
-    
-    task_broker_thread = threading.Thread(name = "Task Broker Thread", target=task_broker.start_stackl, 
-            kwargs= {"subscribe_channels":['all', get_hostname(),'rest'], "agent_broker" : agent_broker})
+
+    task_broker_thread = threading.Thread(name="Task Broker Thread", target=task_broker.start_stackl,
+                                          kwargs={"subscribe_channels": ['all', get_hostname(), 'rest'],
+                                                  "agent_broker": agent_broker})
     task_broker_thread.daemon = True
     task_broker_thread.start()
 
-    alive_count_thread = threading.Thread(name = "Stackl Alive Count Thread", target=stackl_alive_counter, args=[])
+    alive_count_thread = threading.Thread(name="Stackl Alive Count Thread", target=stackl_alive_counter, args=[])
     alive_count_thread.daemon = True
     alive_count_thread.start()
 
@@ -57,9 +57,10 @@ try:
 except Exception as e:
     logger.error("[STACKL_APP] Exception in loading of application logic: {}".format(e))
 
-### Start initialisation of Interface and API logic
+# Start initialisation of Interface and API logic
 try:
     from api import api
+
     logger.info("___________________ STARTING STACKL_API ____________________")
 
     app = Flask(__name__)
@@ -74,7 +75,7 @@ try:
     app.register_blueprint(blueprint)
     parser = reqparse.RequestParser()
     parser.add_argument('task')
-    
+
     ######
     # Main function
     ######

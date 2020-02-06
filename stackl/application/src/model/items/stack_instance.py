@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields, post_load
-from model.stack_instance_service import StackInstanceServiceSchema
+from model.items.stack_instance_service import StackInstanceServiceSchema
+
 
 class StackInstance:
     def __init__(self, name, services={}, deleted=False, category="items", type="stack_instance"):
@@ -8,6 +9,7 @@ class StackInstance:
         self.deleted = deleted
         self.services = services
         self.category = category
+
 
 class StackInstanceSchema(Schema):
     name = fields.String()

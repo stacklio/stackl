@@ -1,16 +1,12 @@
-import sys
-import asyncio
-import json
-
-import protos.agent_pb2
-from logger import Logger 
-from manager import Manager
-from handler.stack_handler import StackHandler
-from task.result_task import ResultTask
-from enums.stackl_codes import StatusCode
-from enums.cast_type import CastType
-from task_broker.task_broker_factory import TaskBrokerFactory
 from agent_broker.agent_broker_factory import AgentBrokerFactory
+from enums.cast_type import CastType
+from enums.stackl_codes import StatusCode
+from handler.stack_handler import StackHandler
+from logger import Logger
+from manager import Manager
+from task.result_task import ResultTask
+from task_broker.task_broker_factory import TaskBrokerFactory
+
 
 class StackManager(Manager):
 
@@ -62,12 +58,12 @@ class StackManager(Manager):
                 'cast_type': CastType.BROADCAST.value,
                 'result': "success",
                 'source_task': task
-            })) #this way the broker is notified of the result and wheter he should remove the task from the task queue
+            })) #this way the broker is notified of the result and whether he should remove the task from the task queue
         except Exception as e:
             self.logger.error("[StackManager] Error with processing task. Error: '{0}'".format(e))
 
     def process_stack_request(self, instance_data, stack_action):
-                # create new object with the action and document in it
+        # create new object with the action and document in it
         self.logger.log("[StackManager] converting instance data to change wrapper object")
         change_obj = {}
         change_obj['action'] = stack_action
@@ -77,7 +73,6 @@ class StackManager(Manager):
         merged_sat_sit_obj, status_code = handler.handle(change_obj)            
         self.logger.log("[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' ".format(status_code, merged_sat_sit_obj))
         return (merged_sat_sit_obj, status_code)
-
 
     def get_stack_object_state(self, category, subcategory, stack_object_id, state_type='short'): #TODO Kept but not updated since we will need to have some introspection capability later on
         stack_instance_obj = self.document_manager.get_document(category = category, subcategory = subcategory, document_name = stack_object_id)

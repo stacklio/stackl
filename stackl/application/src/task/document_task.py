@@ -1,6 +1,3 @@
-import json
-import sys
-
 from task import Task, logger
 
 class DocumentTask(Task):

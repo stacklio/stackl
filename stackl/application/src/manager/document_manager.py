@@ -1,17 +1,22 @@
 from globals import types, types_configs, types_items
-from enums.stackl_codes import StatusCode
-import sys
 import json 
 
 from logger import Logger
 from manager import Manager
-from task.document_task import DocumentTask
+from model.configs.functional_requirement import FunctionalRequirementSchema
+from model.configs.stack_application_template import StackApplicationTemplateSchema
+from model.items.service import ServiceSchema
 from task.result_task import ResultTask
 from enums.stackl_codes import StatusCode
 from enums.cast_type import CastType
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 from task_broker.task_broker_factory import TaskBrokerFactory
-from model.stack_instance import StackInstanceSchema
+from model.items.stack_instance import StackInstanceSchema
+from model.configs.stack_infrastructure_template import StackInfrastructureTemplateSchema
+from model.configs.environment import EnvironmentSchema
+from model.configs.location import LocationSchema
+from model.configs.zone import ZoneSchema
+
 
 class DocumentManager(Manager):
 
@@ -74,6 +79,105 @@ class DocumentManager(Manager):
         """
         stack_instance_schema = StackInstanceSchema()
         store_response = self.store.put(stack_instance_schema.dump(stack_instance))
+        return store_response.status_code
+
+    def get_stack_infrastructure_template(self, stack_infrastructure_template_name):
+        """gets a StackInfrastructureTemplate Object from the store"""
+        store_response = self.store.get(type="stack_infrastructure_template", document_name=stack_infrastructure_template_name, category="configs")
+        schema = StackInfrastructureTemplateSchema()
+        stack_infrastructure_template = schema.load(store_response.content)
+        return stack_infrastructure_template
+    
+    def write_stack_infrastructure_template(self, stack_infrastructure_template):
+        """writes a StackInfrastructureTemplate object to the store
+        """
+        stack_infrastructure_template_schema = StackInfrastructureTemplateSchema()
+        store_response = self.store.put(stack_infrastructure_template_schema.dump(stack_infrastructure_template))
+        return store_response.status_code
+
+    def get_stack_application_template(self, stack_application_template_name):
+        """gets a StackApplicationTemplate Object from the store"""
+        store_response = self.store.get(type="stack_application_template",
+                                        document_name=stack_application_template_name, category="configs")
+        schema = StackApplicationTemplateSchema()
+        stack_application_template = schema.load(store_response.content)
+        return stack_application_template
+
+    def write_stack_application_template(self, stack_application_template):
+        """writes a StackApplicationTemplate object to the store
+        """
+        stack_application_template_schema = StackApplicationTemplateSchema()
+        store_response = self.store.put(stack_application_template_schema.dump(stack_application_template))
+        return store_response.status_code
+
+    def get_environment(self, environment_name):
+        """gets a Environment Object from the store"""
+        store_response = self.store.get(type="environment", document_name=environment_name, category="configs")
+        schema = EnvironmentSchema()
+        environment = schema.load(store_response.content)
+        return environment
+    
+    def write_environment(self, environment):
+        """writes a StackInstance object to the store
+        """
+        environment_schema = EnvironmentSchema()
+        store_response = self.store.put(environment_schema.dump(environment))
+        return store_response.status_code
+
+    def get_location(self, location_name):
+        """gets a Location Object from the store"""
+        store_response = self.store.get(type="location", document_name=location_name, category="configs")
+        schema = LocationSchema()
+        location = schema.load(store_response.content)
+        return location
+    
+    def write_location(self, location):
+        """writes a Location object to the store
+        """
+        location_schema = LocationSchema()
+        store_response = self.store.put(location_schema.dump(location))
+        return store_response.status_code
+
+    def get_zone(self, zone_name):
+        """gets a Zone Object from the store"""
+        store_response = self.store.get(type="zone", document_name=zone_name, category="configs")
+        schema = ZoneSchema()
+        zone = schema.load(store_response.content)
+        return zone
+    
+    def write_zone(self, zone):
+        """writes a Zone object to the store
+        """
+        zone_schema = ZoneSchema()
+        store_response = self.store.put(zone_schema.dump(zone))
+        return store_response.status_code
+
+    def get_service(self, service_name):
+        """gets a Service Object from the store"""
+        store_response = self.store.get(type="service", document_name=service_name, category="items")
+        schema = ServiceSchema()
+        service = schema.load(store_response.content)
+        return service
+
+    def write_service(self, service):
+        """writes a Service object to the store
+        """
+        service_schema = ServiceSchema()
+        store_response = self.store.put(service_schema.dump(service))
+        return store_response.status_code
+
+    def get_functional_requirement(self, functional_requirement_name):
+        """gets a FunctionalRequirement Object from the store"""
+        store_response = self.store.get(type="functional_requirement", document_name=functional_requirement_name, category="configs")
+        schema = FunctionalRequirementSchema()
+        service = schema.load(store_response.content)
+        return service
+
+    def write_functional_requirement(self, functional_requirement):
+        """writes a FunctionalRequirement object to the store
+        """
+        functional_requirement_schema = FunctionalRequirementSchema()
+        store_response = self.store.put(functional_requirement_schema.dump(functional_requirement))
         return store_response.status_code
 
     def write_document(self, **keys):

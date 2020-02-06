@@ -1,13 +1,12 @@
-import sys
 import grpc
 
-
-from logger import Logger 
-from agent_broker import AgentBroker
 import protos.agent_pb2
 import protos.agent_pb2_grpc
+from agent_broker import AgentBroker
+from logger import Logger
+from model.items.functional_requirement_status import FunctionalRequirementStatus, Status
 from utils.general_utils import get_config_key
-from model.functional_requirement_status import FunctionalRequirementStatus, Status
+
 
 class GrpcAgentBroker(AgentBroker):
 

@@ -1,4 +1,4 @@
-from kubernetes import client, config, utils
+from kubernetes import client, config
 
 import os
 import time
@@ -6,6 +6,7 @@ import random
 import string
 import kubernetes.client
 from kubernetes.client.rest import ApiException
+
 
 class TerraformHandler:
     def __init__(self):
@@ -36,10 +37,9 @@ class TerraformHandler:
         body.status = client.V1JobStatus()
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
-        env_list = []
-        env_list.append( client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance))
-        env_list.append( client.V1EnvVar(name="TF_VAR_stackl_service", value=service))
-        env_list.append( client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host']))
+        env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
+                    client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
+                    client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
         container = client.V1Container(name=container_name, image=container_image, env=env_list, args=["destroy", "--auto-approve"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never', image_pull_secrets=secrets)
@@ -64,8 +64,7 @@ class TerraformHandler:
         stackl_namespace = os.environ['stackl_namespace']
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
-        body = None
-        if action == "create": 
+        if action == "create" or action == "update":
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service, namespace=stackl_namespace)
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service, namespace=stackl_namespace)

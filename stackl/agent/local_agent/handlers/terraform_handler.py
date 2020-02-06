@@ -35,8 +35,7 @@ class TerraformHandler:
         print(invocation)
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
-        command = ""
-        if action == "create": 
+        if action == "create" or action == "update":
             command = self.create_job_command(name, container_image, invocation.stack_instance, invocation.service)
         else:
             command = self.create_delete_command(name, container_image, invocation.stack_instance, invocation.service)

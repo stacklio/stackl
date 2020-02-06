@@ -67,7 +67,7 @@ push_grpc_agent:
 prepare:
 	@echo "Creating docker-compose"
 	docker run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input  stackl/prepare:dev --conf /input/stackl.yml
-	@echo "Created docker-compose file in make/dev"
+	@echo "Created docker-compose file in build/make/dev"
 
 .PHONY: start
 start:

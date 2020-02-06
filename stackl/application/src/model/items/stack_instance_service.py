@@ -1,11 +1,13 @@
 from marshmallow import Schema, fields, post_load
-from model.functional_requirement_status import FunctionalRequirementStatusSchema
+from model.items.functional_requirement_status import FunctionalRequirementStatusSchema
+
 
 class StackInstanceService:
     def __init__(self, infrastructure_target="", provisioning_parameters={}, status=[]):
         self.infrastructure_target = infrastructure_target
         self.provisioning_parameters = provisioning_parameters
         self.status = status
+
 
 class StackInstanceServiceSchema(Schema):
     infrastructure_target = fields.String()
