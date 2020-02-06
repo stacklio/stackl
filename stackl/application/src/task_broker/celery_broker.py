@@ -1,8 +1,8 @@
 from celery import Celery
 
+
 class CeleryWrapper(TaskBroker):
 
-    
     def __init__(self):
         self.app = Celery('tasks', broker='redis://localhost')
 

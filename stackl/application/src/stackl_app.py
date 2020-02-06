@@ -1,19 +1,19 @@
 #!/usr/local/bin/python
 
-from flask_restplus import reqparse
-from flask import Flask, Blueprint
-from flask_bootstrap import Bootstrap
-from flask_moment import Moment
-from flask_cors import CORS
-
 import threading
 import time
 
-from task_broker.task_broker_factory import TaskBrokerFactory
+from flask import Flask, Blueprint
+from flask_bootstrap import Bootstrap
+from flask_cors import CORS
+from flask_moment import Moment
+from flask_restplus import reqparse
+
 import globals
-from logger import Logger
 from agent_broker.agent_broker_factory import AgentBrokerFactory
+from logger import Logger
 from manager.manager_factory import ManagerFactory
+from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
 
@@ -80,8 +80,8 @@ try:
     # Main function
     ######
     if __name__ == '__main__':
-        app.run(debug=True, host='0.0.0.0', port=8080)
-        # app.run(debug=False,host='0.0.0.0',port=8080)
+        # app.run(debug=True, host='0.0.0.0', port=8080)
+        app.run(debug=False, host='0.0.0.0', port=8080)
 
 except Exception as e:
     logger.error("[STACKL_APP] Exception in loading of Interface and API logic: {}".format(e))

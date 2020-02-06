@@ -1,10 +1,5 @@
-import os
 from abc import ABC, abstractmethod
-import datetime
 
-import sys
-
-from logger import Logger
 
 class DataStore(ABC):
 
@@ -13,20 +8,23 @@ class DataStore(ABC):
     def datastore_url(self):
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def get(self, **keys):
         pass
-    @abstractmethod    
-    def put(self, file ):
+
+    @abstractmethod
+    def put(self, file):
         pass
-    @abstractmethod    
+
+    @abstractmethod
     def delete(self, **keys):
         pass
-    @abstractmethod    
+
+    @abstractmethod
     def _check_datastore_exists(self, datastore):
         pass
 
-    def _create_store_response(self, status_code = 400, reason = None, content = None):
+    def _create_store_response(self, status_code=400, reason=None, content=None):
         response = self.StoreResponse()
         response.status_code = status_code
         response.reason = reason

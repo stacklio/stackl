@@ -1,9 +1,6 @@
-import sys
-
-
-from .merge_strategy import SimpleMergeStrategy, DeepMergeStrategy
-from logger import Logger
 from utils.stackl_singleton import Singleton
+from .merge_strategy import SimpleMergeStrategy, DeepMergeStrategy
+
 
 class StrategyFactory(metaclass=Singleton):
 

@@ -3,7 +3,6 @@ import random
 import string
 import subprocess
 
-import protos.agent_pb2
 
 class TerraformHandler:
 
@@ -27,7 +26,7 @@ class TerraformHandler:
         command_string += " " + container_image
         command_string += " " + "destroy --auto-approve"
         return command_string
-    
+
     def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
 
@@ -45,4 +44,3 @@ class TerraformHandler:
             return 0, ""
         except subprocess.CalledProcessError as e:
             return 1, e.output
-

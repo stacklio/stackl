@@ -1,31 +1,28 @@
-import json
-import sys
-
-from logger import Logger
-from task_broker import TaskBroker
+from handler.task_handler import TaskHandler
 from message_channel.message_channel_factory import MessageChannelFactory
+from task_broker import TaskBroker
 from utils.general_utils import get_hostname
-from handler.task_handler import TaskHandler 
+
 
 class CustomTaskBroker(TaskBroker):
 
     def __init__(self):
         super().__init__('CustomTaskBroker')
-        message_channel_factory =  MessageChannelFactory()
+        message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
-       
-    def start_stackl(self,  subscribe_channels=[], agent_broker = None):
+
+    def start_stackl(self, subscribe_channels=[], agent_broker=None):
         super().start_stackl(subscribe_channels, agent_broker)
         self.logger.log("[CustomTaskBroker] Starting CustomTaskBroker for STACKL.")
         self.message_channel.start(self.get_task_handler(), subscribe_channels)
-    
+
     def start_worker(self, subscribe_channels=[]):
         self.logger.log("[CustomTaskBroker] Starting CustomTaskBroker for Worker.")
         super().start_worker(subscribe_channels)
         self.message_channel.start(self.get_task_handler(), subscribe_channels)
 
     def get_task_handler(self):
-       return TaskHandler('TaskHandler', self)
+        return TaskHandler('TaskHandler', self)
 
     def give_task(self, task_obj):
         try:
@@ -33,17 +30,20 @@ class CustomTaskBroker(TaskBroker):
 
             if getattr(task_obj, "topic", None) is not "result":
                 self.add_task_to_queue(task_obj)
-            
+
             if task_obj.cast_type is "anycast":
                 if getattr(task_obj, "return_channel", None) is None:
                     task_obj.return_channel = get_hostname()
-                    self.logger.log("[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
+                    self.logger.log(
+                        "[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
                 if getattr(task_obj, "send_channel", None) is "agent":
                     task_obj.send_channel = self.agent_broker.get_agent_for_task(task_obj)
-                    self.logger.log("[CustomTaskBroker] Task given. Added send_channel: '{0}'".format(task_obj.send_channel))
+                    self.logger.log(
+                        "[CustomTaskBroker] Task given. Added send_channel: '{0}'".format(task_obj.send_channel))
 
-                self.logger.log("[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
-                self.message_channel.push("task_" + "common" +':process', task_obj.as_json_string())
+                self.logger.log(
+                    "[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
+                self.message_channel.push("task_" + "common" + ':process', task_obj.as_json_string())
             else:
                 self.message_channel.publish(task_obj)
         except Exception as e:

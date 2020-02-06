@@ -14,7 +14,7 @@ class ZoneSchema(Schema):
     description = fields.String()
     type = fields.String()
     params = fields.Dict(keys=fields.String(), values=fields.Raw())
-    
+
     @post_load
     def make_zone(self, data, **kwargs):
         return Zone(**data)

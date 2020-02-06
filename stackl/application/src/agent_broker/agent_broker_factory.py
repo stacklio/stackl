@@ -12,17 +12,17 @@ class AgentBrokerFactory(metaclass=Singleton):
         self.agent_broker = None
 
         if self.agent_broker_type == "gitlab-runner":
-            pass 
+            pass
         elif self.agent_broker_type == "Custom":
             from agent_broker.custom_agent_broker import CustomAgentBroker
             self.agent_broker = CustomAgentBroker()
         elif self.agent_broker_type == "grpc" or self.agent_broker_type == "Local":
             from agent_broker.grpc_agent_broker import GrpcAgentBroker
             self.agent_broker = GrpcAgentBroker()
-        else: #assume LFS
+        else:  # assume LFS
             from agent_broker.custom_agent_broker import CustomAgentBroker
             self.agent_broker = CustomAgentBroker()
 
     def get_agent_broker(self):
-        #self.logger.info("[DataStoreFactory] Giving store with type '{0}' and id '{1}'".format(self.store_type, self.store))
+        # self.logger.info("[DataStoreFactory] Giving store with type '{0}' and id '{1}'".format(self.store_type, self.store))
         return self.agent_broker

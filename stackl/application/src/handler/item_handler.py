@@ -1,12 +1,11 @@
-import threading
-import time
 import json
-from random import randint
 import sys
+import threading
+
 sys.path.append("/etc/stackl_src/")
-from utils.general_utils import get_timestamp
 from handler import Handler
 from logger import Logger
+
 
 class ItemHandler(Handler):
     def __init__(self, manager_factory):
@@ -209,7 +208,8 @@ class ItemHandler(Handler):
                     if to_delete_service:
                         del stack_instance_obj['services'][to_delete_service][item]
                         self.document_manager.write_document(document_name=stack_instance_name, type="stack_instance",
-                                                             file=stack_instance_obj, description='Stack instance ' + stack_instance_name)
+                                                             file=stack_instance_obj,
+                                                             description='Stack instance ' + stack_instance_name)
                 else:
                     self.logger.log(
                         "[ItemHandler] stack_instance_obj "
@@ -235,10 +235,10 @@ class ItemHandler(Handler):
         extra_vars["action"] = action
         extra_vars["playbook"] = item["doc"]["role"] + ".yaml"
         extra_vars["item"] = item
-        extra_vars["automation_handler"] = self.item_manager.get(item, "automation_handler"        )
+        extra_vars["automation_handler"] = self.item_manager.get(item, "automation_handler")
         extra_vars["host"] = self.item_manager.get(item, "stacklAnsibleFqdn")
         extra_vars["port"] = self.item_manager.get(item, "ansible_port")
-        extra_vars["user"] = self.item_manager.get( item, "ansible_user")
+        extra_vars["user"] = self.item_manager.get(item, "ansible_user")
         extra_vars["dynamic_inventory_path"] = self.item_manager.get(item, "ansible_dynamic_inventory_path")
         extra_vars["playbook_path"] = self.item_manager.get(item, "ansible_playbook_path")
         self.logger.log("[ItemHandler] invoke_websocket. extra_vars for websocket: {0}".format(extra_vars))
@@ -248,10 +248,12 @@ class ItemHandler(Handler):
     def flag_item_request_state_stack_instance(self, item, stack_instances_names, action):
         self.flag_item_request_state(item, stack_instances_names, action)
 
-    def flag_item_request_state(self, item_to_be_flagged, parent_item_names, action, parent_item_view_category="types", parent_item_view_type="stack_instance"):
+    def flag_item_request_state(self, item_to_be_flagged, parent_item_names, action, parent_item_view_category="types",
+                                parent_item_view_type="stack_instance"):
         self.logger.log(
-            "[ItemHandler] flag_item_request_state. Flagging state of '{0}' to state '{1}'".format(item_to_be_flagged, action
-            )
+            "[ItemHandler] flag_item_request_state. Flagging state of '{0}' to state '{1}'".format(item_to_be_flagged,
+                                                                                                   action
+                                                                                                   )
         )
         # loop over stack instances listed in the resource_object
         if parent_item_names is None:
@@ -276,7 +278,7 @@ class ItemHandler(Handler):
                 )
                 # loop over the resources
                 self.logger.log("[ItemHandler] Item: " + str(item))
-                #Deprecated. See old code and redo if still needed
+                # Deprecated. See old code and redo if still needed
                 # if item is not None:
                 #     item_found = False
                 #     for service in item["services"]:
@@ -318,8 +320,8 @@ class ItemHandler(Handler):
             return True
         elif isinstance(automation_invocation_enabled, bool):
             self.logger.info("[ItemHandler] automation_invocation_enabled was bool... returning "
-                + str(automation_invocation_enabled)
-            )
+                             + str(automation_invocation_enabled)
+                             )
             return automation_invocation_enabled
         elif str(automation_invocation_enabled).lower() == "true":
             self.logger.info("[ItemHandler] Automation_invocation_enabled was 'True'... returning True'")

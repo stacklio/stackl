@@ -1,10 +1,11 @@
-import grpc
 from concurrent import futures
 
-from handlers.tool_factory import ToolFactory
+import grpc
 
 import protos.agent_pb2
 import protos.agent_pb2_grpc
+from handlers.tool_factory import ToolFactory
+
 
 class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
 
@@ -15,7 +16,7 @@ class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
         print(request)
         automation_response = protos.agent_pb2.AutomationResponse()
         for invoc in request.invocation:
-            handler = self.tool_factory.get_handler(invoc.tool) 
+            handler = self.tool_factory.get_handler(invoc.tool)
             automation_result = automation_response.automation_result.add()
             result, error_message = handler.handle(invoc, request.action)
             automation_result.service = invoc.service
@@ -27,6 +28,7 @@ class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
             automation_result.error_message = error_message
         return automation_response
 
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     protos.agent_pb2_grpc.add_StacklAgentServicer_to_server(
@@ -34,6 +36,7 @@ def serve():
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
+
 
 if __name__ == '__main__':
     print("starting worker")

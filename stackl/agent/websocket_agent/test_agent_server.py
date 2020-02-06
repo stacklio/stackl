@@ -1,10 +1,10 @@
 import asyncio
-import websockets
-import os
 import json
-import time
-import socket
+import os
 import threading
+
+import websockets
+
 
 def get_config_key(key):
     value = os.environ.get(key)
@@ -13,6 +13,7 @@ def get_config_key(key):
         return value
     else:
         return ""
+
 
 class Agent_Server_Test:
 
@@ -32,12 +33,13 @@ class Agent_Server_Test:
         print("[Agent_Server_Test] run_worker_websocket started for agent_url '{}'".format(agent_url))
         agent_worker_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(agent_worker_loop)
-        self.agent_websocket = websockets.serve(self.worker_connection_handler, host = agent_url["host"], port = agent_url["port"])
+        self.agent_websocket = websockets.serve(self.worker_connection_handler, host=agent_url["host"],
+                                                port=agent_url["port"])
         agent_worker_loop.run_until_complete(self.agent_websocket)
         agent_worker_loop.run_forever()
 
     def get_agent_url(self):
-        agent_url = { "is_agent_url": True, "host" : "0.0.0.0", "port" : 8889}
+        agent_url = {"is_agent_url": True, "host": "0.0.0.0", "port": 8889}
         print("[Agent_Server_Test] Returning agent url '{}'.".format(agent_url))
         return agent_url
 
@@ -45,7 +47,7 @@ class Agent_Server_Test:
         print("[Agent_Server_Test] worker_connection_handler activated.")
         worker_recv_task = asyncio.create_task(self.worker_recv_handler(websocket, path))
         worker_send_task = asyncio.create_task(self.worker_send_handler(websocket, path))
-        done, pending = await asyncio.wait([worker_recv_task, worker_send_task], return_when=asyncio.FIRST_COMPLETED,)
+        done, pending = await asyncio.wait([worker_recv_task, worker_send_task], return_when=asyncio.FIRST_COMPLETED, )
         for task in pending:
             task.cancel()
 
@@ -76,15 +78,16 @@ class Agent_Server_Test:
         asyncio.set_event_loop(test_loop)
         count = 0
         while True:
-            test_loop.run_until_complete(asyncio.sleep(30)) 
+            test_loop.run_until_complete(asyncio.sleep(30))
             print("[Agent_Server_Test] test_periodic run '{}', every 30sec.".format(count))
             self.producer_message = "Test_Periodic_Message" + str(count)
             self.producer_flag.set()
-            count = count+1
+            count = count + 1
+
 
 if __name__ == "__main__":
     try:
-        #app.run(host="0.0.0.0", port=int("5000"), debug=True)
+        # app.run(host="0.0.0.0", port=int("5000"), debug=True)
         agent = Agent_Server_Test()
 
     except Exception as e:

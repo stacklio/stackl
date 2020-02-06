@@ -1,20 +1,18 @@
-
 import threading
 import time
-import socket
-from redis import Redis, StrictRedis
-import sys
 
+from redis import StrictRedis
 
 from logger import Logger
 from message_channel import MessageChannel
 from task.task_factory import TaskFactory
 from utils.general_utils import get_config_key
 
+
 class RedisSingleQueue(MessageChannel):
 
     def __init__(self):
-        super(RedisSingleQueue,self).__init__()
+        super(RedisSingleQueue, self).__init__()
         self.redis_host = get_config_key("REDIS_HOST")
         self.logger = Logger("RedisQueue")
         self.queue = None
@@ -48,7 +46,8 @@ class RedisSingleQueue(MessageChannel):
         wait_time = task.get_attribute('wait_time')
         channel = task.get_channel()
         message_str = task.as_json_string()
-        self.logger.info("[RedisQueue] Channel '{0}': Sending message via pubsub: {1}".format(str(channel),  message_str))
+        self.logger.info(
+            "[RedisQueue] Channel '{0}': Sending message via pubsub: {1}".format(str(channel), message_str))
         self.queue.publish(channel, message_str)
         if return_channel is not None:
             return self.listen(return_channel, wait_time=wait_time)
@@ -56,14 +55,14 @@ class RedisSingleQueue(MessageChannel):
 
     def listen_permanent(self, channels):
         try:
-            self._pubsub_channels(self.pubsub, channels, action = 'subscribe')
+            self._pubsub_channels(self.pubsub, channels, action='subscribe')
             self.logger.info("[RedisQueue] Broker listening on: {0}".format(channels))
             self.started = True
 
             for message in self.pubsub.listen():
                 self.logger.info("[RedisQueue] Broker got message: '{0}'".format(message))
                 if message['type'] != 'subscribe':
-                    #parse task
+                    # parse task
                     task = TaskFactory.create_task(message['data'])
                     result_task = self.task_handler.handle(task)
                     if result_task is not None and result_task.get_attribute('topic', '') == 'result':
@@ -71,7 +70,7 @@ class RedisSingleQueue(MessageChannel):
                         self.publish(result_task)
 
             self.logger.log("[RedisQueue] Error listen_permanent stopped!")
-            self._pubsub_channels(self.pubsub,channels, action='unsubscribe')
+            self._pubsub_channels(self.pubsub, channels, action='unsubscribe')
             raise Exception("[RedisQueue] Error listen_permanent stopped!")
         except Exception as e:
             self.logger.error("[RedisQueue] ERROR!!! EXCEPTION OCCURED IN listen_permanent: " + str(e))
@@ -79,10 +78,10 @@ class RedisSingleQueue(MessageChannel):
             self.pubsub = self.queue.pubsub()
             self.listen_permanent(channels)
 
-    def listen(self,channel, wait_time=5):
+    def listen(self, channel, wait_time=5):
         self.logger.info("[RedisQueue] Listening temporary to channel " + str(channel))
         pubsub = self.queue.pubsub()
-        self._pubsub_channels(pubsub,[channel], action='subscribe')
+        self._pubsub_channels(pubsub, [channel], action='subscribe')
         return_array = []
         t_end = time.time() + wait_time
         while time.time() < t_end:
@@ -90,11 +89,11 @@ class RedisSingleQueue(MessageChannel):
             self.logger.info("[RedisQueue] Broker got message listen: " + str(message))
             if message and (message['type'] != 'subscribe' and message['type'] != 'unsubscribe'):
                 result_task = TaskFactory.create_task(message['data'])
-                self.logger.log("[RedisQueue] resultTask: "  + str(result_task.as_json_string()))
+                self.logger.log("[RedisQueue] resultTask: " + str(result_task.as_json_string()))
                 return_array.append(result_task)
                 continue
             time.sleep(0.1)
-        self._pubsub_channels(pubsub,[channel], action='unsubscribe')
+        self._pubsub_channels(pubsub, [channel], action='unsubscribe')
         self.logger.info("[RedisQueue] Broker listen returning: " + str(return_array))
         return return_array
 

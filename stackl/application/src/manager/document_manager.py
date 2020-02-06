@@ -1,21 +1,21 @@
-from globals import types, types_configs, types_items
-import json 
+import json
 
+from enums.cast_type import CastType
+from enums.stackl_codes import StatusCode
+from globals import types, types_configs, types_items
 from logger import Logger
 from manager import Manager
-from model.configs.functional_requirement import FunctionalRequirementSchema
-from model.configs.stack_application_template import StackApplicationTemplateSchema
-from model.items.service import ServiceSchema
-from task.result_task import ResultTask
-from enums.stackl_codes import StatusCode
-from enums.cast_type import CastType
-from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
-from task_broker.task_broker_factory import TaskBrokerFactory
-from model.items.stack_instance import StackInstanceSchema
-from model.configs.stack_infrastructure_template import StackInfrastructureTemplateSchema
 from model.configs.environment import EnvironmentSchema
+from model.configs.functional_requirement import FunctionalRequirementSchema
 from model.configs.location import LocationSchema
+from model.configs.stack_application_template import StackApplicationTemplateSchema
+from model.configs.stack_infrastructure_template import StackInfrastructureTemplateSchema
 from model.configs.zone import ZoneSchema
+from model.items.service import ServiceSchema
+from model.items.stack_instance import StackInstanceSchema
+from task.result_task import ResultTask
+from task_broker.task_broker_factory import TaskBrokerFactory
+from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 
 
 class DocumentManager(Manager):
@@ -24,32 +24,35 @@ class DocumentManager(Manager):
         super(DocumentManager, self).__init__(manager_factory)
         self.logger = Logger("DocumentManager")
         self.task_broker_factory = TaskBrokerFactory()
-        self.task_broker =self.task_broker_factory.get_task_broker()
+        self.task_broker = self.task_broker_factory.get_task_broker()
 
-    def handle_task(self, document_task): 
+    def handle_task(self, document_task):
         self.logger.log("[DocumentManager] handling subtasks of task_obj {0}".format(document_task))
         try:
             for subtask in document_task["subtasks"]:
                 self.logger.log("[DocumentManager] handling subtask '{0}'".format(subtask))
                 if subtask == "POST_DOCUMENT":
                     document = document_task["document"]
-                    status_code = self.write_document(document_name = document['name'], type = document['type'], file = document['payload'], description = document['description'])
+                    status_code = self.write_document(document_name=document['name'], type=document['type'],
+                                                      file=document['payload'], description=document['description'])
                 elif subtask == "PUT_DOCUMENT":
                     document = document_task["document"]
-                    status_code = self.write_document(document_name = document['name'], type = document['type'], file = document['payload'], description = document['description'])
+                    status_code = self.write_document(document_name=document['name'], type=document['type'],
+                                                      file=document['payload'], description=document['description'])
                 elif subtask == "DELETE_DOCUMENT":
                     document = document_task["document"]
-                    status_code = self.remove_document(document_name = document['name'], type = document['type'])
+                    status_code = self.remove_document(document_name=document['name'], type=document['type'])
 
                 if status_code not in {StatusCode.OK, StatusCode.CREATED}:
-                    raise Exception("[DocumentManager] Processing subtask failed. Status_code '{0}'".format(status_code))
+                    raise Exception(
+                        "[DocumentManager] Processing subtask failed. Status_code '{0}'".format(status_code))
             self.logger.log("[DocumentManager] Succesfully handled document task. Creating ResultTask.")
             self.task_broker.give_task(ResultTask({
-                    'channel': document_task['return_channel'],
-                    'result': "success",
-                    'cast_type': CastType.BROADCAST.value,
-                    'source_task': document_task
-            })) #this way the STACKL broker is notified of the result and wheter he should remove the task from the task queue
+                'channel': document_task['return_channel'],
+                'result': "success",
+                'cast_type': CastType.BROADCAST.value,
+                'source_task': document_task
+            }))  # this way the STACKL broker is notified of the result and wheter he should remove the task from the task queue
         except Exception as e:
             self.logger.error("[DocumentManager] Error with processing task. Error: '{0}'".format(e))
 
@@ -61,10 +64,11 @@ class DocumentManager(Manager):
             store_response = self.store.get(**keys)
             if store_response.status_code == StatusCode.NOT_FOUND:
                 return {}
-            else: 
-                return store_response.content 
+            else:
+                return store_response.content
         except Exception as e:
-            self.logger.error("[DocumentManager] Exception occured in get_document: {0}. Returning empty object".format(str(e)))
+            self.logger.error(
+                "[DocumentManager] Exception occured in get_document: {0}. Returning empty object".format(str(e)))
             return None
 
     def get_stack_instance(self, stack_instance_name):
@@ -73,7 +77,7 @@ class DocumentManager(Manager):
         schema = StackInstanceSchema()
         stack_instance = schema.load(store_response.content)
         return stack_instance
-    
+
     def write_stack_instance(self, stack_instance):
         """writes a StackInstance object to the store
         """
@@ -83,11 +87,12 @@ class DocumentManager(Manager):
 
     def get_stack_infrastructure_template(self, stack_infrastructure_template_name):
         """gets a StackInfrastructureTemplate Object from the store"""
-        store_response = self.store.get(type="stack_infrastructure_template", document_name=stack_infrastructure_template_name, category="configs")
+        store_response = self.store.get(type="stack_infrastructure_template",
+                                        document_name=stack_infrastructure_template_name, category="configs")
         schema = StackInfrastructureTemplateSchema()
         stack_infrastructure_template = schema.load(store_response.content)
         return stack_infrastructure_template
-    
+
     def write_stack_infrastructure_template(self, stack_infrastructure_template):
         """writes a StackInfrastructureTemplate object to the store
         """
@@ -116,7 +121,7 @@ class DocumentManager(Manager):
         schema = EnvironmentSchema()
         environment = schema.load(store_response.content)
         return environment
-    
+
     def write_environment(self, environment):
         """writes a StackInstance object to the store
         """
@@ -130,7 +135,7 @@ class DocumentManager(Manager):
         schema = LocationSchema()
         location = schema.load(store_response.content)
         return location
-    
+
     def write_location(self, location):
         """writes a Location object to the store
         """
@@ -144,7 +149,7 @@ class DocumentManager(Manager):
         schema = ZoneSchema()
         zone = schema.load(store_response.content)
         return zone
-    
+
     def write_zone(self, zone):
         """writes a Zone object to the store
         """
@@ -168,7 +173,8 @@ class DocumentManager(Manager):
 
     def get_functional_requirement(self, functional_requirement_name):
         """gets a FunctionalRequirement Object from the store"""
-        store_response = self.store.get(type="functional_requirement", document_name=functional_requirement_name, category="configs")
+        store_response = self.store.get(type="functional_requirement", document_name=functional_requirement_name,
+                                        category="configs")
         schema = FunctionalRequirementSchema()
         service = schema.load(store_response.content)
         return service
@@ -183,7 +189,7 @@ class DocumentManager(Manager):
     def write_document(self, **keys):
         self.logger.log("[DocumentManager] write_document.  Keys '{0}'".format(keys))
         keys = self._process_document_keys(keys)
-        
+
         document = keys.get("file")
         document['category'] = keys.get("category")
         document['type'] = keys.get("type")
@@ -194,9 +200,9 @@ class DocumentManager(Manager):
         store_response = self.store.get(**keys)
         prev_document = store_response.content
 
-
         if store_response.status_code == StatusCode.NOT_FOUND:
-            self.logger.log("[DocumentManager] No document found yet. Creating document with data: " + str(json.dumps(document)))
+            self.logger.log(
+                "[DocumentManager] No document found yet. Creating document with data: " + str(json.dumps(document)))
             store_response = self.store.put(document)
 
             return store_response.status_code
@@ -205,7 +211,7 @@ class DocumentManager(Manager):
             self.logger.log("[DocumentManager] Updating document with original contents: " + prev_document_string)
             doc_new_string = json.dumps(document)
             self.logger.log("[DocumentManager] Updating document with modified contents: " + doc_new_string)
-            if(prev_document_string == doc_new_string):
+            if (prev_document_string == doc_new_string):
                 self.logger.log("[DocumentManager] Original document and new document are the same! NOT updating")
             else:
                 store_response = self.store.put(document)
@@ -224,21 +230,22 @@ class DocumentManager(Manager):
             self.logger.log("[DocumentManager] Removing document with concent '{}' ".format(doc_org_string))
             keys['file'] = doc_obj
             store_response = self.store.delete(**keys)
-            self.logger.log("[DocumentManager] status: {0}. Reason: {1}".format(store_response.status_code,store_response.reason))
+            self.logger.log(
+                "[DocumentManager] status: {0}. Reason: {1}".format(store_response.status_code, store_response.reason))
             if store_response.status_code == 200:
                 self.logger.log("[DocumentManager] Document REMOVED.")
             else:
                 self.logger.log("[DocumentManager] Document was NOT removed.")
         return store_response.status_code
-    
+
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys
     def _process_document_keys(self, keys):
         # process to lowercase
-        keys = {k.lower() if isinstance(k, str) else k : v.lower() if isinstance(v, str) else v for k, v in keys.items()}
+        keys = {k.lower() if isinstance(k, str) else k: v.lower() if isinstance(v, str) else v for k, v in keys.items()}
 
         if not keys.get("category", None):
-            type_name = keys.get("type","none") 
+            type_name = keys.get("type", "none")
             if type_name in types_configs:
                 keys["category"] = "configs"
             elif type_name in types_items:

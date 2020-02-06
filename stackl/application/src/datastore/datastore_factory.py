@@ -1,9 +1,7 @@
-import sys
-
-
 from logger import Logger
-from utils.stackl_singleton import Singleton
 from utils.general_utils import get_config_key
+from utils.stackl_singleton import Singleton
+
 
 class DataStoreFactory(metaclass=Singleton):
 
@@ -12,7 +10,7 @@ class DataStoreFactory(metaclass=Singleton):
         self.logger = Logger("DataStoreFactory")
         self.logger.info("[DataStoreFactory] Creating config store with type: " + self.store_type)
         if self.store_type == "Redis":
-            pass 
+            pass
         elif self.store_type == "S3":
             pass
         elif self.store_type == "CouchDB":
@@ -21,7 +19,7 @@ class DataStoreFactory(metaclass=Singleton):
         elif self.store_type == "LFS" or type == "LocalFileSystemStore":
             from datastore.local_file_system_store import LocalFileSystemStore
             self.store = LocalFileSystemStore('/lfs_test_store/')
-        else: #assume LFS
+        else:  # assume LFS
             from datastore.local_file_system_store import LocalFileSystemStore
             self.store = LocalFileSystemStore('/lfs_test_store/')
 

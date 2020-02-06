@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-import sys
-
 
 class Handler(ABC):
 

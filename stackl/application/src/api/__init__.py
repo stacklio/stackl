@@ -1,8 +1,6 @@
-from flask_restplus import Api
 from flask import request
+from flask_restplus import Api
 from flask_restplus import Resource
-import sys
-
 
 from logger import Logger
 from task.request_task import RequestTask
@@ -10,19 +8,21 @@ from task.request_task import RequestTask
 logger = Logger("REST")
 
 api = Api(
-        version='2', 
-        title='STACKL API', 
-        description='Swagger UI for STACKL', 
-        default='types', 
-        default_label='Operations related to STACKL types'
+    version='2',
+    title='STACKL API',
+    description='Swagger UI for STACKL',
+    default='types',
+    default_label='Operations related to STACKL types'
 )
+
 
 class StacklApiResource(Resource):
 
-    def __init__(self, api = None, *args, **kwargs):
+    def __init__(self, api=None, *args, **kwargs):
         super(StacklApiResource, self).__init__(api, args, kwargs)
         logger.log("[StacklApiResource] API request received. Request environ: {0}".format(request.environ))
         self.request_task = RequestTask(request.environ)
+
 
 # Ordering is important: internal dependencies are imported last
 from api.document_api import api as document_api

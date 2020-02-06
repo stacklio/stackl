@@ -1,5 +1,6 @@
-import sys
 from abc import ABC, abstractmethod
+
+
 class AgentBroker(ABC):
 
     def __init__(self):
@@ -13,7 +14,7 @@ class AgentBroker(ABC):
     def get_agent_for_task(self, task):
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def send_to_agent(self, agent_connect_info, obj):
         pass
 

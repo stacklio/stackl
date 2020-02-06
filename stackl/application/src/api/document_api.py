@@ -1,19 +1,16 @@
 from flask import request
 from flask_restplus import Namespace, fields, reqparse
 
-import sys
-
-
 from api import StacklApiResource, logger
-from manager.manager_factory import ManagerFactory
-from task_broker.task_broker_factory import TaskBrokerFactory
-from task.document_task import DocumentTask
 from enums.stackl_codes import StatusCode
-from globals import types, types_configs, types_items
+from globals import types
+from manager.manager_factory import ManagerFactory
+from task.document_task import DocumentTask
+from task_broker.task_broker_factory import TaskBrokerFactory
+from utils.general_utils import generate_random_string
 from utils.stackl_exceptions import InvalidDocTypeError
-from utils.general_utils import    generate_random_string
 
-api = Namespace("documents", description = "Operations related to STACKL Documents")
+api = Namespace("documents", description="Operations related to STACKL Documents")
 
 document_manager = ManagerFactory().get_document_manager()
 task_broker = TaskBrokerFactory().get_task_broker()
@@ -21,8 +18,10 @@ task_broker = TaskBrokerFactory().get_task_broker()
 document_field = api.model("Document", {
     "name": fields.String(required=True, description="Name of the new document", example="optional_name"),
     "type": fields.String(required=True, description="The type of the document", example="environment"),
-    'description': fields.String(required=False, description="Description of the new document", example="A new test document")
+    'description': fields.String(required=False, description="Description of the new document",
+                                 example="A new test document")
 })
+
 
 @api.route('', strict_slashes=False)
 class DocumentTypesOverview(StacklApiResource):
@@ -40,11 +39,12 @@ class DocumentTypesOverview(StacklApiResource):
 
         document_name = json_data['name']
         if not document_name == "optional_name":
-            #check if doc already exists
+            # check if doc already exists
             try:
                 document = document_manager.get_document(type=type_name, document_name=document_name)
                 if document:
-                    return {'return_code': StatusCode.CONFLICT, 'message': "A document with this name for POST already exists"}, StatusCode.CONFLICT
+                    return {'return_code': StatusCode.CONFLICT,
+                            'message': "A document with this name for POST already exists"}, StatusCode.CONFLICT
             except InvalidDocTypeError as e:
                 return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST
         else:
@@ -54,7 +54,7 @@ class DocumentTypesOverview(StacklApiResource):
 
         if 'description' not in json_data:
             document['description'] = 'type ' + \
-                type_name + ' with name ' + json_data['name']
+                                      type_name + ' with name ' + json_data['name']
         else:
             document['description'] = json_data['description']
 
@@ -74,9 +74,9 @@ class DocumentByType(StacklApiResource):
         """Returns all documents with a specific type"""
         logger.log("[DocumentsByType GET] Receiver GET request with data: " + type_name)
         try:
-            documents = document_manager.get_document(type = type_name)
+            documents = document_manager.get_document(type=type_name)
         except InvalidDocTypeError as e:
-            return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST            
+            return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST
 
         logger.log("[DocumentsByType GET] document(s): " + str(documents))
         if documents:
@@ -85,23 +85,24 @@ class DocumentByType(StacklApiResource):
             return {"result": [documents]}
         return {"result": []}
 
-@api.route('/<type_name>/<document_name>',strict_slashes=False)
+
+@api.route('/<type_name>/<document_name>', strict_slashes=False)
 class DocumentByTypeAndName(StacklApiResource):
     def get(self, type_name, document_name):
         """Returns a specific document with a type and name"""
-        logger.log("[DocumentByTypeAndName GET] Receiver GET request with data: " + type_name + " - " +  document_name)
+        logger.log("[DocumentByTypeAndName GET] Receiver GET request with data: " + type_name + " - " + document_name)
         parser = reqparse.RequestParser()
         parser.add_argument('key', help='Get value for a specific key')
         args = parser.parse_args()
         try:
-            document = document_manager.get_document(type = type_name, document_name = document_name)
+            document = document_manager.get_document(type=type_name, document_name=document_name)
         except InvalidDocTypeError as e:
-            return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST            
+            return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST
 
-        #Find values if key is passed
-        if args['key']:  
+            # Find values if key is passed
+        if args['key']:
             key = args['key']
-            #check to strip the quotes if passed by the user
+            # check to strip the quotes if passed by the user
             if key.startswith('"') and key.endswith('"'):
                 key = key[1:-1]
             if key in document:
@@ -114,12 +115,11 @@ class DocumentByTypeAndName(StacklApiResource):
             else:
                 return {}
 
-
     @api.response(StatusCode.CREATED, 'Updated')
     @api.expect(document_field, validate=True)
     def put(self, type_name, document_name):
         """Updates (or creates) a document with the given type and name"""
-        logger.log("[DocumentByTypeAndName PUT] Receiver PUT request with data: "+ type_name)
+        logger.log("[DocumentByTypeAndName PUT] Receiver PUT request with data: " + type_name)
         json_data = request.get_json()
 
         document = {}
@@ -129,15 +129,15 @@ class DocumentByTypeAndName(StacklApiResource):
 
         if 'description' not in json_data:
             document['description'] = 'type ' + \
-                type_name + ' with name ' + json_data['name']
+                                      type_name + ' with name ' + json_data['name']
         else:
             document['description'] = json_data['description']
 
         task = DocumentTask({
-                'channel': 'worker',
-                'return_channel': 'rest',
-                'document': document,
-                'subtasks': ["PUT_DOCUMENT"]
+            'channel': 'worker',
+            'return_channel': 'rest',
+            'document': document,
+            'subtasks': ["PUT_DOCUMENT"]
         })
         logger.log("[TypeWithName PUT] Giving Document Task '{0}' to task_broker".format(task))
         task_broker.give_task(task)
@@ -146,8 +146,9 @@ class DocumentByTypeAndName(StacklApiResource):
     @api.response(StatusCode.OK, 'Deleted')
     def delete(self, type_name, document_name):
         """Deletes a specific document with a type and name"""
-        logger.log("[DocumentByTypeAndName DELETE] Receiver DELETE request with data: " + type_name + " - " +  document_name)
-        document = document_manager.get_document(type = type_name, document_name = document_name)
+        logger.log(
+            "[DocumentByTypeAndName DELETE] Receiver DELETE request with data: " + type_name + " - " + document_name)
+        document = document_manager.get_document(type=type_name, document_name=document_name)
         if document:
             task = DocumentTask({
                 'channel': 'worker',
@@ -156,6 +157,8 @@ class DocumentByTypeAndName(StacklApiResource):
                 'subtasks': ["DELETE_DOCUMENT"]
             })
             task_broker.give_task(task)
-            return {'return_code': StatusCode.OK, 'message': 'Document removed successfully!'},StatusCode.OK
+            return {'return_code': StatusCode.OK, 'message': 'Document removed successfully!'}, StatusCode.OK
         else:
-            return {'return_code': StatusCode.NOT_FOUND, 'message': 'Document with type_name ' + str(type_name)+ ' and document_name '+ str(document_name) + ' was not found'}, StatusCode.NOT_FOUND
+            return {'return_code': StatusCode.NOT_FOUND,
+                    'message': 'Document with type_name ' + str(type_name) + ' and document_name ' + str(
+                        document_name) + ' was not found'}, StatusCode.NOT_FOUND

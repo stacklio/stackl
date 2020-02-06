@@ -1,22 +1,20 @@
-import sys
-
-
-from task import Task
 from manager.manager_factory import ManagerFactory
+from task import Task
+
 
 class RequestTask(Task):
     @property
     def valid_subtasks(self):
-        return [ 
-        "REQUEST"
-        ] 
+        return [
+            "REQUEST"
+        ]
 
     def __init__(self, request_environment, task_data={}):
         self.request_environment = request_environment
-        #Needs to happen after certification details because the request environment needs to be set
+        # Needs to happen after certification details because the request environment needs to be set
         super(RequestTask, self).__init__(task_data)
 
-    def _load_json_object(self,json_obj):
+    def _load_json_object(self, json_obj):
         super()._load_json_object(json_obj)
         self.topic = 'request'
         self.certification_details = self._get_certification_details()
@@ -25,9 +23,9 @@ class RequestTask(Task):
     def _get_certification_details(self):
         CLIENT_VERIFY = self.request_environment.get('CLIENT_VERIFY', None)
         CLIENT_FINGERPRINT = self.request_environment.get('CLIENT_FINGERPRINT', None)
-        CLIENT_CERT =self.request_environment.get('CLIENT_CERT', None)
+        CLIENT_CERT = self.request_environment.get('CLIENT_CERT', None)
         CLIENT_SERIAL = self.request_environment.get('CLIENT_SERIAL', None)
-        CLIENT_CLIENTCERT = self.request_environment.get('CLIENT_CLIENTCERT',None)
+        CLIENT_CLIENTCERT = self.request_environment.get('CLIENT_CLIENTCERT', None)
 
         user_certificate_details = {}
         user_certificate_details['user_verify'] = CLIENT_VERIFY

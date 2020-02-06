@@ -1,10 +1,11 @@
-import sys
+import json
 import json
 import os
 
-from logger import Logger
 from datastore import DataStore
 from enums.stackl_codes import StatusCode
+from logger import Logger
+
 
 class LocalFileSystemStore(DataStore):
 
@@ -16,7 +17,7 @@ class LocalFileSystemStore(DataStore):
     @property
     def datastore_url(self):
         return self.file_system_root
-        
+
     def get(self, **keys):
         get_all = False
 
@@ -24,10 +25,11 @@ class LocalFileSystemStore(DataStore):
             if keys.get("type") in keys.get("document_name"):
                 document_key = self.datastore_url + keys.get("category") + '/' + keys.get("document_name") + ".json"
             else:
-                document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get("document_name") + ".json"
+                document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get(
+                    "document_name") + ".json"
             if not os.path.exists(document_key):
                 return self._create_store_response(status_code=StatusCode.NOT_FOUND, content="File is not found")
-        else: #This means we need to get all the documents of the type
+        else:  # This means we need to get all the documents of the type
             get_all = True
             document_key = self.datastore_url + keys.get("category") + '/'
 
@@ -38,18 +40,23 @@ class LocalFileSystemStore(DataStore):
             if get_all:
                 for dirpath, _, filenames in os.walk(document_key):
                     for file in filenames:
-                        self.logger.log("[LocalFileSystemStore] get_all. Looking at file '{0}' for type {1}".format(file, keys.get("type")))
+                        self.logger.log(
+                            "[LocalFileSystemStore] get_all. Looking at file '{0}' for type {1}".format(file, keys.get(
+                                "type")))
                         if file.startswith(keys.get("type")):
                             with open(dirpath + file) as file_to_get:
                                 content.append(json.load(file_to_get))
-                            self.logger.log("[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{0}'".format(len(content)))
+                            self.logger.log(
+                                "[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{0}'".format(
+                                    len(content)))
                 response = self._create_store_response(status_code=StatusCode.OK, content=content)
             else:
                 with open(document_key) as file_to_get:
                     content = json.load(file_to_get)
                 response = self._create_store_response(status_code=StatusCode.OK, content=content)
         except Exception as e:
-            response = self._create_store_response(status_code=StatusCode.INTERNAL_ERROR, content = "Error getting file. Error '{}'".format(e))
+            response = self._create_store_response(status_code=StatusCode.INTERNAL_ERROR,
+                                                   content="Error getting file. Error '{}'".format(e))
         self.logger.log("[LocalFileSystemStore] StoreResponse for get: " + str(response))
         return response
 
@@ -57,15 +64,16 @@ class LocalFileSystemStore(DataStore):
         if file.get("type") in file.get("name"):
             document_key = self.datastore_url + file.get("category") + '/' + file.get("name") + ".json"
         else:
-            document_key = self.datastore_url + file.get("category") + '/' + file.get("type") + '_' + file["name"] + ".json"
+            document_key = self.datastore_url + file.get("category") + '/' + file.get("type") + '_' + file[
+                "name"] + ".json"
 
         self.logger.log("[LocalFileSystemStore] put on '{0}' with file {1}".format(document_key, str(file)))
- 
+
         with open(document_key, 'w+') as outfile:
             json.dump(file, outfile, sort_keys=True, indent=4, separators=(',', ': '))
 
-        with open(document_key,'r') as storedfile:
-            response = self._create_store_response(status_code=StatusCode.CREATED, content = json.load(storedfile))
+        with open(document_key, 'r') as storedfile:
+            response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
 
         self.logger.log("[LocalFileSystemStore] StoreResponse for put: " + str(response))
         return response
@@ -74,8 +82,9 @@ class LocalFileSystemStore(DataStore):
         if keys.get("type") in keys.get("document_name"):
             document_key = self.datastore_url + keys.get("category") + '/' + keys.get("document_name") + ".json"
         else:
-            document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get("document_name") + ".json"
-            
+            document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get(
+                "document_name") + ".json"
+
         self.logger.log("[LocalFileSystemStore] delete on '{0}'".format(document_key))
         if os.path.isfile(document_key):
             os.remove(document_key)
@@ -92,4 +101,4 @@ class LocalFileSystemStore(DataStore):
         return response
 
     def _check_datastore_exists(self, datastore):
-        pass 
+        pass

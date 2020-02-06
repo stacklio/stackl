@@ -1,9 +1,7 @@
-from abc import ABC, abstractmethod
-
-import sys
-
+from abc import ABC
 
 from datastore.datastore_factory import DataStoreFactory
+
 
 class Manager(ABC):
 

@@ -1,13 +1,8 @@
-import sys
-import threading
-
-from task_broker.task_broker_factory import TaskBrokerFactory
-from task.result_task import ResultTask
-from task.ping_task import PingTask
-from task.query_task import QueryTask
+from enums.cast_type import CastType
 from handler import Handler
 from logger import Logger
-from enums.cast_type import CastType
+from task.result_task import ResultTask
+from task_broker.task_broker_factory import TaskBrokerFactory
 
 
 class TaskHandler(Handler):
@@ -17,13 +12,14 @@ class TaskHandler(Handler):
         self.logger = Logger("TaskHandler")
         self.call_object = call_object
         self.stackl_type = stackl_type
-        self.logger.info("[TaskHandler] Created with stackl_type '{0}' and call_object '{1}'".format(stackl_type, call_object))
+        self.logger.info(
+            "[TaskHandler] Created with stackl_type '{0}' and call_object '{1}'".format(stackl_type, call_object))
         self.task_broker_factory = TaskBrokerFactory()
         self.task_broker = self.task_broker_factory.get_task_broker()
 
     def handle(self, task):
         result = None
-        if task.topic == 'query': #TODO Future potential task
+        if task.topic == 'query':  # TODO Future potential task
             if task.get_attribute('function'):
                 result = getattr(self.call_object, task.get_attribute('function'))(*task.get_attribute('args'))
             else:

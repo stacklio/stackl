@@ -1,15 +1,13 @@
 import json
-import sys
-
-from logger import Logger
 
 from enums.task_topic import TaskTopic
 
-class TaskFactory:        
+
+class TaskFactory:
 
     @staticmethod
     def create_task(task_data):
-        if type(task_data) == bytes or type(task_data) == str: #changed from python2 to python3, str are now bytes
+        if type(task_data) == bytes or type(task_data) == str:  # changed from python2 to python3, str are now bytes
             task_data = json.loads(task_data)
         elif type(task_data) != dict:
             raise Exception("[TaskFactory] task_data must be string or dict")

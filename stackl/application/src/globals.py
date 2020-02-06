@@ -4,9 +4,11 @@ stackl.globals
 This module provides global constants and values that should persist across api calls and stackl modules
 """
 
-import redis
 import json
 import time
+
+import redis
+
 from utils.general_utils import get_config_key
 
 types_categories = ["configs","items"]

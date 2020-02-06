@@ -1,29 +1,25 @@
-from flask import Flask, jsonify, request, Blueprint, render_template, send_file
-import traceback
-import datetime
-import _strptime
-from flask_restplus import Namespace, Resource, fields, reqparse
+from flask import request
+from flask_restplus import Namespace, fields
 
-import sys
-
-
-from manager.manager_factory import ManagerFactory
-from enums.stackl_codes import StatusCode
 from api import StacklApiResource, logger
-
+from enums.stackl_codes import StatusCode
+from manager.manager_factory import ManagerFactory
 
 api = Namespace('users', description='Operations related to STACKL Users')
 
 user_manager = ManagerFactory().get_user_manager()
 
 users_field = api.model('Users', {
-                    'role': fields.String(required=True, description='Role of the user (user, automation-endpoint or agent)', example="user"),
-                    'description': fields.String(required=True, description='Description of the new user', example="Key of <<user>>"),
-                    'serial': fields.String(required=True, description='Serial of the user certificate', example="00"),
-                    'fingerprint': fields.String(required=False, description='Fingerprint of the user certificate', example="0000000000000")
+    'role': fields.String(required=True, description='Role of the user (user, automation-endpoint or agent)',
+                          example="user"),
+    'description': fields.String(required=True, description='Description of the new user', example="Key of <<user>>"),
+    'serial': fields.String(required=True, description='Serial of the user certificate', example="00"),
+    'fingerprint': fields.String(required=False, description='Fingerprint of the user certificate',
+                                 example="0000000000000")
 })
 
-@api.route('',strict_slashes=False)
+
+@api.route('', strict_slashes=False)
 class Users(StacklApiResource):
     def get(self):
         """Returns all users"""
@@ -35,7 +31,7 @@ class Users(StacklApiResource):
     def post(self):
         """Creates a new user"""
         logger.log("[Users POST] Received POST request for user")
-        #extract post data from request
+        # extract post data from request
         json_data = request.get_json()
         logger.log("[Users POST] User json_data: {}".format(json_data))
         try:
@@ -44,7 +40,8 @@ class Users(StacklApiResource):
         except Exception as e:
             return {'return_code': StatusCode.CONFLICT, 'message': 'Error: {}'.format(e)}, StatusCode.CONFLICT
 
-@api.route('/<serial>',strict_slashes=False)
+
+@api.route('/<serial>', strict_slashes=False)
 class UsersSpecific(StacklApiResource):
     def get(self, serial):
         """Returns a user with a specific serial"""

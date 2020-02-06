@@ -1,8 +1,8 @@
 import logging
-from logging import handlers
-import traceback
 import os
-import sys
+import traceback
+from logging import handlers
+
 
 class Logger:
     def __init__(self, name):
