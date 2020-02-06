@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "stackl.redis" . }}"
+  labels:
+    {{ include "stackl.labels" . | nindent 4 }}
+    component: redis
+spec:
+  replicas: {{ .Values.stacklredis.replicas }}
+  selector:
+    matchLabels:
+      {{- include "stackl.selectorLabels" . | nindent 6 }}
+      component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "stackl.selectorLabels" . | nindent 8 }}
+        component: redis
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: stackl-redis
+          image: "{{ .Values.stacklredis.image }}"
+          resources:
+            requests:
+              memory: 64Mi
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["redis-server"]
+          args: ["/usr/local/etc/redis/redis.conf"]
+          volumeMounts:
+          - name: redis-config
+            mountPath: /usr/local/etc/redis
+      volumes:
+        - name: redis-config
+          configMap:
+            name: "{{ template "stackl.redis" . }}"

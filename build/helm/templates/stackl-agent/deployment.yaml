@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  "{{ template "stackl.agent" . }}"
+  labels:
+    {{ include "stackl.labels" . | nindent 4 }}
+    component: agent
+spec:
+  replicas: {{ .Values.stacklagent.replicas }}
+  selector:
+    matchLabels:
+      {{- include "stackl.selectorLabels" . | nindent 6 }}
+      component: agent
+  template:
+    metadata:
+      labels:
+        {{- include "stackl.selectorLabels" . | nindent 8 }}
+        component: agent
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccount: stackl-agent
+      containers:
+        - name: stackl-agent
+          image: "{{ .Values.stacklagent.image }}"
+          resources:
+            requests:
+              memory: 64Mi
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: "stackl_host"
+              value: "{{ template "stackl.rest" . }}:8080"
+            - name: "stackl_namespace"
+              value: "{{ .Release.Namespace }}"
+            - name: "PYTHONUNBUFFERED"
+              value: "TRUE"

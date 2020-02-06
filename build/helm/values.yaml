@@ -1,0 +1,45 @@
+image:
+  pullPolicy: Always
+
+datastore:
+  type: LFS
+
+task_broker:
+  type: Custom
+
+message_channel:
+  type: RedisSingle
+
+agent_broker:
+  type: grpc
+
+stacklrest:
+  image: nexus-dockerint.dome.dev/stackl/stackl-rest
+  name: stackl-rest
+  hostname: stackl.local
+  replicaCount: 1
+
+stacklworker:
+  image: nexus-dockerint.dome.dev/stackl/stackl-worker
+  name: stackl-worker
+  replicaCount: 1
+
+stacklredis:
+  image: redis:5.0.5
+  name: stackl-redis
+  replicaCount: 1
+
+stacklagent:
+  image: nexus-dockerint.dome.dev/stackl/stackl-agent
+  name: stackl-agent
+  replicaCount: 1
+  
+imagePullSecrets: [name: dome-nexus]
+nameOverride: ""
+fullnameOverride: ""
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
