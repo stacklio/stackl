@@ -3,6 +3,7 @@ http:
 
 datastore:
   type: LFS
+  # Change this to the absolute path where your Stackl config and items are located
   lfs_volume: /example_database/
 
 task_broker:

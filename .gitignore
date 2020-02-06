@@ -3,3 +3,5 @@
 .vscode
 .idea
 *~
+build/make/stackl.yml
+build/make/dev
