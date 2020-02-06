@@ -15,12 +15,13 @@ from utils.general_utils import    generate_random_string
 
 api = Namespace("documents", description = "Operations related to STACKL Documents")
 
-document_manager = ManagerFactory().get_document_manager ()
+document_manager = ManagerFactory().get_document_manager()
 task_broker = TaskBrokerFactory().get_task_broker()
 
 document_field = api.model("Document", {
-    "name": fields.String(required = False, description = "Name of the new document", example = "optional_name"),
-    'description': fields.String(required = False, description = "Description of the new document", example = "A new test document")
+    "name": fields.String(required=True, description="Name of the new document", example="optional_name"),
+    "type": fields.String(required=True, description="The type of the document", example="environment"),
+    'description': fields.String(required=False, description="Description of the new document", example="A new test document")
 })
 
 @api.route('', strict_slashes=False)
@@ -28,6 +29,44 @@ class DocumentTypesOverview(StacklApiResource):
     def get(self):
         """Returns all valid types for documents"""
         return types
+
+    @api.response(StatusCode.CREATED, 'Created')
+    @api.expect(document_field, validate=True)
+    def post(self):
+        """Create the document with a specific type and an optional name given in the payload"""
+        logger.log("[DocumentByTypeAndName POST] Receiver POST request")
+        json_data = request.get_json()
+        type_name = json_data["type"]
+
+        document_name = json_data['name']
+        if not document_name == "optional_name":
+            #check if doc already exists
+            try:
+                document = document_manager.get_document(type=type_name, document_name=document_name)
+                if document:
+                    return {'return_code': StatusCode.CONFLICT, 'message': "A document with this name for POST already exists"}, StatusCode.CONFLICT
+            except InvalidDocTypeError as e:
+                return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST
+        else:
+            document_name = type_name + "_" + generate_random_string()
+
+        document = {'payload': json_data, 'type': type_name, 'name': document_name}
+
+        if 'description' not in json_data:
+            document['description'] = 'type ' + \
+                type_name + ' with name ' + json_data['name']
+        else:
+            document['description'] = json_data['description']
+
+        task = DocumentTask({
+            'channel': 'worker',
+            'document': document,
+            'subtasks': ["POST_DOCUMENT"]
+        })
+        logger.log("[DocumentByTypeAndName POST] Giving Document Task '{0}' to task_broker".format(task))
+        task_broker.give_task(task)
+        return {'return_code': StatusCode.CREATED, 'message': 'Created'}, StatusCode.CREATED
+
 
 @api.route('/<type_name>', strict_slashes=False)
 class DocumentByType(StacklApiResource):
@@ -45,44 +84,6 @@ class DocumentByType(StacklApiResource):
                 return {"result": documents}
             return {"result": [documents]}
         return {"result": []}
-
-    @api.response(StatusCode.CREATED, 'Created')
-    @api.expect(document_field, validate=True)
-    def post(self, type_name):
-        """Create the document with a specific type and an optional name given in the payload"""
-        logger.log("[DocumentByTypeAndName POST] Receiver POST request with data: " + type_name)
-        json_data = request.get_json()
-        document_name = json_data['name']
-        if not document_name == "optional_name":
-            #check if doc already exists
-            try:
-                document = document_manager.get_document(type=type_name, document_name=document_name)
-                if document:
-                    return {'return_code': StatusCode.CONFLICT, 'message': "A document with this name for POST already exists"}, StatusCode.CONFLICT
-            except InvalidDocTypeError as e:
-                return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST
-        else:
-            document_name = type_name + "_" + generate_random_string()
-
-        document = {}
-        document['payload'] = json_data
-        document['type'] = type_name
-        document['name'] = document_name
-
-        if 'description' not in json_data:
-            document['description'] = 'type ' + \
-                type_name + ' with name ' + json_data['name']
-        else:
-            document['description'] = json_data['description']
-
-        task = DocumentTask({
-            'channel': 'worker',
-            'document': document,
-            'subtasks': ["POST_DOCUMENT"]
-        })
-        logger.log("[DocumentByTypeAndName POST] Giving Document Task '{0}' to task_broker".format(task))
-        task_broker.give_task(task)
-        return {'return_code': StatusCode.CREATED, 'message': 'Created'}, StatusCode.CREATED
 
 @api.route('/<type_name>/<document_name>',strict_slashes=False)
 class DocumentByTypeAndName(StacklApiResource):
