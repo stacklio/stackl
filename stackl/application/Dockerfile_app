@@ -1,4 +1,3 @@
-#Example of a comment
 FROM tiangolo/uwsgi-nginx-flask:python3.6
 RUN pip3 install flask_restplus flask_moment flask_bootstrap marshmallow marshmallow_enum redis flask-cors requests tornado websockets grpcio protobuf && \
     mkdir /etc/stackl_src 
