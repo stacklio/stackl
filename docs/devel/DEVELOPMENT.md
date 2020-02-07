@@ -26,11 +26,7 @@ cp stackl.yml.tpl stackl.yml
 vim stackl.yml
 ```
 
-Also execute
-```
-cd build/make/prepare
-docker build -t stackl/prepare:dev .
-```
+Make a copy of the example_database in build/example database. Use the path of this copy in stackl.yml
 
 ## Build and run
 
@@ -52,9 +48,19 @@ If everything worked fine, you should be able to access the rest-api at
 
 | Target        | Description                                                       |
 | :------------ | :---------------------------------------------------------------- |
-| build_core    | Builds the Stackl core image                                      |
-| build_worker | Builds the Stackl worker image                                    |
-| build_agent   | Builds the Stackl agent image                                     |
+| build_prepare    | Builds the Stackl prepare image                                |
+| build_rest    | Builds the Stackl rest image                                      |
+| build_worker | Builds the Stackl worker                                           |
+| build_websocket_agent   | Builds the Stackl websocket agent image                 |
+| build_kubernetes_agent   | Builds the Stackl kubernetes agent image               |
+| build_docker_agent   | Builds the Stackl docker agent image                       |
+| push_rest    | Push the Stackl rest image                                         |
+| push_worker | Push the Stackl worker                                              |
+| push_prepare   | Push the Stackl prepare image                                    |
+| push_kubernetes_agent   | Push the Stackl kubernetes agent image                  |
+| push_docker_agent   | Push the Stackl docker agent image                          |
 | prepare       | Create the docker-compose file                                    |
 | start         | Start Stackl with the docker-compose file in make/dev             |
+| build         | Build all images                                                  |
+| push          | Push all images to repository                                     |
 | install       | Build all images, template the docker compose file and run Stackl |

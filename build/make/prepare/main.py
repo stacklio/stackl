@@ -2,6 +2,7 @@ import click
 import yaml
 from jinja2 import Environment, FileSystemLoader
 
+
 def render_jinja(src, dest, **kw):
     jinja_env = Environment(loader=FileSystemLoader('/templates'), trim_blocks=True, lstrip_blocks=True)
     t = jinja_env.get_template(src)
@@ -9,11 +10,12 @@ def render_jinja(src, dest, **kw):
         f.write(t.render(**kw))
     print("Generated configuration file: %s" % dest)
 
+
 def parse_yaml_config(config_file_path):
     config_dict = {}
     with open(config_file_path) as f:
         configs = yaml.load(f, Loader=yaml.FullLoader)
-    
+
     http_config = configs.get('http') or {}
     config_dict['http_port'] = http_config.get('port', 80)
 
@@ -33,11 +35,13 @@ def parse_yaml_config(config_file_path):
 
     return config_dict
 
+
 @click.command()
 @click.option('--conf', help="the path of the stackl configuration file")
 def main(conf):
     config_dict = parse_yaml_config(conf)
     render_jinja('docker-compose.yml.j2', '/output/docker-compose.yml', **config_dict)
+
 
 if __name__ == '__main__':
     main()

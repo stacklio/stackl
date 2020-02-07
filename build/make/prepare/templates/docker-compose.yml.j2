@@ -9,7 +9,7 @@ networks:
 services:
   stackl-rest:
     restart: always
-    image: stackl_app
+    image: stacklio/stackl-rest:dev
     container_name: stackl_app
     networks:
       - stackl_bridge
@@ -40,7 +40,7 @@ services:
       - LOGLEVEL=DEBUG
   stackl-worker:
     restart: always
-    image: stackl_worker
+    image: stacklio/stackl-worker:dev
     networks:
       - stackl_bridge
     stdin_open: true
@@ -77,11 +77,11 @@ services:
   stackl-agent:
     restart: always
 {% if agent_broker_type == 'Local' %}
-    image: local_agent
+    image: stacklio/stackl-docker-agent:dev
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 {% else %}
-    image: grpc_agent
+    image: stacklio/stackl-kubernetes-agent:dev
 {% endif %}
     networks:
       - stackl_bridge
