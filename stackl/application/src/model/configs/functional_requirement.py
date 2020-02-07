@@ -19,10 +19,11 @@ class InvocationSchema(Schema):
 
 
 class FunctionalRequirement:
-    def __init__(self, name="", description="", type="functional_requirement", invocation={}, params={}):
+    def __init__(self, name="", description="", type="functional_requirement", category="configs",invocation={}, params={}):
         self.name = name
         self.description = description
         self.type = type
+        self.category = category
         self.invocation = invocation
         self.params = params
 
@@ -31,6 +32,7 @@ class FunctionalRequirementSchema(Schema):
     name = fields.String()
     description = fields.String()
     type = fields.String()
+    category = fields.String()
     invocation = fields.Nested(InvocationSchema)
     params = fields.Dict(keys=fields.String(), values=fields.Raw())
 

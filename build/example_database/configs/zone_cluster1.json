@@ -1,0 +1,15 @@
+{
+  "description": "Our First Cluster",
+  "type": "zone",
+  "name": "cluster1",
+  "params": {
+    "cluster": "CL01",
+    "CPU": "4GHz",
+    "RAM": "4GB",
+    "config": [
+      "linux",
+      "nginx"
+    ],
+    "network": "portgroup"
+  }
+}

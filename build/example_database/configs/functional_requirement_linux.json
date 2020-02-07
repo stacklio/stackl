@@ -1,23 +1,15 @@
 {
-    "name": "linux",
-    "type": "operating_system",
+    "category": "configs",
+    "description": "type functional_requirement with name linux",
     "invocation": {
-        "image": "terraform:light",
-        "description": "installs centos"
+        "description": "Deploys a Linux VM",
+        "image": "nexus-dockerint.dome.dev/stackl/terraform-vm",
+        "tool": "terraform"
     },
-    "input": {
-        "hostname": {
-            "type": "string",
-            "required": true
-        }
-    },
-    "output": {
-        "hostname": {
-            "type": "string"
-        }
-    },
+    "name": "linux",
     "params": {
         "aws_ami": "ami-12345",
-        "vmw_image": "templates/centos"
-    }
+        "vmw_image": "stackl-centos-template"
+    },
+    "type": "functional_requirement"
 }

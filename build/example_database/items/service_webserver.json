@@ -1,9 +1,0 @@
-{
-    "name": "webserver",
-    "type": "virtual_machine",
-    "functional_requirements": ["linux", "nginx"],
-    "non_functional_requirements": {
-        "CPU": "1GHz",
-        "RAM": "2GB"
-    }
-}

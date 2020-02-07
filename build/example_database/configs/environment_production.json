@@ -1,0 +1,11 @@
+{
+  "description": "Production environment",
+  "type": "environment",
+  "name": "production",
+  "params": {
+    "hostname": "vsphere.local",
+    "username": "administrator@vsphere.local",
+    "password": "PASSWORD",
+    "datastore": "vsanDatastore"
+  }
+}

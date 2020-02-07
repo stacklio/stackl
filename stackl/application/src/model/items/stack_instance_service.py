@@ -11,7 +11,7 @@ class StackInstanceService:
 
 class StackInstanceServiceSchema(Schema):
     infrastructure_target = fields.String()
-    provisioning_parameters = fields.Dict(keys=fields.String(), values=fields.String())
+    provisioning_parameters = fields.Dict(keys=fields.String(), values=fields.Raw())
     status = fields.List(fields.Nested(FunctionalRequirementStatusSchema))
 
     @post_load

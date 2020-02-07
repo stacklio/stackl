@@ -1,6 +1,6 @@
 {
-    "name": "example_web",
+    "name": "virtual_machine",
     "type": "stack_application_template",
-    "services": ["webserver"],
+    "services": ["virtual_machine"],
     "extra_functional_requirements": {}
 }
