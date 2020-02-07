@@ -3,7 +3,7 @@
     "description": "type functional_requirement with name linux",
     "invocation": {
         "description": "Deploys a Linux VM",
-        "image": "nexus-dockerint.dome.dev/stackl/terraform-vm",
+        "image": "stacklio/terraform-vm",
         "tool": "terraform"
     },
     "name": "linux",
