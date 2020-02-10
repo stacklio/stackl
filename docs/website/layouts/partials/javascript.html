@@ -8,12 +8,12 @@
 
 {{ if $isDocsPage }}
 {{ $version := index (split .File.Path "/") 1 }}
-{{ $apiKey  := (getenv "ALGOLIA_APP_ID") }}
+{{ $apiKey  := (getenv "ALGOLIA_API_KEY") }}
 <script>
   console.log("You are reading the docs for version {{ $version }} of STACKL");
   docsearch({
     apiKey: '{{ $apiKey }}',
-    indexName: 'stacklDocs',
+    indexName: 'stackl',
     inputSelector: '#search-bar',
     algoliaOptions: { 'facetFilters': ["version:{{ $version }}"] },
     debug: true
