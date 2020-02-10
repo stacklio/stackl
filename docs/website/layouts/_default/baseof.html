@@ -8,9 +8,11 @@
   <!DOCTYPE html>
   <html lang="{{ site.LanguageCode }}">
     <head>
-      {{ partial "google-analytics.html" . }}
+      {{ if eq (getenv "HUGO_ENV") "production" | or (eq .Site.Params.env "production")  }}
+        {{ partial "google-analytics.html" . }}
+        {{ partial "head.cookie.iubenda.html" . }}
+      {{ end }}
       {{ partial "meta.html" . }}
-
       <title>
         {{ block "title" . }}{{ site.Title }}{{ end }}
       </title>
