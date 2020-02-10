@@ -7,8 +7,6 @@ STACKL supports the autonomous configuration, coordination, and management of ap
 * decoupling configuration data, automation strategy, and deployment targets thereby simplifying the automated infrastructure management for code and configuration tooling
 * providing pluggable modules for backend systems, such as processing and data storage, to support different scalability and performance requirements and enable users to choose their prefered tools
 In essence, it allows to Model, Describe, and Automate your application orchestration workflow. Users are saved from  manual work each time they want to deploy their projects by automating and simplifying IT infrastructure selection, application specification, and choosing suitable orchestration tools. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL then transparantly and autonomously uses this information to correctly and efficiently orchestrate and automate applications in the available IT environment across their lifetime and managing dynamic changes.
-<!-- **Features**
-Visuals (Tools like [ttygif](https://github.com/icholy/ttygif) can help, but check out [Asciinema](https://asciinema.org/) for a more sophisticated method) -->
 # :rocket:Installation
 This section includes a quick guide to what is required, how to install, and how to do a first test run.
 ## Prerequisites
@@ -19,7 +17,9 @@ This section includes a quick guide to what is required, how to install, and how
 * Clone the helm repository `git clone git@github.com:stacklio/stackl.git`
 * Create a namespace that will house the STACKL deployment `kubectl create namespace stackl`
 * Execute the following command: `helm install stackl/build/helm -n stackl --generate-name`
+
 This will deploy STACKL and all of its components in the active K8s context.
+
 You can see all the pods with the folowing command: `watch kubectl get pods -n stackl`
 
 ![helm install](docs/static/media/helm-install.gif)
@@ -96,7 +96,7 @@ example:
 }
 ```
 #### What is a Stack Application Template
-Stack application templates are templates that define an application. It consist out of the following components: 
+Stack application templates are templates that define an application. It consist out of the following components:
 * Functional requirement
 
 ```json
