@@ -17,8 +17,9 @@ class DataStoreFactory(metaclass=Singleton):
             from datastore.couchDB_store import CouchDBStore
             self.store = CouchDBStore()
         elif self.store_type == "LFS" or type == "LocalFileSystemStore":
+            lfs_path = get_config_key('DATABASE_PATH')
             from datastore.local_file_system_store import LocalFileSystemStore
-            self.store = LocalFileSystemStore('/lfs_test_store/')
+            self.store = LocalFileSystemStore(lfs_path)
         else:  # assume LFS
             from datastore.local_file_system_store import LocalFileSystemStore
             self.store = LocalFileSystemStore('/lfs_test_store/')
