@@ -24,6 +24,7 @@ services:
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
+      - STACKL_DATABASE_PATH=/lfs_test_store
       - STACKL_AGENT_HOST={{ agent_host }}
       - GRPC_VERBOSITY="DEBUG"
       - STACKL_LOGPATH=/var/log/stackl.log
@@ -53,6 +54,7 @@ services:
       - 9999:9999
     environment:
       - STACKL_STORE={{ datastore_type }}
+      - STACKL_DATABASE_PATH=/lfs_test_store
       - STACKL_TASK_BROKER={{ task_broker_type }}
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
       - STACKL_AGENT_HOST={{ agent_host }}

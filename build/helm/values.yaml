@@ -3,6 +3,7 @@ image:
 
 datastore:
   type: LFS
+  path: /lfs_test_store
 
 task_broker:
   type: Custom
