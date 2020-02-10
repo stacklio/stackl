@@ -21,7 +21,9 @@ This section includes a quick guide to what is required, how to install, and how
 * Execute the following command: `helm install stackl/build/helm -n stackl --generate-name`
 This will deploy STACKL and all of its components in the active K8s context.
 You can see all the pods with the folowing command: `watch kubectl get pods -n stackl`
-[![asciicast](https://asciinema.org/a/2fyV7tnoMhqBuVylPidA6VNSU.svg)](https://asciinema.org/a/2fyV7tnoMhqBuVylPidA6VNSU?speed=2&cols=80&rows=18)
+
+![helm install](docs/static/media/helm-install.gif)
+
 ## Getting started
 For this example we will create a SIT (Stack Infrastructure Template) and a SAT (Stack Application Template). We will use this to deploy an application defined in the SAT on the environment specified in the SIT.
 ### Configuration
@@ -214,4 +216,4 @@ For the releases, see [Github Releases](https://github.com/stacklio/stackl/relea
 The code in this project is licensed under the [GLPv3](LICENSE) license.
 # Acknowledgments
 STACKL was initially created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for a platform to better provide services to clients. After some time, it became clear that STACKL could be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
-Hence, thanks to Nubera  and @yannickstruyf3 who put in much of the hard initial work.
+Hence, thanks to Nubera  and [@yannickstruyf3](https://github.com/yannickstruyf3) who put in much of the hard initial work.
