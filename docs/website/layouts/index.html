@@ -3,7 +3,10 @@
   <html lang="en">
 
   <head>
-      {{ partial "google-analytics.html" . }}
+      {{ if eq (getenv "HUGO_ENV") "production" | or (eq .Site.Params.env "production")  }}
+        {{ partial "google-analytics.html" . }}
+        {{ partial "head.cookie.iubenda.html" . }}
+      {{ end }}
       {{ partial "meta.html" . }}
     <!-- Required meta tags -->
     <meta charset="utf-8">
