@@ -63,7 +63,7 @@ A stack infrastructure template specifies which IT Infrastructure is available t
     "config": [
         "linux",
         "nginx"
-    ],
+    ]
 }
 ```
 * Stack Infrastructure Template
