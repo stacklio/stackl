@@ -34,7 +34,8 @@ stacklagent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
   replicaCount: 1
-  
+
+# example imagePullSecrets: [name: pull-secret-name]
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
