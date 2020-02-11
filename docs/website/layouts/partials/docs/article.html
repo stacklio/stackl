@@ -17,5 +17,20 @@
         {{ .Content }}
       </div>
     </section>
+    <section class="section">
+      <hr />
+      <div class="content">
+        <span>Last updated on</span>
+        <span>
+          {{- with .GitInfo -}}
+            <a href="{{$.Site.Params.ghrepo}}/commit/{{ .Hash }}" target="_blank">
+          {{- end -}}
+          {{ .Lastmod.UTC.Format $.Site.Params.dateformat }}
+          {{- with .GitInfo -}}
+            </a>
+          {{- end -}}
+        </span>
+      </div>
+    </section>
   </div>
 </article>

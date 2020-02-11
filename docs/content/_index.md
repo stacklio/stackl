@@ -2,6 +2,17 @@
 title: "Introduction"
 kind: basic
 weight: 1
+date: 2020-02-10 01:00:00 +0100
+publishdate: 2020-02-01 00:00:00 +0000
+expirydate: 2030-01-01 00:00:00 +0000
+draft: false
+tags:
+  - open-source
+  - SSOT
+  - configuration management
+  - infrastructure automation
+  - DevOps
+  - orchestration
 ---
 
 **STACKL is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.**

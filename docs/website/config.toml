@@ -9,6 +9,9 @@ pygmentsUseClasses = false
 pygmentsStyle = "tango"
 pygmentsGuessSyntax = true
 
+enableRobotsTXT = true
+enableGitInfo = true
+
 # Don't try and render the code snippets as html pages
 # the are loaded via shortcode helpers.
 ignorefiles = [ "/docs/v.*/code/.*" ]
@@ -16,7 +19,8 @@ ignorefiles = [ "/docs/v.*/code/.*" ]
 [params]
 description = "An open source, end-to-end application orchestration platform"
 tagline = ""
-algolia_api_key = ""
+dateformat = "January 2, 2006"
+ghrepo = "https://github.com/stacklio/stackl.git"
 
 [params.social]
 twitter = "stacklio"
@@ -53,3 +57,7 @@ baseName = "_redirects"
 
 [outputs]
 home = ["HTML", "REDIRECTS"]
+
+[sitemap]
+    changefreq = "weekly"
+    priority = 0.5
