@@ -18,7 +18,17 @@
 <!-- OpenGraph metadata -->
 <meta property="og:title" content="{{ $title }}">
 {{ if $isDoc }}
-<meta property="og:type" content="documentation">
+  <meta property="og:type" content="documentation">
+  {{ with .Params.tags }}
+    <meta itemprop="keywords" content="{{ range $index, $tag := first 10 . }}{{ if $index }},{{ end }}{{ $tag }}{{ end }}" />
+  {{ end }}
+  {{- $ISO8601 := "2006-01-02T15:04:05-07:00" -}}
+  {{- if not .PublishDate.IsZero -}}
+    <meta itemprop="datePublished" content="{{ .PublishDate.Format $ISO8601 | safeHTML }}" />
+  {{- end -}}
+  {{- if not .Date.IsZero -}}
+    <meta itemprop="dateModified" content="{{ .Date.Format $ISO8601 | safeHTML }}" />
+  {{- end -}}
 {{ end }}
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:locale" content="en_US">
@@ -30,7 +40,7 @@
 {{ end }}
 <meta name="og:type" content="{{ $pageType }}">
 <meta name="og:image" content="{{ $imageUrl }}">
-<meta name="og:image:alt" content="Open Policy Agent project logo">
+<meta name="og:image:alt" content="STACKL logo">
 <meta name="og:image:type" content="image/png">
 
 <!-- TwitterCard metadata -->

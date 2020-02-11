@@ -2,6 +2,11 @@
 title: "Overview"
 kind: basic
 weight: 2
+date: 2020-02-10 01:00:00 +0100
+publishdate: 2020-02-01 00:00:00 +0000
+expirydate: 2030-01-01 00:00:00 +0000
+draft: false
+tags: []
 ---
 
 STACKL is a versatile platform that compliments your regular CI/CD workflow for application orchestration by tackling the complexity of configuring applications and deploying them on your suitable infrastructure.

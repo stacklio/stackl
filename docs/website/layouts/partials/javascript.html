@@ -8,6 +8,7 @@
 
 {{ if $isDocsPage }}
 {{ $version := index (split .File.Path "/") 1 }}
+{{ if eq (getenv "HUGO_ENV") "production" | or (eq .Site.Params.env "production")  }}
 {{ $apiKey  := (getenv "ALGOLIA_API_KEY") }}
 <script>
   console.log("You are reading the docs for version {{ $version }} of STACKL");
@@ -19,4 +20,5 @@
     debug: true
   });
 </script>
+{{ end }}
 {{ end }}

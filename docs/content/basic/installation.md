@@ -2,15 +2,20 @@
 title: Installation
 kind: basic
 weight: 3
+date: 2020-02-10 01:00:00 +0100
+publishdate: 2020-02-01 00:00:00 +0000
+expirydate: 2030-01-01 00:00:00 +0000
+draft: false
+tags: []
 ---
 This document helps you get STACKL up and running in different deployment
 environments. You should read this document if you are planning to deploy STACKL.
 
 ## Docker
 
-Docker makes it easy to deploy Stackl locally on your own machine. 
+Docker makes it easy to deploy Stackl locally on your own machine.
 
-In this section we will explain how to use the official STACKL Docker images in combination with docker-compose to 
+In this section we will explain how to use the official STACKL Docker images in combination with docker-compose to
 easily get STACKL up and running
 
 STACKL releases are available as images on Docker Hub.
@@ -177,7 +182,7 @@ See configuration.md for more information (link naar configuration.md)
 
 ### Tagging
 
-#TODO 
+#TODO
 
 ## Kubernetes
 
@@ -214,7 +219,7 @@ the file system.
 helm install -n test .
 ```
 
-At this point STACKL is up and running. 
+At this point STACKL is up and running.
 
 YOU CAN NOW SEE WHERE STACKL IS RUNNING BY KUBECTL GET SVC AND GO TO THE REST API
 

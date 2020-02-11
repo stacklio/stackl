@@ -2,6 +2,11 @@
 title: Documents and Types
 kind: advanced
 weight: 3
+date: 2020-02-10 01:00:00 +0100
+publishdate: 2020-02-01 00:00:00 +0000
+expirydate: 2030-01-01 00:00:00 +0000
+draft: false
+tags: []
 ---
 A Document is a Key/Value text-file in the JSON or YAML format that models IT infrastructure building blocks, application service definitions, and their configuration data.
 Documents are the simple key unit through which STACKL understands the user's IT environment and does work: nearly every task will, in some way, affect documents.
