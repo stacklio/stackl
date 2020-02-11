@@ -2,11 +2,16 @@
 title: API Interface
 kind: advanced
 weight: 2
+date: 2020-02-10 01:00:00 +0100
+publishdate: 2020-02-01 00:00:00 +0000
+expirydate: 2030-01-01 00:00:00 +0000
+draft: false
+tags: []
 ---
 
 STACKL offers a REST API for interactions.
 The API is implemented using Flask as a WSGI server, thus offering a regular REST API that supports the basic HTTP methods (GET, POST, PUT, DELETE).
-STACKL exposes its listening server on 8080, the IP of the hosting docker container and a web interface. 
+STACKL exposes its listening server on 8080, the IP of the hosting docker container and a web interface.
 For a local deployment, this is <http://localhost:8080/>.
 Interactions happen through API calls with associated parameters, either through curl commands in the command line interface or using the web interface (implemented through Swagger), using any browser.
 

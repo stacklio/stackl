@@ -2,6 +2,11 @@
 title: Document Datastore
 kind: advanced
 weight: 2
+date: 2020-02-10 01:00:00 +0100
+publishdate: 2020-02-01 00:00:00 +0000
+expirydate: 2030-01-01 00:00:00 +0000
+draft: false
+tags: []
 ---
 A Datastore is the software system used by STACKL to store and process documents.
 A document in STACKL is a file in either JSON or YAML format that models parts of the IT infrastructure, applications and services, and their configuration data.
