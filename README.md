@@ -1,37 +1,50 @@
 # STACKL
+
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 STACKL supports the autonomous configuration, coordination, and management of applications and IT infrastructure by:
+
 * forming the Single Source of Truth (SSOT) configuration data lookup store for your IT environment including infrastructure resources, application definitions, and their characteristics and services
 * decoupling configuration data, automation strategy, and deployment targets thereby simplifying the automated infrastructure management for code and configuration tooling
-* providing pluggable modules for backend systems, such as processing and data storage, to support different scalability and performance requirements and enable users to choose their prefered tools
-In essence, it allows to Model, Describe, and Automate your application orchestration workflow. Users are saved from  manual work each time they want to deploy their projects by automating and simplifying IT infrastructure selection, application specification, and choosing suitable orchestration tools. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL then transparantly and autonomously uses this information to correctly and efficiently orchestrate and automate applications in the available IT environment across their lifetime and managing dynamic changes.
-# :rocket:Installation
+* providing pluggable modules for backend systems, such as processing and data storage, to support different scalability and performance requirements and enable users to choose their preferred tools
+
+In essence, it allows you to model, describe, and automate your application orchestration workflow.
+
+Users are saved from  manual work each time they want to deploy their projects by automating and simplifying IT infrastructure selection, application specification, and choosing suitable orchestration tools. Users now simply model their available infrastructure, describe their desired applications, and specify the desired orchestration tools once. STACKL then transparently and autonomously uses this information to correctly and efficiently orchestrate and automate applications in the available IT environment across their lifetime and managing dynamic changes.
+
+## :rocket:Installation
+
 This section includes a quick guide to what is required, how to install, and how to do a first test run.
-## Prerequisites
+
+### Prerequisites
+
 * Kubernetes environment
 * Helm 3
 * Kubectl
-## Installing
-* Clone the helm repository `git clone git@github.com:stacklio/stackl.git`
+
+### Installing
+
+* Clone the Helm repository `git clone git@github.com:stacklio/stackl.git`
 * Create a namespace that will house the STACKL deployment `kubectl create namespace stackl`
-* Execute the following command: `helm install stackl/build/helm -n stackl --generate-name`
+* Execute the following command to deploy STACKL and all of its components in the active K8s context: `helm install stackl/build/helm -n stackl --generate-name`
 
-This will deploy STACKL and all of its components in the active K8s context.
-
-You can see all the pods with the folowing command: `watch kubectl get pods -n stackl`
+You can see all the pods with the following command: `watch kubectl get pods -n stackl`
 
 ![helm install](docs/static/media/helm-install.gif)
 
 ## Getting started
+
 For this example we will create a SIT (Stack Infrastructure Template) and a SAT (Stack Application Template). We will use this to deploy an application defined in the SAT on the environment specified in the SIT.
+
 ### Configuration
+
 #### What is a Stack Infrastructure Template
+
 A stack infrastructure template specifies which IT Infrastructure is available to the application deployment. A SIT needs the following components (documents):
+
 * Environment
 
-  example JSON:
 ```json
 {
     "description": "Production environment",
@@ -43,6 +56,7 @@ A stack infrastructure template specifies which IT Infrastructure is available t
     "datastore": "vsanDatastore"
 }
 ```
+
 * Location
 
 ```json
@@ -52,7 +66,9 @@ A stack infrastructure template specifies which IT Infrastructure is available t
     "name": "brussels",
     "datacenter": "DC01"
 }
+
 ```
+
 * Zone
 
 ```json
@@ -69,9 +85,11 @@ A stack infrastructure template specifies which IT Infrastructure is available t
     ]
 }
 ```
+
 * Stack Infrastructure Template
-We can combine the above documents into the SIT
-example:
+
+We can now combine the above documents into the SIT.
+
 ```json
 {
     "category": "configs",
@@ -95,8 +113,11 @@ example:
     ]
 }
 ```
+
 #### What is a Stack Application Template
+
 Stack application templates are templates that define an application. It consist out of the following components:
+
 * Functional requirement
 
 ```json
@@ -116,6 +137,7 @@ Stack application templates are templates that define an application. It consist
     "type": "functional_requirement"
 }
 ```
+
 * Service
 
 ```json
@@ -132,7 +154,9 @@ Stack application templates are templates that define an application. It consist
     }
 }
 ```
+
 * Stack Application Template
+
 ```json
 {
     "name": "web",
@@ -147,13 +171,14 @@ Stack application templates are templates that define an application. It consist
     }
 }
 ```
-### Uploading the documents to STACKL
 
-Go to the STACKL web interface, (use `kubectl get service -n stackl` to get the IP address). use the `/documents/{type_name}` endpoint to POST the documents using the correct type.
+### Upload the documents to STACKL
 
-### Create stack instances
+Go to the STACKL web interface, (use `kubectl get service -n stackl` to get the IP address). use the `/documents/{type_name}` endpoint to send a request with the POST HTTP method with the documents using the correct type.
 
-Use the following payload:
+### Create stack instance
+
+Use the following payload to make a POST-request to `/stack/instances`, this will instantiate a stack instance and will create a Virtual Machine.
 
 ```json
 {
@@ -168,12 +193,12 @@ Use the following payload:
 }
 ```
 
-and make a POST-request to /stack/instances, this will instantiate a stack instance and will create a Virtual Machine.
+You can then see the status of the stack instance by using the `/stack/instances/web_example_stack1` endpoint.
 
-You can then see the status of the stack instance by using the /stack/instances/web_example_stack1 endpoint.
+## More info about STACKL
 
-# More info about STACKL
-## Core goals
+### Core goals
+
 * Open-source and community-oriented
   * Based on coding best practices
   * Consistent use of standards and guidelines
@@ -186,21 +211,27 @@ You can then see the status of the stack instance by using the /stack/instances/
 * Scalable, lightweight, and performant
   * Distributable across infrastructure and easy to scale
   * Able to make trade-offs to match different quality-of-service requirements
-* End-to-end support for microservices-based applications and infrastructure management in a DevOps workflow (interesting read: [What is DevOps?](https://www.atlassian.com/devops))
-## Features
-- STACKL works with YAML or JSON documents to allow  for easy Key/Value management and future-proof cross-system compatibility
-- STACKL provides a REST API with a web interface
-- Users supply Stack Application Templates (SATs), which model and describe the desired applications, and Stack Infrastructure Templates (SITs), which specify the IT infrastructure available for use for the application. SITs and SATs can be processed and matched according to specified policies and result in a Stack Template, a Key/Value document that describes the desired state of an application on the infrastructure and can be deployed in the users IT environment by orchestration tools
-- STACKL supports pluggable modules to allow users to use their desired technological backends. For instance, the used datastore and task processing solutions can be specified by the user
-- STACKL is engineered to allow easy extensions for new technological backends through providing interfaces that enable transparent interaction
-- Entities, i.e., workers, automation platforms, agents, … ,  are fully decoupled and can be distributed to improve fault-tolerance and scalability.
-- The deployment and use of STACKL works with popular DevOps technologies and platforms: Docker, Kubernetes, Ansible, Azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
-- Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
-- To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
-## Even more information
-- See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
-- See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
-# :handshake:Contributing
+* End-to-end support for microservices and infrastructure management in a DevOps workflow (interesting read: [What is DevOps?](https://www.atlassian.com/devops))
+
+### Features
+
+* STACKL works with YAML or JSON documents to allow  for easy Key/Value management and future-proof cross-system compatibility
+* STACKL provides a REST API with a web interface
+* Users supply Stack Application Templates (SATs), which model and describe the desired applications, and Stack Infrastructure Templates (SITs), which specify the IT infrastructure available for use for the application. SITs and SATs can be processed and matched according to specified policies and result in a Stack Template, a Key/Value document that describes the desired state of an application on the infrastructure and can be deployed in the users IT environment by orchestration tools
+* STACKL supports pluggable modules to allow users to use their desired technological backends. For instance, the used datastore and task processing solutions can be specified by the user
+* STACKL is engineered to allow easy extensions for new technological backends through providing interfaces that enable transparent interaction
+* Entities, i.e., workers, automation platforms, agents, … ,  are fully decoupled and can be distributed to improve fault-tolerance and scalability.
+* The deployment and use of STACKL works with popular DevOps technologies and platforms: Docker, Kubernetes, Ansible, Azure, AWS, and is oriented towards the future, for instance, for serverless computing (FaaS/SaaS).
+* Autonomous operation is a key focus: as much as possible, after deployment of STACKL, the system and its entities will self-manage and self-discover
+* To allow rapid use of STACKL, it provides a minimal and fast setup on a regular computer for a normal user. Button-press fire-and-forget deployment of STACKL enables users to take it for a quick spin.
+
+### Even more information
+
+* See [stackl.io](https://www.stackl.io) to get started with documentation and tutorials.
+* See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
+
+## Contributing
+
 Contributions, issues, and feature requests are always more than welcome! Feel free to check [issues page](https://github.com/stacklio/stackl/issues) if you want to contribute.
 
 STACKL is programmed mainly in Python 3 and meant to follow best-practice coding guidelines.
@@ -212,8 +243,11 @@ Please also read the [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
 For a list of changes, see [Changelog](CHANGELOG.md).
 For the releases, see [Github Releases](https://github.com/stacklio/stackl/releases).
 
-# :memo:License
+## License
+
 The code in this project is licensed under the [GLPv3](LICENSE) license.
-# Acknowledgments
-STACKL was initially created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for a platform to better provide services to clients. After some time, it became clear that STACKL could be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
-Hence, thanks to Nubera  and [@yannickstruyf3](https://github.com/yannickstruyf3) who put in much of the hard initial work.
+
+## Acknowledgments
+
+STACKL was initially created for in-house use by [Nubera](https://www.nubera.eu/), a DevOps consultancy company who saw the need for a platform to better provide services to clients. After some time, it became clear that STACKL could be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
+Hence, thanks to [Nubera](https://www.nubera.eu/)  and [Yannick Struyf](https://github.com/yannickstruyf3) who put in much of the hard initial work.
