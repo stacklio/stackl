@@ -36,6 +36,8 @@ spec:
             - name: stackl-volume
               mountPath: "{{ .Values.datastore.path }}"
           env:
+            - name: STACKL_DATABASE_PATH
+              value: /lfs_test_store
             - name: "STACKL_STORE"
               value: "{{ .Values.datastore.type }}"
             - name: "STACKL_DATABASE_PATH"
