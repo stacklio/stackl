@@ -1,5 +1,4 @@
 import json
-import json
 import os
 
 from datastore import DataStore
@@ -16,7 +15,7 @@ class LocalFileSystemStore(DataStore):
 
     @property
     def datastore_url(self):
-        return self.file_system_root
+        return self.file_system_root + os.sep
 
     def get(self, **keys):
         get_all = False

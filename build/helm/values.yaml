@@ -3,6 +3,7 @@ image:
 
 datastore:
   type: LFS
+  path: /lfs_test_store
 
 task_broker:
   type: Custom
@@ -33,7 +34,8 @@ stacklagent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
   replicaCount: 1
-  
+
+# example imagePullSecrets: [name: pull-secret-name]
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

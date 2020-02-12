@@ -34,10 +34,14 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - name: stackl-volume
-              mountPath: "/lfs_test_store"
+              mountPath: "{{ .Values.datastore.path }}"
           env:
+            - name: STACKL_DATABASE_PATH
+              value: /lfs_test_store
             - name: "STACKL_STORE"
               value: "{{ .Values.datastore.type }}"
+            - name: "STACKL_DATABASE_PATH"
+              value: "{{ .Values.datastore.path }}"
             - name: "STACKL_TASK_BROKER"
               value: "{{ .Values.task_broker.type }}"
             - name: "STACKL_AGENT_BROKER"

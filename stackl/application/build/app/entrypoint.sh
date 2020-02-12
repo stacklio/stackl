@@ -1,4 +1,7 @@
 #!/bin/sh
+mkdir -p /
+mkdir -p ${STACKL_DATABASE_PATH}/configs
+mkdir -p ${STACKL_DATABASE_PATH}/items
 set -e
 # Get the maximum upload file size for Nginx, default to 0: unlimited
 USE_NGINX_MAX_UPLOAD=${NGINX_MAX_UPLOAD:-0}
