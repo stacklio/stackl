@@ -17,22 +17,22 @@ spec:
         {{- include "stackl.selectorLabels" . | nindent 8 }}
         component: agent
     spec:
-    {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
-    serviceAccount: stackl-agent
-    containers:
-      - name: stackl-agent
-        image: "{{ .Values.stacklagent.image }}"
-        resources:
-          requests:
-            memory: 64Mi
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        env:
-          - name: "stackl_host"
-            value: "{{ template "stackl.rest" . }}:8080"
-          - name: "stackl_namespace"
-            value: "{{ .Release.Namespace }}"
-          - name: "PYTHONUNBUFFERED"
-            value: "TRUE"
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "stackl.agent" . }}-stackl-agent
+      containers:
+        - name: stackl-agent
+          image: "{{ .Values.stacklagent.image }}"
+          resources:
+            requests:
+              memory: 64Mi
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: "stackl_host"
+              value: "{{ template "stackl.rest" . }}:8080"
+            - name: "stackl_namespace"
+              value: "{{ .Release.Namespace }}"
+            - name: "PYTHONUNBUFFERED"
+              value: "TRUE"
