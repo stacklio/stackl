@@ -1,4 +1,6 @@
-from logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 from manager import Manager
 
 
@@ -6,7 +8,6 @@ class UserManager(Manager):
 
     def __init__(self, manager_factory):
         super(UserManager, self).__init__(manager_factory)
-        self.logger = Logger("UserManager")
 
         self.document_manager = manager_factory.get_document_manager()
 
@@ -14,7 +15,7 @@ class UserManager(Manager):
         serial = user_certificate['user_serial']
         if serial is None:
             return "default"  # TODO: this is temporary to allow everybody access
-        self.logger.info("[UserManager] get_user_for_cert. Getting user for certificate '{0}'".format(user_certificate))
+        logger.info("[UserManager] get_user_for_cert. Getting user for certificate '{0}'".format(user_certificate))
         user_data = self.document_manager.get_document(type='authentication', document_name=str(serial))
         if user_data:
             return user_data['user']
@@ -23,7 +24,7 @@ class UserManager(Manager):
             # raise Unauthorized()
 
     def get_user_for_serial(self, serial):
-        self.logger.info("[UserManager] get_user_for_serial. Getting user for serial '{0}'".format(serial))
+        logger.info("[UserManager] get_user_for_serial. Getting user for serial '{0}'".format(serial))
         user_data = self.document_manager.get_document(type='authentication', document_name=str(serial))
         if user_data:
             return user_data
@@ -40,7 +41,7 @@ class UserManager(Manager):
             user_doc = self.document_manager.get_document(type='authentication', document_name=str(serial))
             if user_doc:
                 raise Exception("[UserManager] The requested user already exists, not creating")
-            self.logger.info("[UserManager] create_user. Creating new user with data {}".format(user_data))
+            logger.info("[UserManager] create_user. Creating new user with data {}".format(user_data))
 
             self.document_manager.write_document(type="authentication", document_name=user_data['serial'],
                                                  file=user_data, description=user_data['description'])
@@ -50,14 +51,14 @@ class UserManager(Manager):
     def delete_user(self, serial):
         user_doc = self.document_manager.get_document(type='authentication', document_name=str(serial))
         if user_doc:
-            self.logger.info("[UserManager] delete_user. Removing user from authourised callers...")
+            logger.info("[UserManager] delete_user. Removing user from authourised callers...")
             self.document_manager.remove_document(document_name=serial, type='authentication')
         else:
             raise Exception('[UserManager] User was not found and thus not removed')
 
     def get_user_auth(self, user_certificate):
         serial = user_certificate['user_serial']
-        self.logger.info("[UserManager] serial: " + str(serial))
+        logger.info("[UserManager] serial: " + str(serial))
         if serial is not None:
             user_doc = self.get_user_for_cert(user_certificate)
             if user_doc and 'role' in user_doc and user_doc['role'] == 'agent':

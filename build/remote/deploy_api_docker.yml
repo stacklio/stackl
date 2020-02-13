@@ -15,7 +15,7 @@
         state: directory
         path: "{{item}}"
       loop:
-        - "/root/docker-compose/" 
+        - "/root/docker-compose/"
     - name: Create docker_pull
       template:
         src: "{{ pull_source }}"
@@ -34,6 +34,6 @@
     - name: Pull containers
       command: "sh {{ pull_path }}"
     - name: Remove running compose
-      command: "docker stack rm stackl"   
+      command: "docker stack rm stackl"
     - name: Running docker-compose
       command: "docker stack deploy -c {{ docker_compose_path }} --with-registry-auth stackl"

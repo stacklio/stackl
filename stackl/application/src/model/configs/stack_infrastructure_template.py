@@ -12,14 +12,15 @@ class InfrastructureTargetSchema(Schema):
     environment = fields.String()
     location = fields.String()
     zone = fields.String()
-    
+
     @post_load
     def make_infrastructure_target(self, data, **kwargs):
         return InfrastructureTarget(**data)
 
 
 class StackInfrastructureTemplate:
-    def __init__(self, name="", description="", category="configs", type="stack_infrastructure_template", infrastructure_targets=[], infrastructure_capabilities={}):
+    def __init__(self, name="", description="", category="configs", type="stack_infrastructure_template",
+                 infrastructure_targets=[], infrastructure_capabilities={}):
         self.name = name
         self.description = description
         self.type = type
@@ -34,7 +35,8 @@ class StackInfrastructureTemplateSchema(Schema):
     type = fields.String()
     category = fields.String()
     infrastructure_targets = fields.List(fields.Nested(InfrastructureTargetSchema))
-    infrastructure_capabilities = fields.Dict(keys=fields.Str(), values=fields.Dict(keys=fields.Str(), values=fields.Raw()))
+    infrastructure_capabilities = fields.Dict(keys=fields.Str(),
+                                              values=fields.Dict(keys=fields.Str(), values=fields.Raw()))
 
     @post_load
     def make_stack_infrastructure_template(self, data, **kwargs):

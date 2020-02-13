@@ -8,6 +8,6 @@
 {{ template "breadcrumbnav" (dict "p1" .p1.Site.Home "p2" .p2 )  }}
 {{ end }}
 <li{{ if eq .p1 .p2 }} class="active" {{ end }}>
-  <a href="{{ .p1.Permalink }}">{{ .p1.Title }}</a>
-  </li>
-  {{ end }}
+<a href="{{ .p1.Permalink }}">{{ .p1.Title }}</a>
+</li>
+{{ end }}

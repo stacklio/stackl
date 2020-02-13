@@ -23,17 +23,17 @@ users_field = api.model('Users', {
 class Users(StacklApiResource):
     def get(self):
         """Returns all users"""
-        logger.log("[Users GET] Received GET for users")
+        logger.info("[Users GET] Received GET for users")
         users_list = user_manager.get_users()
         return {"users": users_list}, StatusCode.OK
 
     @api.expect(users_field, validate=True)
     def post(self):
         """Creates a new user"""
-        logger.log("[Users POST] Received POST request for user")
+        logger.info("[Users POST] Received POST request for user")
         # extract post data from request
         json_data = request.get_json()
-        logger.log("[Users POST] User json_data: {}".format(json_data))
+        logger.info("[Users POST] User json_data: {}".format(json_data))
         try:
             user_manager.create_user(json_data)
             return {'return_code': StatusCode.CREATED, 'message': 'Created'}, StatusCode.CREATED
@@ -45,13 +45,13 @@ class Users(StacklApiResource):
 class UsersSpecific(StacklApiResource):
     def get(self, serial):
         """Returns a user with a specific serial"""
-        logger.log("[UsersSpecific GET] Received GET request for user serial {0}".format(serial))
+        logger.info("[UsersSpecific GET] Received GET request for user serial {0}".format(serial))
         return user_manager.get_user_for_serial(serial), 200
 
     @api.response(StatusCode.ACCEPTED, 'Deletes a user')
     def delete(self, serial):
         """Delete a user with specific serial"""
-        logger.log("[UsersSpecific DELETE] Received DELETE request for user " + str(serial))
+        logger.info("[UsersSpecific DELETE] Received DELETE request for user " + str(serial))
         try:
             user_manager.delete_user(serial)
             return {'return_code': StatusCode.ACCEPTED, 'message': 'User marked for delete'}, StatusCode.ACCEPTED

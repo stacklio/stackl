@@ -4,12 +4,12 @@
   "description": "Plugin to support the multiple search.",
   "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/multiple-search",
   "example": "#",
-
-  "plugins": [{
-    "name": "bootstrap-table-multiple-search",
-    "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/multiple-search"
-  }],
-
+  "plugins": [
+    {
+      "name": "bootstrap-table-multiple-search",
+      "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/multiple-search"
+    }
+  ],
   "author": {
     "name": "djhvscf",
     "image": "https://avatars1.githubusercontent.com/u/4496763"

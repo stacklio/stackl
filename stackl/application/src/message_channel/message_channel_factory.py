@@ -1,4 +1,6 @@
-from logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 
@@ -7,8 +9,8 @@ class MessageChannelFactory(metaclass=Singleton):
 
     def __init__(self):
         self.message_channel_type = get_config_key('MESSAGE_CHANNEL')
-        self.logger = Logger("MessageChannelFactory")
-        self.logger.info(
+
+        logger.info(
             "[MessageChannelFactory] Creating Message Channel with type: {}".format(self.message_channel_type))
         self.message_channel = None
 
@@ -23,6 +25,6 @@ class MessageChannelFactory(metaclass=Singleton):
             self.message_channel = RedisQueue()
 
     def get_message_channel(self):
-        self.logger.info("[MessageChannelFactory] Giving message channel with type '{0}' and id '{1}'".format(
+        logger.info("[MessageChannelFactory] Giving message channel with type '{0}' and id '{1}'".format(
             self.message_channel_type, self.message_channel))
         return self.message_channel

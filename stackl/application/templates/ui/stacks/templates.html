@@ -1,78 +1,84 @@
 {% extends "base.html" %}
 {% block jsInclude %}
-  <script src="../../static/ui/stacks/templates.js"></script>
+<script src="../../static/ui/stacks/templates.js"></script>
 {% endblock %}
 {% block cssInclude %}
-  <style>
+<style>
     .div#content:after {
        content:"";
        display:table;
        clear:both;
     }
-  </style>
+
+</style>
 {% endblock %}
 {% block title %}Stack-templates{% endblock %}
 
 {% block content %}
 <!-- stack templates -->
 <div class="col-md-12">
-  <div class="row">
-      <div class="col-sm-3" style="padding: 0px 5px 0px 5px">
-        <div class="form-group">
-            <label>Stack template</label>
-            <select id="stack_templates" class="form-control">
-            </select>
-            <label style="margin:10px 0px 0px 0px" for="stack_instance_name">Stack instance name</label>
-            <input type="text" class="form-control" id="stack_instance_name" placeholder="Instance1" required="true">
-            <label style="margin:10px 0px 0px 0px"> Restore snapshot</label><br />
-            <input id="restoreSnapshot" type="checkbox"/><br />
-            <label id="restoreSnapshotDiv" style="display: none ; margin:5px 0px 0px 0px" >Stack snapshot</label>
-            <select id="stack_snapshot" style="display: none ;" class="form-control">
-            <div>
-            </select>
-        </div>
-        <div class="row voffset2">
-          <button id="request_button" type="button" style="margin: 0px 10px 10px 15px" class="btn btn-info">Request</button>
-        </div>
-      </div>
-      <div class="col-sm-9">
-          <div class="row">
-            <div class="panel-group" style="margin: 10px 10px 10px 10px" id="instances_parameters_accordion">
-              <div class="panel panel-info" id="panel1" style="width: 100%">
-                  <div class="panel-heading">
-                    <h6 class="panel-title">
-                      <a data-toggle="collapse" data-target="#collapseParameters" href="#collapseParameters">
-                        Parameters
-                      </a>
-                    </h6>
-                  </div>
-                  <div id="collapseParameters" class="panel-collapse collapse in">
-                    <div class="panel-body">
-                          <textarea id="collapseParametersArea" style="min-height: 500px; max-height: 800px;width:100%"></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-          </div>
-          <div class="row">
-            <div class="panel-group" style="margin: 10px 10px 10px 10px" id="instances_resources_accordion">
-              <div class="panel panel-info" id="panel1" style="width: 100%">
-                  <div class="panel-heading">
-                    <h6 class="panel-title">
-                      <a data-toggle="collapse" data-target="#collapseResources" href="#collapseResources">
-                        Resources
-                      </a>
-                    </h6>
-                  </div>
-                  <div id="collapseResources" class="panel-collapse collapse ">
-                    <div class="panel-body">
-                          <textarea readonly id="collapseResourcesArea" style=" min-height: 700px; max-height: 900px;width:100%">dfgdfgdfg</textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    <div class="row">
+        <div class="col-sm-3" style="padding: 0px 5px 0px 5px">
+            <div class="form-group">
+                <label>Stack template</label>
+                <select id="stack_templates" class="form-control">
+                </select>
+                <label style="margin:10px 0px 0px 0px" for="stack_instance_name">Stack instance name</label>
+                <input type="text" class="form-control" id="stack_instance_name" placeholder="Instance1"
+                       required="true">
+                <label style="margin:10px 0px 0px 0px"> Restore snapshot</label><br/>
+                <input id="restoreSnapshot" type="checkbox"/><br/>
+                <label id="restoreSnapshotDiv" style="display: none ; margin:5px 0px 0px 0px">Stack snapshot</label>
+                <select id="stack_snapshot" style="display: none ;" class="form-control">
+                    <div>
+                </select>
             </div>
-      </div>
-  </div>
+            <div class="row voffset2">
+                <button id="request_button" type="button" style="margin: 0px 10px 10px 15px" class="btn btn-info">
+                    Request
+                </button>
+            </div>
+        </div>
+        <div class="col-sm-9">
+            <div class="row">
+                <div class="panel-group" style="margin: 10px 10px 10px 10px" id="instances_parameters_accordion">
+                    <div class="panel panel-info" id="panel1" style="width: 100%">
+                        <div class="panel-heading">
+                            <h6 class="panel-title">
+                                <a data-toggle="collapse" data-target="#collapseParameters" href="#collapseParameters">
+                                    Parameters
+                                </a>
+                            </h6>
+                        </div>
+                        <div id="collapseParameters" class="panel-collapse collapse in">
+                            <div class="panel-body">
+                                <textarea id="collapseParametersArea"
+                                          style="min-height: 500px; max-height: 800px;width:100%"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="panel-group" style="margin: 10px 10px 10px 10px" id="instances_resources_accordion">
+                    <div class="panel panel-info" id="panel1" style="width: 100%">
+                        <div class="panel-heading">
+                            <h6 class="panel-title">
+                                <a data-toggle="collapse" data-target="#collapseResources" href="#collapseResources">
+                                    Resources
+                                </a>
+                            </h6>
+                        </div>
+                        <div id="collapseResources" class="panel-collapse collapse ">
+                            <div class="panel-body">
+                                <textarea readonly id="collapseResourcesArea"
+                                          style=" min-height: 700px; max-height: 900px;width:100%">dfgdfgdfg</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,6 +1,7 @@
+from enum import Enum
+
 from marshmallow import Schema, fields
 from marshmallow_enum import EnumField
-from enum import Enum
 
 
 class Status(Enum):

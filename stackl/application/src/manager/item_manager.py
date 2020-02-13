@@ -1,8 +1,10 @@
+import logging
 import time
 from random import randint
 
 from algorithms import StrategyFactory
-from logger import Logger
+
+logger = logging.getLogger(__name__)
 from manager import Manager
 
 
@@ -10,16 +12,15 @@ from manager import Manager
 class ItemManager(Manager):
     def __init__(self, manager_factory):
         super(ItemManager, self).__init__(manager_factory)
-        self.logger = Logger("ItemManager")
 
         self.document_manager = manager_factory.get_document_manager()
 
     def get_key_value(self, item, key):
         try:
-            self.logger.log("[ItemManager] get. For item '{0}' and key '{1}'".format(item, key))
+            logger.debug("[ItemManager] get. For item '{0}' and key '{1}'".format(item, key))
             return item[key]
         except Exception as e:
-            self.logger.error("[ItemManager] get. Exception occurred: {0}. Returning empty object".format(e))
+            logger.error("[ItemManager] get. Exception occurred: {0}. Returning empty object".format(e))
             return {}
 
     def list_all_item_keys_with_values(self, item, info=False):
@@ -33,34 +34,34 @@ class ItemManager(Manager):
         try:
             return self.get_all().keys()
         except Exception as e:
-            self.logger.error(
+            logger.error(
                 "[ItemManager] Exception occured in list_all_item_keys: " + str(e) + " returning empty item list")
             return list(set())
 
     def write_item_hierarchy(self, item_hierarchy):
         tries = 10
         while True:
-            self.logger.log("[ItemManager] write_item_hierarchy. Getting existing hierarchy.")
+            logger.debug("[ItemManager] write_item_hierarchy. Getting existing hierarchy.")
             conf_obj = self.document_manager.get_document(category='types', subcategory='configuration',
                                                           document_name='hierarchy')
             conf_obj['hierarchy'] = item_hierarchy
-            self.logger.log("[ItemManager] Trying to write new tree")
+            logger.debug("[ItemManager] Trying to write new tree")
             status_code = self.document_manager.write_document(document_name='hierarchy', subcategory="configuration", \
                                                                file=conf_obj, description=conf_obj['description'],
                                                                category='types')
-            self.logger.log("[ItemManager] Writing status flag status code: " + str(status_code))
+            logger.debug("[ItemManager] Writing status flag status code: " + str(status_code))
             if status_code != 409:
-                self.logger.log("[ItemManager] New Hierarchy written!")
+                logger.debug("[ItemManager] New Hierarchy written!")
                 break
             elif tries < 0:
                 raise Exception("[ItemManager] Rewriting Hierarchy timed out... no more tries left")
             else:
                 tries = tries - 1
-                self.logger.log("[ItemManager] Tries left: " + str(tries))
+                logger.debug("[ItemManager] Tries left: " + str(tries))
                 time.sleep(randint(0, 5))
 
     def get_item_hierarchy(self):
-        self.logger.log("[ItemManager] get_item_hierarchy.")
+        logger.debug("[ItemManager] get_item_hierarchy.")
         config_obj = self.document_manager.get_document(category='types', subcategory='configuration',
                                                         document_name='hierarchy')
         config_hierarchy_obj = config_obj['hierarchy']
@@ -76,7 +77,7 @@ class ItemManager(Manager):
 
     # Filter should be form of {"type:" "common", "name":"common"}
     def get_all(self, info=False, filter_item=None, item_name=None):
-        self.logger.log(
+        logger.debug(
             "[ItemManager] get_all. For info '{0}', filter_item '{1}' and item_name '{2}'".format(info, filter_item,
                                                                                                   item_name))
         # get all items #TODO Distinction item/database/...
@@ -86,7 +87,7 @@ class ItemManager(Manager):
         if all_items and type(all_items) != list:
             all_items = [all_items]
         hierarchy = self.get_item_hierarchy()
-        self.logger.log("[ItemManager] get_all. Hierarchy '{0}'".format(hierarchy))
+        logger.debug("[ItemManager] get_all. Hierarchy '{0}'".format(hierarchy))
         # got hierarchy
         push = True
         merge = True
@@ -120,7 +121,7 @@ class ItemManager(Manager):
                         push = False
                 if doc_obj == None:
                     # Do not call exception but exclude element from list and continue
-                    self.logger.error(
+                    logger.error(
                         "[ItemManager] get_all. Error!!! document {0} not found for role {1}! Ignoring and excluding from Hiera call!".format(
                             str(doc_name), element[0]))
                     merge = False
@@ -157,7 +158,7 @@ class ItemManager(Manager):
 
     def hiera_document_inheritance_helper(self, viewCategory, viewName, documentKey, recurseObject, document_cache):
         if viewName in document_cache and documentKey in document_cache[viewName]:
-            # self.logger.log("if document_cache check: "+ str(element))
+            # logger.debug("if document_cache check: "+ str(element))
             documentObj = document_cache[viewName][documentKey]
         else:
             documentObj = self.document_manager.get_document(category=viewCategory, subcategory=viewName,

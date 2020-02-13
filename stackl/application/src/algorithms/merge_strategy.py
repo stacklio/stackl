@@ -1,12 +1,10 @@
+import logging
 from abc import ABC, abstractmethod
 
-from logger import Logger
+logger = logging.getLogger(__name__)
 
 
 class MergeStrategy(ABC):
-
-    def __init__(self, logger_name):
-        self.logger = Logger(logger_name)
 
     @abstractmethod
     def merge(self, source_object, merge_object):

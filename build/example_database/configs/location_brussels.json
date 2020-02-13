@@ -1,8 +1,8 @@
 {
-    "description": "Brussels DC",
-    "type": "location",
-    "name": "brussels",
-    "params": {
-        "datacenter": "DC01"
-    }
+  "description": "Brussels DC",
+  "type": "location",
+  "name": "brussels",
+  "params": {
+    "datacenter": "DC01"
+  }
 }

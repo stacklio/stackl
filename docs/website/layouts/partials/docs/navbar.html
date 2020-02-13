@@ -21,7 +21,8 @@
       <img src="{{ $logo }}">
     </a>
 
-    <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="mobile-menu">
+    <a role="button" class="navbar-burger burger" aria-label="menu"
+       aria-expanded="false" data-target="mobile-menu">
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
@@ -39,16 +40,22 @@
       </a>
 
       {{ range $basic }}
-      {{ partial "docs/navbar-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
+      {{ partial "docs/navbar-link.html" (dict "ctx" . "pageUrl" $pageUrl
+      "version" $version) }}
       {{ end }}
 
-      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Advanced" "section" $advanced "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle"
+      "Advanced" "section" $advanced "pageUrl" $pageUrl "version" $version ) }}
 
-      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Modules" "section" $modules "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle"
+      "Modules" "section" $modules "pageUrl" $pageUrl "version" $version ) }}
 
-      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $operations "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle"
+      "Operations" "section" $operations "pageUrl" $pageUrl "version" $version )
+      }}
 
-      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle"
+      "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}
 
     </div>
 
@@ -94,9 +101,10 @@
     <div class="navbar-end">
       <div class="navbar-item">
         <p class="control has-icons-right">
-          <input class="input" type="search" id="search-bar" placeholder="Search...">
+          <input class="input" type="search" id="search-bar"
+                 placeholder="Search...">
           <span class="icon is-small is-right">
-            <icon />
+            <icon/>
           </span>
         </p>
       </div>

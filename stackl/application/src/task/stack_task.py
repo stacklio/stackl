@@ -24,5 +24,5 @@ class StackTask(Task):
         if all(subtasks in self.valid_subtasks for subtasks in given_subtasks_list):
             self.subtasks = given_subtasks_list
         else:
-            logger.log("[StackTask] The given StackTask contains invalid tasks")
+            logger.info("[StackTask] The given StackTask contains invalid tasks")
             raise Exception("The given StackTask contains invalid tasks")

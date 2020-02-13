@@ -1,32 +1,33 @@
 syntax = "proto3";
 
 service StacklAgent {
-  rpc InvokeAutomation(AutomationMessage) returns (AutomationResponse) {} 
+    rpc InvokeAutomation (AutomationMessage) returns (AutomationResponse) {
+    }
 }
 
 message AutomationMessage {
-  string action = 1;
-  message Invocation {
-    string image = 1;
-    string infrastructure_target = 2;
-    string stack_instance = 3;
-    string service = 4;
-    string functional_requirement = 5;
-    string tool = 6;
-  }
-  repeated Invocation invocation = 2;
+    string action = 1;
+    message Invocation {
+        string image = 1;
+        string infrastructure_target = 2;
+        string stack_instance = 3;
+        string service = 4;
+        string functional_requirement = 5;
+        string tool = 6;
+    }
+    repeated Invocation invocation = 2;
 }
 
 message AutomationResponse {
-  enum Status {
-    READY = 0;
-    FAILED = 1;
-  }
-  message AutomationResult {
-    string service = 1;
-    string functional_requirement = 2;
-    Status status = 3;
-    string error_message = 4; 
-  }
-  repeated AutomationResult automation_result = 1;
+    enum Status {
+        READY = 0;
+        FAILED = 1;
+    }
+    message AutomationResult {
+        string service = 1;
+        string functional_requirement = 2;
+        Status status = 3;
+        string error_message = 4;
+    }
+    repeated AutomationResult automation_result = 1;
 }

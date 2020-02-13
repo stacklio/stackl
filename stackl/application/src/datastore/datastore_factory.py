@@ -1,4 +1,6 @@
-from logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 
@@ -7,8 +9,8 @@ class DataStoreFactory(metaclass=Singleton):
 
     def __init__(self):
         self.store_type = get_config_key('STORE')
-        self.logger = Logger("DataStoreFactory")
-        self.logger.info("[DataStoreFactory] Creating config store with type: " + self.store_type)
+
+        logger.info("[DataStoreFactory] Creating config store with type: " + self.store_type)
         if self.store_type == "Redis":
             pass
         elif self.store_type == "S3":

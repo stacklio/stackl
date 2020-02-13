@@ -14,7 +14,7 @@ class LocationSchema(Schema):
     description = fields.String()
     type = fields.String()
     params = fields.Dict(keys=fields.String(), values=fields.Raw())
-    
+
     @post_load
     def make_location(self, data, **kwargs):
         return Location(**data)

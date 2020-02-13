@@ -4,12 +4,12 @@
   "description": "Plugin to support the advanced search.",
   "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/toolbar",
   "example": "http://issues.wenzhixin.net.cn/bootstrap-table/#extensions/toolbar.html",
-
-  "plugins": [{
-    "name": "bootstrap-table-toolbar",
-    "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/toolbar"
-  }],
-
+  "plugins": [
+    {
+      "name": "bootstrap-table-toolbar",
+      "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/toolbar"
+    }
+  ],
   "author": {
     "name": "djhvscf",
     "image": "https://avatars1.githubusercontent.com/u/4496763"

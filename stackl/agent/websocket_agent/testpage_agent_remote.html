@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>WebSocket demo</title>
-        <style type="text/css">
+<head>
+    <title>WebSocket demo</title>
+    <style type="text/css">
             body {
                 font-family: "Courier New", sans-serif;
                 text-align: center;
@@ -36,18 +36,19 @@
             .state {
                 font-size: 2em;
             }
-        </style>
-    </head>
-    <body>
-        <div class="buttons">
-            <div class="minus button">-</div>
-            <div class="value">?</div>
-            <div class="plus button">+</div>
-        </div>
-        <div class="state">
-            <span class="users">?</span> online
-        </div>
-        <script>
+
+    </style>
+</head>
+<body>
+<div class="buttons">
+    <div class="minus button">-</div>
+    <div class="value">?</div>
+    <div class="plus button">+</div>
+</div>
+<div class="state">
+    <span class="users">?</span> online
+</div>
+<script>
             var minus = document.querySelector('.minus'),
                 plus = document.querySelector('.plus'),
                 value = document.querySelector('.value'),
@@ -75,6 +76,7 @@
                             "unsupported event", data);
                 }
             };
-        </script>
-    </body>
+
+</script>
+</body>
 </html>

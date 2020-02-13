@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% block jsInclude %}
-  <script src="../../static/ui/automation_runs.js"></script>
+<script src="../../static/ui/automation_runs.js"></script>
 {% endblock %}
 {% block title %}Automation Runs{% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="col-lg-12">
-      <div class="panel panel-default">
-          <!-- /.panel-heading -->
-          <div class="panel-body">
-            <div class="form-group">
-                <label>resource_object</label>
-                <select id="automation_runs_resource_object" class="form-control">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <!-- /.panel-heading -->
+            <div class="panel-body">
+                <div class="form-group">
+                    <label>resource_object</label>
+                    <select id="automation_runs_resource_object" class="form-control">
 
-                </select>
+                    </select>
+                </div>
+                <div id="terminal"></div>
             </div>
-            <div id = "terminal"></div>
-          </div>
-          <!-- /.panel-body -->
-      </div>
-      <!-- /.panel -->
-  </div>
-  <!-- /.col-lg-12 -->
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-12 -->
 </div>
 <!-- <div class="row">
     <div class="col-lg-4 col-md-6" style="max-height:50px">

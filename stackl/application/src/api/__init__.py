@@ -1,11 +1,11 @@
+import logging
+
 from flask import request
 from flask_restplus import Api
 from flask_restplus import Resource
 
-from logger import Logger
+logger = logging.getLogger(__name__)
 from task.request_task import RequestTask
-
-logger = Logger("REST")
 
 api = Api(
     version='2',
@@ -20,7 +20,7 @@ class StacklApiResource(Resource):
 
     def __init__(self, api=None, *args, **kwargs):
         super(StacklApiResource, self).__init__(api, args, kwargs)
-        logger.log("[StacklApiResource] API request received. Request environ: {0}".format(request.environ))
+        logger.info("[StacklApiResource] API request received. Request environ: {0}".format(request.environ))
         self.request_task = RequestTask(request.environ)
 
 
