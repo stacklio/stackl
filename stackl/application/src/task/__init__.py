@@ -1,11 +1,11 @@
 import json
+import logging
 from abc import ABC, abstractmethod
 
 from enums.cast_type import CastType
-from logger import Logger
-from utils.general_utils import generate_random_string, get_hostname
 
-logger = Logger("Task")
+logger = logging.getLogger(__name__)
+from utils.general_utils import generate_random_string, get_hostname
 
 
 class Task(ABC):
@@ -22,7 +22,7 @@ class Task(ABC):
         elif type(task_data) == dict:
             self._load_json_object(task_data)
         else:
-            logger.log("[Task] task_data must be string or dict")
+            logger.info("[Task] task_data must be string or dict")
             raise Exception('task_data must be string or dict')
 
     def _load_json_string(self, json_string):
@@ -58,7 +58,7 @@ class Task(ABC):
 
     def as_json_string(self):
         dict = self.__dict__
-        # logger.log("[Task] Dictionary of task: {0}".format(dict))
+        # logger.info("[Task] Dictionary of task: {0}".format(dict))
         json_string = json.dumps(dict)
-        # logger.log("[Task] json of task: {0}".format(json_string))
+        # logger.info("[Task] json of task: {0}".format(json_string))
         return json_string

@@ -8,19 +8,22 @@
 {{ $css          := resources.Get $sass | toCSS $cssOpts }}
 {{ $isDoc        := eq .Section "docs" }}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.7.0/tocbot.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.7.0/tocbot.css">
 
 {{ if $inServerMode }}
 <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 {{ else }}
 {{ $prodCss := $css | fingerprint }}
-<link rel="stylesheet" href="{{ $prodCss.RelPermalink }}" integrity="{{ $prodCss.Data.Integrity }}">
+<link rel="stylesheet" href="{{ $prodCss.RelPermalink }}"
+      integrity="{{ $prodCss.Data.Integrity }}">
 {{ end }}
 
 {{ if $isDoc }}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css"/>
 {{ end }}
 
 {{ if (eq .Kind "404") }}
-  <link media="screen" charset="utf-8" rel="stylesheet" href="/css/custom.css">
+<link media="screen" charset="utf-8" rel="stylesheet" href="/css/custom.css">
 {{ end }}

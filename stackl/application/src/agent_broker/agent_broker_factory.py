@@ -1,4 +1,6 @@
-from logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 
@@ -7,8 +9,8 @@ class AgentBrokerFactory(metaclass=Singleton):
 
     def __init__(self):
         self.agent_broker_type = get_config_key('AGENT_BROKER')
-        self.logger = Logger("AgentBrokerFactory")
-        self.logger.info("[AgentBrokerFactory] Creating Agent Broker with type: " + self.agent_broker_type)
+
+        logger.info("[AgentBrokerFactory] Creating Agent Broker with type: " + self.agent_broker_type)
         self.agent_broker = None
 
         if self.agent_broker_type == "gitlab-runner":
@@ -24,5 +26,5 @@ class AgentBrokerFactory(metaclass=Singleton):
             self.agent_broker = CustomAgentBroker()
 
     def get_agent_broker(self):
-        # self.logger.info("[DataStoreFactory] Giving store with type '{0}' and id '{1}'".format(self.store_type, self.store))
+        # logger.info("[DataStoreFactory] Giving store with type '{0}' and id '{1}'".format(self.store_type, self.store))
         return self.agent_broker

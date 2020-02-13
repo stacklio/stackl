@@ -1,4 +1,6 @@
-from logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 from manager.document_manager import DocumentManager
 from manager.item_manager import ItemManager
 from manager.stack_manager import StackManager
@@ -9,8 +11,7 @@ from utils.stackl_singleton import Singleton
 class ManagerFactory(metaclass=Singleton):
 
     def __init__(self):
-        self.logger = Logger("ManagerFactory")
-        self.logger.info("[ManagerFactory] Creating Managers")
+        logger.info("[ManagerFactory] Creating Managers")
 
         # The managers need acccess to the manager factory to get access to the other managers.
         # This makes the order in which the managers are initialized important where the document manager needs to be first

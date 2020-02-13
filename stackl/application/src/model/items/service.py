@@ -2,7 +2,8 @@ from marshmallow import Schema, fields, post_load
 
 
 class Service:
-    def __init__(self, name="", description="", type="service", functional_requirements=[], non_functional_requirements={}, params={}):
+    def __init__(self, name="", description="", type="service", functional_requirements=[],
+                 non_functional_requirements={}, params={}):
         self.name = name
         self.description = description
         self.type = type

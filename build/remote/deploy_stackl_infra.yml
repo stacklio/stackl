@@ -4,8 +4,8 @@
   become: true
   gather_facts: no
   tasks:
-  - name: Make sure Python is installed
-    raw: apt-get update -y ; apt-get install -y python-minimal
+    - name: Make sure Python is installed
+      raw: apt-get update -y ; apt-get install -y python-minimal
 
 - hosts: nodes
   become: true
@@ -13,96 +13,96 @@
   vars_files:
     - "vars/{{ env }}.yml"
   tasks:
-  - name: Add Docker GPG key
-    apt_key: url=https://download.docker.com/linux/ubuntu/gpg
-  - name: Add Docker APT repository
-    apt_repository:
-      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
-  - name: Install list of packages
-    apt:
-      name: "{{ item }}"
-      state: present
-      update_cache: yes
-    loop:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
-      - docker-ce
-      - python-setuptools
-      - python-pip
-      - nfs-common
-  - name: Install docker pip
-    pip:
-      name: docker
-      state: present
-  - name: Add Docker group
-    group:
-      name: docker
-      state: present
-  - name: Add ansible to Docker group
-    user:
-      name: ansible
-      group: docker
+    - name: Add Docker GPG key
+      apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+    - name: Install list of packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - docker-ce
+        - python-setuptools
+        - python-pip
+        - nfs-common
+    - name: Install docker pip
+      pip:
+        name: docker
+        state: present
+    - name: Add Docker group
+      group:
+        name: docker
+        state: present
+    - name: Add ansible to Docker group
+      user:
+        name: ansible
+        group: docker
 
-  - name: Create a directory LFS Database on /lfs_test_store/
-    block:
-      - file:
-          state: directory
-          path: "/lfs_test_store"
-      - file:
-          state: directory
-          path: "{{item}}"
-        loop:
-          - "/lfs_test_store/items"
-          - "/lfs_test_store/configs"
-        when: use_lfs
+    - name: Create a directory LFS Database on /lfs_test_store/
+      block:
+        - file:
+            state: directory
+            path: "/lfs_test_store"
+        - file:
+            state: directory
+            path: "{{item}}"
+          loop:
+            - "/lfs_test_store/items"
+            - "/lfs_test_store/configs"
+          when: use_lfs
 
-  - name: Copy certs
-    copy:
-      src: "{{item.key}}"
-      dest: "{{item.value}}"
-    with_dict: 
-      "{{stackl_ca_chain}}": "/stackl-efs/stackl-certs"
-      "{{stackl_server_cert_chain}}": "/stackl-efs/stackl-certs"
-      "{{stackl_server_cert}}": "/stackl-efs/stackl-certs"
-      "{{stackl_server_key}}": "/stackl-efs/stackl-certs"
-      "{{stackl_crl}}": "/stackl-efs/stackl-crl"
+    - name: Copy certs
+      copy:
+        src: "{{item.key}}"
+        dest: "{{item.value}}"
+      with_dict:
+        "{{stackl_ca_chain}}": "/stackl-efs/stackl-certs"
+        "{{stackl_server_cert_chain}}": "/stackl-efs/stackl-certs"
+        "{{stackl_server_cert}}": "/stackl-efs/stackl-certs"
+        "{{stackl_server_key}}": "/stackl-efs/stackl-certs"
+        "{{stackl_crl}}": "/stackl-efs/stackl-crl"
 
-  - name: Copy certs to lfs/certs
-    copy:
-      src: "{{item.key}}"
-      dest: "{{item.value}}"
-    with_dict: 
-      "{{stackl_ca_chain}}": "/lfs_test_store/certs"
-      "{{stackl_server_cert_chain}}": "/lfs_test_store/certs"
-      "{{stackl_server_cert}}": "/lfs_test_store/certs"
-      "{{stackl_server_key}}": "/lfs_test_store/certs"
-      "{{stackl_crl}}": "/lfs_test_store/certs"
-    when: use_lfs
-    
-  - name: Populate LFS items database with example database
-    copy:
-      src: "{{ item }}"
-      dest: "/lfs_test_store/items/"
-    with_fileglob:
-      - ../example_database/items/*
-    when: 
-      - use_lfs
-      - env == "test_lfs"
+    - name: Copy certs to lfs/certs
+      copy:
+        src: "{{item.key}}"
+        dest: "{{item.value}}"
+      with_dict:
+        "{{stackl_ca_chain}}": "/lfs_test_store/certs"
+        "{{stackl_server_cert_chain}}": "/lfs_test_store/certs"
+        "{{stackl_server_cert}}": "/lfs_test_store/certs"
+        "{{stackl_server_key}}": "/lfs_test_store/certs"
+        "{{stackl_crl}}": "/lfs_test_store/certs"
+      when: use_lfs
 
-  - name: Populate LFS configs database with example database
-    copy:
-      src: "{{ item }}"
-      dest: "/lfs_test_store/configs/"
-    with_fileglob:
-      -  ../example_database/configs/*
-    when: 
-      - use_lfs
-      - env == "test_lfs"
+    - name: Populate LFS items database with example database
+      copy:
+        src: "{{ item }}"
+        dest: "/lfs_test_store/items/"
+      with_fileglob:
+        - ../example_database/items/*
+      when:
+        - use_lfs
+        - env == "test_lfs"
 
-  - set_fact:
-      swarm_manager_main: "{{groups['swarm_manager_main'] | first}}"
+    - name: Populate LFS configs database with example database
+      copy:
+        src: "{{ item }}"
+        dest: "/lfs_test_store/configs/"
+      with_fileglob:
+        - ../example_database/configs/*
+      when:
+        - use_lfs
+        - env == "test_lfs"
+
+    - set_fact:
+        swarm_manager_main: "{{groups['swarm_manager_main'] | first}}"
 
 - hosts: swarm_manager_main
   become: true
@@ -110,36 +110,36 @@
   vars_prompt:
     - name: "docker_login_username"
       prompt: "Enter docker login username"
-      private: no  
+      private: no
     - name: "docker_login_password"
       prompt: "Enter docker login password"
       private: yes
   tasks:
-  - name: Init a new swarm
-    docker_swarm:
-      state: present
-      advertise_addr: "{{ansible_default_ipv4['address']}}"
-    register: swarm_init
-  - debug:
-      var: swarm_init
-  - name: Create Docker network overlay
-    docker_network:
-      name: stackl
-      driver: overlay
-      ipam_options:
-        subnet: '10.0.5.0/24'
-  - name: Create Docker network bridge
-    docker_network:
-      name: stackl_bridge
-      driver: bridge
-  - name: Log into private registry
-    docker_login:
-      registry: "{{item}}"
-      username: "{{docker_login_username}}"
-      password: "{{docker_login_password}}"
-    with_items:
-      - "registry.gitlab.com/stackl-registry"
-      - "registry.gitlab.com/stackl-core/v2/stackl2/"
+    - name: Init a new swarm
+      docker_swarm:
+        state: present
+        advertise_addr: "{{ansible_default_ipv4['address']}}"
+      register: swarm_init
+    - debug:
+        var: swarm_init
+    - name: Create Docker network overlay
+      docker_network:
+        name: stackl
+        driver: overlay
+        ipam_options:
+          subnet: '10.0.5.0/24'
+    - name: Create Docker network bridge
+      docker_network:
+        name: stackl_bridge
+        driver: bridge
+    - name: Log into private registry
+      docker_login:
+        registry: "{{item}}"
+        username: "{{docker_login_username}}"
+        password: "{{docker_login_password}}"
+      with_items:
+        - "registry.gitlab.com/stackl-registry"
+        - "registry.gitlab.com/stackl-core/v2/stackl2/"
 
 - hosts: swarm_nodes
   become: true
@@ -157,7 +157,7 @@
   gather_facts: yes
   vars_files:
     - "vars/{{ env }}.yml"
-  tasks: 
+  tasks:
     - name: Add labels
       shell: "docker node update {{hostvars[item]['ansible_nodename']}} --label-add {{hostvars[item]['docker_swarm_labels'] | join(' --label-add ' )}}"
       loop: "{{groups['nodes']}}"

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html{% block html_attribs %}{% endblock html_attribs %}>
 {%- block html %}
-  <head>
+<head>
     {%- block head %}
     <title>{% block title %}{{title|default}}{% endblock title %}</title>
 
@@ -15,23 +15,23 @@
     <link href="../../static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     {%- endblock styles %}
     {%- endblock head %}
-  </head>
-  <body{% block body_attribs %}{% endblock body_attribs %}>
-    {% block body -%}
-    {% block navbar %}
-    {%- endblock navbar %}
-    {% block content -%}
-    {%- endblock content %}
+</head>
+<body{% block body_attribs %}{% endblock body_attribs %}>
+{% block body -%}
+{% block navbar %}
+{%- endblock navbar %}
+{% block content -%}
+{%- endblock content %}
 
-    {% block scripts %}
-    <script src="../../static/vendor/jquery/jquery.min.js"></script>
+{% block scripts %}
+<script src="../../static/vendor/jquery/jquery.min.js"></script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="../../static/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="../../static/vendor/bootstrap/js/bootstrap.min.js"></script>
 
-    {%- endblock scripts %}
-    {%- endblock body %}
-  </body>
+{%- endblock scripts %}
+{%- endblock body %}
+</body>
 {%- endblock html %}
 </html>
 {% endblock doc -%}

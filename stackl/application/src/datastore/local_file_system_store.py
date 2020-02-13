@@ -1,16 +1,18 @@
 import json
+import logging
 import os
 
 from datastore import DataStore
 from enums.stackl_codes import StatusCode
-from logger import Logger
+
+logger = logging.getLogger(__name__)
 
 
 class LocalFileSystemStore(DataStore):
 
     def __init__(self, root):
         super(LocalFileSystemStore, self).__init__()
-        self.logger = Logger("LocalFileSystemStore")
+
         self.file_system_root = root
 
     @property
@@ -32,20 +34,20 @@ class LocalFileSystemStore(DataStore):
             get_all = True
             document_key = self.datastore_url + keys.get("category") + '/'
 
-        self.logger.log("[LocalFileSystemStore] get on key '{0}'".format(document_key))
+        logger.debug("[LocalFileSystemStore] get on key '{0}'".format(document_key))
 
         content = []
         try:
             if get_all:
                 for dirpath, _, filenames in os.walk(document_key):
                     for file in filenames:
-                        self.logger.log(
+                        logger.debug(
                             "[LocalFileSystemStore] get_all. Looking at file '{0}' for type {1}".format(file, keys.get(
                                 "type")))
                         if file.startswith(keys.get("type")):
                             with open(dirpath + file) as file_to_get:
                                 content.append(json.load(file_to_get))
-                            self.logger.log(
+                            logger.debug(
                                 "[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{0}'".format(
                                     len(content)))
                 response = self._create_store_response(status_code=StatusCode.OK, content=content)
@@ -56,7 +58,7 @@ class LocalFileSystemStore(DataStore):
         except Exception as e:
             response = self._create_store_response(status_code=StatusCode.INTERNAL_ERROR,
                                                    content="Error getting file. Error '{}'".format(e))
-        self.logger.log("[LocalFileSystemStore] StoreResponse for get: " + str(response))
+        logger.debug("[LocalFileSystemStore] StoreResponse for get: " + str(response))
         return response
 
     def put(self, file):
@@ -66,7 +68,7 @@ class LocalFileSystemStore(DataStore):
             document_key = self.datastore_url + file.get("category") + '/' + file.get("type") + '_' + file[
                 "name"] + ".json"
 
-        self.logger.log("[LocalFileSystemStore] put on '{0}' with file {1}".format(document_key, str(file)))
+        logger.debug("[LocalFileSystemStore] put on '{0}' with file {1}".format(document_key, str(file)))
 
         with open(document_key, 'w+') as outfile:
             json.dump(file, outfile, sort_keys=True, indent=4, separators=(',', ': '))
@@ -74,7 +76,7 @@ class LocalFileSystemStore(DataStore):
         with open(document_key, 'r') as storedfile:
             response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
 
-        self.logger.log("[LocalFileSystemStore] StoreResponse for put: " + str(response))
+        logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
         return response
 
     def delete(self, **keys):
@@ -84,7 +86,7 @@ class LocalFileSystemStore(DataStore):
             document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get(
                 "document_name") + ".json"
 
-        self.logger.log("[LocalFileSystemStore] delete on '{0}'".format(document_key))
+        logger.debug("[LocalFileSystemStore] delete on '{0}'".format(document_key))
         if os.path.isfile(document_key):
             os.remove(document_key)
             if not os.path.isfile(document_key):
@@ -96,7 +98,7 @@ class LocalFileSystemStore(DataStore):
 
         response = self._create_store_response(200, result, result)
 
-        self.logger.log("[LocalFileSystemStore] StoreResponse for delete: " + str(response))
+        logger.debug("[LocalFileSystemStore] StoreResponse for delete: " + str(response))
         return response
 
     def _check_datastore_exists(self, datastore):

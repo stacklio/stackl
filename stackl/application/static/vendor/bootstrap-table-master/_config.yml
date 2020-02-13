@@ -2,9 +2,9 @@
 markdown: redcarpet
 redcarpet:
   extensions:
-  - fenced_code_blocks
-  - tables
-  - autolink
+    - fenced_code_blocks
+    - tables
+    - autolink
 highlighter: rouge
 
 # Permalinks

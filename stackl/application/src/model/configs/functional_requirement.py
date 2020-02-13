@@ -19,7 +19,8 @@ class InvocationSchema(Schema):
 
 
 class FunctionalRequirement:
-    def __init__(self, name="", description="", type="functional_requirement", category="configs",invocation={}, params={}):
+    def __init__(self, name="", description="", type="functional_requirement", category="configs", invocation={},
+                 params={}):
         self.name = name
         self.description = description
         self.type = type

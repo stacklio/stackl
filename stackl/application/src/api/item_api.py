@@ -1,12 +1,14 @@
+import logging
+
 from flask_restplus import Namespace, fields
 
 from api import StacklApiResource
 from enums.stackl_codes import StatusCode
-from logger import Logger
+
+logger = logging.getLogger(__name__)
 from manager.manager_factory import ManagerFactory
 
 api = Namespace('item', description='Operations related to STACKL Item Key/Value Lookups')
-logger = Logger("Item API Logger")
 
 document_manager = ManagerFactory().get_document_manager()
 item_manager = ManagerFactory().get_item_manager()

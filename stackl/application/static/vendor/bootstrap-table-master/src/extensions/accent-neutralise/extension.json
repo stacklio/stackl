@@ -4,12 +4,12 @@
   "description": "Plugin to neutralise the words.",
   "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/accent-neutralise",
   "example": "#",
-
-  "plugins": [{
-    "name": "bootstrap-table-accent-neutralise",
-    "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/accent-neutralise"
-  }],
-
+  "plugins": [
+    {
+      "name": "bootstrap-table-accent-neutralise",
+      "url": "https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/accent-neutralise"
+    }
+  ],
   "author": {
     "name": "djhvscf",
     "image": "https://avatars1.githubusercontent.com/u/4496763"

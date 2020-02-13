@@ -4,20 +4,19 @@ stackl.general_utils
 This module provides general utility functions that are used within stackl
 """
 import datetime
+import logging
 import os
 import random
 import socket
 import string
 import time
 
-from logger import Logger
-
-logger = Logger("General Utils")
+logger = logging.getLogger(__name__)
 
 
 def get_config_key(key):
     value = os.environ.get('STACKL_' + key.upper(), None)
-    logger.log("[General Utils] get_config_key. Key: '{0}'. Value: '{1}'".format(key, value))
+    logger.info("[General Utils] get_config_key. Key: '{0}'. Value: '{1}'".format(key, value))
     if value:
         return value
 

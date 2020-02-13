@@ -1,7 +1,8 @@
 #!/usr/local/bin/python
 
+import logging
+import os
 import threading
-import time
 
 from flask import Flask, Blueprint
 from flask_bootstrap import Bootstrap
@@ -11,25 +12,22 @@ from flask_restplus import reqparse
 
 import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
-from logger import Logger
+
+logger = logging.getLogger(__name__)
+level = logging.getLevelName(os.environ.get("LOGLEVEL", "INFO"))
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter(
+    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 from manager.manager_factory import ManagerFactory
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
-
-def stackl_alive_counter():
-    while True:
-        logger.log("Stackl_App Alive Count (incremented every 30sec): {}".format(globals.get_alive_count()))
-        count = globals.get_alive_count() + 1
-        globals.set_alive_count(count)
-        time.sleep(30)
-
-
 # Start initialisation of Application Logic
 try:
-    logger = Logger("STACKL_APP")
-    logger.info("@@@@@@@@@@@@@@@@@ STARTING STACKL_APP @@@@@@@@@@@@@@@@@@")
-
     globals.initialize()
 
     manager_factory = ManagerFactory()
@@ -48,10 +46,6 @@ try:
                                                   "agent_broker": agent_broker})
     task_broker_thread.daemon = True
     task_broker_thread.start()
-
-    alive_count_thread = threading.Thread(name="Stackl Alive Count Thread", target=stackl_alive_counter, args=[])
-    alive_count_thread.daemon = True
-    alive_count_thread.start()
 
 
 except Exception as e:

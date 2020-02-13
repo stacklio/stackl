@@ -4,7 +4,7 @@ all:
       ansible_connection: local
 
 nodes:
-   children:
+  children:
     swarm_manager_main:
       hosts:
         tm001.stackl.io:

@@ -5,7 +5,8 @@
   {{ with (eq $version "edge") }}
   <div class="message is-danger">
     <div class="message-body">
-      This version is still under development! Latest stable release is <a href="/docs/latest">{{ $latest }}</a>
+      This version is still under development! Latest stable release is <a
+      href="/docs/latest">{{ $latest }}</a>
     </div>
   </div>
   {{ end }}
@@ -17,12 +18,13 @@
       </div>
     </section>
     <section class="section">
-      <hr />
+      <hr/>
       <div class="content">
         <span>Last updated on</span>
         <span>
           {{- with .GitInfo -}}
-            <a href="{{$.Site.Params.ghrepo}}/commit/{{ .Hash }}" target="_blank">
+            <a href="{{$.Site.Params.ghrepo}}/commit/{{ .Hash }}"
+               target="_blank">
           {{- end -}}
           {{ .Lastmod.UTC.Format $.Site.Params.dateformat }}
           {{- with .GitInfo -}}

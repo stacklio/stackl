@@ -1,6 +1,7 @@
+import logging
 import os
 
-from logger import Logger
+logger = logging.getLogger(__name__)
 from manager import Manager
 
 
@@ -8,7 +9,6 @@ class AuthenticationManager(Manager):
 
     def __init__(self, manager_factory):
         super(AuthenticationManager, self).__init__(manager_factory)
-        self.logger = Logger("AuthenticationManager")
 
         self.document_manager = manager_factory.document_manager
 
@@ -18,7 +18,7 @@ class AuthenticationManager(Manager):
         # This was the old implementation, we are not going to use this anymore for the moment
         #######################################################################################
         # serial = client_certificate_details['client_serial']
-        # self.logger.info("[AuthenticationManager] Getting tenant authorisation with serial '{0}'".format(serial) )
+        # logger.info("[AuthenticationManager] Getting tenant authorisation with serial '{0}'".format(serial) )
         # auth_doc = self.get_auth_document(client_certificate_details)
         # if auth_doc and 'tenant' in auth_doc:
         #     return auth_doc['tenant']
@@ -54,7 +54,7 @@ class AuthenticationManager(Manager):
             client_data['type'] = 'client'
             client_data['tenant'] = tenant
             client_data['name'] = serial
-            self.logger.info(
+            logger.info(
                 "[AuthenticationManager] Trying to create new client for tenant " + tenant + " with data " + str(
                     client_data))
             self.document_manager.write_document('authentication', document_name=client_data['serial'],
@@ -69,7 +69,7 @@ class AuthenticationManager(Manager):
                                                       document_name=str(serial))
         if auth_doc:
             if ('tenant' not in auth_doc) or ('tenant' in auth_doc and tenant == auth_doc['tenant']):
-                self.logger.info("[AuthenticationManager] Trying to remove client from authentication DB...")
+                logger.info("[AuthenticationManager] Trying to remove client from authentication DB...")
                 self.document_manager.remove_document('authentication', document_name=serial, subcategory='client',
                                                       category='authentication')
             else:
@@ -91,7 +91,7 @@ class AuthenticationManager(Manager):
 
     def get_client_auth(self, client_certificate_details):
         serial = client_certificate_details['client_serial']
-        self.logger.info("[AuthenticationManager] serial: " + str(serial))
+        logger.info("[AuthenticationManager] serial: " + str(serial))
         if serial is not None:
             auth_doc = self.get_auth_document(client_certificate_details)
             if auth_doc and 'role' in auth_doc and auth_doc['role'] == 'agent':

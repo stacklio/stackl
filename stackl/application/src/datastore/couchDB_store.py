@@ -1,8 +1,11 @@
 import json
+import logging
+
 import requests
 
 from datastore import DataStore
-from logger import Logger
+
+logger = logging.getlogger(__name__)
 from utils.general_utils import get_config_key
 
 
@@ -10,7 +13,7 @@ class CouchDBStore(DataStore):
 
     def __init__(self):
         super(CouchDBStore, self).__init__()
-        self.logger = Logger("CouchDB Store")
+
         self.couchdb_url = "https://" + get_config_key("couchDbAdmin") + ":" + get_config_key("couchDbPassword") + "@" \
                            + get_config_key("couchDbHostHttp") + ":" + get_config_key("couchDbPort") + "/"
 
@@ -32,7 +35,7 @@ class CouchDBStore(DataStore):
             document_key = tenant + "/" + "_design/" + keys.get("category") \
                            + "/_view/" + keys.get("subcategory")
 
-        self.logger.log("[CouchDBStore] Requests.get on '{0}' + '{1}'".format(self.datastore_url, document_key))
+        logger.debug("[CouchDBStore] Requests.get on '{0}' + '{1}'".format(self.datastore_url, document_key))
         result = requests.get(self.datastore_url + document_key, verify="/certs/ca.crt")
         result_content = result.json()
 
@@ -52,39 +55,39 @@ class CouchDBStore(DataStore):
             response = self._create_store_response(result.status_code, result.reason, return_obj)
         else:
             response = self._create_store_response(400, "Undetermined")
-            self.logger.log("[CouchDBStore] Something odd happened. Result Status Code: {0}. Content: {1}".format(
+            logger.debug("[CouchDBStore] Something odd happened. Result Status Code: {0}. Content: {1}".format(
                 result.status_code, result_content))
 
-        self.logger.log("[CouchDBStore] StoreResponse for get: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for get: " + str(response))
         return response
 
     def put(self, file, tenant="nubera"):
         document_key = tenant
-        self.logger.log(
+        logger.debug(
             "[CouchDBStore] Requests.put on '{0}' with file {1}".format(self.datastore_url + document_key, str(file)))
 
         result = requests.post(self.datastore_url + document_key, json=file, verify='/certs/ca.crt')
-        # self.logger.log("[CouchDBStore] Result of raw text requests.put: " + result.text.rstrip())
+        # logger.debug("[CouchDBStore] Result of raw text requests.put: " + result.text.rstrip())
 
         response = self._create_store_response(result.status_code, result.reason, result.json())
 
-        self.logger.log("[CouchDBStore] StoreResponse for put: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for put: " + str(response))
         return response
 
     def delete(self, tenant="nubera", **keys):
         doc_obj = keys.get("file")
         document_key = tenant + "/" + doc_obj['_id'] + "?rev=" + doc_obj['_rev']
-        self.logger.log("[CouchDBStore] Requests.delete on '{0}' + '{1}'".format(self.datastore_url, document_key))
+        logger.debug("[CouchDBStore] Requests.delete on '{0}' + '{1}'".format(self.datastore_url, document_key))
         result = requests.delete(self.datastore_url + document_key, verify="/certs/ca.crt")
-        # self.logger.log("[CouchDBStore] Result of raw text requests.delete: " + result.text.rstrip())
+        # logger.debug("[CouchDBStore] Result of raw text requests.delete: " + result.text.rstrip())
 
         response = self._create_store_response(result.status_code, result.reason, result.json())
 
-        self.logger.log("[CouchDBStore] StoreResponse for delete: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for delete: " + str(response))
         return response
 
     def get_versions(self, tenant="nubera", **keys):
-        self.logger.log("[CouchDBStore] get_versions on '{0}' for keys '{1}'".format(self.datastore_url, keys))
+        logger.debug("[CouchDBStore] get_versions on '{0}' for keys '{1}'".format(self.datastore_url, keys))
 
         if "doc_id" in keys:
             doc_id = keys.get("doc_id")
@@ -97,12 +100,12 @@ class CouchDBStore(DataStore):
         document_key = tenant + "/" + doc_id + "?revs=true"
         if keys.get("all", False):
             document_key = document_key + "&open_revs=all"
-        self.logger.log("[CouchDBStore] get_versions. document_key: " + str(document_key))
+        logger.debug("[CouchDBStore] get_versions. document_key: " + str(document_key))
         request_result = requests.get(self.datastore_url + document_key, verify='/certs/ca.crt')
-        # self.logger.log("[CouchDBStore] get_versions. Result of raw text requests.get: "+ request_result.text.rstrip())
+        # logger.debug("[CouchDBStore] get_versions. Result of raw text requests.get: "+ request_result.text.rstrip())
 
         doc_obj = request_result.json()
-        self.logger.log("[CouchDBStore] get_versions. doc_obj with revisions: " + json.dumps(doc_obj))
+        logger.debug("[CouchDBStore] get_versions. doc_obj with revisions: " + json.dumps(doc_obj))
 
         if keys.get("raw", False):
             response = self._create_store_response(request_result.status_code, request_result.reason, doc_obj)
@@ -114,16 +117,16 @@ class CouchDBStore(DataStore):
                 result = requests.get(self.datastore_url + key, verify="/certs/ca.crt").json()
                 if 'reason' in result and (result['reason'] == 'missing') and 'error' in result and (
                         result['error'] == 'not_found'):
-                    self.logger.info("[CouchDBStore] get_versions. revision not present anymore... break")
+                    logger.info("[CouchDBStore] get_versions. revision not present anymore... break")
                     break
                 result_array.append(result)
             response = self._create_store_response(request_result.status_code, request_result.reason,
                                                    {"result": result_array})
-        self.logger.log("[CouchDBStore] StoreResponse for get_versions: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for get_versions: " + str(response))
         return response
 
     def get_version_x(self, tenant="nubera", **keys):
-        self.logger.log("[CouchDBStore] get_version_x on '{0}' for keys '{1}'".format(self.datastore_url, keys))
+        logger.debug("[CouchDBStore] get_version_x on '{0}' for keys '{1}'".format(self.datastore_url, keys))
 
         initial_store_response = self.get_versions(tenant, **keys)
         revisions_obj = initial_store_response.content
@@ -132,50 +135,50 @@ class CouchDBStore(DataStore):
         # revision_previous = str(revisions_number - previous_nb) +'-'+ revisions_obj['_revisions']['ids'][previous_nb]
         # revision_previous_url = tenant + keys["document_name"] +'?rev='+ revision_previous     
         document_version_x = revisions_obj["result"][previous_nb - 1]
-        # self.logger.log("[CouchDBStore]  get_version_x. document_version_x is '{0}'".format(document_version_x))
-        # self.logger.log("[CouchDBStore]  get_version_x. Determined the needed revision_previous_url '{0}'".format(revision_previous_url))
+        # logger.debug("[CouchDBStore]  get_version_x. document_version_x is '{0}'".format(document_version_x))
+        # logger.debug("[CouchDBStore]  get_version_x. Determined the needed revision_previous_url '{0}'".format(revision_previous_url))
         # result  = requests.get(self.datastore_url + revision_previous_url, verify='/certs/ca.crt').json()
         response = self._create_store_response(initial_store_response.status_code, initial_store_response.reason,
                                                {"result": document_version_x})
-        self.logger.log("[CouchDBStore] StoreResponse for get_version_x: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for get_version_x: " + str(response))
 
         return response
 
     def get_categories(self, tenant="nubera"):
         document_key = tenant + "/" + "_design_docs"
-        self.logger.log("[CouchDBStore] get_categories. Searching for categories on key: " + document_key)
+        logger.debug("[CouchDBStore] get_categories. Searching for categories on key: " + document_key)
         try:
             result = requests.get(self.datastore_url + document_key, verify='/certs/ca.crt')
-            self.logger.log("[CouchDBStore] get_categories. Result of request: " + result.text.rstrip())
+            logger.debug("[CouchDBStore] get_categories. Result of request: " + result.text.rstrip())
             categories_obj = json.loads(result.text)['rows']
             return_obj = {tenant: []}
             for category in categories_obj:
                 return_obj[tenant].append(str(category))
             response = self._create_store_response(result.status_code, result.reason, return_obj)
         except Exception as e:
-            self.logger.error(
+            logger.error(
                 "[CouchDBStore] Exception occured in get_categories: " + str(e) + ". Returning empty StoreResponse")
             response = self._create_store_response(400, str(e), {})
-        self.logger.log("[CouchDBStore] StoreResponse for get_categories: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for get_categories: " + str(response))
         return response
 
     def get_subcategories_for_category(self, category, tenant="nubera"):
         document_key = tenant + "/" + "_design/" + category
-        self.logger.log(
+        logger.debug(
             "[CouchDBStore] get_subcategories_for_category. Searching for subcategories on key: " + document_key)
         try:
             result = requests.get(self.datastore_url + document_key, verify='/certs/ca.crt')
-            self.logger.log("[CouchDBStore] get_subcategories_for_category. Result of request: " + result.text.rstrip())
+            logger.debug("[CouchDBStore] get_subcategories_for_category. Result of request: " + result.text.rstrip())
             categories_obj = json.loads(result.text)['views']
             return_obj = {category: []}
             for subcategory in categories_obj:
                 return_obj[category].append(str(subcategory))
             response = self._create_store_response(result.status_code, result.reason, return_obj)
         except Exception as e:
-            self.logger.error("[CouchDBStore] Exception occured in get_subcategories_for_category: " + str(
+            logger.error("[CouchDBStore] Exception occured in get_subcategories_for_category: " + str(
                 e) + ". Returning empty StoreResponse")
             response = self._create_store_response(400, str(e), {})
-        self.logger.log("[CouchDBStore] StoreResponse for get_subcategories_for_category: " + str(response))
+        logger.debug("[CouchDBStore] StoreResponse for get_subcategories_for_category: " + str(response))
         return response
 
     def _get_datastore_url(self, datastore):

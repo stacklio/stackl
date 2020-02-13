@@ -7,9 +7,9 @@ metadata:
     component: rest
 spec:
   rules:
-  - host: {{ .Values.stacklrest.hostname }}
-    http:
-      paths:
-      - backend:
-          serviceName: "{{ template "stackl.rest" . }}"
-          servicePort: 8080
+    - host: {{ .Values.stacklrest.hostname }}
+      http:
+        paths:
+          - backend:
+              serviceName: "{{ template "stackl.rest" . }}"
+              servicePort: 8080

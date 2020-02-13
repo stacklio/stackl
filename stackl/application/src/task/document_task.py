@@ -22,5 +22,5 @@ class DocumentTask(Task):
         if all(subtasks in self.valid_subtasks for subtasks in given_subtasks_list):
             self.subtasks = given_subtasks_list
         else:
-            logger.log("[DocumentTask] The given DocumentTask contains invalid subtasks")
+            logger.info("[DocumentTask] The given DocumentTask contains invalid subtasks")
             raise Exception("The given DocumentTasks contains invalid subtasks")

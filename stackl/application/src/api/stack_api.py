@@ -1,15 +1,17 @@
+import logging
+
 from flask import request
 from flask_restplus import Namespace, fields, reqparse
 
 from api import StacklApiResource
 from enums.stackl_codes import StatusCode
-from logger import Logger
+
+logger = logging.getLogger(__name__)
 from manager.manager_factory import ManagerFactory
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
 api = Namespace('stack', description='Operations related to STACKL Stacks')
-logger = Logger("Stack API Logger")
 
 manager_factory = ManagerFactory()
 document_manager = manager_factory.get_document_manager()
@@ -43,7 +45,7 @@ stack_instance_invoke_field = api.model('stack_instance_invoke_field', {
 class StackInstancesName(StacklApiResource):
     def get(self, stack_instance_name="Example_Instance1"):
         """Returns a stack instance with a specific name"""
-        logger.log(
+        logger.info(
             "[StackInstancesName GET] Getting document for stack instance " + stack_instance_name + ' using manager')
         stack_instance = document_manager.get_document(type="stack_instance", document_name=stack_instance_name)
         if not stack_instance:
@@ -55,15 +57,15 @@ class StackInstancesName(StacklApiResource):
     @api.expect(force_arguments)
     def delete(self, stack_instance_name="Example_Instance1"):
         """Delete a stack instance with a specific name"""
-        logger.log("[StackInstances DELETE] Received DELETE request for " + stack_instance_name)
+        logger.info("[StackInstances DELETE] Received DELETE request for " + stack_instance_name)
         stack_instance_exists = document_manager.get_document(type="stack_instance", document_name=stack_instance_name)
         if not stack_instance_exists:
             return {'return_code': StatusCode.NOT_FOUND,
                     'message': 'Stack instance ' + str(stack_instance_name) + ' not found'}, StatusCode.NOT_FOUND
         try:
-            logger.log("[StackInstances DELETE] force_arguments: " + str(force_arguments.parse_args()))
+            logger.info("[StackInstances DELETE] force_arguments: " + str(force_arguments.parse_args()))
             force = force_arguments.parse_args()['force']
-            logger.log("[StackInstances DELETE] Received POST request with force " + str(force))
+            logger.info("[StackInstances DELETE] Received POST request with force " + str(force))
             json_data = {}
             json_data['stack_instance_name'] = stack_instance_name
             if force:
@@ -74,7 +76,7 @@ class StackInstancesName(StacklApiResource):
                 'json_data': json_data,
                 'subtasks': ["DELETE"],
             })
-            logger.log("[StackInstances DELETE] Giving StackTask '{0}' to task_broker".format(task.__dict__))
+            logger.info("[StackInstances DELETE] Giving StackTask '{0}' to task_broker".format(task.__dict__))
             task_broker.give_task(task)
             return {'return_code': StatusCode.CREATED, 'message': 'Stack instance deleting'}, StatusCode.CREATED
         except Exception as e:
@@ -87,9 +89,9 @@ class StackInstances(StacklApiResource):
     @api.expect(stack_instance_invoke_field, validate=True)
     def post(self):
         """Creates and invokes a new stack instance with the given name from a stack application template and stack infrastructure template"""
-        logger.log("[StackInstances POST] Received POST request")
+        logger.info("[StackInstances POST] Received POST request")
         json_data = request.get_json()
-        logger.log("[StackInstances POST] json_data after get_json: " + str(json_data))
+        logger.info("[StackInstances POST] json_data after get_json: " + str(json_data))
         if not json_data:
             return {'return_code': StatusCode.BAD_REQUEST,
                     'message': 'Bad request: JSON data is mandatory for this POST request'}, StatusCode.BAD_REQUEST
@@ -106,13 +108,13 @@ class StackInstances(StacklApiResource):
         # check if templates is exists. Should be the case
         infr_template_exists = document_manager.get_document(type="stack_infrastructure_template",
                                                              document_name=infr_template_name)
-        logger.log("[StackInstances POST] infr_template_exists (should be the case): " + str(infr_template_exists))
+        logger.info("[StackInstances POST] infr_template_exists (should be the case): " + str(infr_template_exists))
         if not infr_template_exists:
             return {'return_code': StatusCode.NOT_FOUND,
                     'message': 'SIT with name ' + str(infr_template_exists) + ' does not exist'}, StatusCode.NOT_FOUND
         application_template_name = document_manager.get_document(type='stack_application_template',
                                                                   document_name=application_template_name)
-        logger.log("[StackInstances POST] application_template_name exists (should be the case): " + str(
+        logger.info("[StackInstances POST] application_template_name exists (should be the case): " + str(
             application_template_name))
         if not application_template_name:
             return {'return_code': StatusCode.NOT_FOUND, 'message': 'SAT with name ' + str(
@@ -120,13 +122,13 @@ class StackInstances(StacklApiResource):
 
         # check if stack_instance already exists. Should not be the case
         stack_instance_exists = document_manager.get_document(type="stack_instance", document_name=stack_instance_name)
-        logger.log("[StackInstances POST] stack_instance_exists (should not be case): " + str(stack_instance_exists))
+        logger.info("[StackInstances POST] stack_instance_exists (should not be case): " + str(stack_instance_exists))
         if stack_instance_exists:
             return {'return_code': StatusCode.CONFLICT,
                     'message': 'Stack instance ' + str(stack_instance_name) + ' already exists'}, StatusCode.CONFLICT
 
         requester_auth = user_manager.get_user_auth(self.request_task.certification_details)
-        logger.log("[StackInstances POST] Requester Auth is '{0}".format(requester_auth))
+        logger.info("[StackInstances POST] Requester Auth is '{0}".format(requester_auth))
 
         try:
             task = StackTask({
@@ -135,7 +137,7 @@ class StackInstances(StacklApiResource):
                 'json_data': json_data,
                 'subtasks': ["CREATE"],
             })
-            logger.log("[StackInstances POST] Giving StackTask '{0}' to task_broker".format(task.__dict__))
+            logger.info("[StackInstances POST] Giving StackTask '{0}' to task_broker".format(task.__dict__))
             task_broker.give_task(task)
 
             return {'return_code': StatusCode.CREATED, 'message': 'Stack instance creating'}, StatusCode.CREATED
@@ -148,9 +150,9 @@ class StackInstances(StacklApiResource):
     @api.expect(stack_instance_invoke_field, validate=True)
     def put(self):
         """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
-        logger.log("[StackInstances PUT] Received PUT request")
+        logger.info("[StackInstances PUT] Received PUT request")
         json_data = request.get_json()
-        logger.log("[StackInstances PUT] json_data after get_json: " + str(json_data))
+        logger.info("[StackInstances PUT] json_data after get_json: " + str(json_data))
         if not json_data:
             return {'return_code': StatusCode.BAD_REQUEST,
                     'message': 'Bad request: JSON data is mandatory for this POST request'}, StatusCode.BAD_REQUEST
@@ -166,13 +168,13 @@ class StackInstances(StacklApiResource):
         # check if templates is exists. Should be the case
         infr_template_exists = document_manager.get_document(type="stack_infrastructure_template",
                                                              document_name=infr_template_name)
-        logger.log("[StackInstances PUT] infr_template_exists (should be the case): " + str(infr_template_exists))
+        logger.info("[StackInstances PUT] infr_template_exists (should be the case): " + str(infr_template_exists))
         if not infr_template_exists:
             return {'return_code': StatusCode.NOT_FOUND,
                     'message': 'SIT with name ' + str(infr_template_exists) + ' does not exist'}, StatusCode.NOT_FOUND
         app_template_name = document_manager.get_document(type="stack_application_template",
                                                           document_name=app_template_name)
-        logger.log("[StackInstances PUT] app_template_name exists (should be the case): " + str(app_template_name))
+        logger.info("[StackInstances PUT] app_template_name exists (should be the case): " + str(app_template_name))
         if not app_template_name:
             return {'return_code': StatusCode.NOT_FOUND,
                     'message': 'SAT with name ' + str(app_template_name) + ' does not exist'}, StatusCode.NOT_FOUND
@@ -184,7 +186,7 @@ class StackInstances(StacklApiResource):
                 'json_data': json_data,
                 'subtasks': ["UPDATE"]
             })
-            logger.log("[StackInstances PUT] Giving StackTask '{0}' to task_broker".format(task))
+            logger.info("[StackInstances PUT] Giving StackTask '{0}' to task_broker".format(task))
             task_broker.give_task(task)
 
             return {'return_code': StatusCode.CREATED, 'message': 'Stack instance updating'}, StatusCode.CREATED
@@ -198,7 +200,7 @@ class StackInstances(StacklApiResource):
 class StackInstancesAll(StacklApiResource):
     def get(self):
         """Returns all stack instances"""
-        logger.log("[StackInstancesAll GET] Returning all stack instances")
+        logger.info("[StackInstancesAll GET] Returning all stack instances")
         doc = document_manager.get_document(type="stack_instance")
         if doc:
             return doc
@@ -210,7 +212,7 @@ class StackInstancesAll(StacklApiResource):
 class StackTemplatesAll(StacklApiResource):
     def get(self):
         """Returns all stack templates"""
-        logger.log("[StackTemplatesAll GET] Returning all Stack templates")
+        logger.info("[StackTemplatesAll GET] Returning all Stack templates")
         return document_manager.get_document(type="stack_template")
 
 
@@ -218,7 +220,7 @@ class StackTemplatesAll(StacklApiResource):
 class StackTemplate(StacklApiResource):
     def get(self, stack_template_name):
         """Returns a stack template with a specific name"""
-        logger.log("[StackTemplate POST] Getting document for stack template " + stack_template_name + ' using manager')
+        logger.info("[StackTemplate POST] Getting document for stack template " + stack_template_name + ' using manager')
         return document_manager.get_document(type="stack_template", document_name=stack_template_name)
 
 
@@ -226,7 +228,7 @@ class StackTemplate(StacklApiResource):
 class StackInstanceStateShort(StacklApiResource):
     def get(self, stack_instance_name):
         """Returns the status for a stack instance with a specific name"""
-        logger.log("[StackInstanceStateShort GET] Getting state for stack instance (short) " + stack_instance_name)
+        logger.info("[StackInstanceStateShort GET] Getting state for stack instance (short) " + stack_instance_name)
         stack_instance_exists = document_manager.get(type="stack_instance", document_name=stack_instance_name)
         if not stack_instance_exists:
             return {'return_code': StatusCode.NOT_FOUND,
@@ -240,7 +242,7 @@ class StackInstanceStateShort(StacklApiResource):
 class StackInstanceStateLong(StacklApiResource):
     def get(self, stack_instance_name):
         """Returns the long status for a stack instance with a specific id"""
-        logger.log("[StackInstanceStateLong GET] Getting state for stack instance (long) " + stack_instance_name)
+        logger.info("[StackInstanceStateLong GET] Getting state for stack instance (long) " + stack_instance_name)
         stack_instance_exists = document_manager.get_document(type="stack_instance", document_name=stack_instance_name)
         if not stack_instance_exists:
             return {'return_code': StatusCode.NOT_FOUND,

@@ -6,9 +6,9 @@
     - "vars/{{ env }}.yml"
   tasks:
     - name: get public_ip4 output
-      shell: curl http://169.254.169.254/latest/meta-data/public-ipv4 
+      shell: curl http://169.254.169.254/latest/meta-data/public-ipv4
       register: public_ipv4
-    - debug: 
+    - debug:
         var: public_ipv4.stdout
     - name: Create docker_pull
       template:
@@ -28,6 +28,6 @@
         published_ports: 8889:8889
         recreate: yes
         env:
-          STACKL_HOST : "{{ stackl_host }}"
+          STACKL_HOST: "{{ stackl_host }}"
           HOST_MACHINE: "{{ public_ipv4.stdout }}"
           TAGS: "['common', 'tom', 'sven', 'frederic']"

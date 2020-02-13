@@ -1,4 +1,6 @@
-from logger import Logger
+import logging
+
+logger = logging.getLogger(__name__)
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 
@@ -7,8 +9,8 @@ class TaskBrokerFactory(metaclass=Singleton):
 
     def __init__(self):
         self.task_broker_type = get_config_key("TASK_BROKER")
-        self.logger = Logger("TaskBrokerFactory")
-        self.logger.info("[TaskBrokerFactory] Creating Task Broker with type: {}".format(self.task_broker_type))
+
+        logger.info("[TaskBrokerFactory] Creating Task Broker with type: {}".format(self.task_broker_type))
         self.task_broker = None
 
         if self.task_broker is not None:

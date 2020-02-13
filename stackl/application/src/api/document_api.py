@@ -33,7 +33,7 @@ class DocumentTypesOverview(StacklApiResource):
     @api.expect(document_field, validate=True)
     def post(self):
         """Create the document with a specific type and an optional name given in the payload"""
-        logger.log("[DocumentByTypeAndName POST] Receiver POST request")
+        logger.info("[DocumentByTypeAndName POST] Receiver POST request")
         json_data = request.get_json()
         type_name = json_data["type"]
 
@@ -63,7 +63,7 @@ class DocumentTypesOverview(StacklApiResource):
             'document': document,
             'subtasks': ["POST_DOCUMENT"]
         })
-        logger.log("[DocumentByTypeAndName POST] Giving Document Task '{0}' to task_broker".format(task))
+        logger.info("[DocumentByTypeAndName POST] Giving Document Task '{0}' to task_broker".format(task))
         task_broker.give_task(task)
         return {'return_code': StatusCode.CREATED, 'message': 'Created'}, StatusCode.CREATED
 
@@ -72,13 +72,13 @@ class DocumentTypesOverview(StacklApiResource):
 class DocumentByType(StacklApiResource):
     def get(self, type_name):
         """Returns all documents with a specific type"""
-        logger.log("[DocumentsByType GET] Receiver GET request with data: " + type_name)
+        logger.info("[DocumentsByType GET] Receiver GET request with data: " + type_name)
         try:
             documents = document_manager.get_document(type=type_name)
         except InvalidDocTypeError as e:
             return {'return_code': StatusCode.BAD_REQUEST, 'message': e.msg}, StatusCode.BAD_REQUEST
 
-        logger.log("[DocumentsByType GET] document(s): " + str(documents))
+        logger.info("[DocumentsByType GET] document(s): " + str(documents))
         if documents:
             if type(documents) is list:
                 return {"result": documents}
@@ -90,7 +90,7 @@ class DocumentByType(StacklApiResource):
 class DocumentByTypeAndName(StacklApiResource):
     def get(self, type_name, document_name):
         """Returns a specific document with a type and name"""
-        logger.log("[DocumentByTypeAndName GET] Receiver GET request with data: " + type_name + " - " + document_name)
+        logger.info("[DocumentByTypeAndName GET] Receiver GET request with data: " + type_name + " - " + document_name)
         parser = reqparse.RequestParser()
         parser.add_argument('key', help='Get value for a specific key')
         args = parser.parse_args()
@@ -119,7 +119,7 @@ class DocumentByTypeAndName(StacklApiResource):
     @api.expect(document_field, validate=True)
     def put(self, type_name, document_name):
         """Updates (or creates) a document with the given type and name"""
-        logger.log("[DocumentByTypeAndName PUT] Receiver PUT request with data: " + type_name)
+        logger.info("[DocumentByTypeAndName PUT] Receiver PUT request with data: " + type_name)
         json_data = request.get_json()
 
         document = {}
@@ -139,14 +139,14 @@ class DocumentByTypeAndName(StacklApiResource):
             'document': document,
             'subtasks': ["PUT_DOCUMENT"]
         })
-        logger.log("[TypeWithName PUT] Giving Document Task '{0}' to task_broker".format(task))
+        logger.info("[TypeWithName PUT] Giving Document Task '{0}' to task_broker".format(task))
         task_broker.give_task(task)
         return {'return_code': StatusCode.CREATED, 'message': 'Updated'}, StatusCode.CREATED
 
     @api.response(StatusCode.OK, 'Deleted')
     def delete(self, type_name, document_name):
         """Deletes a specific document with a type and name"""
-        logger.log(
+        logger.info(
             "[DocumentByTypeAndName DELETE] Receiver DELETE request with data: " + type_name + " - " + document_name)
         document = document_manager.get_document(type=type_name, document_name=document_name)
         if document:
