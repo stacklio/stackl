@@ -2,8 +2,9 @@ from marshmallow import Schema, fields, post_load
 
 
 class Location:
-    def __init__(self, name="", description="", type="location", params={}):
+    def __init__(self, name="", category="configs", description="", type="location", params={}):
         self.name = name
+        self.category = category
         self.description = description
         self.type = type
         self.params = params

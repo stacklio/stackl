@@ -2,8 +2,9 @@ from marshmallow import Schema, fields, post_load
 
 
 class StackApplicationTemplate:
-    def __init__(self, name="", description="", type="stack_application_template",
+    def __init__(self, name="", category="configs", description="", type="stack_application_template",
                  services=None, extra_functional_requirements=None):
+        self.category = category
         if services is None:
             services = []
         if extra_functional_requirements is None:
