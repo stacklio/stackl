@@ -29,9 +29,6 @@ Because STACKL makes use of different components we use docker-compose to set ev
 ```yaml
 version: '3'
 networks:
-  default:
-    external:
-      name: stackl
   stackl_bridge:
     external:
       name: stackl_bridge
@@ -170,11 +167,8 @@ Contains logs about the Redis
 
 #### Volume Mounts
 
-LEG HIER UIT HOE LFS DATABASE WERKT EN GEMOUNT
-
-The simplest way to load data and policies into OPA is to provide them via the
-file system as command line arguments. When running inside Docker, you can
-provide files via volume mounts.
+The configs and items of stackl are mounted into both the stackl-worker and the stackl-rest container.
+In the example these are located at /tmp/example_database, you can change this accordingly.
 
 #### More Information
 
@@ -186,75 +180,30 @@ See configuration.md for more information (link naar configuration.md)
 
 ## Kubernetes
 
-### Kicking the Tires
+The best way to use Stackl is to install it on Kubernetes. Although it is possible to install everything manual, the recommended way is to use our official Helm Charts.
 
-WAT MOET IK HEBBEN
-KUBERNETES -> SNELLE SETUP MET MICROK8S
-HELM DEPLOYMENT
+### Prerequisites
 
-This section shows how to quickly deploy OPA on top of Kubernetes to try it out.
+* Kubernetes environment
+* Helm 3 (https://helm.sh/docs/intro/install/)
+* Kubectl
 
-MAAK HIER MICROK8S VAN
+### Installing
+
 > These steps assume Kubernetes is deployed with
-[minikube](https://github.com/kubernetes/minikube). If you are using a different
+[microk8s](https://microk8s.io/). If you are using a different
 Kubernetes provider, the steps should be similar. You may need to use a
 different Service configuration at the end.
 
-CREATE HELM CHARTS
+* Clone the Helm repository `git clone git@github.com:stacklio/stackl.git`
+* Create a namespace that will house the STACKL deployment `kubectl create namespace stackl`
+* Execute the following command to deploy STACKL and all of its components in the active K8s context: `helm install stackl/build/helm -n stackl --generate-name`
 
-HELM VALUES UITLEGGEN
-HELM INSTALL
-HELM LS
-KUBECTL GET PO
-UITLEGGEN COMPONENTS
-
-
-Next, create a HELM CHART to run STACKL. The ConfigMap containing the policy is
-volume mounted into the container. This allows STACKL to load the policy from
-the file system.
-
-```
-
-```bash
-helm install -n test .
-```
+You can see all the pods with the following command: `watch kubectl get pods -n stackl`
 
 At this point STACKL is up and running.
 
-YOU CAN NOW SEE WHERE STACKL IS RUNNING BY KUBECTL GET SVC AND GO TO THE REST API
-
-Create a Service to expose the OPA API so
-that you can query it:
-
-```bash
-kubectl create -f service-opa.yaml
-```
-
-NAMAKEN
-Get the URL of OPA using `minikube`:
-
-```bash
-OPA_URL=$(minikube service opa --url)
-```
-
-Now you can query OPA's API:
-
-```bash
-curl $OPA_URL/v1/data
-```
-
-CHECK STACKL WERKING
-OPA will respond with the greeting from the policy (the pod hostname will differ):
-
-```json
-{
-  "result": {
-    "example": {
-      "greeting": "hello from pod \"opa-78ccdfddd-xplxr\"!"
-    }
-  }
-}
-```
+YOU CAN NOW SEE WHERE STACKL IS RUNNING BY KUBECTL GET SVC AND GO TO THE REST API #TODO
 
 ## HTTP Proxies
 

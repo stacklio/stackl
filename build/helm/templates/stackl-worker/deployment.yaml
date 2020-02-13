@@ -17,47 +17,47 @@ spec:
         {{- include "stackl.selectorLabels" . | nindent 8 }}
         component: worker
     spec:
-    {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
-    affinity:
-      podAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchLabels:
-                component: rest
-            topologyKey: "kubernetes.io/hostname"
-    containers:
-      - name: stackl-worker
-        image: "{{ .Values.stacklworker.image }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        volumeMounts:
-          - name: stackl-volume
-            mountPath: "{{ .Values.datastore.path }}"
-        env:
-          - name: STACKL_DATABASE_PATH
-            value: /lfs_test_store
-          - name: "STACKL_STORE"
-            value: "{{ .Values.datastore.type }}"
-          - name: "STACKL_DATABASE_PATH"
-            value: "{{ .Values.datastore.path }}"
-          - name: "STACKL_TASK_BROKER"
-            value: "{{ .Values.task_broker.type }}"
-          - name: "STACKL_AGENT_BROKER"
-            value: "{{ .Values.agent_broker.type }}"
-          - name: "STACKL_MESSAGE_CHANNEL"
-            value: "{{ .Values.message_channel.type }}"
-          - name: "STACKL_LOGPATH"
-            value: "/var/log/stackl.log"
-          - name: "STACKL_REDIS_HOST"
-            value: "{{ template "stackl.redis" . }}"
-          - name: "STACKL_AGENT_HOST"
-            value: "{{ template "stackl.agent" . }}:50051"
-          - name: "PYTHONUNBUFFERED"
-            value: "TRUE"
-    volumes:
-      - name: stackl-volume
-        persistentVolumeClaim:
-          claimName: "{{ template "stackl.rest" . }}"
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  component: rest
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: stackl-worker
+          image: "{{ .Values.stacklworker.image }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: stackl-volume
+              mountPath: "{{ .Values.datastore.path }}"
+          env:
+            - name: STACKL_DATABASE_PATH
+              value: /lfs_test_store
+            - name: "STACKL_STORE"
+              value: "{{ .Values.datastore.type }}"
+            - name: "STACKL_DATABASE_PATH"
+              value: "{{ .Values.datastore.path }}"
+            - name: "STACKL_TASK_BROKER"
+              value: "{{ .Values.task_broker.type }}"
+            - name: "STACKL_AGENT_BROKER"
+              value: "{{ .Values.agent_broker.type }}"
+            - name: "STACKL_MESSAGE_CHANNEL"
+              value: "{{ .Values.message_channel.type }}"
+            - name: "STACKL_LOGPATH"
+              value: "/var/log/stackl.log"
+            - name: "STACKL_REDIS_HOST"
+              value: "{{ template "stackl.redis" . }}"
+            - name: "STACKL_AGENT_HOST"
+              value: "{{ template "stackl.agent" . }}:50051"
+            - name: "PYTHONUNBUFFERED"
+              value: "TRUE"
+      volumes:
+        - name: stackl-volume
+          persistentVolumeClaim:
+            claimName: "{{ template "stackl.rest" . }}"
 
