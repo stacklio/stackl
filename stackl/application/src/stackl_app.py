@@ -14,10 +14,10 @@ import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 
 logger = logging.getLogger(__name__)
-level = logging.getLevelName(os.environ.get("LOGLEVEL", "INFO"))
-logger.setLevel(logging.DEBUG)
+level = os.environ.get("LOGLEVEL", "INFO").upper()
+logger.setLevel(level)
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(level)
 formatter = logging.Formatter(
     "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}")
 ch.setFormatter(formatter)
