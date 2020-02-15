@@ -8,12 +8,17 @@ expirydate: 2030-01-01 00:00:00 +0000
 draft: false
 tags: []
 ---
-This document helps you get STACKL up and running in different deployment
-environments. You should read this document if you are planning to deploy STACKL.
+This document helps you get STACKL up and running in different deployment environments. You should read this document if you are planning to deploy STACKL.
+
+In order to get you properly started, make sure to clone the STACKL repository to the system you're using:
+
+```sh
+git clone https://github.com/stacklio/stackl.git
+```
 
 ## Docker
 
-Docker makes it easy to deploy Stackl locally on your own machine.
+Docker makes it easy to deploy STACKL locally on your own machine.
 
 In this section we will explain how to use the official STACKL Docker images in combination with docker-compose to
 easily get STACKL up and running
@@ -24,238 +29,237 @@ STACKL releases are available as images on Docker Hub.
 
 ### Running with Docker
 
-Because STACKL makes use of different components we use docker-compose to set everything up, to start you use the following:
+Because STACKL makes use of different components we use docker-compose to set everything up, to get started you can use the Docker compose file provided in [build/example-docker](../../../build/example_docker/docker-compose.yml).
 
-```yaml
-version: '3'
-networks:
-  default:
-    external:
-      name: stackl
-  stackl_bridge:
-    external:
-      name: stackl_bridge
-services:
-  stackl-rest:
-    restart: always
-    image: stacklio/stackl-rest:dev
-    container_name: stackl_app
-    networks:
-      - stackl_bridge
-    volumes:
-      - /tmp/example_database:/lfs_test_store/
-    ports:
-      - 8080:80
-      - 8888:8888
-    environment:
-      - STACKL_STORE=LFS
-      - STACKL_TASK_BROKER=Custom
-      - STACKL_AGENT_BROKER=Local
-      - STACKL_AGENT_HOST=stackl-agent:50051
-      - GRPC_VERBOSITY="DEBUG"
-      - STACKL_LOGPATH=/var/log/stackl.log
-      - STACKL_MESSAGE_CHANNEL=RedisSingle
-      - STACKL_STACKLRESTHOST=stackl-rest
-      - STACKL_STACKLRESTPORT=80
-      - STACKL_REDISSENTINELHOST=stackl-redis
-      - TCP_PORTS=80
-      - SERVICE_PORTS=80
-      - STACKL_REDIS_HOST=stackl-redis
-      - LOGLEVEL=DEBUG
-  stackl-worker:
-    restart: always
-    image: stacklio/stackl-worker:dev
-    networks:
-      - stackl_bridge
-    stdin_open: true
-    tty: true
-    volumes:
-      - /tmp/example_database:/lfs_test_store/
-    depends_on:
-      - stackl-rest
-      - stackl-redis
-    ports:
-      - 9999:9999
-    environment:
-      - STACKL_STORE=LFS
-      - STACKL_TASK_BROKER=Custom
-      - STACKL_AGENT_BROKER=Local
-      - STACKL_AGENT_HOST=stackl-agent:50051
-      - GRPC_VERBOSITY="DEBUG"
-      - STACKL_LOGPATH=/var/log/stackl.log
-      - STACKL_MESSAGE_CHANNEL=RedisSingle
-      - STACKL_STACKLRESTHOST=stackl-rest
-      - STACKL_STACKLRESTPORT=80
-      - STACKL_REDISSENTINELHOST=stackl-redis
-      - STACKL_ROLE=worker
-      - STACKL_REDIS_HOST=stackl-redis
-      - TCP_PORTS=8888
-      - LOGLEVEL=DEBUG
-  stackl-redis:
-    restart: always
-    image: redis:5.0.5
-    networks:
-      - stackl_bridge
-  stackl-agent:
-    restart: always
-    image: stacklio/stackl-docker-agent:dev
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - stackl_bridge
-    ports:
-      - 8889:8889
-      - 50051:50051
-    environment:
-      - STACKL_HOST=stackl-rest:80
-      - HOST_MACHINE=stackl-agent
-      - TAGS=['common']
+The Docker compose file exists out of 4 services:
+
+* `stackl-rest`: The Rest api for STACKL
+* `stackl-worker`: The STACKL worker
+* `stackl-redis`: A redis instance, used as message channel
+* `stackl-agent`: Component responsible for creating stack-instances
+
+Simply execute following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project. Note that we copy the example database to the `tmp` directory, don't skip this step since this path required in the Docker compose file.
+
+```sh
+cp -R build/example_database /tmp/example_database
+cd build/example_docker
+docker-compose up -d
 ```
 
-This Docker compose file exists out of 4 services:
+By default, STACKL will run on port 8080, you can issue following command to check if STACKL is available:
 
-* stackl-rest: The Rest api for STACKL
-* stackl-worker: The STACKL worker
-* stackl-redis: A redis instance, used as message channel
-* stackl-agent: component responsable for creating stack-instances
-
-Start STACKL by saving the above yaml to a file called docker-compose.yml and execute the following command in that directory:
-
-`docker-compose up -d`
-
-OPTIES DOCKER COMPOSE #TODO
-
-By default, STACKL will now run on port 8080
-
-Test that STACKL is available:
-
-```
+```sh
 curl -i localhost:8080/
 ```
 
 #### Logging
 
-Each of the components has logging, use following command to see all running containers:
+STACKL has built in logging for each component. STACKL logs to stdout and the log level can be set in the `LOGLEVEL` variable in the [Docker compose file](./../../build/example_docker/docker-compose.yml). You can simply modify the variable in the file and rerun the `docker-compose up -d` command. The default log level is `INFO`.
 
-`docker ps`
+You can execute following command to see all running containers:
 
-and to see the logs use following command
-
-`docker logs -f <container_id>`
-
-##### Rest Api
-
-The logs of this container show data of all the requests to the STACKL API
-
+```sh
+docker ps
 ```
-[StacklApiResource] API request received. Request environ: {'QUERY_STRING': '', 'REQUEST_METHOD': 'GET', 'CONTENT_TYPE': '', 'CONTENT_LENGTH': '', 'REQUEST_URI': '/documents/environment', 'PATH_INFO': '/documents/environment', 'DOCUMENT_ROOT': '/etc/nginx/html', 'SERVER_PROTOCOL': 'HTTP/1.1', 'REQUEST_SCHEME': 'http', 'REMOTE_ADDR': '172.26.0.1', 'REMOTE_PORT': '41432', 'SERVER_PORT': '80', 'SERVER_NAME': '', 'HTTP_HOST': 'localhost:8080', 'HTTP_USER_AGENT': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0', 'HTTP_ACCEPT': 'application/json', 'HTTP_ACCEPT_LANGUAGE': 'en-US,en;q=0.5', 'HTTP_ACCEPT_ENCODING': 'gzip, deflate', 'HTTP_REFERER': 'http://localhost:8080/', 'HTTP_CONNECTION': 'keep-alive', 'HTTP_COOKIE': 'cookieconsent_status=dismiss; intercom-id-v1eeh3ou=61ed63fc-6bcd-468a-a6a8-0df4aaebf387', 'wsgi.input': <uwsgi._Input object at 0x7f4ce613fca8>, 'wsgi.file_wrapper': <built-in function uwsgi_sendfile>, 'wsgi.version': (1, 0), 'wsgi.errors': <_io.TextIOWrapper name=2 mode='w' encoding='UTF-8'>, 'wsgi.run_once': False, 'wsgi.multithread': False, 'wsgi.multiprocess': True, 'wsgi.url_scheme': 'http', 'uwsgi.version': b'2.0.18', 'uwsgi.node': b'2d4f3c454cca', 'werkzeug.request': <Request 'http://localhost:8080/documents/environment' [GET]>}
+
+To check the logs you can execute the following command:
+
+```sh
+docker logs -f <container_id>
+```
+
+##### REST API
+
+The logs of the `stackl-rest` container show data of all the requests made to the STACKL API.
+
+Example:
+
+```sh
+[pid: 37|app: 0|req: 6/7] 172.26.0.1 () {42 vars in 690 bytes} [Fri Feb 14 15:15:31 2020] GET /swagger.json => generated 11028 bytes in 19 msecs (HTTP/1.1 200) 3 headers in 106 bytes (1 switches on core 0)
+[pid: 30|app: 0|req: 2/8] 172.26.0.1 () {42 vars in 704 bytes} [Fri Feb 14 15:15:42 2020] GET /documents/environment => generated 270 bytes in 10 msecs (HTTP/1.1 200) 3 headers in 104 bytes (1 switches on core 0)
 ```
 
 ##### Worker
 
-display logs of all Stackl tasks and connection info to e.g. Redis
+The `stackl-worker` displays logs of all STACKL tasks and connection info to e.g. Redis.
 
-```
-info][RedisQueue] Broker got message: '{'type': 'subscribe', 'pattern': None, 'channel': b'c159d934cbe2', 'data': 3}'
-INFO:RedisQueue:info][RedisQueue] Broker got message: '{'type': 'subscribe', 'pattern': None, 'channel': b'c159d934cbe2', 'data': 3}
+Example:
+
+```sh
+{'time':'2020-02-14 15:15:12,665', 'level': 'DEBUG', 'message': '[Worker] Initialised Worker.'}
+{'time':'2020-02-14 15:15:12,665', 'level': 'DEBUG', 'message': '[Worker] Starting Worker'}
+{'time':'2020-02-14 15:15:17,672', 'level': 'DEBUG', 'message': '[Worker] Starting queue listen'}
+{'time':'2020-02-14 15:15:17,674', 'level': 'INFO', 'message': '[Worker] start_task_popping. Starting listening on redis queue'}
+{'time':'2020-02-14 15:15:17,676', 'level': 'INFO', 'message': '[Worker] Waiting for items to appear in queue'}
 ```
 
 ##### Agent
 
-Shows the log of incoming stack instance creation requests
+The `stackl-agent` used by the Docker-compose file is a Docker agent, this means that the automation job will be executed within Docker. The agent will log the incoming stack instance creation requests.
+
+Example:
+
+```sh
+starting local agent
+action: "create"
+invocation {
+  image: "stacklio/terraform-vm"
+  infrastructure_target: "production.brussels.cluster1"
+  stack_instance: "test_vm"
+  service: "webserver"
+  functional_requirement: "linux"
+  tool: "terraform"
+}
+```
 
 ##### Redis
 
-Contains logs about the Redis
+The `stackl-redis` container contains logs about Redis.
+
+```sh
+1:M 14 Feb 2020 15:15:16.645 * 1 changes in 3600 seconds. Saving...
+1:M 14 Feb 2020 15:15:16.645 * Background saving started by pid 19
+19:C 14 Feb 2020 15:15:16.660 * DB saved on disk
+19:C 14 Feb 2020 15:15:16.661 * RDB: 0 MB of memory used by copy-on-write
+1:M 14 Feb 2020 15:15:16.746 * Background saving terminated with success
+```
 
 #### Volume Mounts
 
-LEG HIER UIT HOE LFS DATABASE WERKT EN GEMOUNT
+The simplest way to load documents into STACKL is to provide them via the
+Docker volume mounts. By default `/tmp/example_database` (configured [above](#running-with-docker)).
 
-The simplest way to load data and policies into OPA is to provide them via the
-file system as command line arguments. When running inside Docker, you can
-provide files via volume mounts.
+#### Advanced configuration
 
-#### More Information
-
-See configuration.md for more information (link naar configuration.md)
-
-### Tagging
-
-#TODO
+For more configuration make sure to check the [configuration page](./configuration.md).
 
 ## Kubernetes
 
-### Kicking the Tires
+### Prerequisites
 
-WAT MOET IK HEBBEN
-KUBERNETES -> SNELLE SETUP MET MICROK8S
-HELM DEPLOYMENT
+You should have a working Kubernetes cluster, this can be locally (Minikube, Microk8s) or a cluster in the cloud. If you don't have any cluster yet you can make use of a local development environment provided by [STACKL](www.stackl.io).
+The development environment meets all requirements needed to install STACKL.
 
-This section shows how to quickly deploy OPA on top of Kubernetes to try it out.
+If you want to run the Vagrant development environment your system should meet following requirements:
 
-MAAK HIER MICROK8S VAN
-> These steps assume Kubernetes is deployed with
-[minikube](https://github.com/kubernetes/minikube). If you are using a different
-Kubernetes provider, the steps should be similar. You may need to use a
-different Service configuration at the end.
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads) should be installed.
+* [Vagrant](https://www.vagrantup.com/downloads.html) should be installed.
 
-CREATE HELM CHARTS
+The STACKL development environment can be set up using following commands
 
-HELM VALUES UITLEGGEN
-HELM INSTALL
-HELM LS
-KUBECTL GET PO
-UITLEGGEN COMPONENTS
-
-
-Next, create a HELM CHART to run STACKL. The ConfigMap containing the policy is
-volume mounted into the container. This allows STACKL to load the policy from
-the file system.
-
+```sh
+vagrant init dome/stackl
+vagrant up
 ```
 
-```bash
-helm install -n test .
+required: vagrant etc
+
+TODO
+
+### Installing with Helm
+
+This section shows how to quickly deploy STACKL on top of Kubernetes to try it out.
+
+#### Install Helm charts
+
+These steps assume Kubernetes is deployed with Microk8s. If you are using a different Kubernetes provider, the steps should be similar. You may need to use a different Service configuration at the end. You should have already cloned the Helm repository in an earlier, if not you can clone the repository with: `git clone https://github.com/stacklio/stackl.git`.
+
+Create a namespace that will house the STACKL deployment:
+
+```sh
+kubectl create namespace stackl
+```
+
+Execute the following command to deploy STACKL and all of its components in the active K8s context:
+
+```sh
+helm install stackl/build/helm -n stackl --generate-name
+```
+
+You can see all the pods with the following command:
+
+```sh
+watch kubectl get pods -n stackl
 ```
 
 At this point STACKL is up and running.
 
-YOU CAN NOW SEE WHERE STACKL IS RUNNING BY KUBECTL GET SVC AND GO TO THE REST API
+#### Logging
 
-Create a Service to expose the OPA API so
-that you can query it:
+STACKL has built in logging for each component. STACKL logs to stdout and the default log level is `INFO`.
 
-```bash
-kubectl create -f service-opa.yaml
+You can execute following command to see all running pods:
+
+```sh
+kubectl get pods -n stackl
 ```
 
-NAMAKEN
-Get the URL of OPA using `minikube`:
+To check the logs you can execute the following command:
 
-```bash
-OPA_URL=$(minikube service opa --url)
+```sh
+kubectl logs -f <pod_name>
 ```
 
-Now you can query OPA's API:
+##### REST API
 
-```bash
-curl $OPA_URL/v1/data
+The logs of the `stackl-rest` container show data of all the requests made to the STACKL API.
+
+Example:
+
+```sh
+[pid: 37|app: 0|req: 6/7] 172.26.0.1 () {42 vars in 690 bytes} [Fri Feb 14 15:15:31 2020] GET /swagger.json => generated 11028 bytes in 19 msecs (HTTP/1.1 200) 3 headers in 106 bytes (1 switches on core 0)
+[pid: 30|app: 0|req: 2/8] 172.26.0.1 () {42 vars in 704 bytes} [Fri Feb 14 15:15:42 2020] GET /documents/environment => generated 270 bytes in 10 msecs (HTTP/1.1 200) 3 headers in 104 bytes (1 switches on core 0)
 ```
 
-CHECK STACKL WERKING
-OPA will respond with the greeting from the policy (the pod hostname will differ):
+##### Worker
 
-```json
-{
-  "result": {
-    "example": {
-      "greeting": "hello from pod \"opa-78ccdfddd-xplxr\"!"
-    }
-  }
+The `stackl-worker` displays logs of all STACKL tasks and connection info to e.g. Redis.
+
+Example:
+
+```sh
+{'time':'2020-02-14 15:15:12,665', 'level': 'DEBUG', 'message': '[Worker] Initialised Worker.'}
+{'time':'2020-02-14 15:15:12,665', 'level': 'DEBUG', 'message': '[Worker] Starting Worker'}
+{'time':'2020-02-14 15:15:17,672', 'level': 'DEBUG', 'message': '[Worker] Starting queue listen'}
+{'time':'2020-02-14 15:15:17,674', 'level': 'INFO', 'message': '[Worker] start_task_popping. Starting listening on redis queue'}
+{'time':'2020-02-14 15:15:17,676', 'level': 'INFO', 'message': '[Worker] Waiting for items to appear in queue'}
+```
+
+##### Agent
+
+The `stackl-agent` used by the Helm chart is a Kubernetes agent, this means that the agent will create a new pod for every automation job. The agent will log the incoming stack instance creation requests.
+
+Example:
+
+```sh
+starting kubernetes agent
+action: "create"
+invocation {
+  image: "stacklio/terraform-vm"
+  infrastructure_target: "production.brussels.cluster1"
+  stack_instance: "test_vm"
+  service: "webserver"
+  functional_requirement: "linux"
+  tool: "terraform"
 }
 ```
 
-## HTTP Proxies
+##### Redis
 
-TODO
+The `stackl-redis` container contains logs about Redis.
+
+```sh
+1:M 14 Feb 2020 15:15:16.645 * 1 changes in 3600 seconds. Saving...
+1:M 14 Feb 2020 15:15:16.645 * Background saving started by pid 19
+19:C 14 Feb 2020 15:15:16.660 * DB saved on disk
+19:C 14 Feb 2020 15:15:16.661 * RDB: 0 MB of memory used by copy-on-write
+1:M 14 Feb 2020 15:15:16.746 * Background saving terminated with success
+```
+
+#### Persistent storage
+
+The Helm charts make use of the default storage class to create a persistent volume where the documents will be stored.
+
+#### Helm advanced configuration
+
+For more configuration make sure to check the [configuration page](./configuration.md).
