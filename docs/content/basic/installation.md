@@ -138,9 +138,9 @@ For more configuration make sure to check the [configuration page](./configurati
 ### Prerequisites
 
 You should have a working Kubernetes cluster, this can be locally (Minikube, Microk8s) or a cluster in the cloud. If you don't have any cluster yet you can make use of a local development environment provided by [STACKL](www.stackl.io).
-The development environment meets all requirements needed to install STACKL.
+The Vagrant development environment meets all requirements needed to install STACKL.
 
-If you want to run the Vagrant development environment your system should meet following requirements:
+If you want to run the [STACKL Vagrant box](https://app.vagrantup.com/dome/boxes/stacklio) as development environment your system should meet following requirements:
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads) should be installed.
 * [Vagrant](https://www.vagrantup.com/downloads.html) should be installed.
@@ -148,13 +148,33 @@ If you want to run the Vagrant development environment your system should meet f
 The STACKL development environment can be set up using following commands
 
 ```sh
-vagrant init dome/stackl
+vagrant init dome/stacklio
 vagrant up
 ```
 
-required: vagrant etc
+Once the box is properly set up, you can easily enter it issuing following command:
 
-TODO
+```sh
+vagrant ssh
+```
+
+Don't forget to clone the STACKL repository into the Vagrant box (execute following command inside the Vagrant box):
+
+```sh
+git clone https://github.com/stacklio/stackl.git
+```
+
+Now you're all set to get started installing STACKL using Helm templates!
+
+Done using the Vagrant box? You can either stop this box so that you can use it again later or delete it entirely with one of following commands:
+
+```sh
+# Stop the Vagrant box
+vagrant halt
+
+# Destroy the Vagrant box
+vagrant destroy -f
+```
 
 ### Installing with Helm
 
