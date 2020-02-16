@@ -1,6 +1,6 @@
 #use alpine?
 FROM python:3.7-slim-buster 
-RUN pip3 install redis tornado requests websockets marshmallow marshmallow_enum grpcio protobuf 
+RUN pip3 install pydantic redis tornado requests websockets grpcio protobuf
 RUN mkdir /etc/stackl_src
-COPY src /etc/stackl_src
+COPY . /etc/stackl_src
 CMD ["python", "/etc/stackl_src/workers/worker.py"]
