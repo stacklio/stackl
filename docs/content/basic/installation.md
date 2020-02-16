@@ -38,7 +38,7 @@ The Docker compose file exists out of 4 services:
 * `stackl-redis`: A redis instance, used as message channel
 * `stackl-agent`: Component responsible for creating stack-instances
 
-Simply execute following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project. Note that we copy the example database to the `tmp` directory, don't skip this step since this path required in the Docker compose file.
+Simply execute following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project. Note that we copy the example database to the `tmp` directory, don't skip this step since this path is required in the Docker compose file.
 
 ```sh
 cp -R build/example_database /tmp/example_database
@@ -138,9 +138,18 @@ For more configuration make sure to check the [configuration page](./configurati
 ### Prerequisites
 
 You should have a working Kubernetes cluster, this can be locally (Minikube, Microk8s) or a cluster in the cloud. If you don't have any cluster yet you can make use of a local development environment provided by [STACKL](www.stackl.io).
-The Vagrant development environment meets all requirements needed to install STACKL.
+The Vagrant development environment meets all requirements needed to install STACKL. The development box is a CentOS7 distribution and has following tools installed:
 
-If you want to run the [STACKL Vagrant box](https://app.vagrantup.com/dome/boxes/stacklio) as development environment your system should meet following requirements:
+* [Ansible](https://www.ansible.com/): `2.9.2`
+* [Kubectl](https://kubernetes.io/docs/reference/kubectl/overview/): `1.17`
+* [Microk8s](https://microk8s.io/): `1.17`
+* [oc](https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/getting-started-cli.html): `3.11.0`
+* [Pip 3](https://pip.pypa.io/en/stable/): `9.0.3`
+* [Podman](https://podman.io/): `1.4.4`
+* [Python 3](https://www.python.org/): `3.6.8`
+* [snapd](https://snapcraft.io/snapd): `2.42.2`
+
+If you want to run the [STACKL Vagrant box](https://app.vagrantup.com/dome/boxes/stacklio) as development environment, your system should meet following requirements:
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads) should be installed.
 * [Vagrant](https://www.vagrantup.com/downloads.html) should be installed.
