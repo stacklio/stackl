@@ -8,26 +8,46 @@ expirydate: 2030-01-01 00:00:00 +0000
 draft: false
 tags: []
 ---
-## Configuration table
+
+## Docker Configuration table
+
+Following parameters can be modified in order to change the STACKL Docker compose deployment in [docker-compose.yml](../../../build/example_docker/docker-compose.yml).
 
 | Parameter | Description | Default |
 |------------|------|------|
-| image.pullPolicy | Set the pull policy for all deployments  | Always |
-| datastore.type | Set the type of the datastore to use | LFS |
-| task_broker.type | Set the task broker type | Custom |
-| message_channel.type | Set the message channel type | RedisSingle |
-| agent_broker.type | Set the agent_broker type | grpc |
-| stacklrest.image | Set the image to use for the stackl rest api | nexus-dockerint.dome.dev/stackl/stackl-rest |
-| stacklrest.name | Set the name of stackl-rest | stackl-rest |
-| stacklrest.hostname | Hostname of stackl-rest | stackl.local |
-| stacklrest.replicaCount | replicas of stackl-rest | 1 |
-| stacklworker.image | image to use for stackl-worker | nexus-dockerint.dome.dev/stackl/stackl-worker |
-| stacklworker.name | name for stackl-worker | stackl-worker |
-| stacklworker.replicaCount | replicas for stackl-worker | 1 |
-| stacklredis.image | image for redis | redis:5.0.5 |
-| stacklredis.name | name for redis | stackl-redis |
-| stacklredis.replicaCount | replicas for stackl-redis | 1 |
-| stacklagent.image | Image to use for stackl-agent | nexus-dockerint.dome.dev/stackl/stackl-agent |
-| stacklagent.name | Name for stackl-agent | stackl-agent |
-| stacklagent.replicaCount | replicas for stackl-agent | 1 |
-| imagePullSecrets | name of image pull secrets to be used by deployments | [name: dome-nexus] |
+| `LOGLEVEL` | Set the loglevel | INFO |
+| `HOST_MACHINE` | Set the host machine name | stackl-agent |
+| `STACKL_AGENT_BROKER` | Set the agent broker type  | Local |
+| `STACKL_AGENT_HOST` | Set the agent host and port | stackl-agent:50051 |
+| `STACKL_HOST` | Set the STACKL host and port | stackl-rest:80 |
+| `STACKL_MESSAGE_CHANNEL` | Set the task message channel type | RedisSingle |
+| `STACKL_REDIS_HOST` | Set the Redis host | stackl-redis |
+| `STACKL_REDISSENTINELHOST` | Set the Redis sentinel host | stackl-redis |
+| `STACKL_STORE` | Set the store type | LFS |
+| `STACKL_TASK_BROKER` | Set the task broker type | Custom |
+
+## Helm Configuration table
+
+Following parameters can be modified in order to change the STACKL Helm deployment in [values.yaml](../../../build/helm/values.yaml).
+
+| Parameter | Description | Default |
+|------------|------|------|
+| `image.pullPolicy` | Set the pull policy for all deployments  | Always |
+| `datastore.type` | Set the type of the datastore to use | LFS |
+| `task_broker.type` | Set the task broker type | Custom |
+| `message_channel.type` | Set the message channel type | RedisSingle |
+| `agent_broker.type` | Set the agent_broker type | grpc |
+| `stacklrest.image` | Set the image to use for the stackl rest api | stacklio/stackl-rest |
+| `stacklrest.name` | Set the name of stackl-rest | stackl-rest |
+| `stacklrest.hostname` | Hostname of stackl-rest | stackl.local |
+| `stacklrest.replicaCount` | Replicas of stackl-rest | 1 |
+| `stacklworker.image` | Set the image to use for stackl-worker | stacklio/stackl-worker:dev |
+| `stacklworker.name`| Set the name for stackl-worker | stackl-worker |
+| `stacklworker.replicaCount` | Replicas for stackl-worker | 1 |
+| `stacklredis.image` | Set the image for redis | redis:5.0.5 |
+| `stacklredis.name` | Set the name for redis | stackl-redis |
+| `stacklredis.replicaCount` | Replicas for stackl-redis | 1 |
+| `stacklagent.image` | Set the mage to use for stackl-agent | stacklio/stackl-agent |
+| `stacklagent.name` | Set the name for stackl-agent | stackl-agent |
+| `stacklagent.replicaCount` | Replicas for stackl-agent | 1 |
+| `imagePullSecrets` | Set the name of image pull secrets to be used by deployments | [name: dome-nexus] |
