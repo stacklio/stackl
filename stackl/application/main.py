@@ -5,15 +5,15 @@ import os
 import threading
 
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 
 import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
-from task_broker.task_broker_factory import TaskBrokerFactory
-from utils.general_utils import get_hostname
-
 from routers import documents, stacks, functional_requirements, services, stack_application_templates, \
     stack_infrastructure_templates
+from task_broker.task_broker_factory import TaskBrokerFactory
+from utils.general_utils import get_hostname
 
 # Logger stuff
 logger = logging.getLogger(__name__)
@@ -82,3 +82,17 @@ app.include_router(
     tags=["stack_infrastructure_templates"]
 )
 
+
+def use_route_names_as_operation_ids(app: FastAPI) -> None:
+    """
+    Simplify operation IDs so that generated API clients have simpler function
+    names.
+
+    Should be called only after all routes have been added.
+    """
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            route.operation_id = route.name  # in this case, 'read_items'
+
+
+use_route_names_as_operation_ids(app)

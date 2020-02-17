@@ -1,10 +1,8 @@
 import json
-import sys
+import logging
 import threading
 
-sys.path.append("/etc/stackl_src/")
 from handler import Handler
-import logging
 
 logger = logging.getLogger(__name__)
 
