@@ -1,0 +1,65 @@
+---
+version: '3'
+networks:
+  stackl_bridge:
+    external:
+      name: stackl_bridge
+services:
+  stackl-rest:
+    restart: always
+    image: stacklio/stackl-rest:dev
+    container_name: stackl_app
+    networks:
+      - stackl_bridge
+    volumes:
+      - /tmp/example_database:/lfs_test_store/
+    ports:
+      - 8080:80
+    environment:
+      - STACKL_STORE=LFS
+      - STACKL_TASK_BROKER=Custom
+      - STACKL_AGENT_BROKER=Local
+      - STACKL_AGENT_HOST=stackl-agent:50051
+      - STACKL_MESSAGE_CHANNEL=RedisSingle
+      - STACKL_REDISSENTINELHOST=stackl-redis
+      - STACKL_REDIS_HOST=stackl-redis
+      - LOGLEVEL=INFO
+  stackl-worker:
+    restart: always
+    image: stacklio/stackl-worker:dev
+    networks:
+      - stackl_bridge
+    stdin_open: true
+    tty: true
+    volumes:
+      - /tmp/example_database:/lfs_test_store/
+    depends_on:
+      - stackl-rest
+      - stackl-redis
+    environment:
+      - STACKL_STORE=LFS
+      - STACKL_TASK_BROKER=Custom
+      - STACKL_AGENT_BROKER=Local
+      - STACKL_AGENT_HOST=stackl-agent:50051
+      - STACKL_MESSAGE_CHANNEL=RedisSingle
+      - STACKL_REDISSENTINELHOST=stackl-redis
+      - STACKL_REDIS_HOST=stackl-redis
+      - LOGLEVEL=INFO
+  stackl-redis:
+    restart: always
+    image: redis:5.0.5
+    networks:
+      - stackl_bridge
+  stackl-agent:
+    restart: always
+    image: stacklio/stackl-docker-agent:dev
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - stackl_bridge
+    ports:
+      - 50052:50051
+    environment:
+      - STACKL_HOST=stackl-rest:80
+      - HOST_MACHINE=stackl-agent
+      - TAGS=['common']
