@@ -49,10 +49,10 @@ build_kubernetes_agent:
 	@echo "Building stackl kubernetes agent"
 	cd stackl/agent/kubernetes_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_KUBERNETES_AGENT):$(VERSIONTAG) .
 
-# .PHONY: build_docker_agent
-# build_docker_agent:
-# 	@echo "Building stackl docker agent"
-# 	cd stackl/agent/docker_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_DOCKER_AGENT):$(VERSIONTAG) .
+.PHONY: build_docker_agent
+build_docker_agent:
+	@echo "Building stackl docker agent"
+	cd stackl/agent/docker_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_DOCKER_AGENT):$(VERSIONTAG) .
 
 .PHONY: push_prepare
 push_prepare:
@@ -92,8 +92,6 @@ start:
 	@echo "Started stackl"
 
 
-build: build_prepare build_rest build_worker build_websocket_agent build_kubernetes_agent
-push: push_prepare push_rest push_worker push_kubernetes_agent
+build: build_prepare build_rest build_worker build_websocket_agent build_kubernetes_agent build_docker_agent
+push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start
-# build_docker_agent
-# push_docker_agent
