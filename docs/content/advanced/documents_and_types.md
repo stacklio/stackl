@@ -9,7 +9,7 @@ draft: false
 tags: []
 ---
 A Document is a Key/Value text-file in the JSON or YAML format that models IT infrastructure building blocks, application service definitions, and their configuration data.
-Documents are the simple key unit through which STACKL understands the user's IT environment and does work: nearly every task will, in some way, affect documents.
+Documents are the simple core unit through which STACKL understands the user's IT environment and does work: nearly every task will, in some way, affect documents.
 This can be storing, changing, or deleting models of the IT infrastructure, submitting  application or service descriptions, actually instantiating and representing running applications, and so on.
 Documents belong to one of two broad categories and are strictly typed.
 
@@ -17,7 +17,7 @@ Documents belong to one of two broad categories and are strictly typed.
 
 There are two categories of documents: **items** and **configs**.
 Configs represent documents that model or describe elements or concepts of the user's IT environment and are files that by themselves are not actionable but serve as configuration.
-Items are documents that are tangible elements of a user's IT environment, namely files that are actionable or represent an interactable entity.
+Items are documents that are tangible elements of a user's IT environment, namely files that are actionable or represent an interactable entity, and represent data that serves as input for orchestration tools.
 Items can be the result of processing other documents.
 For instance, a deployable piece of hardware (i.e., infrastructure target) described by a document is an item and can be the result of a user's environment, zone, and location documents which together uniquely represent that hardware.
 In terms of how they are created, configs are always user-submitted direct models or descriptions of things to be used by STACKL and thus are not the result of a hierarchical K/V lookup.
@@ -34,7 +34,7 @@ Items, in contrast, are actionable elements that are either submitted or generat
 : represents a logical network or security zone used within the IT infrastructure; subnets, security groups, etc
 
 **Location**
-: represents a logical (or physical) location used within the IT infrastructure; vmâ€™s, machines, ...
+: represents a logical (or physical) location used within the IT infrastructure; vm’s, machines, ...
 
 **Stack_Infrastructure_Template**
 : models IT infrastructure as infrastructure targets originating from the environment, location, and zone and possessing a set of infrastructure capabilities
@@ -62,8 +62,8 @@ Items, in contrast, are actionable elements that are either submitted or generat
 **Stack_Template**
 : A template for possible stacks as a deployable set of services matched to suitable infrastructure targets
 
-**Infrastructure_Targe**
-: a virtual or physical entity capable of executing software (VMâ€™s, desktop computers, â€¦), that can be targeted to run services
+**Infrastructure_Target**
+: a virtual or physical entity capable of executing software (VM’s, desktop computers, …), that can be targeted to run services
 
 **Service**
 : Software entity that performs a small piece of functionality and has a clear set of service requirements

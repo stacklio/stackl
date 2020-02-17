@@ -20,6 +20,7 @@ STACKL exposes five types of operations:
 * Document operations
 * Item operations
 * Stack operations
+* Policies operations
 * User operations
 * About operations
 
@@ -43,6 +44,11 @@ All operations related to stacks.
 This interface serves to retrieve and act on stack_template and stack_instance-type documents.
 As these documents are items that represent possible and running applications, operations made through this interface enable to instantiate, modify, or delete them.
 The difference with document operations is that these operations have results beyond changes in the datastore.
+
+## Policies operations
+
+All operations related to policies.
+To get, add or delete policies.
 
 ## User operations
 

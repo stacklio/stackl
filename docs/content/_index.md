@@ -34,20 +34,3 @@ STACKL then transparently and autonomously uses this information to correctly an
 Button-press fire-and-forget application orchestration according to the specific desire of the user and the current use-case becomes tractable and easy which allows users to focus better on producing and using their apps.
 
 See [STACKL slides](https://drive.google.com/open?id=10ZmqGU3pOc6EJyZpED4fMgav5pD01RztLkfSn3Jl9EA) for a short presentation about STACKL.
-
-## Contributing
-
-Contributions, issues, and feature requests are always more than welcome! Feel free to check the  [Github issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.
-
-See CONTRIBUTING.md to get started.
-
-Please also read the CODE_OF_CONDUCT.md.
-
-## License
-
-The code in this project is licensed under the [GLPv3](LICENSE) license.
-
-## Acknowledgments
-
-STACKL was initially created for in-house use by a DevOps company, [Nubera](https://www.nubera.eu/), who saw the need for a platform to better provide  services to clients. After some time, it became clear that STACKL could be useful to the general DevOps community as well so the decision was made to spin it off as an open source project.
-Hence, thanks to Nubera  and @Yannick Struyf who put in much of the hard initial work.

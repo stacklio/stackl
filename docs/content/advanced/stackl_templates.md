@@ -11,7 +11,7 @@ tags: []
 
 A Stack is a declarative description of an application and the IT infrastructure it may run on.
 Stacks consist out of two concerns which are separated into a **Stack Application Template (SAT)** and a **Stack Infrastructure Template (SIT)**.
-STACKL creates a Stack Template (ST) by constraint solving the SAT and SIT of the Stack, thus creating a valid mapping of an application to the IT infrastructure at that point in time.
+STACKL creates a Stack Template (ST) by constraint solving the SAT and SIT of the Stack, thus creating a valid deployment mapping of an application to the IT infrastructure at that point in time.
 An instantiation of this ST on the infrastructure is called a Stack Instance (SI).
 Stacks are a concept.
 SATs, SITs, STs and SIs are stored documents which are given, processed, tracked, and maintained in the datastore.
@@ -179,7 +179,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 
 A SIT models the available infrastructure.
 It describes the infrastructure in terms of the environment, location, and zones and explicitly specifies their relationship in a set of infrastructure targets.
-Environment, location and zones are separate documents.
+Environment, location, and zones are separate documents.
 An infrastructure target is the result of merging these documents where the K/V pairs of the zone override the location which override the environment.
 Each infrastructure target has capabilities.
 These can vary over time due to dynamic factors (e.g., load on a server, power outages, ...).
