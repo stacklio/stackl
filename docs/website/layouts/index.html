@@ -3,8 +3,7 @@
 <html lang="en">
 
 <head>
-  {{ if eq (getenv "HUGO_ENV") "production" | or (eq .Site.Params.env
-  "production") }}
+  {{ if eq (getenv "HUGO_ENV") "production" | or (eq .Site.Params.env "production") }}
   {{ partial "google-analytics.html" . }}
   {{ partial "head.cookie.iubenda.html" . }}
   {{ end }}

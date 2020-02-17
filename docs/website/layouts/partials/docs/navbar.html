@@ -40,22 +40,16 @@
       </a>
 
       {{ range $basic }}
-      {{ partial "docs/navbar-link.html" (dict "ctx" . "pageUrl" $pageUrl
-      "version" $version) }}
+      {{ partial "docs/navbar-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
       {{ end }}
 
-      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle"
-      "Advanced" "section" $advanced "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Advanced" "section" $advanced "pageUrl" $pageUrl "version" $version ) }}
 
-      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle"
-      "Modules" "section" $modules "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Modules" "section" $modules "pageUrl" $pageUrl "version" $version ) }}
 
-      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle"
-      "Operations" "section" $operations "pageUrl" $pageUrl "version" $version )
-      }}
+      {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $operations "pageUrl" $pageUrl "version" $version ) }}
 
-      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle"
-      "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}
+      {{ partial "docs/navbar-section.html" ( dict "ctx" . "sectionTitle" "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}
 
     </div>
 
