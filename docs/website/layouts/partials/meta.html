@@ -10,7 +10,8 @@
 <!-- Basic metadata -->
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
 {{ with $description }}
 <meta name="description" content="{{ . }}">
 {{ end }}
@@ -18,17 +19,19 @@
 <!-- OpenGraph metadata -->
 <meta property="og:title" content="{{ $title }}">
 {{ if $isDoc }}
-  <meta property="og:type" content="documentation">
-  {{ with .Params.tags }}
-    <meta itemprop="keywords" content="{{ range $index, $tag := first 10 . }}{{ if $index }},{{ end }}{{ $tag }}{{ end }}" />
-  {{ end }}
-  {{- $ISO8601 := "2006-01-02T15:04:05-07:00" -}}
-  {{- if not .PublishDate.IsZero -}}
-    <meta itemprop="datePublished" content="{{ .PublishDate.Format $ISO8601 | safeHTML }}" />
-  {{- end -}}
-  {{- if not .Date.IsZero -}}
-    <meta itemprop="dateModified" content="{{ .Date.Format $ISO8601 | safeHTML }}" />
-  {{- end -}}
+<meta property="og:type" content="documentation">
+{{ with .Params.tags }}
+<meta itemprop="keywords"
+      content="{{ range $index, $tag := first 10 . }}{{ if $index }},{{ end }}{{ $tag }}{{ end }}"/>
+{{ end }}
+{{- $ISO8601 := "2006-01-02T15:04:05-07:00" -}}
+{{- if not .PublishDate.IsZero -}}
+<meta itemprop="datePublished"
+      content="{{ .PublishDate.Format $ISO8601 | safeHTML }}"/>
+{{- end -}}
+{{- if not .Date.IsZero -}}
+<meta itemprop="dateModified" content="{{ .Date.Format $ISO8601 | safeHTML }}"/>
+{{- end -}}
 {{ end }}
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:locale" content="en_US">
@@ -53,8 +56,8 @@
 <link rel="shortcut icon" href="/favicon.png" type="image/x-icon"/>
 
 <!-- Algolia metadata -->
-<meta name="docsearch:language" content="en" />
-<meta name="docsearch:version" content="{{ $version }}" />
+<meta name="docsearch:language" content="en"/>
+<meta name="docsearch:version" content="{{ $version }}"/>
 
 <!-- Site generator -->
 {{ hugo.Generator }}

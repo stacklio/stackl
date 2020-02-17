@@ -14,7 +14,8 @@
 
     <div class="dropdown is-left">
       <div class="dropdown-trigger">
-        <button class="button is-dark" aria-haspopup="true" aria-controls="dropdown-menu">
+        <button class="button is-dark" aria-haspopup="true"
+                aria-controls="dropdown-menu">
           <span>
             <strong>
               {{ if eq $version "latest" }}
@@ -24,19 +25,19 @@
               {{ end }}
             </strong>
           </span>
-            {{ if $isLatest }}
-              <span class="tag latest-tag is-success is-small has-text-weight-bold">
+          {{ if $isLatest }}
+          <span class="tag latest-tag is-success is-small has-text-weight-bold">
             latest
           </span>
-            {{ else if (eq $version "edge") }}
-              <span class="tag latest-tag is-danger is-small has-text-weight-bold">
+          {{ else if (eq $version "edge") }}
+          <span class="tag latest-tag is-danger is-small has-text-weight-bold">
             pre-release
           </span>
-            {{ else }}
-              <span class="tag latest-tag is-warning is-small has-text-weight-bold">
+          {{ else }}
+          <span class="tag latest-tag is-warning is-small has-text-weight-bold">
             older
           </span>
-            {{ end }}
+          {{ end }}
           <span class="icon is-small">
             <i class="fas fa-angle-down" aria-hidden="true"></i>
           </span>
@@ -45,23 +46,24 @@
 
       <div class="dropdown-menu">
         <div class="dropdown-content">
-            {{ range $releases }}
-                {{ if ne . "latest" }}
-                    {{ $isLatest := eq . (index site.Data.releases 1) }}
-                    {{ $verRef := . }}
-                    {{ if $isLatest }}
-                        {{ $verRef = "latest" }}
-                    {{ end }}
-                    <a href="/docs/{{ $verRef }}" class="dropdown-item">
-                        {{ . }}
-                        {{ if $isLatest }}
-                          <span class="tag latest-tag is-success is-small has-text-weight-bold">
+          {{ range $releases }}
+          {{ if ne . "latest" }}
+          {{ $isLatest := eq . (index site.Data.releases 1) }}
+          {{ $verRef := . }}
+          {{ if $isLatest }}
+          {{ $verRef = "latest" }}
+          {{ end }}
+          <a href="/docs/{{ $verRef }}" class="dropdown-item">
+            {{ . }}
+            {{ if $isLatest }}
+            <span
+              class="tag latest-tag is-success is-small has-text-weight-bold">
                     latest
                   </span>
-                        {{ end }}
-                    </a>
-                {{ end }}
             {{ end }}
+          </a>
+          {{ end }}
+          {{ end }}
         </div>
       </div>
     </div>
@@ -69,6 +71,6 @@
   </div>
 
   <div class="dashboard-panel-content is-scrollable">
-      {{ partial "docs/sidenav.html" . }}
+    {{ partial "docs/sidenav.html" . }}
   </div>
 </div>

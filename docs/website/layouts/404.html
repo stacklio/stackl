@@ -1,13 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="{{ site.LanguageCode }}">
-  <head>
-    <link rel="icon" type="image/png" href="/favicon.png"/>
-    <title>
-      404 - {{ block "title" . }}{{ site.Title }}{{ end }}
-    </title>
-    {{ partial "css.html" . }}
-    <style>
+<head>
+  <link rel="icon" type="image/png" href="/favicon.png"/>
+  <title>
+    404 - {{ block "title" . }}{{ site.Title }}{{ end }}
+  </title>
+  {{ partial "css.html" . }}
+  <style>
       a {
         display: block;
         text-align: center;
@@ -30,17 +29,18 @@
       h1,p {
         text-align: center;
       }
-    </style>
-  </head>
 
-  <body>
-    <header role="banner">
-      <div class="headline--wave--fg" role="presentation"></div>
-      <h1>Sorry, we can't find the page you were looking for!</h1>
-      <p class="headline--subtitle">Perhaps you could use one of the following:</p>
-      <a href="/">STACKL Home Page</a>
-      <a href="/docs/latest">Documentation</a>
-    </header>
-  </body>
+  </style>
+</head>
+
+<body>
+<header role="banner">
+  <div class="headline--wave--fg" role="presentation"></div>
+  <h1>Sorry, we can't find the page you were looking for!</h1>
+  <p class="headline--subtitle">Perhaps you could use one of the following:</p>
+  <a href="/">STACKL Home Page</a>
+  <a href="/docs/latest">Documentation</a>
+</header>
+</body>
 
 </html>

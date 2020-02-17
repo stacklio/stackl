@@ -17,11 +17,11 @@ spec:
         {{- include "stackl.selectorLabels" . | nindent 8 }}
         component: agent
     spec:
-    {{- with .Values.imagePullSecrets }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-      serviceAccount: stackl-agent
+      {{- end }}
+      serviceAccountName: {{ template "stackl.agent" . }}-stackl-agent
       containers:
         - name: stackl-agent
           image: "{{ .Values.stacklagent.image }}"

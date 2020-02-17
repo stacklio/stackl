@@ -18,8 +18,8 @@ spec:
         component: redis
     spec:
     {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
     {{- end }}
       containers:
         - name: stackl-redis
@@ -31,8 +31,8 @@ spec:
           command: ["redis-server"]
           args: ["/usr/local/etc/redis/redis.conf"]
           volumeMounts:
-          - name: redis-config
-            mountPath: /usr/local/etc/redis
+            - name: redis-config
+              mountPath: /usr/local/etc/redis
       volumes:
         - name: redis-config
           configMap:

@@ -1,10 +1,10 @@
 {{ $src     := .Get "src" }}
 {{ $version  := index (split $.Page.File.Path "/") 1 }}
-{{/* 
-  TODO: Remove this check once we no longer have doc releases
-   with non versioned images. As-is just point them to "edge" since
-   that version will not have the image bundled with the versioned
-   markdown content. 
+{{/*
+TODO: Remove this check once we no longer have doc releases
+with non versioned images. As-is just point them to "edge" since
+that version will not have the image bundled with the versioned
+markdown content.
 */}}
 {{ if (hasPrefix $src "/img/") }}
 {{ $src = strings.TrimPrefix "/img/" $src }}

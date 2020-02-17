@@ -1,8 +1,5 @@
 version: '3'
 networks:
-  default:
-    external:
-      name: stackl
   stackl_bridge:
     external:
       name: stackl_bridge
@@ -36,6 +33,7 @@ services:
       - SERVICE_PORTS=80
       - STACKL_REDIS_HOST=stackl-redis
       - LOGLEVEL=DEBUG
+      - LOG_LEVEL=debug
   stackl-worker:
     restart: always
     image: stacklio/stackl-worker:dev

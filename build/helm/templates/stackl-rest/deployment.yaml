@@ -18,8 +18,8 @@ spec:
         component: rest
     spec:
     {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+    imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
     {{- end }}
       containers:
         - name: stackl-rest

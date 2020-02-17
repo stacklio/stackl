@@ -1,5 +1,6 @@
 {
   "description": "Production environment",
+  "category": "configs",
   "type": "environment",
   "name": "production",
   "params": {

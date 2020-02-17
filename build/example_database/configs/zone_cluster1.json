@@ -1,5 +1,6 @@
 {
   "description": "Our First Cluster",
+  "category":  "configs",
   "type": "zone",
   "name": "cluster1",
   "params": {

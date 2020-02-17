@@ -1,14 +1,14 @@
 {
-    "category": "configs",
-    "description": "",
-    "infrastructure_capabilities": {},
-    "infrastructure_targets": [
-        {
-            "environment": "production",
-            "location": "brussels",
-            "zone": "cluster1"
-        }
-    ],
-    "name": "stackl",
-    "type": "stack_infrastructure_template"
+  "category": "configs",
+  "description": "",
+  "infrastructure_capabilities": {},
+  "infrastructure_targets": [
+    {
+      "environment": "production",
+      "location": "brussels",
+      "zone": "cluster1"
+    }
+  ],
+  "name": "stackl",
+  "type": "stack_infrastructure_template"
 }

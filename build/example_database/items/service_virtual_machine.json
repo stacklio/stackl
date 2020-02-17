@@ -1,12 +1,15 @@
 {
-    "name": "virtual_machine",
-    "type": "service",
-    "functional_requirements": ["linux"],
-    "non_functional_requirements": {
-        "CPU": "1GHz",
-        "RAM": "2GB"
-    },
-    "params": {
-        "webserver": "nginx"
-    }
+  "name": "virtual_machine",
+  "type": "service",
+  "category": "items",
+  "functional_requirements": [
+    "linux"
+  ],
+  "non_functional_requirements": {
+    "CPU": "1GHz",
+    "RAM": "2GB"
+  },
+  "params": {
+    "webserver": "nginx"
+  }
 }

@@ -1,6 +1,9 @@
 {
-    "name": "virtual_machine",
-    "type": "stack_application_template",
-    "services": ["virtual_machine"],
-    "extra_functional_requirements": {}
+  "name": "virtual_machine",
+  "type": "stack_application_template",
+  "category": "configs",
+  "services": [
+    "virtual_machine"
+  ],
+  "extra_functional_requirements": {}
 }

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>WebSocket demo</title>
-    </head>
-    <body>
-        <script>
+<head>
+    <title>WebSocket demo</title>
+</head>
+<body>
+<script>
             var ws = new WebSocket("ws://52.210.80.33:8888/ws"),
                 messages = document.createElement('ul');
             ws.onmessage = function (event) {
@@ -15,6 +15,7 @@
                 messages.appendChild(message);
             };
             document.body.appendChild(messages);
-        </script>
-    </body>
+
+</script>
+</body>
 </html>
