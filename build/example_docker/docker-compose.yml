@@ -1,3 +1,4 @@
+---
 version: '3'
 networks:
   stackl_bridge:
@@ -57,7 +58,7 @@ services:
     networks:
       - stackl_bridge
     ports:
-      - 50051:50051
+      - 50052:50051
     environment:
       - STACKL_HOST=stackl-rest:80
       - HOST_MACHINE=stackl-agent
