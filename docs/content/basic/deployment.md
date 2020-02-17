@@ -26,6 +26,14 @@ STACKL releases are available as images on Docker Hub.
 
 * [stacklio/stackl](https://hub.docker.com/orgs/stacklio/repositories)
 
+
+### Prerequisites
+
+You will need to check if docker and docker-compose is installed before installing STACKL.
+
+* Docker environment: https://docs.docker.com/engine/installation/
+* Docker-compose: https://docs.docker.com/compose/install/
+
 ### Running with Docker
 
 Because STACKL makes use of different components we use Docker Compose to set everything up, to get started you can use the docker compose file provided in [build/example-docker](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
@@ -39,9 +47,8 @@ The Docker Compose file exists out of 4 services:
 
 Simply execute the following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project.
 
-{{% tip %}}
-_**Note**_ that we copy the example database to the `tmp` directory, don't skip this step since this path is required in the Docker Compose file. You should also create a Docker network named `stackl_bridge` which is used for the STACKL deployment.
-{{% /tip %}}
+_**Note**_
+_We copied the example database to the `tmp` directory, don't skip this step since this path is required in the Docker Compose file. You should also create a Docker network named `stackl_bridge` which is used for the STACKL deployment._
 
 
 ```sh
@@ -87,63 +94,6 @@ To check the logs you can execute the following command:
 ```sh
 docker logs -f <container_id>
 ```
-<!--
-##### REST API
-
-The logs of the `stackl-rest` container show data of all the requests made to the STACKL API.
-
-Example:
-
-```sh
-[pid: 37|app: 0|req: 6/7] 172.26.0.1 () {42 vars in 690 bytes} [Fri Feb 14 15:15:31 2020] GET /swagger.json => generated 11028 bytes in 19 msecs (HTTP/1.1 200) 3 headers in 106 bytes (1 switches on core 0)
-[pid: 30|app: 0|req: 2/8] 172.26.0.1 () {42 vars in 704 bytes} [Fri Feb 14 15:15:42 2020] GET /documents/environment => generated 270 bytes in 10 msecs (HTTP/1.1 200) 3 headers in 104 bytes (1 switches on core 0)
-```
-
-##### Worker
-
-The `stackl-worker` displays logs of all STACKL tasks and connection info to e.g. Redis.
-
-Example:
-
-```sh
-{'time':'2020-02-14 15:15:12,665', 'level': 'DEBUG', 'message': '[Worker] Initialised Worker.'}
-{'time':'2020-02-14 15:15:12,665', 'level': 'DEBUG', 'message': '[Worker] Starting Worker'}
-{'time':'2020-02-14 15:15:17,672', 'level': 'DEBUG', 'message': '[Worker] Starting queue listen'}
-{'time':'2020-02-14 15:15:17,674', 'level': 'INFO', 'message': '[Worker] start_task_popping. Starting listening on redis queue'}
-{'time':'2020-02-14 15:15:17,676', 'level': 'INFO', 'message': '[Worker] Waiting for items to appear in queue'}
-```
-
-##### Agent
-
-The `stackl-agent` used by the Docker Compose file is a Docker agent, this means that the automation job will be executed within Docker. The agent will log the incoming stack instance creation requests.
-
-Example:
-
-```sh
-starting local agent
-action: "create"
-invocation {
-  image: "stacklio/terraform-vm"
-  infrastructure_target: "production.brussels.cluster1"
-  stack_instance: "test_vm"
-  service: "webserver"
-  functional_requirement: "linux"
-  tool: "terraform"
-}
-```
-
-##### Redis
-
-The `stackl-redis` container contains logs about Redis.
-
-```sh
-1:M 14 Feb 2020 15:15:16.645 * 1 changes in 3600 seconds. Saving...
-1:M 14 Feb 2020 15:15:16.645 * Background saving started by pid 19
-19:C 14 Feb 2020 15:15:16.660 * DB saved on disk
-19:C 14 Feb 2020 15:15:16.661 * RDB: 0 MB of memory used by copy-on-write
-1:M 14 Feb 2020 15:15:16.746 * Background saving terminated with success
-```
--->
 
 ## Kubernetes
 
