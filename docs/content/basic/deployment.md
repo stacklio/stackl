@@ -1,5 +1,5 @@
 ---
-title: Installation
+title: Deployment
 kind: basic
 weight: 3
 date: 2020-02-17 01:00:00 +0100
@@ -28,16 +28,21 @@ STACKL releases are available as images on Docker Hub.
 
 ### Running with Docker
 
-Because STACKL makes use of different components we use Docker Compose to set everything up, to get started you can use the Compose file provided in [build/example-docker](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
+Because STACKL makes use of different components we use Docker Compose to set everything up, to get started you can use the docker compose file provided in [build/example-docker](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
 
 The Docker Compose file exists out of 4 services:
 
-* `stackl-rest`: The Rest api for STACKL
+* `stackl-rest`: The rest api for STACKL
 * `stackl-worker`: The STACKL worker
-* `stackl-redis`: A redis instance, used as message channel
+* `stackl-redis`: A Redis instance, used as message channel
 * `stackl-agent`: Component responsible for creating stack-instances
 
-Simply execute following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project. Note that we copy the example database to the `tmp` directory, don't skip this step since this path is required in the Docker Compose file. You should also create a Docker network named `stackl_bridge` which is used for the STACKL deployment.
+Simply execute the following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project.
+
+{{% tip %}}
+_**Note**_ that we copy the example database to the `tmp` directory, don't skip this step since this path is required in the Docker Compose file. You should also create a Docker network named `stackl_bridge` which is used for the STACKL deployment.
+{{% /tip %}}
+
 
 ```sh
 cp -R build/example_database /tmp/example_database
@@ -58,7 +63,16 @@ If you want to cleanup your Docker Compose environment, you can simply run follo
 docker-compose down
 ```
 
-#### Logging
+#### Volume Mounts
+
+The simplest way to load documents into STACKL is to provide them via the
+Docker volume mounts. By default `/tmp/example_database` (configured [above](#running-with-docker)).
+
+#### Advanced configuration
+
+For more configuration make sure to check the [configuration page](../configuration).
+
+### Logging with Docker
 
 STACKL has built in logging for each component. STACKL logs to stdout and the log level can be set in the `LOGLEVEL` variable in the [Docker Compose file](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml). You can simply modify the variable in the file and rerun the `docker-compose up -d` command. The default log level is `INFO`.
 
@@ -73,7 +87,7 @@ To check the logs you can execute the following command:
 ```sh
 docker logs -f <container_id>
 ```
-
+<!--
 ##### REST API
 
 The logs of the `stackl-rest` container show data of all the requests made to the STACKL API.
@@ -129,15 +143,7 @@ The `stackl-redis` container contains logs about Redis.
 19:C 14 Feb 2020 15:15:16.661 * RDB: 0 MB of memory used by copy-on-write
 1:M 14 Feb 2020 15:15:16.746 * Background saving terminated with success
 ```
-
-#### Volume Mounts
-
-The simplest way to load documents into STACKL is to provide them via the
-Docker volume mounts. By default `/tmp/example_database` (configured [above](#running-with-docker)).
-
-#### Advanced configuration
-
-For more configuration make sure to check the [configuration page](../configuration).
+-->
 
 ## Kubernetes
 
@@ -197,7 +203,7 @@ This section shows how to quickly deploy STACKL on top of Kubernetes to try it o
 
 #### Install Helm charts
 
-These steps assume Kubernetes is deployed with Microk8s. If you are using a different Kubernetes provider, the steps should be similar. You may need to use a different Service configuration at the end. You should have already cloned the Helm repository in an earlier, if not you can clone the repository with: `git clone https://github.com/stacklio/stackl.git`.
+These steps assume Kubernetes is deployed with Microk8s. If you are using a different Kubernetes provider, the steps should be similar. You may need to use a different Service configuration at the end. You should have already cloned the Helm repository, if not you can clone the repository with: `git clone https://github.com/stacklio/stackl.git`.
 
 Create a namespace that will house the STACKL deployment:
 
@@ -219,7 +225,16 @@ watch kubectl get pods -n stackl
 
 At this point STACKL is up and running.
 
-#### Logging
+#### Persistent storage
+
+The Helm charts make use of the default storage class to create a persistent volume where the documents will be stored.
+
+#### Helm advanced configuration
+
+For more configuration make sure to check the [configuration page](../configuration).
+
+
+### Logging with Kubernetes
 
 STACKL has built in logging for each component. STACKL logs to stdout and the default log level is `INFO`.
 
@@ -235,7 +250,9 @@ To check the logs you can execute the following command:
 kubectl logs -f <pod_name>
 ```
 
-##### REST API
+## Logging
+
+### REST API
 
 The logs of the `stackl-rest` container show data of all the requests made to the STACKL API.
 
@@ -246,7 +263,7 @@ Example:
 [pid: 30|app: 0|req: 2/8] 172.26.0.1 () {42 vars in 704 bytes} [Fri Feb 14 15:15:42 2020] GET /documents/environment => generated 270 bytes in 10 msecs (HTTP/1.1 200) 3 headers in 104 bytes (1 switches on core 0)
 ```
 
-##### Worker
+### Worker
 
 The `stackl-worker` displays logs of all STACKL tasks and connection info to e.g. Redis.
 
@@ -260,7 +277,7 @@ Example:
 {'time':'2020-02-14 15:15:17,676', 'level': 'INFO', 'message': '[Worker] Waiting for items to appear in queue'}
 ```
 
-##### Agent
+### Agent
 
 The `stackl-agent` used by the Helm chart is a Kubernetes agent, this means that the agent will create a new pod for every automation job. The agent will log the incoming stack instance creation requests.
 
@@ -279,7 +296,7 @@ invocation {
 }
 ```
 
-##### Redis
+### Redis
 
 The `stackl-redis` container contains logs about Redis.
 
@@ -290,11 +307,3 @@ The `stackl-redis` container contains logs about Redis.
 19:C 14 Feb 2020 15:15:16.661 * RDB: 0 MB of memory used by copy-on-write
 1:M 14 Feb 2020 15:15:16.746 * Background saving terminated with success
 ```
-
-#### Persistent storage
-
-The Helm charts make use of the default storage class to create a persistent volume where the documents will be stored.
-
-#### Helm advanced configuration
-
-For more configuration make sure to check the [configuration page](../configuration).
