@@ -15,13 +15,13 @@ agent_broker:
   type: grpc
 
 stacklrest:
-  image: stacklio/stackl-rest:fix-sat-test
+  image: stacklio/stackl-rest:dev
   name: stackl-rest
   hostname: stackl.local
   replicaCount: 1
 
 stacklworker:
-  image: stacklio/stackl-worker:fix-sat-test
+  image: stacklio/stackl-worker:dev
   name: stackl-worker
   replicaCount: 1
 
@@ -31,7 +31,7 @@ stacklredis:
   replicaCount: 1
 
 stacklagent:
-  image: stacklio/stackl-kubernetes-agent:fix-sat-test
+  image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
   replicaCount: 1
 
