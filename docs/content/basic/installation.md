@@ -2,7 +2,7 @@
 title: Installation
 kind: basic
 weight: 3
-date: 2020-02-10 01:00:00 +0100
+date: 2020-02-17 01:00:00 +0100
 publishdate: 2020-02-01 00:00:00 +0000
 expirydate: 2030-01-01 00:00:00 +0000
 draft: false
@@ -20,8 +20,7 @@ git clone https://github.com/stacklio/stackl.git
 
 Docker makes it easy to deploy STACKL locally on your own machine.
 
-In this section we will explain how to use the official STACKL Docker images in combination with docker-compose to
-easily get STACKL up and running
+In this section we will explain how to use the official STACKL Docker images in combination with Docker Compose to easily get STACKL up and running.
 
 STACKL releases are available as images on Docker Hub.
 
@@ -29,16 +28,16 @@ STACKL releases are available as images on Docker Hub.
 
 ### Running with Docker
 
-Because STACKL makes use of different components we use docker-compose to set everything up, to get started you can use the Docker compose file provided in [build/example-docker](../../../build/example_docker/docker-compose.yml).
+Because STACKL makes use of different components we use Docker Compose to set everything up, to get started you can use the Compose file provided in [build/example-docker](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
 
-The Docker compose file exists out of 4 services:
+The Docker Compose file exists out of 4 services:
 
 * `stackl-rest`: The Rest api for STACKL
 * `stackl-worker`: The STACKL worker
 * `stackl-redis`: A redis instance, used as message channel
 * `stackl-agent`: Component responsible for creating stack-instances
 
-Simply execute following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project. Note that we copy the example database to the `tmp` directory, don't skip this step since this path is required in the Docker compose file.
+Simply execute following commands to set up your environment. We assume that you already cloned the repository to your own system and that you are in the root of the project. Note that we copy the example database to the `tmp` directory, don't skip this step since this path is required in the Docker Compose file. You should also create a Docker network named `stackl_bridge` which is used for the STACKL deployment.
 
 ```sh
 cp -R build/example_database /tmp/example_database
@@ -53,7 +52,7 @@ By default, STACKL will run on port 8080, you can issue following command to che
 curl -i localhost:8080/
 ```
 
-If you want to cleanup your Docker compose environment, you can simply run following command:
+If you want to cleanup your Docker Compose environment, you can simply run following command:
 
 ```sh
 docker-compose down
@@ -61,7 +60,7 @@ docker-compose down
 
 #### Logging
 
-STACKL has built in logging for each component. STACKL logs to stdout and the log level can be set in the `LOGLEVEL` variable in the [Docker compose file](./../../build/example_docker/docker-compose.yml). You can simply modify the variable in the file and rerun the `docker-compose up -d` command. The default log level is `INFO`.
+STACKL has built in logging for each component. STACKL logs to stdout and the log level can be set in the `LOGLEVEL` variable in the [Docker Compose file](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml). You can simply modify the variable in the file and rerun the `docker-compose up -d` command. The default log level is `INFO`.
 
 You can execute following command to see all running containers:
 
@@ -102,7 +101,7 @@ Example:
 
 ##### Agent
 
-The `stackl-agent` used by the Docker-compose file is a Docker agent, this means that the automation job will be executed within Docker. The agent will log the incoming stack instance creation requests.
+The `stackl-agent` used by the Docker Compose file is a Docker agent, this means that the automation job will be executed within Docker. The agent will log the incoming stack instance creation requests.
 
 Example:
 
@@ -138,13 +137,13 @@ Docker volume mounts. By default `/tmp/example_database` (configured [above](#ru
 
 #### Advanced configuration
 
-For more configuration make sure to check the [configuration page](./configuration.md).
+For more configuration make sure to check the [configuration page](../configuration).
 
 ## Kubernetes
 
 ### Prerequisites
 
-You should have a working Kubernetes cluster, this can be locally (Minikube, Microk8s) or a cluster in the cloud. If you don't have any cluster yet you can make use of a local development environment provided by [STACKL](www.stackl.io).
+You should have a working Kubernetes cluster, this can be locally (Minikube, Microk8s) or a cluster in the cloud. If you don't have any cluster yet you can make use of a local development environment provided by [STACKL](https://stackl.io).
 The Vagrant development environment meets all requirements needed to install STACKL. The development box is a CentOS7 distribution and has following tools installed:
 
 * [Ansible](https://www.ansible.com/): `2.9.2`
@@ -156,7 +155,7 @@ The Vagrant development environment meets all requirements needed to install STA
 * [Python 3](https://www.python.org/): `3.6.8`
 * [snapd](https://snapcraft.io/snapd): `2.42.2`
 
-If you want to run the [STACKL Vagrant box](https://app.vagrantup.com/dome/boxes/stacklio) as development environment, your system should meet following requirements:
+If you want to run the [STACKL Vagrant box](https://app.vagrantup.com/stacklio/boxes/centos7-devbox/) as development environment, your system should meet following requirements:
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads) should be installed.
 * [Vagrant](https://www.vagrantup.com/downloads.html) should be installed.
@@ -298,4 +297,4 @@ The Helm charts make use of the default storage class to create a persistent vol
 
 #### Helm advanced configuration
 
-For more configuration make sure to check the [configuration page](./configuration.md).
+For more configuration make sure to check the [configuration page](../configuration).
