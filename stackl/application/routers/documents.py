@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
-from globals import types
+from globals import document_types
 from manager.manager_factory import ManagerFactory
 from model.configs.document import BaseDocument
 from task_broker.task_broker_factory import TaskBrokerFactory
@@ -19,7 +19,7 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 @router.get('/types')
 def get_types():
-    return types
+    return document_types
 
 
 @router.get('/{type_name}', response_model=List[BaseDocument])

@@ -5,12 +5,12 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from enums.stackl_codes import StatusCode
+from manager.manager_factory import ManagerFactory
 from model.items.stack_instance import StackInstance
 from task.stack_task import StackTask
+from task_broker.task_broker_factory import TaskBrokerFactory
 
 logger = logging.getLogger(__name__)
-from manager.manager_factory import ManagerFactory
-from task_broker.task_broker_factory import TaskBrokerFactory
 
 router = APIRouter()
 
@@ -29,7 +29,7 @@ class StackInstanceInvocation(BaseModel):
     stack_instance_name: str
 
 
-@router.get('/instances/{stack_instance_name}', response_model=StackInstance)
+@router.get('/{stack_instance_name}', response_model=StackInstance)
 def get_stack_instance(stack_instance_name: str):
     """Returns a stack instance with a specific name"""
     logger.info(
@@ -41,7 +41,7 @@ def get_stack_instance(stack_instance_name: str):
     return stack_instance
 
 
-@router.get('/instances', response_model=List[StackInstance])
+@router.get('', response_model=List[StackInstance])
 def get_stack_instances():
     """Returns all stack instances"""
     logger.info("[StackInstancesAll GET] Returning all stack instances")
@@ -52,7 +52,7 @@ def get_stack_instances():
         return {}
 
 
-@router.post('/instances')
+@router.post('')
 def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
@@ -97,7 +97,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
                 'message': 'Internal server error: {}'.format(str(e))}, StatusCode.INTERNAL_ERROR
 
 
-@router.put('/instances')
+@router.put('')
 def put_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
     logger.info("[StackInstances POST] Received POST request")
@@ -134,7 +134,7 @@ def put_stack_instance(stack_instance_invocation: StackInstanceInvocation):
                 'message': 'Internal server error: {}'.format(str(e))}, StatusCode.INTERNAL_ERROR
 
 
-@router.delete('/instances/{stack_instance_name}')
+@router.delete('/{stack_instance_name}')
 def delete_stack_instance(stack_instance_name: str):
     """Delete a stack instance with a specific name"""
     logger.info("[StackInstances DELETE] Received DELETE request for " + stack_instance_name)
@@ -143,7 +143,6 @@ def delete_stack_instance(stack_instance_name: str):
         return {'return_code': StatusCode.NOT_FOUND,
                 'message': 'Stack instance ' + str(stack_instance_name) + ' not found'}, StatusCode.NOT_FOUND
     try:
-        logger.info("[StackInstances DELETE] Received POST request with force " + str(force))
         json_data = {}
         json_data['stack_instance_name'] = stack_instance_name
         task = StackTask({

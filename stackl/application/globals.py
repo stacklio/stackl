@@ -17,6 +17,7 @@ types_configs = ["environment", "location", "zone", "stack_application_template"
                  "authentication"]
 types_items = ["stack_instance", "stack_template", "infrastructure_target", "service"]
 types = types_configs + types_items
+document_types = ["environment", "location", "zone"]
 
 redis_cache = None
 registered_agents_glob = []

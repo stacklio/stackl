@@ -10,8 +10,8 @@ from fastapi.routing import APIRoute
 import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
-from routers import documents, stacks, functional_requirements, services, stack_application_templates, \
-    stack_infrastructure_templates
+from routers import documents, stack_instances, functional_requirements, services, stack_application_templates, \
+    stack_infrastructure_templates, about
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
@@ -57,9 +57,9 @@ app.include_router(
     tags=["documents"]
 )
 app.include_router(
-    stacks.router,
-    prefix="/stacks",
-    tags=["stacks"]
+    stack_instances.router,
+    prefix="/stack_instances",
+    tags=["stack_instances"]
 )
 app.include_router(
     functional_requirements.router,
@@ -80,6 +80,11 @@ app.include_router(
     stack_infrastructure_templates.router,
     prefix="/stack_infrastructure_templates",
     tags=["stack_infrastructure_templates"]
+)
+app.include_router(
+    about.router,
+    prefix="/about",
+    tags=["about"]
 )
 
 

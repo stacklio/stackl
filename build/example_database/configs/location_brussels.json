@@ -2,6 +2,7 @@
   "description": "Brussels DC",
   "type": "location",
   "name": "brussels",
+  "category": "configs",
   "params": {
     "datacenter": "DC01"
   }

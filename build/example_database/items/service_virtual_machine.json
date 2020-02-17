@@ -1,6 +1,7 @@
 {
   "name": "virtual_machine",
   "type": "service",
+  "category": "items",
   "functional_requirements": [
     "linux"
   ],
