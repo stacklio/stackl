@@ -39,5 +39,5 @@ def serve():
 
 
 if __name__ == '__main__':
-    print("starting local agent")
+    print("starting docker agent")
     serve()

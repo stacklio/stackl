@@ -39,5 +39,5 @@ def serve():
 
 
 if __name__ == '__main__':
-    print("starting worker")
+    print("starting kubernetes agent")
     serve()
