@@ -2,7 +2,7 @@
 title: Configuration
 kind: basic
 weight: 4
-date: 2020-02-10 01:00:00 +0100
+date: 2020-02-17 01:00:00 +0100
 publishdate: 2020-02-01 00:00:00 +0000
 expirydate: 2030-01-01 00:00:00 +0000
 draft: false
@@ -11,7 +11,7 @@ tags: []
 
 ## Docker Configuration table
 
-Following parameters can be modified in order to change the STACKL Docker compose deployment in [docker-compose.yml](../../../build/example_docker/docker-compose.yml).
+Following parameters can be modified in order to change the STACKL Docker compose deployment in [docker-compose.yml](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
 
 | Parameter | Description | Default |
 |------------|------|------|
@@ -28,7 +28,7 @@ Following parameters can be modified in order to change the STACKL Docker compos
 
 ## Helm Configuration table
 
-Following parameters can be modified in order to change the STACKL Helm deployment in [values.yaml](../../../build/helm/values.yaml).
+Following parameters can be modified in order to change the STACKL Helm deployment in [values.yaml](https://github.com/stacklio/stackl/tree/master/build/helm/values.yaml).
 
 | Parameter | Description | Default |
 |------------|------|------|
