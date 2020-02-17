@@ -1,10 +1,12 @@
-FROM docker:stable-dind
+FROM python:3.8.1-slim-buster
 
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
-RUN apk add --no-cache python3 musl-dev gcc python3-dev g++
-RUN pip3 install --no-cache-dir -r requirements.txt
+
+RUN apt-get update && apt-get install -y --no-install-recommends docker.io=18.09.1+dfsg1-7.1+deb10u1 && \
+    pip3 install --no-cache-dir -r requirements.txt && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
