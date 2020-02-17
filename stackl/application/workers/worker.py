@@ -6,7 +6,7 @@ import threading
 import time
 
 # Needed for globals
-sys.path.append('/etc/stackl_src')
+sys.path.append('/opt/stackl')
 
 from utils.general_utils import get_hostname  # pylint: disable=import-error
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error

@@ -1,8 +1,3 @@
-import sys
-
-sys.path.append('/etc/changes/')
-
-
 class InvalidDocTypeError(Exception):
     """ Basic exception for when a document is requested with an invalid type"""
 
