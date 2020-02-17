@@ -43,6 +43,7 @@ Simply execute following commands to set up your environment. We assume that you
 ```sh
 cp -R build/example_database /tmp/example_database
 cd build/example_docker
+docker network create stackl_bridge
 docker-compose up -d
 ```
 
@@ -50,6 +51,12 @@ By default, STACKL will run on port 8080, you can issue following command to che
 
 ```sh
 curl -i localhost:8080/
+```
+
+If you want to cleanup your Docker compose environment, you can simply run following command:
+
+```sh
+docker-compose down
 ```
 
 #### Logging
@@ -157,7 +164,7 @@ If you want to run the [STACKL Vagrant box](https://app.vagrantup.com/dome/boxes
 The STACKL development environment can be set up using following commands
 
 ```sh
-vagrant init dome/stacklio
+vagrant init stacklio/centos7-devbox
 vagrant up
 ```
 
@@ -173,7 +180,7 @@ Don't forget to clone the STACKL repository into the Vagrant box (execute follow
 git clone https://github.com/stacklio/stackl.git
 ```
 
-Now you're all set to get started installing STACKL using Helm templates!
+Now you're all set to get started installing STACKL using Helm templates! You can continue with the next [step](#installing-with-helm).
 
 Done using the Vagrant box? You can either stop this box so that you can use it again later or delete it entirely with one of following commands:
 
