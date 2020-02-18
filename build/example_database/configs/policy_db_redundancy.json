@@ -1,0 +1,6 @@
+{
+    "name": "Database Redundancy Policy",
+    "description": "Database policy to ensure that at least 2 databases exist but not more than 3",
+    "min_nodes": 2,
+    "max_nodes": 3
+}
