@@ -40,7 +40,7 @@ make install
 
 If everything worked fine, you should be able to access the rest-api at
 
-`localhost:<the_port_provided_in_config>` (Default 8080)
+`localhost:<the_port_provided_in_config>/docs` (Default 8080)
 
 # Makefile
 
