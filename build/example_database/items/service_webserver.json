@@ -1,0 +1,13 @@
+{
+    "name": "webserver",
+    "type": "service",
+    "category": "items",
+    "functional_requirements": ["linux"],
+    "non_functional_requirements": {
+        "CPU": "1GHz",
+        "RAM": "2GB"
+    },
+    "params": {
+        "webserver": "nginx"
+    }
+}
