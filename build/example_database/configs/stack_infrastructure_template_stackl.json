@@ -1,14 +1,30 @@
 {
-  "category": "configs",
-  "description": "",
-  "infrastructure_capabilities": {},
-  "infrastructure_targets": [
-    {
-      "environment": "production",
-      "location": "brussels",
-      "zone": "cluster1"
-    }
-  ],
-  "name": "stackl",
-  "type": "stack_infrastructure_template"
+    "category": "configs",
+    "description": "SIT updated at 2020-02-17 14h35m28s",
+    "infrastructure_capabilities": {
+        "production.brussels.cluster1": {
+            "CPU": "4GHz",
+            "RAM": "4GB",
+            "cluster": "CL01",
+            "config": [
+                "linux",
+                "nginx"
+            ],
+            "datacenter": "DC01",
+            "datastore": "vsanDatastore",
+            "hostname": "p00vca01.nubera.local",
+            "network": "ls3-Fred",
+            "password": "Nubera1!",
+            "username": "administrator@vsphere.local"
+        }
+    },
+    "infrastructure_targets": [
+        {
+            "environment": "production",
+            "location": "brussels",
+            "zone": "cluster1"
+        }
+    ],
+    "name": "stackl",
+    "type": "stack_infrastructure_template"
 }

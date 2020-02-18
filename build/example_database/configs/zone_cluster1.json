@@ -1,8 +1,8 @@
 {
   "description": "Our First Cluster",
-  "category":  "configs",
   "type": "zone",
   "name": "cluster1",
+  "category": "configs",
   "params": {
     "cluster": "CL01",
     "CPU": "4GHz",
@@ -11,6 +11,6 @@
       "linux",
       "nginx"
     ],
-    "network": "portgroup"
+    "network": "ls3-Fred"
   }
 }

@@ -1,12 +1,12 @@
 {
-  "description": "Production environment",
-  "category": "configs",
-  "type": "environment",
-  "name": "production",
-  "params": {
-    "hostname": "vsphere.local",
-    "username": "administrator@vsphere.local",
-    "password": "PASSWORD",
-    "datastore": "vsanDatastore"
-  }
+    "category": "configs",
+    "description": "production environment",
+    "name": "production",
+    "params": {
+        "datastore": "vsanDatastore",
+        "hostname": "p00vca01.nubera.local",
+        "password": "Nubera1!",
+        "username": "administrator@vsphere.local"
+    },
+    "type": "environment"
 }
