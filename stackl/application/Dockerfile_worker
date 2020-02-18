@@ -1,6 +1,10 @@
-#use alpine?
-FROM python:3.7-slim-buster 
-RUN pip3 install pydantic redis tornado requests websockets grpcio protobuf
-RUN mkdir /opt/stackl
+FROM python:3.8.1-slim-buster
+
+COPY requirements_worker.txt requirements_worker.txt
+
+RUN pip3 install --no-cache-dir -r requirements_worker.txt && \
+    mkdir /opt/stackl
+
 COPY . /opt/stackl
+
 CMD ["python", "/opt/stackl/workers/worker.py"]

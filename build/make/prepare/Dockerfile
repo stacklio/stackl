@@ -1,8 +1,10 @@
-FROM python:3.7.4
+FROM python:3.8.1-slim-buster
 
 WORKDIR /usr/src/app
 
-RUN pip install click jinja2 PyYAML
+COPY requirements.txt requirements.txt
+
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY main.py .
 

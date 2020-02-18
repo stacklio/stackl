@@ -1,4 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
+COPY requirements_rest.txt requirements_rest.txt
+
+RUN pip install --no-cache-dir -r /app/requirements_rest.txt
+
 COPY . /app
-RUN pip install -r /app/requirements.txt
