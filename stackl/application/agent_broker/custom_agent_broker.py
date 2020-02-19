@@ -14,7 +14,7 @@ import websockets
 import globals
 from agent_broker import AgentBroker
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class CustomAgentBroker(AgentBroker):

@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import globals
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from utils.general_utils import get_absolute_time_seconds
 
 

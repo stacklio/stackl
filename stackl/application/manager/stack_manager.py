@@ -5,7 +5,7 @@ from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
 from handler.stack_handler import StackHandler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory

@@ -29,7 +29,7 @@ except ImportError:
     raise ImportError('Swagger python client requires urllib3.')
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class RESTResponse(io.IOBase):

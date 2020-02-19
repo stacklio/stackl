@@ -1,7 +1,7 @@
 import logging
 import os
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 
 

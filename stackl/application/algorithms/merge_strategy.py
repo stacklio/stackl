@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class MergeStrategy(ABC):

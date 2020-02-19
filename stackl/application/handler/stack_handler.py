@@ -4,7 +4,7 @@ import logging
 from enums.stackl_codes import StatusCode
 from handler import Handler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from model.items.functional_requirement_status import FunctionalRequirementStatus, Status
 from model.items.stack_instance import StackInstance
 from model.items.stack_instance_service import StackInstanceService
