@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 

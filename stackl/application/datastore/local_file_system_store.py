@@ -5,7 +5,7 @@ import os
 from datastore import DataStore
 from enums.stackl_codes import StatusCode
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class LocalFileSystemStore(DataStore):

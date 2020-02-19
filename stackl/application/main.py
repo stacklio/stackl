@@ -17,13 +17,12 @@ from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
 
 # Logger stuff
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
-formatter = logging.Formatter(
-    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}")
+formatter = logging.Formatter('[[[%(asctime)s|%(message)s', "%d.%m.%y|%H:%M:%S")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 

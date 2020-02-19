@@ -3,7 +3,7 @@ import logging
 from enums.cast_type import CastType
 from handler import Handler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
