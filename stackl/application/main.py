@@ -48,6 +48,7 @@ task_broker_thread = threading.Thread(name="Task Broker Thread", target=task_bro
 task_broker_thread.daemon = True
 task_broker_thread.start()
 
+opa_broker.start()
 logger.info("___________________ STARTING STACKL_API ____________________")
 
 # Add routes
