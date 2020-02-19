@@ -13,6 +13,7 @@ from manager.manager_factory import ManagerFactory
 from routers import documents, policies, stack_instances, functional_requirements, services, stack_application_templates, \
     stack_infrastructure_templates, about
 from task_broker.task_broker_factory import TaskBrokerFactory
+from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
 
 # Logger stuff
@@ -31,10 +32,12 @@ globals.initialize()
 
 manager_factory = ManagerFactory()
 task_broker_factory = TaskBrokerFactory()
-
 agent_broker_factory = AgentBrokerFactory()
+opa_broker_factory = OPABrokerFactory()
+
 agent_broker = agent_broker_factory.agent_broker
 task_broker = task_broker_factory.get_task_broker()
+opa_broker = opa_broker_factory.get_opa_broker()
 
 agent_broker_thread = threading.Thread(name="Agent Broker Thread", target=agent_broker.start, args=[])
 agent_broker_thread.daemon = True

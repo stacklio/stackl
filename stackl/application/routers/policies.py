@@ -16,4 +16,5 @@ opa_broker = opa_broker_factory.get_opa_broker()
 
 @router.get('/policies')
 def get_active_policies():
-    return document_types
+    result = opa_broker.get_opa_policies()
+    return result
