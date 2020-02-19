@@ -15,6 +15,12 @@ opa_broker = opa_broker_factory.get_opa_broker()
 
 
 @router.get('/policies')
-def get_active_policies():
+def get_current_policies():
     result = opa_broker.get_opa_policies()
+    return result
+
+
+@router.get('/data')
+def get_current_data():
+    result = opa_broker.get_opa_data()
     return result
