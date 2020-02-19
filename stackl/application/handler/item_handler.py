@@ -4,7 +4,7 @@ import threading
 
 from handler import Handler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class ItemHandler(Handler):

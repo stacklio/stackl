@@ -8,7 +8,7 @@ from agent_broker import AgentBroker
 from model.items.functional_requirement_status import FunctionalRequirementStatus, Status
 from utils.general_utils import get_config_key
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class GrpcAgentBroker(AgentBroker):

@@ -14,7 +14,7 @@ from model.configs.zone import Zone
 from model.items.service import Service
 from model.items.stack_instance import StackInstance
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory

@@ -5,7 +5,7 @@ from message_channel.message_channel_factory import MessageChannelFactory
 from task_broker import TaskBroker
 from utils.general_utils import get_hostname
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class CustomTaskBroker(TaskBroker):

@@ -8,7 +8,7 @@ import threading
 
 import websockets
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 websockets_logger = logging.getLogger('websockets.server')
 websockets_logger.setLevel(logging.INFO)
