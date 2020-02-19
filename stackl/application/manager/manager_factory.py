@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from manager.document_manager import DocumentManager
 from manager.item_manager import ItemManager
 from manager.stack_manager import StackManager

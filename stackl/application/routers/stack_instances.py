@@ -10,7 +10,7 @@ from model.items.stack_instance import StackInstance
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 router = APIRouter()
 

@@ -5,7 +5,7 @@ from flask_restplus import Namespace, fields
 from api import StacklApiResource
 from enums.stackl_codes import StatusCode
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from manager.manager_factory import ManagerFactory
 
 api = Namespace('item', description='Operations related to STACKL Item Key/Value Lookups')

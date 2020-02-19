@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from enums.cast_type import CastType
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 from utils.general_utils import generate_random_string, get_hostname
 
 

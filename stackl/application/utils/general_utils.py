@@ -11,7 +11,7 @@ import socket
 import string
 import time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 def get_config_key(key):

@@ -9,7 +9,7 @@ from model.items.service import Service
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
 document_manager = ManagerFactory().get_document_manager()
