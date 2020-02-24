@@ -5,42 +5,42 @@ import protos.agent_pb2 as agent__pb2
 
 
 class StacklAgentStub(object):
-    # missing associated documentation comment in .proto file
-    pass
+  # missing associated documentation comment in .proto file
+  pass
 
-    def __init__(self, channel):
-        """Constructor.
+  def __init__(self, channel):
+    """Constructor.
 
-        Args:
-          channel: A grpc.Channel.
-        """
-        self.InvokeAutomation = channel.unary_unary(
-            '/StacklAgent/InvokeAutomation',
-            request_serializer=agent__pb2.AutomationMessage.SerializeToString,
-            response_deserializer=agent__pb2.AutomationResponse.FromString,
+    Args:
+      channel: A grpc.Channel.
+    """
+    self.InvokeAutomation = channel.unary_unary(
+        '/StacklAgent/InvokeAutomation',
+        request_serializer=agent__pb2.AutomationMessage.SerializeToString,
+        response_deserializer=agent__pb2.AutomationResponse.FromString,
         )
 
 
 class StacklAgentServicer(object):
+  # missing associated documentation comment in .proto file
+  pass
+
+  def InvokeAutomation(self, request, context):
     # missing associated documentation comment in .proto file
     pass
-
-    def InvokeAutomation(self, request, context):
-        # missing associated documentation comment in .proto file
-        pass
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
 
 
 def add_StacklAgentServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'InvokeAutomation': grpc.unary_unary_rpc_method_handler(
-            servicer.InvokeAutomation,
-            request_deserializer=agent__pb2.AutomationMessage.FromString,
-            response_serializer=agent__pb2.AutomationResponse.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'StacklAgent', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
+  rpc_method_handlers = {
+      'InvokeAutomation': grpc.unary_unary_rpc_method_handler(
+          servicer.InvokeAutomation,
+          request_deserializer=agent__pb2.AutomationMessage.FromString,
+          response_serializer=agent__pb2.AutomationResponse.SerializeToString,
+      ),
+  }
+  generic_handler = grpc.method_handlers_generic_handler(
+      'StacklAgent', rpc_method_handlers)
+  server.add_generic_rpc_handlers((generic_handler,))

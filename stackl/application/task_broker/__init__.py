@@ -13,13 +13,8 @@ class TaskBroker(ABC):
     @abstractmethod
     def start_stackl(self, subscribe_channels=[], agent_broker=None):  # subscribe channels used by subclasses
         logger.debug("[{0}] Starting Task Broker for STACKL".format(logger.name))
-
         self.agent_broker = agent_broker
         self.task_signal = threading.Event()
-
-        self.task_monitor_thread = threading.Thread(name="Task Monitor Thread", target=self.task_queue_monitor,
-                                                    args=[self.task_signal])
-        self.task_monitor_thread.start()
 
     @abstractmethod
     def start_worker(self, subscribe_channels=[]):  # subscribe channels used by subclasses
@@ -65,44 +60,3 @@ class TaskBroker(ABC):
             "[{2}] Added task to queue. Task is '{0}'. Updated queue: '{1}'".format(task_obj, globals.get_task_queue(),
                                                                                     logger.name))
         self.task_signal.set()
-
-    # Run in thread
-    def task_queue_monitor(self, task_signal):
-        try:
-            while True:
-                earliest_task_timer = self._determine_wait_time()
-                task_queue = globals.get_task_queue()
-                logger.debug(
-                    "[{2}] Monitor_threads. len task_queue is '{0}'. Waiting until task added or earliest_task_timer '{1}'".format(
-                        len(task_queue), earliest_task_timer["wait_time"], logger.name))
-
-                task_signal.wait(timeout=earliest_task_timer["wait_time"])
-
-                logger.debug(
-                    "[{0}] Wait time expired or new task added. Checking if any tasks expired".format(logger.name))
-                earliest_task_timer = self._determine_wait_time()
-                if earliest_task_timer["wait_time"] < 0:
-                    logger.debug("[{0}] Wait time expired. Checking if the waiting task is still in queue".format(
-                        logger.name))
-                    if earliest_task_timer["task_id"] in [task["id"] for task in task_queue]:
-                        raise Exception("A task expired! Rollback of task")
-                        # TODO implement rollback
-        except Exception as e:
-            logger.error(
-                "[{0}] Monitor threads encountered an issue. Exception: '{1}'".format(logger.name, e))
-
-    # Run in thread
-    def _determine_wait_time(self):
-        task_queue = globals.get_task_queue()
-        if len(task_queue) == 0:
-            earliest_task_timer = {"id": "None", "wait_time": None}  # block indefinitely
-        else:
-            list_of_wait_time_tasks = [
-                (task["id"], task["wait_time"] - (get_absolute_time_seconds() - task["start_time"])) for task in
-                task_queue]
-            logger.debug("[{1}] list_of_wait_time_tasks: '{0}'".format(list_of_wait_time_tasks, logger.name))
-            earliest_task_tuple = min(list_of_wait_time_tasks, key=lambda n: n[1])
-            earliest_task_timer = {"id": earliest_task_tuple[0], "wait_time": earliest_task_tuple[1]}
-        logger.debug("[{1}] determine_wait_time determined earliest_task_timer: '{0}'".format(earliest_task_timer,
-                                                                                              logger.name))
-        return earliest_task_timer
