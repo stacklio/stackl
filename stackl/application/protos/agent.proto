@@ -15,7 +15,7 @@ message AutomationMessage {
         string functional_requirement = 5;
         string tool = 6;
     }
-    repeated Invocation invocation = 2;
+    Invocation invocation = 2;
 }
 
 message AutomationResponse {
@@ -28,6 +28,7 @@ message AutomationResponse {
         string functional_requirement = 2;
         Status status = 3;
         string error_message = 4;
+        repeated string hosts = 5;
     }
-    repeated AutomationResult automation_result = 1;
+    AutomationResult automation_result = 1;
 }

@@ -61,6 +61,29 @@ class LocalFileSystemStore(DataStore):
         logger.debug("[LocalFileSystemStore] StoreResponse for get: " + str(response))
         return response
 
+    def get_terraform_statefile(self, name):
+        document_key = self.datastore_url + 'statefiles/' + name + ".json"
+
+        try:
+            with open(document_key, 'r') as storedfile:
+                response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
+        except FileNotFoundError:
+            response = self._create_store_response(status_code=StatusCode.NOT_FOUND, content={})
+
+        logger.debug("[LocalFileSystemStore] StoreResponse for get: " + str(response))
+        return response
+
+    def put_terraform_statefile(self, name, content):
+        document_key = self.datastore_url + 'statefiles/' + name + ".json"
+        with open(document_key, 'w+') as outfile:
+            json.dump(content, outfile, sort_keys=True, indent=4, separators=(',', ': '))
+
+        with open(document_key, 'r') as storedfile:
+            response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
+
+        logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
+        return response
+
     def put(self, file):
         if file.get("type") in file.get("name"):
             document_key = self.datastore_url + file.get("category") + '/' + file.get("name") + ".json"

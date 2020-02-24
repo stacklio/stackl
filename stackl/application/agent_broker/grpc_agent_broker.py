@@ -28,36 +28,38 @@ class GrpcAgentBroker(AgentBroker):
 
     def send_to_agent(self, agent_connect_info, obj):
         logger.info("[GrpcAgentBroker] sending automation message to channel {0}".format(self.channel))
-        logger.info("[GrpcAgentBroker] sending message: {0}".format(obj.SerializeToString()))
         result = self.stub.InvokeAutomation(obj)
-        logger.info("[GrpcAgentBroker] received result: {0}".format(result))
+        # logger.info("[GrpcAgentBroker] received result: {0}".format(result))
         return result
 
     def process_result(self, stack_instance, result, document_manager):
         logger.info("[GrpcAgentBroker] processing result: {0}".format(result))
-        for sts in result.automation_result:
-            stack_instance.services[sts.service].status = []
-        for sts in result.automation_result:
-            logger.info("[GrpcAgentBroker] check sts: {0}".format(sts))
+        sts = result.automation_result
+        stack_instance.services[sts.service].status = []
 
-            if sts.error_message == "":
-                status = Status.ready
-            else:
-                status = Status.failed
-            fr_status = FunctionalRequirementStatus(
-                functional_requirement=sts.functional_requirement,
-                status=status,
-                error_message=sts.error_message
-            )
-            stack_instance.services[sts.service].status.append(fr_status)
+        logger.info("[GrpcAgentBroker] check sts: {0}".format(sts))
+
+        if sts.error_message == "":
+            status = Status.ready
+        else:
+            status = Status.failed
+        fr_status = FunctionalRequirementStatus(
+            functional_requirement=sts.functional_requirement,
+            status=status,
+            error_message=sts.error_message
+        )
+        stack_instance.services[sts.service].status.append(fr_status)
+        if len(sts.hosts) > 0:
+            stack_instance.services[sts.service].hosts = []
+            for h in sts.hosts:
+                stack_instance.services[sts.service].hosts.append(h)
         document_manager.write_stack_instance(stack_instance)
 
     def create_change_obj(self, stack_instance, action, document_manager):
         logger.debug(
-            "[GrpcAgentBroker] create_change_obj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
-                                                                                                    action))
-        change_obj = protos.agent_pb2.AutomationMessage()
-        change_obj.action = action
+            "[GrpcAgentBroker] create_change_o\bj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
+                                                                                                     action))
+        change_obj = []
         for service in stack_instance.services:
             service_name = service
             logger.debug("[GrpcAgentBroker] service name: '{0}".format(service_name))
@@ -67,8 +69,10 @@ class GrpcAgentBroker(AgentBroker):
                 fr_doc = document_manager.get_document(type="functional_requirement", document_name=fr)
                 logger.debug(
                     "[GrpcAgentBroker] create_change_obj. Retrieved fr '{0}' from service_doc '{1}''".format(fr_doc,
-                                                                                                             service_doc))
-                invoc = change_obj.invocation.add()
+                                                                                                           service_doc))
+                automation_message = protos.agent_pb2.AutomationMessage()
+                automation_message.action = action
+                invoc = automation_message.invocation
                 invoc.functional_requirement = fr
                 invoc.image = fr_doc['invocation']['image']
                 logger.debug("[GrpcAgentBroker] create_change_obj. service debug '{0}'".format(
@@ -78,6 +82,7 @@ class GrpcAgentBroker(AgentBroker):
                 invoc.tool = fr_doc['invocation']['tool']
                 invoc.service = service_name
                 logger.debug(
-                    "[GrpcAgentBroker] create_change_obj. Added fr '{0}' and invoc '{1}' to change_obj '{2}'"
-                        .format(fr_doc, invoc.SerializeToString(), change_obj.SerializeToString()))
+                    "[GrpcAgentBroker] create_change_obj. Added fr '{0}' and invoc '{1}'"
+                        .format(fr_doc, invoc.SerializeToString()))
+                change_obj.append(automation_message)
         return change_obj
