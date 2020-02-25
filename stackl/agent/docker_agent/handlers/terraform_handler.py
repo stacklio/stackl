@@ -26,7 +26,8 @@ class TerraformHandler:
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
         command_string += " " + container_image
-        command_string += " " + "destroy --auto-approve"
+        command_string += " " + "/bin/sh -c 'terraform init -backend-config=address=http://" + os.environ[
+            'STACKL_HOST'] + "/terraform/" + stack_instance + " && terraform destroy --auto-approve'"
         return command_string
 
     def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
@@ -48,7 +49,7 @@ class TerraformHandler:
             command = self.create_delete_command(name, container_image, invocation.stack_instance, invocation.service)
         print("running command: " + command)
         try:
-            subprocess.check_output(command.split(' '), stderr=subprocess.STDOUT)
+            subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
             return 0, "", self.get_hosts(invocation.stack_instance)
         except subprocess.CalledProcessError as e:
             return 1, e.output.decode(), None
