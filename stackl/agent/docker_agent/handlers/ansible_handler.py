@@ -21,6 +21,16 @@ class AnsibleHandler:
         command_string += " -e stackl_host=" + os.environ['STACKL_HOST']
         return command_string
 
+    # TODO Implement this
+    def create_delete_command(self, name, container_image, stack_instance, service):
+        command_string = "docker run --entrypoint=/opt/ansible/bin/docker-entrypoint.sh"
+        command_string += " --name " + name
+        command_string += " --network stackl_bridge"
+        command_string += " -v /tmp/stackl.yml:/tmp/stackl.yml"
+        command_string += " " + container_image
+        command_string += " echo delete not yet supported"
+        return command_string
+
     def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
 

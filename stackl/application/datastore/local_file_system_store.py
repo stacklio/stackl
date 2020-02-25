@@ -84,6 +84,14 @@ class LocalFileSystemStore(DataStore):
         logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
         return response
 
+    def delete_terraform_statefile(self, name, statefile):
+        document_key = self.datastore_url + 'statefiles/' + name + ".json"
+        os.remove(document_key)
+        response = self._create_store_response(status_code=200, content={})
+        logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
+        return response
+
+
     def put(self, file):
         if file.get("type") in file.get("name"):
             document_key = self.datastore_url + file.get("category") + '/' + file.get("name") + ".json"

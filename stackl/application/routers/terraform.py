@@ -33,7 +33,7 @@ def post_terraform_statefile(state: str, body: Any = Body(...)):
     return document
 
 
-@router.delete('/{document_name}', status_code=202)
-def delete_stack_application_template(type_name: str, document_name: str):
-    document_manager.remove_document(type=type_name, document_name=document_name)
+@router.delete('/{state}', status_code=200)
+def delete_stack_application_template(state: str):
+    document_manager.delete_terraform_statefile(state)
     return {"message": "Deleted document"}

@@ -29,6 +29,10 @@ class DataStore(ABC):
         pass
 
     @abstractmethod
+    def delete_terraform_statefile(self, name, statefile):
+        pass
+
+    @abstractmethod
     def _check_datastore_exists(self, datastore):
         pass
 
