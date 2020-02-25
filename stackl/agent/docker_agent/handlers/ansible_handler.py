@@ -9,13 +9,15 @@ class AnsibleHandler:
     def create_job_command(self, name, container_image, stack_instance, service):
         with open('/tmp/stackl.yml', 'w') as inventory:
             inventory.write(
-                'plugin: stackl\nhost: ' + os.environ['STACKL_HOST'] + '\nstack_instance: ' + stack_instance)
-        command_string = "docker run --entrypoint=/opt/ansible/bin/docker-entrypoint.sh"
+                'plugin: stackl\nhost: http://' + os.environ['STACKL_HOST'] + '\nstack_instance: ' + stack_instance)
+        command_string = "docker run"
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
-        command_string += " -v /tmp/stackl.yml:/tmp/stackl.yml"
+        command_string += " -v /tmp/stackl.yml:/ansible/playbooks/stackl.yml"
+        command_string += " -e ANSIBLE_INVENTORY_PLUGINS=/ansible/playbooks"
+        command_string += " -e ANSIBLE_INVENTORY_ENABLED=stackl"
         command_string += " " + container_image
-        command_string += " ansible-playbook main.yml -i /tmp/stackl.yml"
+        command_string += " ansible-playbook main.yml -i stackl.yml"
         command_string += " -e stackl_stack_instance=" + stack_instance
         command_string += " -e stackl_service=" + service
         command_string += " -e stackl_host=" + os.environ['STACKL_HOST']
@@ -23,7 +25,7 @@ class AnsibleHandler:
 
     # TODO Implement this
     def create_delete_command(self, name, container_image, stack_instance, service):
-        command_string = "docker run --entrypoint=/opt/ansible/bin/docker-entrypoint.sh"
+        command_string = "docker run"
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
         command_string += " -v /tmp/stackl.yml:/tmp/stackl.yml"
