@@ -159,6 +159,21 @@ class DocumentManager(Manager):
         store_response = self.store.put(fr.dict())
         return store_response.status_code
 
+    def get_terraform_statefile(self, statefile_name):
+        """gets a terraform statefile from the store"""
+        store_response = self.store.get_terraform_statefile(statefile_name)
+        return store_response.content
+
+    def write_terraform_statefile(self, name, statefile):
+        """writes a terraform statefile to the store
+        """
+        store_response = self.store.put_terraform_statefile(name, statefile)
+        return store_response.content
+
+    def delete_terraform_statefile(self, statefile_name):
+        store_response = self.store.delete_terraform_statefile(statefile_name)
+        return store_response.content
+
     def write_document(self, **keys):
         logger.debug("[DocumentManager] write_document.  Keys '{0}'".format(keys))
         keys = self._process_document_keys(keys)

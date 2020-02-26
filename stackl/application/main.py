@@ -11,7 +11,7 @@ import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
 from routers import documents, stack_instances, functional_requirements, services, stack_application_templates, \
-    stack_infrastructure_templates, about
+    stack_infrastructure_templates, about, terraform
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
@@ -48,7 +48,9 @@ task_broker_thread.start()
 logger.info("___________________ STARTING STACKL_API ____________________")
 
 # Add routes
-app = FastAPI()
+app = FastAPI(
+    title="STACKL",
+    description="stackl",)
 
 app.include_router(
     documents.router,
@@ -79,6 +81,11 @@ app.include_router(
     stack_infrastructure_templates.router,
     prefix="/stack_infrastructure_templates",
     tags=["stack_infrastructure_templates"]
+)
+app.include_router(
+    terraform.router,
+    prefix="/terraform",
+    tags=["terraform"]
 )
 app.include_router(
     about.router,
