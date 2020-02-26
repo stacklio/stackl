@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
 from model.items.stack_instance import StackInstance
+from model.items.stack_instance_service import ConnectionCredentials
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
@@ -24,6 +25,7 @@ task_broker = task_broker_factory.get_task_broker()
 
 class StackInstanceInvocation(BaseModel):
     params: Dict[str, Any] = {}
+    connection_credentials: ConnectionCredentials = None
     stack_infrastructure_template: str
     stack_application_template: str
     stack_instance_name: str
@@ -50,6 +52,15 @@ def get_stack_instances():
         return doc
     else:
         return {}
+
+
+@router.post('/{stack_instance_name}/{service}/add_hosts', response_model=StackInstance)
+def add_hosts(stack_instance_name: str, service: str, hosts: List[str]):
+    """Add hosts to the service of a stack instance"""
+    si = document_manager.get_stack_instance(stack_instance_name)
+    si.services[service].hosts = hosts
+    document_manager.write_stack_instance(si)
+    return si
 
 
 @router.post('')

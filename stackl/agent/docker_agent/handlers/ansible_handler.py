@@ -3,41 +3,38 @@ import random
 import string
 import subprocess
 
-import requests
 
-
-class TerraformHandler:
+class AnsibleHandler:
 
     def create_job_command(self, name, container_image, stack_instance, service):
+        with open('/tmp/stackl.yml', 'w') as inventory:
+            inventory.write(
+                'plugin: stackl\nhost: http://' + os.environ['STACKL_HOST'] + '\nstack_instance: ' + stack_instance)
         command_string = "docker run"
-        command_string += " -e TF_VAR_stackl_stack_instance=" + stack_instance
-        command_string += " -e TF_VAR_stackl_service=" + service
-        command_string += " -e TF_VAR_stackl_host=" + os.environ['STACKL_HOST']
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
+        command_string += " -v /tmp/stackl.yml:/ansible/playbooks/stackl.yml"
+        command_string += " -e ANSIBLE_INVENTORY_PLUGINS=/ansible/playbooks"
+        command_string += " -e ANSIBLE_INVENTORY_ENABLED=stackl"
         command_string += " " + container_image
+        command_string += " ansible-playbook main.yml -i stackl.yml"
+        command_string += " -e stackl_stack_instance=" + stack_instance
+        command_string += " -e stackl_service=" + service
+        command_string += " -e stackl_host=" + os.environ['STACKL_HOST']
         return command_string
 
+    # TODO Implement this
     def create_delete_command(self, name, container_image, stack_instance, service):
         command_string = "docker run"
-        command_string += " -e TF_VAR_stackl_stack_instance=" + stack_instance
-        command_string += " -e TF_VAR_stackl_service=" + service
-        command_string += " -e TF_VAR_stackl_host=" + os.environ['STACKL_HOST']
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
+        command_string += " -v /tmp/stackl.yml:/tmp/stackl.yml"
         command_string += " " + container_image
-        command_string += " " + "/bin/sh -c 'terraform init -backend-config=address=http://" + os.environ[
-            'STACKL_HOST'] + "/terraform/" + stack_instance + " && terraform destroy --auto-approve'"
+        command_string += " echo delete not yet supported"
         return command_string
 
     def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
-
-    def get_hosts(self, stack_instance):
-        # Get the statefile
-        r = requests.get('http://' + os.environ['STACKL_HOST'] + '/terraform/' + stack_instance)
-        statefile = r.json()
-        return statefile["outputs"]["hosts"]["value"]
 
     def handle(self, invocation, action):
         print(invocation)
@@ -49,7 +46,7 @@ class TerraformHandler:
             command = self.create_delete_command(name, container_image, invocation.stack_instance, invocation.service)
         print("running command: " + command)
         try:
-            subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-            return 0, "", self.get_hosts(invocation.stack_instance)
+            subprocess.check_output(command.split(' '), stderr=subprocess.STDOUT)
+            return 0, "", None
         except subprocess.CalledProcessError as e:
             return 1, e.output.decode(), None
