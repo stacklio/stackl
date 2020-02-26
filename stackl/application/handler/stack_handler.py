@@ -53,6 +53,7 @@ class StackHandler(Handler):
                     merged_capabilities = {**merged_capabilities, **fr_doc.params}
                 service_definition.provisioning_parameters = {**merged_capabilities, **item['params']}
                 service_definition.status = service_definition_status
+                service_definition.connection_credentials = item['connection_credentials']
                 services[svc] = service_definition
             stack_instance_doc.services = services
         return stack_instance_doc
@@ -68,6 +69,7 @@ class StackHandler(Handler):
                 fr_doc = self.document_manager.get_functional_requirement(fr)
                 merged_capabilities = {**merged_capabilities, **fr_doc.params}
             stack_instance.services[svc].provisioning_parameters = {**merged_capabilities, **item['params']}
+            stack_instance.services[svc].connection_credentials = item['connection_credentials']
         return stack_instance
 
     def _handle_create(self, item):

@@ -78,6 +78,7 @@ services:
     image: stacklio/stackl-docker-agent:dev
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
 {% else %}
     image: stacklio/stackl-kubernetes-agent:dev
 {% endif %}
