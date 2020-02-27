@@ -6,17 +6,18 @@ import globals
 import logging
 from utils.general_utils import get_config_key
 
+from model.configs.document import PolicyDocument
+
 logger = logging.getLogger("STACKL_LOGGER")
 
 class OPABroker():
 
     def __init__(self):
-        pass
+        self.opa_host = "http://{}".format(get_config_key("OPA_HOST"))
 
     def start(self):
         logger.debug("[OPABroker] Initialising OPABroker.")
 
-        self.opa_host = "http://{}".format(get_config_key("OPA_HOST"))
         self.load_default_policies()
         self.load_default_data()
 
@@ -29,7 +30,7 @@ class OPABroker():
     def load_default_data(self):
         logger.debug("[OPABroker] load_default_data.")
         data = self.create_opa_input_data()
-        self.load_opa_data(data, "default")
+        self.load_opa_data(data)
 
     def create_opa_input_data(self, input=None):
         if input:
@@ -60,14 +61,38 @@ class OPABroker():
         logger.debug("[OPABroker] get_opa_policies. Result: {}".format(result))
         return result
 
-    def get_opa_data(self, path = "current"):
-        logger.debug("[OPABroker] get_opa_data for path '{}'".format(path))
-        response = requests.get(self.opa_host + "/v1/data/"  + path)
+    def get_opa_policy(self, policy_id):
+        logger.debug("[OPABroker] get_opa_policy. For policy_id '{0}'".format(policy_id))
+        response = requests.get(self.opa_host + "/v1/policies/" + policy_id)
+        result = response.json()
+        logger.debug("[OPABroker] get_opa_policy. Result: {}".format(result))
+        return result
+
+    def get_opa_data(self, data_path="default"):
+        logger.debug("[OPABroker] get_opa_data. For path '{}'".format(data_path))
+        response = requests.get(self.opa_host + "/v1/data/" + data_path)
         result = response.json()
         logger.debug("[OPABroker] get_opa_data. Result: {}".format(result))
         return result
 
-    def load_opa_data(self, data, path="current"):
-        logger.debug("[OPABroker] load_opa_data for data '{0}' and path '{1}'".format(data, path))
+    def load_opa_data(self, data, path="default"):
+        logger.debug("[OPABroker] load_opa_data. For data '{0}' and path '{1}'".format(data, path))
         response = requests.put(self.opa_host + "/v1/data/" + path, data=json.dumps(data))
-        logger.debug("[OPABroker] load_opa_data. response: {}".format(response))
+        logger.debug("[OPABroker] load_opa_data. Response: {}".format(response))
+
+    def delete_opa_data(self, data_path="default"):
+        logger.debug("[OPABroker] delete_opa_data. For path '{}'".format(data_path))
+        response = requests.delete(self.opa_host + "/v1/data/" + data_path)
+        result = response.json()
+        logger.debug("[OPABroker] delete_opa_data. Result: {}".format(result))
+        return result
+
+    def load_opa_policy(self, policy_doc: PolicyDocument, policy_id="default"):
+        logger.debug("[OPABroker] load_opa_policy.")
+        response = requests.put(self.opa_host + "/v1/policies/" + policy_id, data=policy_doc.policy)
+        logger.debug("[OPABroker] load_opa_policy. Response:{}".format(response))
+
+    def delete_opa_policy(self, policy_id="default"):
+        logger.debug("[OPABroker] delete_opa_policy. For policy_id '{0}'".format(policy_id))
+        response = requests.delete(self.opa_host + "/v1/policies/" + policy_id)
+        logger.debug("[OPABroker] delete_opa_policy. Response:{}".format(response))
