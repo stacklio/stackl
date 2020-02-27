@@ -22,11 +22,15 @@ class TerraformHandler:
         body.status = client.V1JobStatus()
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
-        env_list = []
-        env_list.append(client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance))
-        env_list.append(client.V1EnvVar(name="TF_VAR_stackl_service", value=service))
-        env_list.append(client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host']))
-        container = client.V1Container(name=container_name, image=container_image, env=env_list)
+        env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
+                    client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
+                    client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
+        container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       command=["/bin/sh"],
+                                       args=["-c", "'terraform", "init",
+                                             "-backend-config=address=http://" + os.environ[
+                                                 'STACKL_HOST'] + "/terraform/" + stack_instance,
+                                             "&&", "terraform", "destroy", "--auto-approve'"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
                                                   image_pull_secrets=secrets)
@@ -44,6 +48,7 @@ class TerraformHandler:
                     client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
                     client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       command=["terraform"],
                                        args=["destroy", "--auto-approve"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',

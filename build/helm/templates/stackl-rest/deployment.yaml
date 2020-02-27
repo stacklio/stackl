@@ -58,11 +58,11 @@ spec:
               value: "TRUE"
           livenessProbe:
             httpGet:
-              path: /
+              path: /docs
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /docs
               port: http
       volumes:
         - name: stackl-volume
