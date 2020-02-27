@@ -41,6 +41,8 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+log_level: debug
+
 nodeSelector: {}
 
 tolerations: []

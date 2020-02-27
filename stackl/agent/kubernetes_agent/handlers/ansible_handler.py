@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import string
@@ -18,7 +19,8 @@ class AnsibleHandler:
     def create_config_map(self, name, namespace, stack_instance):
         cm = client.V1ConfigMap()
         cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        cm.data = {"plugin": "stackl", "host": "http://" + os.environ['STACKL_HOST'], "stack_instance": stack_instance}
+        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": "http://" + os.environ['stackl_host'],
+                                             "stack_instance": stack_instance})}
         return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
@@ -29,39 +31,34 @@ class AnsibleHandler:
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
         volumes = []
-        vol = client.V1Volume()
+        vol = client.V1Volume(name="inventory")
         inventory_config_map = client.V1ConfigMapVolumeSource()
         inventory_config_map.name = name
         vol.config_map = inventory_config_map
+
+        volume_mounts = []
+        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/ansible/playbooks/inventory/stackl.yml",
+                                            sub_path="stackl.yml")
+        volume_mounts.append(volume_mount)
+
         volumes.append(vol)
         env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       volume_mounts=volume_mounts,
                                        command=["ansible-playbook"],
-                                       args=["main.yml", "-i", "stackl.yml", "-e",
+                                       args=["main.yml", "-i", "inventory/stackl.yml", "-e",
                                              "stackl_stack_instance=" + stack_instance,
                                              "-e", "stackl_service=" + service, "-e",
-                                             "stackl_host=" + os.environ['STACKL_HOST']])
+                                             "stackl_host=" + os.environ['stackl_host']])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
                                                   image_pull_secrets=secrets, volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template)
+        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
         return body
 
     def delete_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
                           container_name="jobcontainer"):
-        body = client.V1Job(api_version="batch/v1", kind="Job")
-        body.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        body.status = client.V1JobStatus()
-        template = client.V1PodTemplate()
-        template.template = client.V1PodTemplateSpec()
-        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
-        container = client.V1Container(name=container_name, image=container_image, env=env_list,
-                                       args=["destroy", "--auto-approve"])
-        secrets = [client.V1LocalObjectReference(name="dome-nexus")]
-        template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
-                                                  image_pull_secrets=secrets)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template)
-        return body
+        pass
 
     def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
@@ -82,21 +79,24 @@ class AnsibleHandler:
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
         if action == "create" or action == "update":
+            print("create cm")
             config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance)
-
+            print("create object")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
+            print("maybe something else")
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
         try:
-            self.api_instance_core.create_namespaced_config_map(stackl_namespace, config_map)
+            api_response = self.api_instance_core.create_namespaced_config_map(stackl_namespace, config_map)
+            print(api_response)
             api_response = self.api_instance.create_namespaced_job(stackl_namespace, body, pretty=True)
             print(api_response)
         except ApiException as e:
             print("Exception when calling BatchV1Api->create_namespaced_job: %s\n" % e)
         api_response = self.wait_for_job(name, stackl_namespace)
         if api_response.status.failed == 1:
-            return 1, "Still need proper output"
+            return 1, "Still need proper output", None
         else:
-            return 0, ""
+            return 0, "", None
