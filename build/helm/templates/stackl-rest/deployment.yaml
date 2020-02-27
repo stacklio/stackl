@@ -32,9 +32,6 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          volumeMounts:
-            - name: stackl-volume
-              mountPath: "{{ .Values.datastore.path }}"
           env:
             - name: STACKL_DATABASE_PATH
               value: /lfs_test_store
@@ -64,9 +61,6 @@ spec:
             httpGet:
               path: /docs
               port: http
-      volumes:
-        - name: stackl-volume
-          persistentVolumeClaim:
-            claimName: "{{ template "stackl.rest" . }}"
+
 
        

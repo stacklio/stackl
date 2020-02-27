@@ -2,8 +2,9 @@ image:
   pullPolicy: Always
 
 datastore:
-  type: LFS
-  path: /lfs_test_store
+  type: Redis
+#  type: LFS
+#  path: /lfs_test_store
 
 task_broker:
   type: Custom

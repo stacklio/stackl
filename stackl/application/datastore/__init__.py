@@ -3,11 +3,6 @@ from abc import ABC, abstractmethod
 
 class DataStore(ABC):
 
-    @property
-    @abstractmethod
-    def datastore_url(self):
-        pass
-
     @abstractmethod
     def get(self, **keys):
         pass

@@ -21,20 +21,10 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  component: rest
-              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: stackl-worker
           image: "{{ .Values.stacklworker.image }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - name: stackl-volume
-              mountPath: "{{ .Values.datastore.path }}"
           env:
             - name: STACKL_DATABASE_PATH
               value: /lfs_test_store
@@ -56,8 +46,3 @@ spec:
               value: "{{ template "stackl.agent" . }}:50051"
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
-      volumes:
-        - name: stackl-volume
-          persistentVolumeClaim:
-            claimName: "{{ template "stackl.rest" . }}"
-
