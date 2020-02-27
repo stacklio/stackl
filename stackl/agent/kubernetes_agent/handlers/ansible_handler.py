@@ -15,6 +15,12 @@ class AnsibleHandler:
         self.api_instance = kubernetes.client.BatchV1Api(kubernetes.client.ApiClient(self.configuration))
         self.api_instance_core = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(self.configuration))
 
+    def create_config_map(self, name, namespace, stack_instance):
+        cm = client.V1ConfigMap()
+        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+        cm.data = {"plugin": "stackl", "host": "http://" + os.environ['STACKL_HOST'], "stack_instance": stack_instance}
+        return cm
+
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
                           container_name="jobcontainer"):
         body = client.V1Job(api_version="batch/v1", kind="Job")
@@ -22,14 +28,22 @@ class AnsibleHandler:
         body.status = client.V1JobStatus()
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
-        env_list = []
-        env_list.append(client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance))
-        env_list.append(client.V1EnvVar(name="TF_VAR_stackl_service", value=service))
-        env_list.append(client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host']))
-        container = client.V1Container(name=container_name, image=container_image, env=env_list)
+        volumes = []
+        vol = client.V1Volume()
+        inventory_config_map = client.V1ConfigMapVolumeSource()
+        inventory_config_map.name = name
+        vol.config_map = inventory_config_map
+        volumes.append(vol)
+        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
+        container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       command=["ansible-playbook"],
+                                       args=["main.yml", "-i", "stackl.yml", "-e",
+                                             "stackl_stack_instance=" + stack_instance,
+                                             "-e", "stackl_service=" + service, "-e",
+                                             "stackl_host=" + os.environ['STACKL_HOST']])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
-                                                  image_pull_secrets=secrets)
+                                                  image_pull_secrets=secrets, volumes=volumes)
         body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template)
         return body
 
@@ -40,9 +54,7 @@ class AnsibleHandler:
         body.status = client.V1JobStatus()
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
-        env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
-                    client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
-                    client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
+        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
                                        args=["destroy", "--auto-approve"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
@@ -70,12 +82,15 @@ class AnsibleHandler:
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
         if action == "create" or action == "update":
+            config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance)
+
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
         try:
+            self.api_instance_core.create_namespaced_config_map(stackl_namespace, config_map)
             api_response = self.api_instance.create_namespaced_job(stackl_namespace, body, pretty=True)
             print(api_response)
         except ApiException as e:
