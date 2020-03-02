@@ -49,7 +49,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 ### Example: Simple SAT
 
 ```json
- #sat_simple.json
+ #stack_application_template_simple.json
 {
    "name": "sat_simple",
    "type": "stack_application_template",
@@ -66,15 +66,16 @@ A default policy that is always present is that the RR of the SAT can be satisfi
    "name": "single_calculator",
    "type": "processing server",
    "functional_requirements": ["linux"],
-   "non_functional_requirements": {
+   "resource_requirements": {
            "CPU": "2Ghz",
            "memory": "4GB RAM"
    },
+   "policies": {}
 }
 ```
 
 ```json
-#fr_linux.json
+#functional_requirement_linux.json
 {
    "name" : "linux",
    "type" : "operating system",
@@ -100,7 +101,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 ### Example: Complex SAT
 
 ```json
-#sat_complex.json
+#stack_application_template_complex.json
 {
    "name": "sat_complex",
    "type": "stack_application_template",
@@ -108,9 +109,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
         "web_app": "Web App",
         "database": "Database"
    },
-   "extra_functional_requirements": {
-        "redundancy" : [ { "database" : 2 } ]
-        "same_zone" : [ [ "web_app", "database" ] ]
+   "policies": ["same_zone"]
    }
 }
 ```
@@ -121,10 +120,11 @@ A default policy that is always present is that the RR of the SAT can be satisfi
    "name" : "web_app",
    "type" : "Web application",
    "functional_requirements": ["WebConfig", "DNSConfig"],
-   "non_functional_requirements": {
+   "resource_requirements": {
            "CPU": "3Ghz",
            "memory": "6GB RAM"
-   }
+   },
+   "policies": []
 }
 ```
 
@@ -134,15 +134,15 @@ A default policy that is always present is that the RR of the SAT can be satisfi
    "name" : "database",
    "type" : "database",
    "functional_requirements": ["DatabaseConfig"],
-   "non_functional_requirements": {
+   "resource_requirements": {
            "hard_disk": "100GB"
    },
-  "description": ""
+   "policies": ["db_redundancy"]
 }
 ```
 
 ```json
-#fr_webconfig.json
+#functional_requirement_webconfig.json
 {
    "name" : "WebConfig",
    "inherits": "ubuntu",
@@ -159,7 +159,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 ```
 
 ```json
-#fr_dnsconfig.json
+#functional_requirement_dnsconfig.json
 {
    "name" : "DNSConfig",
    "inherits": "ubuntu",
@@ -173,6 +173,20 @@ A default policy that is always present is that the RR of the SAT can be satisfi
          "description":"installs centos"
    }
 }
+#policy_db_redundancy.json
+{
+   "name" : "Database Redundancy Policy",
+   "description": "Database policy to ensure that at least 2 databases exist but not more than 3",
+   "min_nodes": 2,
+   "max_nodes": 3
+}
+#policy_same_zone.json
+{
+   "name" : "Same Zone",
+   "description": "Same Zone policy to ensure that the services are deployed in the same zone",
+}
+
+
 ```
 
 ## Stack Infrastructure Template
