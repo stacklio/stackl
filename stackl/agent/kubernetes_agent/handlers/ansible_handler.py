@@ -84,7 +84,6 @@ class AnsibleHandler:
             print("create object")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
-            print("maybe something else")
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)

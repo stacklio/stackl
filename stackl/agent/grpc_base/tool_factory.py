@@ -8,5 +8,4 @@ class ToolFactory:
             return TerraformHandler()
         elif tool == "ansible":
             return AnsibleHandler()
-        else:
-            return TerraformHandler()
+

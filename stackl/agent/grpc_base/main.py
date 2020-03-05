@@ -1,9 +1,10 @@
 from concurrent import futures
 
 import grpc
+import os
 
 import protos.agent_pb2_grpc
-from handlers.tool_factory import ToolFactory
+from tool_factory import ToolFactory
 from protos.agent_pb2 import AutomationResponse
 
 
@@ -41,5 +42,5 @@ def serve():
 
 
 if __name__ == '__main__':
-    print("starting kubernetes agent")
+    print(f'starting {os.environ["agent_name"]} agent')
     serve()
