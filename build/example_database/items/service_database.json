@@ -1,0 +1,14 @@
+{
+    "name": "database",
+    "type": "service",
+    "category": "items",
+    "functional_requirements": ["alpine"],
+    "resource_requirements": {
+        "CPU": "3GHz",
+        "RAM": "5GB",
+        "DISK": "10GB"
+    },
+    "params": {
+        "webserver": "CouchDB"
+    }
+}

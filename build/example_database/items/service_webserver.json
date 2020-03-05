@@ -3,7 +3,7 @@
     "type": "service",
     "category": "items",
     "functional_requirements": ["linux"],
-    "non_functional_requirements": {
+    "resource_requirements": {
         "CPU": "1GHz",
         "RAM": "2GB"
     },

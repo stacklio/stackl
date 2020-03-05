@@ -23,14 +23,6 @@ task_broker_factory = TaskBrokerFactory()
 task_broker = task_broker_factory.get_task_broker()
 
 
-class StackInstanceInvocation(BaseModel):
-    params: Dict[str, Any] = {}
-    connection_credentials: ConnectionCredentials = None
-    stack_infrastructure_template: str
-    stack_application_template: str
-    stack_instance_name: str
-
-
 @router.get('/{stack_instance_name}', response_model=StackInstance)
 def get_stack_instance(stack_instance_name: str):
     """Returns a stack instance with a specific name"""

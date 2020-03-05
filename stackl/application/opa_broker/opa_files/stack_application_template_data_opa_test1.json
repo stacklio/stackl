@@ -1,0 +1,36 @@
+{
+    "services": [
+        {   
+            "id": "webserver",
+            "resource_requirements": {
+                    "CPU": "4GHz",
+                    "RAM": "4GB"
+                },
+                "functional_requirements": [
+                        "linux"
+                ]
+        },
+        {
+            "id": "database",
+            "resource_requirements": {
+                "CPU": "3GHz",
+                "RAM": "5GB",
+                "DISK": "10GB"
+            },
+            "functional_requirements": [
+                "alpine"
+            ]
+        },
+        {
+            "id": "heavy_service",
+            "resource_requirements": {
+                "CPU": "300GHz",
+                "RAM": "400GB",
+                "DISK": "100000GB"
+            },
+            "functional_requirements": [
+                "alpine"
+            ]
+        }
+    ]
+}
