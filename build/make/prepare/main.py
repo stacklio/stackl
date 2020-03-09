@@ -23,6 +23,9 @@ def parse_yaml_config(config_file_path):
     config_dict['datastore_type'] = datastore_config.get('type')
     config_dict['datastore_lfs_volume'] = datastore_config.get('lfs_volume', '')
 
+    datastore_config = configs.get('opa')
+    config_dict['opa_files_location'] = datastore_config.get('opa_files_location', '')
+
     task_broker_config = configs.get('task_broker')
     config_dict['task_broker_type'] = task_broker_config.get('type')
 

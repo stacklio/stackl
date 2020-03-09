@@ -9,6 +9,7 @@ from model.configs.document import PolicyDocument
 from model.configs.stack_application_template import StackApplicationTemplate
 from model.configs.stack_infrastructure_template import StackInfrastructureTemplate
 
+from manager.manager_factory import ManagerFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,29 @@ router = APIRouter()
 
 opa_broker_factory = OPABrokerFactory()
 opa_broker = opa_broker_factory.get_opa_broker()
+
+document_manager = ManagerFactory().get_document_manager()
+
+@router.get('/query')
+def get_stack_template_for_sit_and_sat(sit_name: str = "stack_infrastructure_template_opa_test", sat_name: str = "stack_application_template_opa_test"):
+    sit_doc = document_manager.get_stack_infrastructure_template(sit_name)
+    sat_doc = document_manager.get_stack_application_template(sat_name)
+    sit_as_opa_data = opa_broker.convert_sit_to_opa_data(sit_doc)
+    sat_as_opa_data = opa_broker.convert_sat_to_opa_data(sat_doc)
+    opa_data = {**sat_as_opa_data, **sit_as_opa_data}
+    return opa_broker.ask_opa_policy_decision("orchestration", "services_target_resources_match", opa_data)
+
+
+@router.get('/query/sit_data')
+def get_sit_data_from_sit(sit_name: str = "stack_infrastructure_template_opa_test"):
+    sit_doc = document_manager.get_stack_infrastructure_template(sit_name)
+    return opa_broker.convert_sit_to_opa_data(sit_doc)
+
+
+@router.get('/query/sat_data')
+def get_sat_data_from_sat(sat_name: str = "stack_application_template_opa_test"):
+    sat_doc = document_manager.get_stack_application_template(sat_name)
+    return opa_broker.convert_sat_to_opa_data(sat_doc)
 
 @router.get('/data')
 def get_data(data_path: str = "default"):

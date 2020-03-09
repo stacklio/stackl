@@ -2,6 +2,8 @@
     "name": "web",
     "type": "stack_application_template",
     "category": "configs",
-    "services": ["webserver","database"],
+    "services": [
+        "webserver",
+        "database"],
     "policies": {}
 }

@@ -4,7 +4,8 @@
             "id": "production.brussels.cluster1",
             "resources": {
                 "CPU": "4GHz",
-                "RAM": "4GB"
+                "RAM": "4GB",
+                "DISK": "9999GB"
             },
             "config": [
                 "linux",
@@ -15,24 +16,12 @@
             "id": "production.brussels.cluster2",
             "resources": {
                 "CPU": "4GHz",
-                "RAM": "4GB"
+                "RAM": "4GB",
+                "DISK": "5GB"
             },
             "config": [
                 "linux",
                 "nginx"
-            ]
-        }
-    ],
-    "name": "stack_application_template_data_opa_test1",
-    "services": [
-        {
-            "id": "webserver",
-            "resource_requirements": {
-                "CPU": "4GHz",
-                "RAM": "4GB"
-            },
-            "functional_requirements": [
-                "linux"
             ]
         }
     ]

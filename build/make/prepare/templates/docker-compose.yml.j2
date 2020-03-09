@@ -104,13 +104,13 @@ services:
     # authentication and authorization on the daemon. See the Security page for
     # details: https://www.openpolicyagent.org/docs/security.html.
     volumes:
-      - {{ datastore_lfs_volume }}:/datastore
+      - {{opa_files_location}}:/opa_files
     command:
       - "run"
       - "--server"
       - "--log-format=json-pretty"
       - "--log-level=debug"
       - "--set=decision_logs.console=true"
-#      - "/datastore"
+      {# - "--bundle /opa_files/functions" #}
     networks:
      - stackl_bridge
