@@ -5,7 +5,26 @@
         "production.brussels.cluster1": {
             "resources": {
                 "CPU": "4GHz",
-                "RAM": "4GB"
+                "RAM": "4GB",
+                "DISK": "9999GB"
+            },
+            "cluster": "CL01",
+            "config": [
+                "linux",
+                "nginx"
+            ],
+            "datacenter": "DC01",
+            "datastore": "vsanDatastore",
+            "hostname": "p00vca01.nubera.local",
+            "network": "ls3-Fred",
+            "password": "Nubera1!",
+            "username": "administrator@vsphere.local"
+        },
+        "production.brussels.cluster2": {
+            "resources": {
+                "CPU": "4GHz",
+                "RAM": "4GB",
+                "DISK": "5GB"
             },
             "cluster": "CL01",
             "config": [
@@ -25,7 +44,12 @@
             "environment": "production",
             "location": "brussels",
             "zone": "cluster1"
-        }
+        },
+        {
+            "environment": "production",
+            "location": "brussels",
+            "zone": "cluster2"
+        }        
     ],
     "name": "opa_test",
     "type": "stack_infrastructure_template"

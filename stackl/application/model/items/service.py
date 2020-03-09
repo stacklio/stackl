@@ -6,5 +6,6 @@ from model.configs.document import BaseDocument
 class Service(BaseDocument):
     category = "items"
     type = "service"
+    name : str
     functional_requirements: List[str]
-    non_functional_requirements: Dict[str, Any] = None
+    resource_requirements: Dict[str, Any] = None

@@ -5,7 +5,7 @@
     "functional_requirements": ["alpine"],
     "resource_requirements": {
         "CPU": "3GHz",
-        "RAM": "5GB",
+        "RAM": "4GB",
         "DISK": "10GB"
     },
     "params": {
