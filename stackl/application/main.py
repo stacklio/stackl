@@ -11,8 +11,9 @@ import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
 from routers import documents, stack_instances, functional_requirements, services, stack_application_templates, \
-    stack_infrastructure_templates, about, terraform
+    stack_infrastructure_templates, about, terraform, policies
 from task_broker.task_broker_factory import TaskBrokerFactory
+from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
 
 # Logger stuff
@@ -30,10 +31,12 @@ globals.initialize()
 
 manager_factory = ManagerFactory()
 task_broker_factory = TaskBrokerFactory()
-
 agent_broker_factory = AgentBrokerFactory()
+opa_broker_factory = OPABrokerFactory()
+
 agent_broker = agent_broker_factory.agent_broker
 task_broker = task_broker_factory.get_task_broker()
+opa_broker = opa_broker_factory.get_opa_broker()
 
 agent_broker_thread = threading.Thread(name="Agent Broker Thread", target=agent_broker.start, args=[])
 agent_broker_thread.daemon = True
@@ -45,6 +48,7 @@ task_broker_thread = threading.Thread(name="Task Broker Thread", target=task_bro
 task_broker_thread.daemon = True
 task_broker_thread.start()
 
+opa_broker.start()
 logger.info("___________________ STARTING STACKL_API ____________________")
 
 # Add routes
@@ -56,6 +60,11 @@ app.include_router(
     documents.router,
     prefix="/documents",
     tags=["documents"]
+)
+app.include_router(
+    policies.router,
+    prefix="/policies",
+    tags=["policies"]
 )
 app.include_router(
     stack_instances.router,

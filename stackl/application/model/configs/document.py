@@ -7,3 +7,8 @@ class BaseDocument(BaseModel):
     description = "Base Document"
     type: str
     params: dict = {}
+
+
+class PolicyDocument(BaseDocument):
+    id: str
+    policy: dict = {}
