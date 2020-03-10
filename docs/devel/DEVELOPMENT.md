@@ -64,3 +64,47 @@ If everything worked fine, you should be able to access the rest-api at
 | build         | Build all images                                                  |
 | push          | Push all images to repository                                     |
 | install       | Build all images, template the docker compose file and run Stackl |
+
+# Workflow
+
+1. Go to [https://github.com/stacklio/stackl](https://github.com/stacklio/stackl) and fork the repository
+   into your account by clicking the "Fork" button.
+
+1. Clone the fork to your local machine.
+    
+    ```bash
+    git clone https://github.com/<GITHUB USER>/stackl
+    cd stackl
+    git remote add stackl https://github.com/stacklio/stackl
+    ```
+
+1. Create a branch for your feature or bugfix
+
+    ```
+    git checkout -b feature/<feature_name>
+    ```
+
+1. Update your local branch with upstream.
+
+    ```
+    git fetch stackl
+    git rebase stackl/master
+    ```
+
+1. Develop your changes and regularly update your local branch against upstream.
+
+    - Always rebase with the latest master before making a pull request
+
+1. Commit changes and push to your fork.
+
+    ```
+    git add .
+    git commit -m "Added new code"
+    git push origin feature/<feature_name>
+    ```
+
+1. Submit a Pull Request via https://github.com/<GITHUB USER>/stackl. You
+   should be prompted to with a "Compare and Pull Request" button that
+   mentions your branch.
+
+1. Your pull request will now be reviewed and when approved it will be merged

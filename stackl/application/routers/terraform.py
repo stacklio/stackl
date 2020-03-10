@@ -34,6 +34,6 @@ def post_terraform_statefile(state: str, body: Any = Body(...)):
 
 
 @router.delete('/{state}', status_code=200)
-def delete_stack_application_template(state: str):
+def delete_terraform_statefile(state: str):
     document_manager.delete_terraform_statefile(state)
     return {"message": "Deleted document"}

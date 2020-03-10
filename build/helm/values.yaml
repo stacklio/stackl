@@ -2,8 +2,9 @@ image:
   pullPolicy: Always
 
 datastore:
-  type: LFS
-  path: /lfs_test_store
+  type: Redis
+#  type: LFS
+#  path: /lfs_test_store
 
 task_broker:
   type: Custom
@@ -39,6 +40,8 @@ stacklagent:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+
+log_level: debug
 
 nodeSelector: {}
 
