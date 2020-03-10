@@ -44,6 +44,7 @@ class AnsibleHandler:
         volumes.append(vol)
         env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       image_pull_policy="Always",
                                        volume_mounts=volume_mounts,
                                        command=["ansible-playbook"],
                                        args=["main.yml", "-i", "inventory/stackl.yml", "-e",

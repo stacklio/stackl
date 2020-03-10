@@ -27,6 +27,7 @@ class TerraformHandler:
                     client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
                     client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       image_pull_policy="Always",
                                        command=["/bin/sh", "-c"],
                                        args=["terraform init -backend-config=address=http://"
                                              + os.environ['stackl_host']
