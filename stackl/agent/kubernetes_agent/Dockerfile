@@ -1,13 +1,5 @@
-FROM python:3.8.1-slim-buster
+FROM stacklio/grpc-base:latest
 
-WORKDIR /usr/src/app
-
-COPY requirements.txt ./
-
-RUN pip3 install --no-cache-dir -r requirements.txt
+ENV agent_name="kubernetes"
 
 COPY . .
-
-EXPOSE 50051
-
-CMD [ "python", "-u", "./main.py" ]

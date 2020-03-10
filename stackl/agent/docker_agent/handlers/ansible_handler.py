@@ -15,7 +15,6 @@ class AnsibleHandler:
         command_string += " --network stackl_bridge"
         command_string += " -v /tmp/stackl.yml:/ansible/playbooks/stackl.yml"
         command_string += " -e ANSIBLE_INVENTORY_PLUGINS=/ansible/playbooks"
-        command_string += " -e ANSIBLE_INVENTORY_ENABLED=stackl"
         command_string += " " + container_image
         command_string += " ansible-playbook main.yml -i stackl.yml"
         command_string += " -e stackl_stack_instance=" + stack_instance

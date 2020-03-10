@@ -101,7 +101,7 @@ class DocumentManager(Manager):
         """writes a StackInfrastructureTemplate object to the store
         """
         store_response = self.store.put(stack_infrastructure_template.dict())
-        return store_response.status_code
+        return store_response.content
 
     def get_stack_application_template(self, stack_application_template_name):
         """gets a StackApplicationTemplate Object from the store"""
@@ -114,7 +114,7 @@ class DocumentManager(Manager):
         """writes a StackApplicationTemplate object to the store
         """
         store_response = self.store.put(stack_application_template.dict())
-        return store_response.status_code
+        return store_response.content
 
     def get_environment(self, environment_name):
         """gets a Environment Object from the store"""
@@ -144,7 +144,7 @@ class DocumentManager(Manager):
         """writes a Service object to the store
         """
         store_response = self.store.put(service.dict())
-        return store_response.status_code
+        return store_response.content
 
     def get_functional_requirement(self, functional_requirement_name):
         """gets a FunctionalRequirement Object from the store"""
@@ -157,7 +157,7 @@ class DocumentManager(Manager):
         """writes a Service object to the store
         """
         store_response = self.store.put(fr.dict())
-        return store_response.status_code
+        return store_response.content
 
     def get_terraform_statefile(self, statefile_name):
         """gets a terraform statefile from the store"""
