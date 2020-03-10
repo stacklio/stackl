@@ -11,6 +11,7 @@ from model.configs.location import Location
 from model.configs.stack_application_template import StackApplicationTemplate
 from model.configs.stack_infrastructure_template import StackInfrastructureTemplate
 from model.configs.zone import Zone
+from model.configs.policy_model import Policy
 from model.items.service import Service
 from model.items.stack_instance import StackInstance
 
@@ -77,6 +78,18 @@ class DocumentManager(Manager):
     def write_base_document(self, base_document: BaseDocument):
         store_response = self.store.put(base_document.dict())
         return store_response.content
+
+    def get_policy(self, policy_name):
+        """gets a Policy Object from the store"""
+        store_response = self.store.get(type="policy", document_name=policy_name, category="items")
+        policy = Policy.parse_obj(store_response.content)
+        return policy
+
+    def write_policy(self, policy):
+        """writes a Policy object to the store
+        """
+        store_response = self.store.put(policy.dict())
+        return store_response.status_code
 
     def get_stack_instance(self, stack_instance_name):
         """gets a StackInstance Object from the store"""
