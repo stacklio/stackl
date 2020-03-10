@@ -2,10 +2,9 @@ from typing import List, Dict, Any
 
 from pydantic import BaseModel
 
-class InfrastructureTarget(BaseModel):
-    environment: str
-    location: str
-    zone: str
+from model.configs.infrastructure_target_model import InfrastructureTarget
+
+
 
 
 class StackInfrastructureTemplate(BaseModel):

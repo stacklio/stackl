@@ -9,4 +9,4 @@ class StackApplicationTemplate(BaseModel):
     description: str = ""
     type = "stack_application_template"
     services: List[str]
-    extra_functional_requirements: Dict[str, Any] = None
+    policies: Dict[str, Any] = None
