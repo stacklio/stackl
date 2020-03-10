@@ -39,7 +39,8 @@ class OPABroker():
     def ask_opa_policy_decision(self, policy_package="default", policy_rule="default", data={}):
         logger.debug("[OPABroker] ask_opa_policy_decision. For policy_package '{0}' and policy_rule '{1}'' and data '{2}'".format(policy_package,policy_rule, data))
 
-        input_dict = {  # create input to hand to OPA
+  # create input to hand to OPA
+        input_dict = {
             "input": data
         }
 
@@ -53,7 +54,7 @@ class OPABroker():
                          (response.status_code, response.text))
             return {}
         response_as_json = response.json()
-        logger.debug("[OPABroker] ask_opa_policy_decision. response '{0}'".format(response))
+        logger.debug("[OPABroker] ask_opa_policy_decision. response '{0}'".format(response_as_json))
         return response_as_json
 
     def get_opa_policies(self):
@@ -139,3 +140,32 @@ class OPABroker():
             services_as_data.append(service_data)
         logger.debug("[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{0}'".format(sat_as_opa_data))
         return sat_as_opa_data
+
+    def convert_sit_to_opa_policies(self, sit_doc: StackInfrastructureTemplate):
+        logger.debug("[OPABroker] convert_sit_to_opa_data. For sit_doc '{0}'".format(sit_doc))
+        sit_targets = sit_doc.infrastructure_capabilities.keys()
+        targets_as_data = []
+        sit_as_opa_data = {"infrastructure_targets": targets_as_data}
+        for target in sit_targets:
+            target_data = {}
+            target_data["id"] = target
+            target_data["resources"] = sit_doc.infrastructure_capabilities[target]["resources"]
+            target_data["config"] = sit_doc.infrastructure_capabilities[target]["config"]
+            targets_as_data.append(target_data)
+        logger.debug("[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{0}'".format(sit_as_opa_data))
+        return sit_as_opa_data
+
+    def convert_sat_to_opa_policies(self, sat_doc: StackApplicationTemplate):
+        logger.debug("[OPABroker] convert_sat_to_opa_policies. For sat_doc '{0}'".format(sat_doc))
+        sat_policies = sat_doc.policies
+        # services_as_data = []
+        # sat_as_opa_data = {"services": services_as_data}
+        for policy in sat_policies:
+            policy_doc = document_manager.get_policy(policy)
+        #     service_data = {}
+        #     service_data["id"] = service_doc.name
+        #     service_data["functional_requirements"] = service_doc.functional_requirements
+        #     service_data["resource_requirements"] = service_doc.resource_requirements
+        #     services_as_data.append(service_data)
+        # logger.debug("[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{0}'".format(sat_as_opa_data))
+        # return sat_as_opa_data

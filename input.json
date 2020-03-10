@@ -46,17 +46,6 @@
             "functional_requirements": [
                 "alpine"
             ]
-        },
-        {
-            "id": "heavy_service",
-            "resource_requirements": {
-                "CPU": "300GHz",
-                "RAM": "400GB",
-                "DISK": "100000GB"
-            },
-            "functional_requirements": [
-                "alpine"
-            ]
         }
     ]
 }

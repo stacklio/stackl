@@ -1,0 +1,10 @@
+{
+    "name": "web",
+    "type": "stack_application_template",
+    "category": "configs",
+    "services": [
+        "webserver",
+        "database",
+        "heavy_database"],
+    "policies": {}
+}
