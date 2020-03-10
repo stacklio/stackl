@@ -49,6 +49,10 @@ build_kubernetes_agent:
 	@echo "Building stackl kubernetes agent"
 	cd stackl/agent/kubernetes_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_KUBERNETES_AGENT):$(VERSIONTAG) .
 
+build_grpc_base:
+	@echo "Building grpc base"
+	cd stackl/agent/grpc_base; ${CONTAINER_ENGINE} build -t stacklio/grpc-base:latest .
+
 .PHONY: build_docker_agent
 build_docker_agent:
 	@echo "Building stackl docker agent"
@@ -84,6 +88,11 @@ prepare:
 	@echo "Creating docker-compose"
 	${CONTAINER_ENGINE} run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG) --conf /input/stackl.yml
 	@echo "Created docker-compose file in build/make/dev"
+
+.PHONY: proto
+proto:
+	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/agent/grpc_base/protos/. --grpc_python_out=stackl/agent/grpc_base/protos/. stackl/protos/agent.proto
+	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/application/protos/. --grpc_python_out=stackl/application/protos/. stackl/protos/agent.proto
 
 .PHONY: start
 start:

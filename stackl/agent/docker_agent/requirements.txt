@@ -1,6 +1,0 @@
-grpcio==1.27.2
-protobuf==3.11.3
-python-terraform==0.10.1
-kubernetes==10.0.1
-boto3
-stackl-client==1.0.1

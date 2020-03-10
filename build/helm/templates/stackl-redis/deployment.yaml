@@ -33,7 +33,12 @@ spec:
           volumeMounts:
             - name: redis-config
               mountPath: /usr/local/etc/redis
+            - name: redis-volume
+              mountPath: /data
       volumes:
         - name: redis-config
           configMap:
             name: "{{ template "stackl.redis" . }}"
+        - name: redis-volume
+          persistentVolumeClaim:
+            claimName: "{{ template "stackl.redis" . }}"

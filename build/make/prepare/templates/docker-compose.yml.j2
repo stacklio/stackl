@@ -69,7 +69,10 @@ services:
       - LOGLEVEL=DEBUG
   stackl-redis:
     restart: always
+    command: ["redis-server", "--appendonly", "yes"]
     image: redis:5.0.5
+    volumes:
+    -  /tmp/redis-data:/data
     networks:
       - stackl_bridge
   stackl-agent:
