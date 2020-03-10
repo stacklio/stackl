@@ -12,7 +12,8 @@ class DataStoreFactory(metaclass=Singleton):
 
         logger.info("[DataStoreFactory] Creating config store with type: " + self.store_type)
         if self.store_type == "Redis":
-            pass
+            from datastore.redis_store import RedisStore
+            self.store = RedisStore()
         elif self.store_type == "S3":
             pass
         elif self.store_type == "CouchDB":

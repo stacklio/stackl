@@ -53,15 +53,6 @@ def get_stack_instances():
         return {}
 
 
-@router.post('/{stack_instance_name}/{service}/add_hosts', response_model=StackInstance)
-def add_hosts(stack_instance_name: str, service: str, hosts: List[str]):
-    """Add hosts to the service of a stack instance"""
-    si = document_manager.get_stack_instance(stack_instance_name)
-    si.services[service].hosts = hosts
-    document_manager.write_stack_instance(si)
-    return si
-
-
 @router.post('')
 def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""

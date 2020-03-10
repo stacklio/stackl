@@ -76,46 +76,7 @@ class StackManager(Manager):
         change_obj['type'] = 'stack_instance'
         handler = StackHandler(self.manager_factory)
         merged_sat_sit_obj, status_code = handler.handle(change_obj)
-        logger.debug("[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' ".format(status_code,
-                                                                                                           merged_sat_sit_obj))
-        return (merged_sat_sit_obj, status_code)
-
-    def get_stack_object_state(self, category, subcategory, stack_object_id,
-                               state_type='short'):  # TODO Kept but not updated since we will need to have some introspection capability later on
-        stack_instance_obj = self.document_manager.get_document(category=category, subcategory=subcategory,
-                                                                document_name=stack_object_id)
-        if not stack_instance_obj:
-            return "[StackManager] Stack instance '{0}' not found.".format(stack_object_id)
-        resources = stack_instance_obj['resources']
-        # return all resources
-        if state_type == 'long':
-            stack_instance_obj = self.document_manager.get_document(category='stacks', subcategory='instances',
-                                                                    document_name=stack_object_id)
-            return resources
-        else:
-            state_list = []
-            state = 'Done'
-            for resource in resources:
-                for resource_element in resources[resource]:
-                    if resources[resource][resource_element]['state'] != 'done' and \
-                            resources[resource][resource_element]['state'] != 'failed' and \
-                            resources[resource][resource_element]['state'] != 'interrupted':
-                        return 'In progress'
-                    state_list.append(resources[resource][resource_element]['state'])
-            if 'failed' in state_list or 'interrupted' in state_list:
-                return 'Failed'
-            return state
-
-    def get_stack_instance_resource_state(self, stack_instance_id,
-                                          resource_name):  # TODO Kept but not updated since we will need to have some introspection capability later on
-        stack_instance_obj = self.document_manager.get_document(category='stacks', subcategory='instances',
-                                                                document_name=stack_instance_id)
-        if not stack_instance_obj:
-            return 'Does not exist'
-        resources = stack_instance_obj['resources']
-        state = 'unknown'
-        for resource in resources:
-            for resource_element in resources[resource]:
-                if resource_element == resource_name:
-                    return resources[resource][resource_element]['state']
-        return state
+        logger.debug("[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' "
+                     .format(status_code,
+                             merged_sat_sit_obj))
+        return merged_sat_sit_obj, status_code

@@ -220,7 +220,6 @@ class StackHandler(Handler):
             return "The given SIT cannot satisfy the SAT: there is an unsatisfied service with an unresolved service dependency", 400
         logger.debug(
             "[StackHandler] _handle_create. Constraint solving finished. merged_filtered_app_infr is realisible!'")
-        logger.debug("SHOW MERGED APP STUFF {0}".format(merged_filtered_app_infr))
         return self._create_stack_instance(item, merged_filtered_app_infr), 200
 
     def _filter_zones_req_application(self, matching_zones_app_req, app_infr):
