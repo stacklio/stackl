@@ -51,7 +51,7 @@ class StackManager(Manager):
                         "[StackManager] Processing subtask succeeded. Sending to agent with connect_info '{0}' the stack_instance '{1}'".format(
                             agent_connect_info, change_obj))
                     for am in change_obj:
-                        result = self.agent_broker.send_to_agent(agent_connect_info, am)
+                        result = self.agent_broker.send_obj_to_agent(agent_connect_info, am)
                         self.agent_broker.process_result(stack_instance, result, self.document_manager)
                     logger.debug("[StackManager] Sent to agent. Result '{0}'".format(result))
                 else:
