@@ -17,7 +17,7 @@ services:
     ports:
       - {{http_port}}:80
       - 8888:8888
-    environment:
+    environment:  
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
@@ -33,7 +33,6 @@ services:
       - SERVICE_PORTS=80
       - STACKL_REDIS_HOST=stackl-redis
       - LOGLEVEL=DEBUG
-      - LOG_LEVEL=debug
   stackl-worker:
     restart: always
     image: stacklio/stackl-worker:dev
