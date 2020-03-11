@@ -25,12 +25,13 @@ class GrpcAgentBroker(AgentBroker):
     def get_agent_for_task(self, task):
         return "gRPC"
 
-    def send_to_agent(self, agent_connect_info, obj):
+    def send_obj_to_agent(self, agent_connect_info, obj):
         logger.info("[GrpcAgentBroker] sending automation message to channel {0}".format(self.channel))
         result = self.stub.InvokeAutomation(obj)
         # logger.info("[GrpcAgentBroker] received result: {0}".format(result))
         return result
 
+    #TODO bad name, what does it process? to what does it process it to?
     def process_result(self, stack_instance, result, document_manager):
         logger.info("[GrpcAgentBroker] processing result: {0}".format(result))
         sts = result.automation_result
@@ -54,9 +55,10 @@ class GrpcAgentBroker(AgentBroker):
                 stack_instance.services[sts.service].hosts.append(h)
         document_manager.write_stack_instance(stack_instance)
 
+    #TODO change_obj is no longer a good name. This should be adjusted.
     def create_change_obj(self, stack_instance, action, document_manager):
         logger.debug(
-            "[GrpcAgentBroker] create_change_o\bj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
+            "[GrpcAgentBroker] create_change_obj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
                                                                                                      action))
         change_obj = []
         for service in stack_instance.services:
