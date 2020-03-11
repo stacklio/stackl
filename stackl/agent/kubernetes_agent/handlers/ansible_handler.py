@@ -19,7 +19,7 @@ class AnsibleHandler:
     def create_config_map(self, name, namespace, stack_instance):
         cm = client.V1ConfigMap()
         cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": "http://" + os.environ['stackl_host'],
+        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": os.environ['stackl_host'],
                                              "stack_instance": stack_instance})}
         return cm
 
