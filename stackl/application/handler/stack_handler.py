@@ -128,7 +128,8 @@ class StackHandler(Handler):
                 merged_app_infr.update({service: {}})
                 serv_req = {}
                 serv_req.update({"config": svc_doc.functional_requirements})
-                serv_req.update(svc_doc.non_functional_requirements)
+                if svc_doc.non_functional_requirements is not None:
+                    serv_req.update(svc_doc.non_functional_requirements)
                 serv_req.update(stack_app_template.extra_functional_requirements)
                 logger.debug("[StackHandler] _handle_create. Serv_req {0}".format(serv_req))
                 # determine possible infra targets for the service
