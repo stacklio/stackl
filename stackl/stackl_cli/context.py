@@ -16,6 +16,7 @@ class StacklContext(object):
         self.services_api = stackl_client.ServicesApi(api_client=self.api_client)
         self.sat_api = stackl_client.StackApplicationTemplatesApi(api_client=self.api_client)
         self.sit_api = stackl_client.StackInfrastructureTemplatesApi(api_client=self.api_client)
+        self.stack_instances_api = stackl_client.StackInstancesApi(api_client=self.api_client)
 
 
 pass_stackl_context = click.make_pass_decorator(StacklContext, ensure=True)

@@ -1,15 +1,17 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='stackli',
-    version='0.1',
-    py_modules=['stackli'],
+    name='stackl-cli',
+    version='0.0.1-alpha2',
+    py_modules=['stackl', 'commands', 'context'],
+    packages=find_packages(),
     install_requires=[
         'stackl-client',
+        'pyYAML',
         'Click',
     ],
     entry_points='''
         [console_scripts]
-        stackli=stackli:cli
+        stackl=stackl:cli
     ''',
 )
