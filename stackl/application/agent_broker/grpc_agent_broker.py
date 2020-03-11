@@ -10,7 +10,6 @@ from utils.general_utils import get_config_key
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-
 class GrpcAgentBroker(AgentBroker):
 
     def __init__(self):
@@ -18,7 +17,7 @@ class GrpcAgentBroker(AgentBroker):
 
         stackl_agent = get_config_key("AGENT_HOST")
         self.channel = grpc.insecure_channel(str(stackl_agent))
-        self.stub = protos.agent_pb2_grpc.StacklAgentStub(self.channel)
+        self.stub = protos.agent_pb2_grpc.StacklAgentStub(self.channel) #TODO This throws an error in vscode: Module 'protos' has no 'agent_pb2_grpc' member
 
     def start(self):
         logger.info("[GrpcAgentBroker] Starting GrpcAgentBroker")
@@ -70,7 +69,7 @@ class GrpcAgentBroker(AgentBroker):
                 logger.debug(
                     "[GrpcAgentBroker] create_change_obj. Retrieved fr '{0}' from service_doc '{1}''".format(fr_doc,
                                                                                                            service_doc))
-                automation_message = protos.agent_pb2.AutomationMessage()
+                automation_message = protos.agent_pb2.AutomationMessage()  # TODO This throws an error in vscode: Module 'protos' has no 'agent_pb2' member
                 automation_message.action = action
                 invoc = automation_message.invocation
                 invoc.functional_requirement = fr
