@@ -100,7 +100,7 @@ start:
 	docker-compose -f build/make/dev/docker-compose.yml up -d
 	@echo "Started stackl"
 
-.PHONY: start
+.PHONY: restart
 restart:
 	@echo "Restarting stackl"
 	docker-compose -f build/make/dev/docker-compose.yml down
