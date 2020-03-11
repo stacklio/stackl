@@ -16,7 +16,6 @@ from agent_broker import AgentBroker
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-
 class CustomAgentBroker(AgentBroker):
     agent_connections = []
 

@@ -1,9 +1,9 @@
 import logging
 
-logger = logging.getLogger("STACKL_LOGGER")
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 
+logger = logging.getLogger("STACKL_LOGGER")
 
 class AgentBrokerFactory(metaclass=Singleton):
 
@@ -21,10 +21,9 @@ class AgentBrokerFactory(metaclass=Singleton):
         elif self.agent_broker_type == "grpc" or self.agent_broker_type == "Local":
             from agent_broker.grpc_agent_broker import GrpcAgentBroker
             self.agent_broker = GrpcAgentBroker()
-        else:  # assume LFS
+        else:
             from agent_broker.custom_agent_broker import CustomAgentBroker
             self.agent_broker = CustomAgentBroker()
 
     def get_agent_broker(self):
-        # logger.info("[DataStoreFactory] Giving store with type '{0}' and id '{1}'".format(self.store_type, self.store))
         return self.agent_broker
