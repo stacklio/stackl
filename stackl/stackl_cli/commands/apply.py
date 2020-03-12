@@ -47,7 +47,7 @@ def upload_files(directory, stackl_context):
                 continue
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
             if 'name' in stackl_doc:
-                click.echo(f"Applying stackl document: { str(path) + stackl_doc['name']}")
+                click.echo(f"Applying stackl document: { str(path) + ' ' + stackl_doc['name']}")
             else:
                 click.echo(f"Error in stackl document, no 'name' found: { path }")
             try:
