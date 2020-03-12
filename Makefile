@@ -100,7 +100,14 @@ start:
 	docker-compose -f build/make/dev/docker-compose.yml up -d
 	@echo "Started stackl"
 
+.PHONY: start
+restart:
+	@echo "Restarting stackl"
+	docker-compose -f build/make/dev/docker-compose.yml down
+	@echo "Starting stackl"
+	docker-compose -f build/make/dev/docker-compose.yml up -d
+	@echo "Started stackl"
 
-build: build_prepare build_rest build_worker build_websocket_agent build_kubernetes_agent build_docker_agent
+build: build_prepare build_rest build_worker build_websocket_agent build_grpc_base build_kubernetes_agent build_docker_agent
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start

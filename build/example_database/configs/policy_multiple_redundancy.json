@@ -1,0 +1,5 @@
+{
+    "name": "Redundancy Policy",
+    "description": "Policy to ensure that at least 2 databases",
+    "policy_rego_file": "policy_multiple_redundancy.rego"
+}

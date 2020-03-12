@@ -23,8 +23,8 @@ services:
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
       - STACKL_DATABASE_PATH=/lfs_test_store
       - STACKL_AGENT_HOST={{ agent_host }}
+      - STACKL_OPA_HOST=stackl-opa-server:8181
       - GRPC_VERBOSITY="DEBUG"
-      - STACKL_LOGPATH=/var/log/stackl.log
       - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
       - STACKL_STACKLRESTHOST=stackl-rest
       - STACKL_STACKLRESTPORT=80
@@ -56,6 +56,7 @@ services:
       - STACKL_TASK_BROKER={{ task_broker_type }}
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
       - STACKL_AGENT_HOST={{ agent_host }}
+      - STACKL_OPA_HOST=stackl-opa-server:8181
       - GRPC_VERBOSITY="DEBUG"
       - STACKL_LOGPATH=/var/log/stackl.log
       - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
@@ -94,3 +95,25 @@ services:
       - HOST_MACHINE=stackl-agent
       - TAGS=['common']
       - TENANT={{ tenant_name }}
+
+  stackl-opa-server:
+    restart: always
+    image: openpolicyagent/opa:latest
+    ports:
+      - 8181:8181
+    # WARNING: OPA is NOT running with an authorization policy configured. This
+    # means that clients can read and write policies in OPA. If you are
+    # deploying OPA in an insecure environment, be sure to configure
+    # authentication and authorization on the daemon. See the Security page for
+    # details: https://www.openpolicyagent.org/docs/security.html.
+    volumes:
+      - {{opa_files_location}}:/opa_files
+    command:
+      - "run"
+      - "--server"
+      - "--log-format=json-pretty"
+      - "--log-level=debug"
+      - "--set=decision_logs.console=true"
+      {# - "--bundle /opa_files/functions" #}
+    networks:
+     - stackl_bridge

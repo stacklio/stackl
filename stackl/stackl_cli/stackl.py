@@ -1,6 +1,5 @@
 import click
 
-from commands.parse import parse
 from commands.apply import apply
 from commands.get import get
 from commands.connect import connect
@@ -18,5 +17,4 @@ cli.add_command(get)
 cli.add_command(info)
 cli.add_command(apply)
 cli.add_command(create)
-cli.add_command(parse)
 
