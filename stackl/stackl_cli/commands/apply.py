@@ -46,7 +46,10 @@ def upload_files(directory, stackl_context):
             if path.name.startswith('.'):
                 continue
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
-            click.echo(f"Applying stackl document: {stackl_doc['name']}")
+            if 'name' in stackl_doc:
+                click.echo(f"Applying stackl document: { str(path) + ' ' + stackl_doc['name']}")
+            else:
+                click.echo(f"Error in stackl document, no 'name' found: { path }")
             try:
                 if stackl_doc["type"] in ["environment", "location", "zone"]:
                     stackl_context.documents_api.put_document(stackl_doc)
