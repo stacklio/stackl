@@ -1,6 +1,5 @@
 import json
 import logging
-
 import redis
 
 from datastore import DataStore
@@ -8,7 +7,6 @@ from enums.stackl_codes import StatusCode
 from utils.general_utils import get_config_key
 
 logger = logging.getLogger("STACKL_LOGGER")
-
 
 class RedisStore(DataStore):
 
@@ -20,8 +18,7 @@ class RedisStore(DataStore):
         get_all = False
 
         if keys.get("document_name"):
-            document_key = keys.get("category") + '/' + keys.get("type") + '/' + keys.get(
-                "document_name")
+            document_key = keys.get("category") + '/' + keys.get("type") + '/' + keys.get("document_name")
         else:  # This means we need to get all the documents of the type
             get_all = True
             document_key = keys.get("category") + '/' + keys.get("type") + '/*'
