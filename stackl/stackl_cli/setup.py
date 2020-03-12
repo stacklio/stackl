@@ -8,7 +8,7 @@ setup(
     install_requires=[
         'stackl-client==1.0.2',
         'pyYAML==5.3',
-        'Click==7.0',
+        'Click==7.0'
     ],
     entry_points='''
         [console_scripts]
