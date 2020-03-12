@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import click
@@ -13,9 +14,32 @@ def cli():
 
 
 @cli.command()
-@click.argument('directory', type=click.Path(exists=True))
+@click.option('-d', '--directory', type=click.Path(exists=True))
+@click.option('-c', '--config-file', type=click.File())
+@click.option('-p', '--params', default="{}")
+@click.argument('instance-name', required=False)
 @pass_stackl_context
-def apply(stackl_context, directory):
+def apply(stackl_context, directory, config_file, params, instance_name):
+    if instance_name is None:
+        upload_files(directory, stackl_context)
+    else:
+        apply_stack_instance(config_file, params, stackl_context, instance_name)
+
+
+def apply_stack_instance(config_file, params, stackl_context, instance_name):
+    config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
+    params = {**config_doc['params'], **json.loads(params)}
+    invocation = stackl_client.StackInstanceInvocation(stack_instance_name=instance_name,
+                                                       stack_infrastructure_template=config_doc[
+                                                           "stack_infrastructure_template"],
+                                                       stack_application_template=config_doc[
+                                                           "stack_application_template"],
+                                                       params=params)
+    res = stackl_context.stack_instances_api.put_stack_instance(invocation)
+    click.echo(res)
+
+
+def upload_files(directory, stackl_context):
     for path in Path(directory).rglob('*.yml'):
         with open(path, 'r') as doc:
             # ignore dotfiles
