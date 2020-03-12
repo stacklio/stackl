@@ -19,7 +19,7 @@ class AnsibleHandler:
     def create_config_map(self, name, namespace, stack_instance):
         cm = client.V1ConfigMap()
         cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": "http://" + os.environ['stackl_host'],
+        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": os.environ['stackl_host'],
                                              "stack_instance": stack_instance})}
         return cm
 
@@ -44,6 +44,7 @@ class AnsibleHandler:
         volumes.append(vol)
         env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
+                                       image_pull_policy="Always",
                                        volume_mounts=volume_mounts,
                                        command=["ansible-playbook"],
                                        args=["main.yml", "-i", "inventory/stackl.yml", "-e",

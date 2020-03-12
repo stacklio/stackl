@@ -25,7 +25,13 @@ class PackerHandler:
         cm = client.V1ConfigMap()
         cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
         stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
-        cm.data = {"variables.json": json.dumps(stack_instance.services[service])}
+        packer_variables = {}
+        for key, value in stack_instance.services[service].provisioning_parameters.items():
+            if isinstance(value, list):
+                packer_variables[key] = ",".join(value)
+            else:
+                packer_variables[key] = value
+        cm.data = {"variables.json": json.dumps(packer_variables)}
         return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
@@ -47,7 +53,7 @@ class PackerHandler:
         volume_mounts.append(volume_mount)
 
         volumes.append(vol)
-        container = client.V1Container(name=container_name, image=container_image,
+        container = client.V1Container(name=container_name, image=container_image, image_pull_policy="Always",
                                        volume_mounts=volume_mounts,
                                        command=["packer"],
                                        args=["build", "--var-file", "./variables.json",
