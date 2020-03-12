@@ -18,6 +18,9 @@ def cli():
 def apply(stackl_context, directory):
     for path in Path(directory).rglob('*.yml'):
         with open(path, 'r') as doc:
+            # ignore dotfiles
+            if path.name.startswith('.'):
+                continue
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
             click.echo(f"Applying stackl document: {stackl_doc['name']}")
             try:

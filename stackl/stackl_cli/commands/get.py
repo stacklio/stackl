@@ -2,6 +2,10 @@ import json
 
 import click
 import yaml
+try:
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Dumper
 
 from context import pass_stackl_context, StacklContext
 
@@ -13,7 +17,7 @@ def get():
 
 def parse(stackl_object, output_type):
     if output_type == 'yaml':
-        return yaml.dump(stackl_object.to_dict(), Dumper=yaml.CDumper)
+        return yaml.dump(stackl_object.to_dict(), Dumper=Dumper)
     elif output_type == 'json':
         return json.dumps(stackl_object.to_dict(), sort_keys=True,
                           indent=4, separators=(',', ': '))
