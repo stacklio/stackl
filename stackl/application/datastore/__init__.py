@@ -19,11 +19,11 @@ class DataStore(ABC):
     def get_terraform_statefile(self, statefile_name):
         pass
 
-    @abstractmethod
+    @abstractmethod #TODO Technology dependency
     def put_terraform_statefile(self, name, statefile):
         pass
 
-    @abstractmethod
+    @abstractmethod  # TODO Technology dependency
     def delete_terraform_statefile(self, name, statefile):
         pass
 
@@ -39,9 +39,8 @@ class DataStore(ABC):
         return response
 
     class StoreResponse():
-        """The :class:`StoreResponse <StoreResponse>` object, which contains a
-        Store's response to a request. Modelled on the HTTP Response.
-        [Design] Potentially other interesting attributes can be added from HTTP, such as elapsed, encoding, etc.
+        """The :class:`StoreResponse <StoreResponse>` object, which contains a Store's response to a request. Modelled on the HTTP Response.
+        Potentially other interesting attributes can be added from HTTP, such as elapsed, encoding, etc.
         """
 
         __attrs__ = [
