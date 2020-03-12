@@ -4,13 +4,14 @@ import logging
 from enums.stackl_codes import StatusCode
 from handler import Handler
 
-logger = logging.getLogger("STACKL_LOGGER")
 from model.items.functional_requirement_status import FunctionalRequirementStatus, Status
 from model.items.stack_instance import StackInstance
 from model.items.stack_instance_service import StackInstanceService
 from utils.general_utils import get_timestamp
 
+logger = logging.getLogger("STACKL_LOGGER")
 
+##TODO This entire class needs a strong rework
 class StackHandler(Handler):
 
     def __init__(self, manager_factory):
@@ -72,6 +73,7 @@ class StackHandler(Handler):
             stack_instance.services[svc].connection_credentials = item['connection_credentials']
         return stack_instance
 
+    ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
     def _handle_create(self, item):
         logger.debug("[StackHandler] _handle_create received with item: {0}".format(item))
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
@@ -223,6 +225,7 @@ class StackHandler(Handler):
             "[StackHandler] _handle_create. Constraint solving finished. merged_filtered_app_infr is realisible!'")
         return self._create_stack_instance(item, merged_filtered_app_infr), 200
 
+    ##TODO Deprecate in the future once OPA is up
     def _filter_zones_req_application(self, matching_zones_app_req, app_infr):
         logger.debug(
             "[StackHandler] _filter__filter_zones_req_applicationzones_req_services. Filtering for zones '{0}' and app_infr '{1}'".format(
@@ -246,6 +249,7 @@ class StackHandler(Handler):
                             del app_infr[other_service][poss_target]
         return app_infr
 
+    ##TODO can probably be offloaded to OPA and doesn't belong here in any case I think
     def _update_infr_capabilities(self, stack_infr_template, update="auto"):
         infr_targets = stack_infr_template.infrastructure_targets
         prev_infr_capabilities = stack_infr_template.infrastructure_capabilities

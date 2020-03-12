@@ -26,8 +26,7 @@ class LocalFileSystemStore(DataStore):
             if keys.get("type") in keys.get("document_name"):
                 document_key = self.datastore_url + keys.get("category") + '/' + keys.get("document_name") + ".json"
             else:
-                document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get(
-                    "document_name") + ".json"
+                document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get("document_name") + ".json"
             if not os.path.exists(document_key):
                 return self._create_store_response(status_code=StatusCode.NOT_FOUND, content="File is not found")
         else:  # This means we need to get all the documents of the type
@@ -42,8 +41,7 @@ class LocalFileSystemStore(DataStore):
                 for dirpath, _, filenames in os.walk(document_key):
                     for file in filenames:
                         logger.debug(
-                            "[LocalFileSystemStore] get_all. Looking at file '{0}' for type {1}".format(file, keys.get(
-                                "type")))
+                            "[LocalFileSystemStore] get_all. Looking at file '{0}' for type {1}".format(file, keys.get("type")))
                         if file.startswith(keys.get("type")):
                             with open(dirpath + file) as file_to_get:
                                 content.append(json.load(file_to_get))
@@ -103,7 +101,6 @@ class LocalFileSystemStore(DataStore):
 
         with open(document_key, 'w+') as outfile:
             json.dump(file, outfile, sort_keys=True, indent=4, separators=(',', ': '))
-
         with open(document_key, 'r') as storedfile:
             response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
 

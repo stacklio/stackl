@@ -49,6 +49,7 @@ task_broker_thread.daemon = True
 task_broker_thread.start()
 
 opa_broker.start()
+
 logger.info("___________________ STARTING STACKL_API ____________________")
 
 # Add routes
@@ -91,6 +92,7 @@ app.include_router(
     prefix="/stack_infrastructure_templates",
     tags=["stack_infrastructure_templates"]
 )
+#TODO Technological dependency
 app.include_router(
     terraform.router,
     prefix="/terraform",
@@ -101,7 +103,6 @@ app.include_router(
     prefix="/about",
     tags=["about"]
 )
-
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
     """
