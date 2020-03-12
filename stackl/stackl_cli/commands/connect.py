@@ -1,9 +1,5 @@
 import os
-<<<<<<< HEAD
 from pathlib import Path
-=======
-
->>>>>>> fe054e4094673ef9e756dafbcd86a1da5f8c8e96
 import click
 
 
