@@ -35,7 +35,11 @@ def apply_stack_instance(config_file, params, stackl_context, instance_name):
                                                        stack_application_template=config_doc[
                                                            "stack_application_template"],
                                                        params=params)
-    res = stackl_context.stack_instances_api.put_stack_instance(invocation)
+    try:
+        stackl_context.stack_instances_api.get_stack_instance(instance_name)
+        res = stackl_context.stack_instances_api.put_stack_instance(invocation)
+    except stackl_client.exceptions.ApiException:
+        res = stackl_context.stack_instances_api.post_stack_instance(invocation)
     click.echo(res)
 
 
