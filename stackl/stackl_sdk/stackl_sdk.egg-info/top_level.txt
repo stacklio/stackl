@@ -1,2 +1,0 @@
-stackl_sdk
-test
