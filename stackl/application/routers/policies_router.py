@@ -5,9 +5,9 @@ from fastapi import APIRouter, HTTPException, Query
 
 from globals import document_types
 from utils.general_utils import get_hostname
-from model.configs.document import PolicyDocument
-from model.configs.stack_application_template import StackApplicationTemplate
-from model.configs.stack_infrastructure_template import StackInfrastructureTemplate
+from model.configs.policy_model import Policy
+from model.configs.stack_application_template_model import StackApplicationTemplate
+from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 
 from manager.manager_factory import ManagerFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
@@ -104,7 +104,7 @@ def delete_policy(policy_id: str):
     return result
 
 @router.put('')
-def put_policy(policy_doc: PolicyDocument):
+def put_policy(policy_doc: Policy):
     result = opa_broker.load_opa_policy(policy_doc)
     return result
 

@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from enums.stackl_codes import StatusCode
 from globals import document_types
 from manager.manager_factory import ManagerFactory
-from model.configs.document import BaseDocument
+from model.configs.document_model import BaseDocument
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError
 

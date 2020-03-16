@@ -5,7 +5,7 @@ import grpc
 import protos.agent_pb2
 import protos.agent_pb2_grpc
 from agent_broker import AgentBroker
-from model.items.functional_requirement_status import FunctionalRequirementStatus, Status
+from model.items.functional_requirement_status_model import FunctionalRequirementStatus, Status
 from utils.general_utils import get_config_key
 
 logger = logging.getLogger("STACKL_LOGGER")

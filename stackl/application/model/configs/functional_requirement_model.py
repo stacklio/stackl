@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from model.configs.document import BaseDocument
+from model.configs.document_model import BaseDocument
 
 
 class Invocation(BaseModel):

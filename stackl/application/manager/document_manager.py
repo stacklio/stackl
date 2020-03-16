@@ -4,16 +4,16 @@ import logging
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
 from globals import types, types_configs, types_items
-from model.configs.document import BaseDocument
-from model.configs.environment import Environment
-from model.configs.functional_requirement import FunctionalRequirement
-from model.configs.location import Location
-from model.configs.stack_application_template import StackApplicationTemplate
-from model.configs.stack_infrastructure_template import StackInfrastructureTemplate
-from model.configs.zone import Zone
+from model.configs.document_model import BaseDocument
+from model.configs.environment_model import Environment
+from model.configs.functional_requirement_model import FunctionalRequirement
+from model.configs.location_model import Location
+from model.configs.stack_application_template_model import StackApplicationTemplate
+from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from model.configs.zone_model import Zone
 from model.configs.policy_model import Policy
-from model.items.service import Service
-from model.items.stack_instance import StackInstance
+from model.items.service_model import Service
+from model.items.stack_instance_model import StackInstance
 
 logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
