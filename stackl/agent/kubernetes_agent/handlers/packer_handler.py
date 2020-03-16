@@ -17,7 +17,7 @@ class PackerHandler:
         self.api_instance = kubernetes.client.BatchV1Api(kubernetes.client.ApiClient(self.configuration))
         self.api_instance_core = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(self.configuration))
         configuration = stackl_client.Configuration()
-        configuration.host = os.environ['stackl_host']
+        configuration.host = "http://" + os.environ['stackl_host']
         api_client = stackl_client.ApiClient(configuration=configuration)
         self.stack_instance_api = stackl_client.StackInstancesApi(api_client=api_client)
 
@@ -27,10 +27,7 @@ class PackerHandler:
         stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
         packer_variables = {}
         for key, value in stack_instance.services[service].provisioning_parameters.items():
-            if isinstance(value, list):
-                packer_variables[key] = ",".join(value)
-            else:
-                packer_variables[key] = value
+            packer_variables[key] = str(value)
         cm.data = {"variables.json": json.dumps(packer_variables)}
         return cm
 
@@ -53,15 +50,17 @@ class PackerHandler:
         volume_mounts.append(volume_mount)
 
         volumes.append(vol)
+        env_list = [client.V1EnvVar(name="VAULT_TOKEN", value="s.MiwGvh1MiVSLjWCzP7XYHnKi"),
+                    client.V1EnvVar(name="VAULT_ADDR", value="http://10.11.12.7:8200")]
         container = client.V1Container(name=container_name, image=container_image, image_pull_policy="Always",
-                                       volume_mounts=volume_mounts,
+                                       volume_mounts=volume_mounts, env=env_list,
                                        command=["packer"],
-                                       args=["build", "--var-file", "./variables.json",
+                                       args=["build", "--var-file", "variables.json",
                                              "packer.json"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
                                                   image_pull_secrets=secrets, volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
+        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
 
     def delete_job_object(self, name, container_image, stack_instance, service, namespace="stackl",

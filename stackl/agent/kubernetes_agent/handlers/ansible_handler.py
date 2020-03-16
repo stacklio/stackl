@@ -23,7 +23,8 @@ class AnsibleHandler:
                                              "stack_instance": stack_instance})}
         return cm
 
-    def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
+    def create_job_object(self, name, container_image, stack_instance, service, functional_requirement,
+                          namespace="stackl",
                           container_name="jobcontainer"):
         body = client.V1Job(api_version="batch/v1", kind="Job")
         body.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
@@ -32,29 +33,46 @@ class AnsibleHandler:
         template.template = client.V1PodTemplateSpec()
         volumes = []
         vol = client.V1Volume(name="inventory")
+
         inventory_config_map = client.V1ConfigMapVolumeSource()
         inventory_config_map.name = name
         vol.config_map = inventory_config_map
 
         volume_mounts = []
-        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/ansible/playbooks/inventory/stackl.yml",
+        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/opt/ansible/playbooks/inventory/stackl.yml",
                                             sub_path="stackl.yml")
+        volume_mount_stackl_inventory = client.V1VolumeMount(name="stackl-plugin",
+                                                             mount_path="/opt/ansible/plugins/inventory/stackl.py",
+                                                             sub_path="stackl.py")
         volume_mounts.append(volume_mount)
+        volume_mounts.append(volume_mount_stackl_inventory)
 
         volumes.append(vol)
-        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
+
+        vol_plugin = client.V1Volume(name="stackl-plugin")
+        plugin_config_map = client.V1ConfigMapVolumeSource()
+        plugin_config_map.name = "ansible"
+        vol_plugin.config_map = plugin_config_map
+
+        volumes.append(vol_plugin)
+        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/opt/ansible/plugins/inventory")]
+        root_hack = client.V1SecurityContext()
+        root_hack.run_as_user = 0
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
                                        image_pull_policy="Always",
                                        volume_mounts=volume_mounts,
-                                       command=["ansible-playbook"],
-                                       args=["main.yml", "-i", "inventory/stackl.yml", "-e",
-                                             "stackl_stack_instance=" + stack_instance,
-                                             "-e", "stackl_service=" + service, "-e",
-                                             "stackl_host=" + os.environ['stackl_host']])
+                                       command=["ansible"],
+                                       args=[service, "-m", "include_role", "-v",
+                                             "-i", "/opt/ansible/playbooks/inventory/stackl.yml",
+                                             "-a", "name=" + functional_requirement,
+                                             "-e", "stackl_stack_instance=" + stack_instance,
+                                             "-e", "stackl_service=" + service,
+                                             "-e", "stackl_host=" + os.environ['stackl_host']])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
+                                                  security_context=root_hack,
                                                   image_pull_secrets=secrets, volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
+        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
 
     def delete_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
@@ -66,29 +84,46 @@ class AnsibleHandler:
         template.template = client.V1PodTemplateSpec()
         volumes = []
         vol = client.V1Volume(name="inventory")
+
         inventory_config_map = client.V1ConfigMapVolumeSource()
         inventory_config_map.name = name
         vol.config_map = inventory_config_map
 
         volume_mounts = []
-        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/ansible/playbooks/inventory/stackl.yml",
+        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/opt/ansible/playbooks/inventory/stackl.yml",
                                             sub_path="stackl.yml")
+        volume_mount_stackl_inventory = client.V1VolumeMount(name="stackl-plugin",
+                                                             mount_path="/opt/ansible/plugins/inventory/stackl.py",
+                                                             sub_path="stackl.py")
         volume_mounts.append(volume_mount)
+        volume_mounts.append(volume_mount_stackl_inventory)
 
         volumes.append(vol)
-        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
+
+        vol_plugin = client.V1Volume(name="stackl-plugin")
+        plugin_config_map = client.V1ConfigMapVolumeSource()
+        plugin_config_map.name = "ansible"
+        vol_plugin.config_map = plugin_config_map
+
+        volumes.append(vol_plugin)
+        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/opt/ansible/plugins/inventory")]
+        root_hack = client.V1SecurityContext()
+        root_hack.run_as_user = 0
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
                                        volume_mounts=volume_mounts,
-                                       command=["ansible-playbook"],
-                                       args=["main.yml", "-i", "inventory/stackl.yml",
+                                       image_pull_policy="Always",
+                                       security_context=root_hack,
+                                       command=["ansible"],
+                                       args=[service, "-m", "inventory/stackl.yml",
                                              "-e", "stackl_stack_instance=" + stack_instance,
                                              "-e", "stackl_service=" + service,
                                              "-e", "stackl_host=" + os.environ['stackl_host'],
                                              "-e", "state=absent"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
+                                                  security_context=root_hack,
                                                   image_pull_secrets=secrets, volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
+        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
 
     def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
@@ -114,6 +149,7 @@ class AnsibleHandler:
         if action == "create" or action == "update":
             print("create object")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
+                                          invocation.functional_requirement,
                                           namespace=stackl_namespace)
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
