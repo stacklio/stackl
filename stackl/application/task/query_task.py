@@ -1,7 +1,7 @@
 from enums.cast_type import CastType
 from task import Task
 
-
+##TODO: rename. Nothing to do with OPA queries but to gather info about STACKL
 class QueryTask(Task):
     @property
     def valid_tasks(self):

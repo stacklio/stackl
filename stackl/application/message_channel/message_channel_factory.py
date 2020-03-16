@@ -1,9 +1,9 @@
 import logging
 
-logger = logging.getLogger("STACKL_LOGGER")
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
 
+logger = logging.getLogger("STACKL_LOGGER")
 
 class MessageChannelFactory(metaclass=Singleton):
 

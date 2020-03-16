@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 
-
+##TODO Similarly to auth_manager this will change depending on OPA
 class UserManager(Manager):
 
     def __init__(self, manager_factory):

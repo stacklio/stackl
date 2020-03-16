@@ -4,9 +4,6 @@ from pydantic import BaseModel
 
 from model.configs.infrastructure_target_model import InfrastructureTarget
 
-
-
-
 class StackInfrastructureTemplate(BaseModel):
     name: str
     description: str = ""

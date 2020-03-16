@@ -15,7 +15,6 @@ router = APIRouter()
 document_manager = ManagerFactory().get_document_manager()
 task_broker = TaskBrokerFactory().get_task_broker()
 
-
 @router.get('', response_model=List[FunctionalRequirement])
 def get_functional_requirements():
     """Returns all functional requirements with a specific type"""
