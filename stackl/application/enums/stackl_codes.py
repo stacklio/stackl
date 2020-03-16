@@ -1,6 +1,5 @@
 from enum import IntEnum, unique
 
-
 # Modeled after HTTP Status Codes
 @unique
 class StatusCode(IntEnum):

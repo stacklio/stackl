@@ -5,22 +5,34 @@ import string
 import time
 
 import kubernetes.client
+import requests
+import stackl_client
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 
-class AnsibleHandler:
+class TerraformHandler(ConfiguratorHandler):
     def __init__(self):
         config.load_incluster_config()
         self.configuration = kubernetes.client.Configuration()
         self.api_instance = kubernetes.client.BatchV1Api(kubernetes.client.ApiClient(self.configuration))
         self.api_instance_core = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(self.configuration))
+        configuration = stackl_client.Configuration()
+        configuration.host = os.environ['stackl_host']
+        api_client = stackl_client.ApiClient(configuration=configuration)
+        self.stack_instance_api = stackl_client.StackInstancesApi(api_client=api_client)
 
-    def create_config_map(self, name, namespace, stack_instance):
+    def create_config_map(self, name, namespace, stack_instance, service):
         cm = client.V1ConfigMap()
         cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": os.environ['stackl_host'],
-                                             "stack_instance": stack_instance})}
+        stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
+        terraform_variables = {}
+        for key, value in stack_instance.services[service].provisioning_parameters.items():
+            if isinstance(value, list):
+                terraform_variables[key] = ",".join(value)
+            else:
+                terraform_variables[key] = value
+        cm.data = {"variables.json": json.dumps(terraform_variables)}
         return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
@@ -31,26 +43,28 @@ class AnsibleHandler:
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
         volumes = []
-        vol = client.V1Volume(name="inventory")
+        vol = client.V1Volume(name="variables")
         inventory_config_map = client.V1ConfigMapVolumeSource()
         inventory_config_map.name = name
         vol.config_map = inventory_config_map
 
         volume_mounts = []
-        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/ansible/playbooks/inventory/stackl.yml",
-                                            sub_path="stackl.yml")
+        volume_mount = client.V1VolumeMount(name="variables", mount_path="/opt/terraform/plan/variables.json",
+                                            sub_path="variables.json")
         volume_mounts.append(volume_mount)
 
         volumes.append(vol)
-        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
+        env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
+                    client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
+                    client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
-                                       image_pull_policy="Always",
                                        volume_mounts=volume_mounts,
-                                       command=["ansible-playbook"],
-                                       args=["main.yml", "-i", "inventory/stackl.yml", "-e",
-                                             "stackl_stack_instance=" + stack_instance,
-                                             "-e", "stackl_service=" + service, "-e",
-                                             "stackl_host=" + os.environ['stackl_host']])
+                                       image_pull_policy="Always",
+                                       command=["/bin/sh", "-c"],
+                                       args=["terraform init -backend-config=address="
+                                             + os.environ['stackl_host']
+                                             + "/terraform/" + stack_instance +
+                                             " && terraform apply --auto-approve -var-file=/opt/terraform/plan/variables.json"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
                                                   image_pull_secrets=secrets, volumes=volumes)
@@ -64,30 +78,18 @@ class AnsibleHandler:
         body.status = client.V1JobStatus()
         template = client.V1PodTemplate()
         template.template = client.V1PodTemplateSpec()
-        volumes = []
-        vol = client.V1Volume(name="inventory")
-        inventory_config_map = client.V1ConfigMapVolumeSource()
-        inventory_config_map.name = name
-        vol.config_map = inventory_config_map
-
-        volume_mounts = []
-        volume_mount = client.V1VolumeMount(name="inventory", mount_path="/ansible/playbooks/inventory/stackl.yml",
-                                            sub_path="stackl.yml")
-        volume_mounts.append(volume_mount)
-
-        volumes.append(vol)
-        env_list = [client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS", value="/ansible/playbooks")]
+        env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
+                    client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
+                    client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
-                                       volume_mounts=volume_mounts,
-                                       command=["ansible-playbook"],
-                                       args=["main.yml", "-i", "inventory/stackl.yml",
-                                             "-e", "stackl_stack_instance=" + stack_instance,
-                                             "-e", "stackl_service=" + service,
-                                             "-e", "stackl_host=" + os.environ['stackl_host'],
-                                             "-e", "state=absent"])
+                                       command=["/bin/sh", "-c"],
+                                       args=["terraform init -backend-config=address=/"
+                                             + os.environ['stackl_host']
+                                             + "/terraform/" + stack_instance +
+                                             " && terraform destroy --auto-approve"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
-                                                  image_pull_secrets=secrets, volumes=volumes)
+                                                  image_pull_secrets=secrets)
         body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
         return body
 
@@ -99,10 +101,18 @@ class AnsibleHandler:
         api_response = None
         while not ready:
             time.sleep(5)
+            print("check status")
             api_response = self.api_instance.read_namespaced_job(job_name, namespace)
-            if api_response.status.failed != 0 or api_response.status.succeeded != 0:
+            print(api_response)
+            if api_response.status.failed is not None or api_response.status.succeeded is not None:
                 ready = True
         return api_response
+
+    def get_hosts(self, stack_instance):
+        # Get the statefile
+        r = requests.get(os.environ['stackl_host'] + '/terraform/' + stack_instance)
+        statefile = r.json()
+        return statefile["outputs"]["hosts"]["value"]
 
     def handle(self, invocation, action):
         print(invocation)
@@ -110,9 +120,8 @@ class AnsibleHandler:
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
         print("create cm")
-        config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance)
+        config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
         if action == "create" or action == "update":
-            print("create object")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
         else:
@@ -126,7 +135,8 @@ class AnsibleHandler:
         except ApiException as e:
             print("Exception when calling BatchV1Api->create_namespaced_job: %s\n" % e)
         api_response = self.wait_for_job(name, stackl_namespace)
-        if api_response.status.failed == 1:
-            return 1, "Still need proper output", None
+        if api_response.status.succeeded == 1:
+            print("job succeeded")
+            return 0, "", self.get_hosts(invocation.stack_instance)
         else:
-            return 0, "", None
+            return 1, "Still need proper output", None

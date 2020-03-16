@@ -3,8 +3,10 @@ import random
 import string
 import subprocess
 
+from configurator_handler import ConfiguratorHandler
 
-class AnsibleHandler:
+
+class AnsibleHandler(ConfiguratorHandler):
 
     def create_job_command(self, name, container_image, stack_instance, service):
         with open('/tmp/stackl.yml', 'w') as inventory:

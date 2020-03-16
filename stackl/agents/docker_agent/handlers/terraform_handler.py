@@ -5,8 +5,9 @@ import subprocess
 
 import requests
 
+from configurator_handler import ConfiguratorHandler
 
-class TerraformHandler:
+class TerraformHandler(ConfiguratorHandler):
 
     def create_job_command(self, name, container_image, stack_instance, service):
         command_string = "docker run"
