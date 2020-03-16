@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 
 from pydantic import BaseModel
 
-from model.items.functional_requirement_status import FunctionalRequirementStatus
+from model.items.functional_requirement_status_model import FunctionalRequirementStatus
 
 class ConnectionCredentials(BaseModel):
     username: str = None

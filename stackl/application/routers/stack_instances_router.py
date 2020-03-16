@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
-from model.items.stack_instance import StackInstance
-from model.items.stack_instance_service import ConnectionCredentials
+from model.items.stack_instance_model import StackInstance
+from model.items.stack_instance_service_model import ConnectionCredentials
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 

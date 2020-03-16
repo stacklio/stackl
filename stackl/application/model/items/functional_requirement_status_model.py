@@ -2,6 +2,7 @@ from enum import IntEnum
 
 from pydantic import BaseModel
 
+#TODO Bring this to the enum package
 class Status(IntEnum):
     in_progress = 1
     ready = 2

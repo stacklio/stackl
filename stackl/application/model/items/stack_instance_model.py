@@ -2,7 +2,7 @@ from typing import Dict
 
 from pydantic import BaseModel
 
-from model.items.stack_instance_service import StackInstanceService
+from model.items.stack_instance_service_model import StackInstanceService
 
 
 class StackInstance(BaseModel):
