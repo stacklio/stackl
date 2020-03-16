@@ -15,3 +15,7 @@ message_channel:
 agent_broker:
   type: Local
   host: stackl-agent:50051
+
+opa:
+  # Change this to the absolute path where your OPA files are located ##TODO: make this a fixed spot somewhere
+  opa_files_location: /home/sacs/work/stackl/stackl/application/opa_broker/opa_files
