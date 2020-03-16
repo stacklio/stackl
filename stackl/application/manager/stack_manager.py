@@ -5,12 +5,13 @@ from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
 from handler.stack_handler import StackHandler
 
-logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
+logger = logging.getLogger("STACKL_LOGGER")
 
+##TODO this class and its terminology need to be updated significantly. 
 class StackManager(Manager):
 
     def __init__(self, manager_factory):
@@ -24,6 +25,7 @@ class StackManager(Manager):
         self.task_broker_factory = TaskBrokerFactory()
         self.task_broker = self.task_broker_factory.get_task_broker()
 
+    ##TODO: Deprecate the change_obj terminology
     def handle_task(self, task):
         logger.debug("[StackManager] handling subtasks in task {0}".format(task))
         try:
@@ -67,6 +69,7 @@ class StackManager(Manager):
         except Exception as e:
             logger.error("[StackManager] Error with processing task. Error: '{0}'".format(e), exc_info=True)
 
+    ##TODO: Deprecate the change_obj terminology
     def process_stack_request(self, instance_data, stack_action):
         # create new object with the action and document in it
         logger.debug("[StackManager] converting instance data to change wrapper object")

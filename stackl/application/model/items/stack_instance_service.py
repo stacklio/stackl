@@ -4,11 +4,9 @@ from pydantic import BaseModel
 
 from model.items.functional_requirement_status import FunctionalRequirementStatus
 
-
 class ConnectionCredentials(BaseModel):
     username: str = None
     password: str = None
-
 
 class StackInstanceService(BaseModel):
     infrastructure_target: str = None

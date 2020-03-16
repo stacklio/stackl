@@ -8,7 +8,8 @@ logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 
 
-# TODO here we manage items and still need to implement creating an item based on input documents and hierarchical lookup
+## TODO here we manage items and still need to implement creating an item based on input documents and hierarchical lookup
+## Most of the methods in this class are deprecated
 class ItemManager(Manager):
     def __init__(self, manager_factory):
         super(ItemManager, self).__init__(manager_factory)
@@ -141,8 +142,6 @@ class ItemManager(Manager):
             merge = True
             push = True
         return return_doc
-
-    # TODO Legacy code underneath - needs to be updated
     def _add_hiera_info(self, doc_obj):
         info_obj = {}
         for key in doc_obj:

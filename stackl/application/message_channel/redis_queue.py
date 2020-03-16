@@ -10,7 +10,7 @@ from message_channel import MessageChannel
 from task.task_factory import TaskFactory
 from utils.general_utils import get_config_key
 
-
+##TODO Potentially drop this for redis_single_queue
 class RedisQueue(MessageChannel):
 
     def __init__(self):

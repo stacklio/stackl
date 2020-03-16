@@ -1,14 +1,13 @@
 import logging
 import threading
 import time
-
 from redis import StrictRedis
 
-logger = logging.getLogger("STACKL_LOGGER")
 from message_channel import MessageChannel
 from task.task_factory import TaskFactory
 from utils.general_utils import get_config_key
 
+logger = logging.getLogger("STACKL_LOGGER")
 
 class RedisSingleQueue(MessageChannel):
 

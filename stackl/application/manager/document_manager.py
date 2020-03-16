@@ -21,7 +21,7 @@ from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 
-
+##TODO: strong link with internal implementation
 class DocumentManager(Manager):
 
     def __init__(self, manager_factory):
@@ -63,7 +63,7 @@ class DocumentManager(Manager):
     def get_document(self, **keys):
         logger.debug("[DocumentManager] get_document. Keys '{0}'".format(keys))
         keys = self._process_document_keys(keys)
-        logger.debug("[DocumentManager] get_document. Post process Keys '{0}'".format(keys))
+        logger.debug("[DocumentManager] get_document. Post Process Keys '{0}'".format(keys))
         try:
             store_response = self.store.get(**keys)
             if store_response.status_code == StatusCode.NOT_FOUND:
@@ -79,6 +79,7 @@ class DocumentManager(Manager):
         store_response = self.store.put(base_document.dict())
         return store_response.content
 
+    ##TODO methods like these introduce strong coupling - better is get/write document and analysis on the document to then process it correctly.
     def get_policy(self, policy_name):
         """gets a Policy Object from the store"""
         store_response = self.store.get(type="policy", document_name=policy_name, category="items")

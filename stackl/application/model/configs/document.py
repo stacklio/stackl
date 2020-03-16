@@ -8,7 +8,7 @@ class BaseDocument(BaseModel):
     type: str
     params: dict = {}
 
-
+#TODO remove and replace with separate policy_model.py
 class PolicyDocument(BaseDocument):
     id: str
     policy: dict = {}
