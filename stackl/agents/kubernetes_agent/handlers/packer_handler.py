@@ -9,8 +9,9 @@ import kubernetes.client
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
+from configurator_handler import ConfiguratorHandler
 
-class PackerHandler:
+class PackerHandler(ConfiguratorHandler):
     def __init__(self):
         config.load_incluster_config()
         self.configuration = kubernetes.client.Configuration()

@@ -3,8 +3,9 @@ import random
 import string
 import subprocess
 
+from configurator_handler import ConfiguratorHandler
 
-class PackerHandler:
+class PackerHandler(ConfiguratorHandler):
 
     def create_job_command(self, name, container_image, stack_instance, service):
         pass
