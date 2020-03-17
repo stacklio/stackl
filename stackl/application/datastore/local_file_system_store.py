@@ -5,6 +5,7 @@ import os
 from datastore import DataStore
 from enums.stackl_codes import StatusCode
 
+
 logger = logging.getLogger("STACKL_LOGGER")
 
 
@@ -12,7 +13,6 @@ class LocalFileSystemStore(DataStore):
 
     def __init__(self, root):
         super(LocalFileSystemStore, self).__init__()
-
         self.file_system_root = root
 
     @property
@@ -21,7 +21,6 @@ class LocalFileSystemStore(DataStore):
 
     def get(self, **keys):
         get_all = False
-
         if keys.get("document_name"):
             if keys.get("type") in keys.get("document_name"):
                 document_key = self.datastore_url + keys.get("category") + '/' + keys.get("document_name") + ".json"
@@ -32,7 +31,6 @@ class LocalFileSystemStore(DataStore):
         else:  # This means we need to get all the documents of the type
             get_all = True
             document_key = self.datastore_url + keys.get("category") + '/'
-
         logger.debug("[LocalFileSystemStore] get on key '{0}'".format(document_key))
 
         content = []
@@ -61,13 +59,11 @@ class LocalFileSystemStore(DataStore):
 
     def get_terraform_statefile(self, name):
         document_key = self.datastore_url + 'statefiles/' + name + ".json"
-
         try:
             with open(document_key, 'r') as storedfile:
                 response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
         except FileNotFoundError:
             response = self._create_store_response(status_code=StatusCode.NOT_FOUND, content={})
-
         logger.debug("[LocalFileSystemStore] StoreResponse for get: " + str(response))
         return response
 
@@ -75,10 +71,8 @@ class LocalFileSystemStore(DataStore):
         document_key = self.datastore_url + 'statefiles/' + name + ".json"
         with open(document_key, 'w+') as outfile:
             json.dump(content, outfile, sort_keys=True, indent=4, separators=(',', ': '))
-
         with open(document_key, 'r') as storedfile:
             response = self._create_store_response(status_code=StatusCode.CREATED, content=json.load(storedfile))
-
         logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
         return response
 
@@ -89,14 +83,11 @@ class LocalFileSystemStore(DataStore):
         logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
         return response
 
-
     def put(self, file):
         if file.get("type") in file.get("name"):
             document_key = self.datastore_url + file.get("category") + '/' + file.get("name") + ".json"
         else:
-            document_key = self.datastore_url + file.get("category") + '/' + file.get("type") + '_' + file[
-                "name"] + ".json"
-
+            document_key = self.datastore_url + file.get("category") + '/' + file.get("type") + '_' + file["name"] + ".json"
         logger.debug("[LocalFileSystemStore] put on '{0}' with file {1}".format(document_key, str(file)))
 
         with open(document_key, 'w+') as outfile:
@@ -113,8 +104,8 @@ class LocalFileSystemStore(DataStore):
         else:
             document_key = self.datastore_url + keys.get("category") + '/' + keys.get("type") + '_' + keys.get(
                 "document_name") + ".json"
-
         logger.debug("[LocalFileSystemStore] delete on '{0}'".format(document_key))
+
         if os.path.isfile(document_key):
             os.remove(document_key)
             if not os.path.isfile(document_key):
@@ -125,9 +116,5 @@ class LocalFileSystemStore(DataStore):
             result = "Fail. File is not present"
 
         response = self._create_store_response(200, result, result)
-
         logger.debug("[LocalFileSystemStore] StoreResponse for delete: " + str(response))
         return response
-
-    def _check_datastore_exists(self, datastore):
-        pass

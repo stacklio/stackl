@@ -1,8 +1,10 @@
 import logging
 
-logger = logging.getLogger("STACKL_LOGGER")
 from utils.general_utils import get_config_key
 from utils.stackl_singleton import Singleton
+
+
+logger = logging.getLogger("STACKL_LOGGER")
 
 
 class DataStoreFactory(metaclass=Singleton):
@@ -16,8 +18,8 @@ class DataStoreFactory(metaclass=Singleton):
             self.store = RedisStore()
         elif self.store_type == "S3":
             pass
-        elif self.store_type == "LFS" or type == "LocalFileSystemStore":
-            lfs_path = get_config_key('DATABASE_PATH')
+        elif self.store_type == "LFS" or self.store_type == "LocalFileSystemStore":
+            lfs_path = get_config_key('DATASTORE_PATH')
             from datastore.local_file_system_store import LocalFileSystemStore
             self.store = LocalFileSystemStore(lfs_path)
         else:  # assume LFS

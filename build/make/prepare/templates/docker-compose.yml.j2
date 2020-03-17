@@ -21,7 +21,7 @@ services:
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
-      - STACKL_DATABASE_PATH=/lfs_store
+      - STACKL_DATASTORE_PATH=/lfs_store
       - STACKL_AGENT_HOST={{ agent_host }}
       - STACKL_OPA_HOST=stackl-opa-server:8181
       - GRPC_VERBOSITY="DEBUG"
@@ -51,7 +51,7 @@ services:
       - 9999:9999
     environment:
       - STACKL_STORE={{ datastore_type }}
-      - STACKL_DATABASE_PATH=/lfs_store
+      - STACKL_DATASTORE_PATH=/lfs_store
       - STACKL_TASK_BROKER={{ task_broker_type }}
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
       - STACKL_AGENT_HOST={{ agent_host }}
