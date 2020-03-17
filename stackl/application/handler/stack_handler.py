@@ -129,10 +129,10 @@ class StackHandler(Handler):
                 svc_doc = self.document_manager.get_service(service)
                 merged_app_infr.update({service: {}})
                 serv_req = {}
-                serv_req.update({"config": svc_doc.functional_requirements})
-                if svc_doc.non_functional_requirements is not None:
-                    serv_req.update(svc_doc.non_functional_requirements)
-                serv_req.update(stack_app_template.extra_functional_requirements)
+                serv_req.update({"config": svc_doc.resource_requirements})
+                if svc_doc.resource_requirements is not None:
+                    serv_req.update(svc_doc.resource_requirements)
+                serv_req.update(stack_app_template.policies)
                 logger.debug("[StackHandler] _handle_create. Serv_req {0}".format(serv_req))
                 # determine possible infra targets for the service
                 for infr_target in stack_infr.infrastructure_capabilities:

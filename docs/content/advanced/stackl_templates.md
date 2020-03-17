@@ -274,7 +274,7 @@ If multiple solutions remain, one is chosen according to a policy, e.g., cheapes
          "type" : "processing_server",
          "infrastructure_targets" : ["P.VMW.V1", "P.VMW.V2", "D.AWS.S1", "D.AWS.S2"]
    },
-   "extra_functional_requirements": {}
+   "policies": {}
 }
 ```
 
@@ -312,7 +312,7 @@ There are 4 possible SI, one for each target.
          "infrastructure_targets" : ["P.VMW.V1", "P.VMW.V2",  "D.AWS.S1", "D.AWS.S2"]
       },
    },
-   "extra_functional_requirements": {
+   "policies": {
         "redundancy" : [ { "database" : 2 } ]
         "same_zone" : [ [ "web_app", "database" ] ]
    }
