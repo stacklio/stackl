@@ -377,7 +377,7 @@ Services can be used to tell STACKL to combine functional requirements and apply
     "type": "service",
     "category": "items",
     "functional_requirements": ["linux", "nginx"],
-    "non_functional_requirements": {
+    "resource_requirements": {
         "CPU": "1GHz",
         "RAM": "2GB"
     },
@@ -401,7 +401,7 @@ Finally we create a stack application template, this can combine different servi
     "type": "stack_application_template",
     "category": "configs",
     "services": ["webserver"],
-    "extra_functional_requirements": {}
+    "policies": {}
 }
 ```
 
@@ -495,4 +495,3 @@ curl 10.10.8.156:8080
 ```
 
 and see the default NGINX welcome message.
-
