@@ -17,9 +17,6 @@ class MessageChannelFactory(metaclass=Singleton):
         if self.message_channel_type == "Redis":
             from message_channel.redis_queue import RedisQueue
             self.message_channel = RedisQueue()
-        if self.message_channel_type == "RedisSingle":
-            from message_channel.redis_single_queue import RedisSingleQueue
-            self.message_channel = RedisSingleQueue()
         else:  # default Redis
             from message_channel.redis_queue import RedisQueue
             self.message_channel = RedisQueue()

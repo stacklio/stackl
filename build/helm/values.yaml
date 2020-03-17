@@ -10,7 +10,7 @@ task_broker:
   type: Custom
 
 message_channel:
-  type: RedisSingle
+  type: Redis
 
 agent_broker:
   type: grpc
