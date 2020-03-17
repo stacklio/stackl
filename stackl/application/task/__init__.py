@@ -3,9 +3,10 @@ import logging
 from abc import ABC, abstractmethod
 
 from enums.cast_type import CastType
+from utils.general_utils import generate_random_string, get_hostname
+
 
 logger = logging.getLogger("STACKL_LOGGER")
-from utils.general_utils import generate_random_string, get_hostname
 
 
 class Task(ABC):
