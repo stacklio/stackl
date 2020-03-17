@@ -12,6 +12,7 @@ from kubernetes.client.rest import ApiException
 from configurator_handler import ConfiguratorHandler
 
 class PackerHandler(ConfiguratorHandler):
+    
     def __init__(self):
         config.load_incluster_config()
         self.configuration = kubernetes.client.Configuration()
@@ -21,19 +22,6 @@ class PackerHandler(ConfiguratorHandler):
         configuration.host = os.environ['stackl_host']
         api_client = stackl_client.ApiClient(configuration=configuration)
         self.stack_instance_api = stackl_client.StackInstancesApi(api_client=api_client)
-
-    def create_config_map(self, name, namespace, stack_instance, service):
-        cm = client.V1ConfigMap()
-        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
-        packer_variables = {}
-        for key, value in stack_instance.services[service].provisioning_parameters.items():
-            if isinstance(value, list):
-                packer_variables[key] = ",".join(value)
-            else:
-                packer_variables[key] = value
-        cm.data = {"variables.json": json.dumps(packer_variables)}
-        return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
                           container_name="jobcontainer"):
@@ -69,26 +57,13 @@ class PackerHandler(ConfiguratorHandler):
                           container_name="jobcontainer"):
         pass
 
-    def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
-    def wait_for_job(self, job_name, namespace):
-        ready = False
-        api_response = None
-        while not ready:
-            time.sleep(5)
-            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
-            if api_response.status.failed != 0 or api_response.status.succeeded != 0:
-                ready = True
-        return api_response
-
     def handle(self, invocation, action):
         print(invocation)
         stackl_namespace = os.environ['stackl_namespace']
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
         print("create cm")
-        config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
+        config_map = self._create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
         if action == "create" or action == "update":
             print("create object")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
@@ -103,8 +78,31 @@ class PackerHandler(ConfiguratorHandler):
             print(api_response)
         except ApiException as e:
             print("Exception when calling BatchV1Api->create_namespaced_job: %s\n" % e)
-        api_response = self.wait_for_job(name, stackl_namespace)
+        api_response = self._wait_for_job(name, stackl_namespace)
         if api_response.status.failed == 1:
             return 1, "Still need proper output", None
         else:
             return 0, "", None
+
+    def _wait_for_job(self, job_name, namespace):
+        ready = False
+        api_response = None
+        while not ready:
+            time.sleep(5)
+            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
+            if api_response.status.failed != 0 or api_response.status.succeeded != 0:
+                ready = True
+        return api_response
+
+    def _create_config_map(self, name, namespace, stack_instance, service):
+        cm = client.V1ConfigMap()
+        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+        stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
+        packer_variables = {}
+        for key, value in stack_instance.services[service].provisioning_parameters.items():
+            if isinstance(value, list):
+                packer_variables[key] = ",".join(value)
+            else:
+                packer_variables[key] = value
+        cm.data = {"variables.json": json.dumps(packer_variables)}
+        return cm
