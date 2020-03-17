@@ -4,7 +4,7 @@ image:
 datastore:
   type: Redis
 #  type: LFS
-#  path: /lfs_test_store
+#  path: /lfs_store
 
 task_broker:
   type: Custom

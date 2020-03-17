@@ -129,7 +129,7 @@ class StackHandler(Handler):
                 svc_doc = self.document_manager.get_service(service)
                 merged_app_infr.update({service: {}})
                 serv_req = {}
-                serv_req.update({"config": svc_doc.resource_requirements})
+                serv_req.update({"config": svc_doc.functional_requirements})
                 if svc_doc.resource_requirements is not None:
                     serv_req.update(svc_doc.resource_requirements)
                 serv_req.update(stack_app_template.policies)
@@ -189,9 +189,7 @@ class StackHandler(Handler):
                             "[StackHandler] _handle_create. Constraint solving. Should restart. Exiting for infr_target in stack_infr loop")
                         break
                     if potential_target:
-                        logger.debug(
-                            "[StackHandler] _handle_create. Constraint solving. For service '{0}' adding potential target '{1}'".format(
-                                service, infr_target))
+                        logger.debug("[StackHandler] _handle_create. Constraint solving. For service '{0}' adding potential target '{1}'".format(service, infr_target))
                         merged_app_infr[service].update({infr_target: capabilities})
                     else:
                         logger.debug(
