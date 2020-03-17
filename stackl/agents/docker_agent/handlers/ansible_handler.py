@@ -34,9 +34,6 @@ class AnsibleHandler(ConfiguratorHandler):
         command_string += " echo delete not yet supported"
         return command_string
 
-    def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
     def handle(self, invocation, action):
         print(invocation)
         container_image = invocation.image

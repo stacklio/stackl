@@ -12,6 +12,7 @@ from kubernetes.client.rest import ApiException
 
 
 class TerraformHandler(ConfiguratorHandler):
+
     def __init__(self):
         config.load_incluster_config()
         self.configuration = kubernetes.client.Configuration()
@@ -21,19 +22,6 @@ class TerraformHandler(ConfiguratorHandler):
         configuration.host = os.environ['stackl_host']
         api_client = stackl_client.ApiClient(configuration=configuration)
         self.stack_instance_api = stackl_client.StackInstancesApi(api_client=api_client)
-
-    def create_config_map(self, name, namespace, stack_instance, service):
-        cm = client.V1ConfigMap()
-        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
-        terraform_variables = {}
-        for key, value in stack_instance.services[service].provisioning_parameters.items():
-            if isinstance(value, list):
-                terraform_variables[key] = ",".join(value)
-            else:
-                terraform_variables[key] = value
-        cm.data = {"variables.json": json.dumps(terraform_variables)}
-        return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
                           container_name="jobcontainer"):
@@ -93,34 +81,13 @@ class TerraformHandler(ConfiguratorHandler):
         body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
         return body
 
-    def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
-    def wait_for_job(self, job_name, namespace):
-        ready = False
-        api_response = None
-        while not ready:
-            time.sleep(5)
-            print("check status")
-            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
-            print(api_response)
-            if api_response.status.failed is not None or api_response.status.succeeded is not None:
-                ready = True
-        return api_response
-
-    def get_hosts(self, stack_instance):
-        # Get the statefile
-        r = requests.get(os.environ['stackl_host'] + '/terraform/' + stack_instance)
-        statefile = r.json()
-        return statefile["outputs"]["hosts"]["value"]
-
     def handle(self, invocation, action):
         print(invocation)
         stackl_namespace = os.environ['stackl_namespace']
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
         print("create cm")
-        config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
+        config_map = self._create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
         if action == "create" or action == "update":
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
@@ -134,9 +101,40 @@ class TerraformHandler(ConfiguratorHandler):
             print(api_response)
         except ApiException as e:
             print("Exception when calling BatchV1Api->create_namespaced_job: %s\n" % e)
-        api_response = self.wait_for_job(name, stackl_namespace)
+        api_response = self._wait_for_job(name, stackl_namespace)
         if api_response.status.succeeded == 1:
             print("job succeeded")
-            return 0, "", self.get_hosts(invocation.stack_instance)
+            return 0, "", self._get_hosts(invocation.stack_instance)
         else:
             return 1, "Still need proper output", None
+
+    def _wait_for_job(self, job_name, namespace):
+        ready = False
+        api_response = None
+        while not ready:
+            time.sleep(5)
+            print("check status")
+            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
+            print(api_response)
+            if api_response.status.failed is not None or api_response.status.succeeded is not None:
+                ready = True
+        return api_response
+
+    def _get_hosts(self, stack_instance):
+        # Get the statefile
+        r = requests.get(os.environ['stackl_host'] + '/terraform/' + stack_instance)
+        statefile = r.json()
+        return statefile["outputs"]["hosts"]["value"]
+
+    def _create_config_map(self, name, namespace, stack_instance, service):
+        cm = client.V1ConfigMap()
+        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+        stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
+        terraform_variables = {}
+        for key, value in stack_instance.services[service].provisioning_parameters.items():
+            if isinstance(value, list):
+                terraform_variables[key] = ",".join(value)
+            else:
+                terraform_variables[key] = value
+        cm.data = {"variables.json": json.dumps(terraform_variables)}
+        return cm
