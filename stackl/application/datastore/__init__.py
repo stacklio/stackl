@@ -15,7 +15,7 @@ class DataStore(ABC):
     def delete(self, **keys):
         pass
 
-    @abstractmethod
+    @abstractmethod  # TODO Technology dependency
     def get_terraform_statefile(self, statefile_name):
         pass
 
@@ -25,10 +25,6 @@ class DataStore(ABC):
 
     @abstractmethod  # TODO Technology dependency
     def delete_terraform_statefile(self, name, statefile):
-        pass
-
-    @abstractmethod
-    def _check_datastore_exists(self, datastore):
         pass
 
     def _create_store_response(self, status_code=400, reason=None, content=None):
