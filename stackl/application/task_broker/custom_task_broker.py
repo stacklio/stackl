@@ -38,14 +38,14 @@ class CustomTaskBroker(TaskBroker):
                 if getattr(task_obj, "return_channel", None) is None:
                     task_obj.return_channel = get_hostname()
                     logger.debug(
-                        "[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
+                        "[CustomTaskBroker] give_task. Adding return_channel: '{0}'".format(task_obj.return_channel))
                 if getattr(task_obj, "send_channel", None) is "agent":
                     task_obj.send_channel = self.agent_broker.get_agent_for_task(task_obj)
                     logger.debug(
-                        "[CustomTaskBroker] Task given. Added send_channel: '{0}'".format(task_obj.send_channel))
+                        "[CustomTaskBroker] give_task. Adding send_channel: '{0}'".format(task_obj.send_channel))
 
                 logger.debug(
-                    "[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
+                    "[CustomTaskBroker] give_task. Task to push: '{0}'".format(task_obj))
                 self.message_channel.push("task_" + "common" + ':process', task_obj.as_json_string())
             else:
                 self.message_channel.publish(task_obj)
