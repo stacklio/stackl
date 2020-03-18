@@ -12,17 +12,18 @@ from utils.general_utils import get_hostname  # pylint: disable=import-error
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 import logging.config
 
-logger = logging.getLogger("STACKL_LOGGER")
+from task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
+from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disable=import-error
+
+
+logger = logging.getLogger("WORKER_LOGGER")
 level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
-formatter = logging.Formatter(
-    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}")
+formatter = logging.Formatter('[[[%(asctime)s|%(message)s', "%d.%m.%y|%H:%M:%S")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-from task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
-from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disable=import-error
 
 
 class Worker:
