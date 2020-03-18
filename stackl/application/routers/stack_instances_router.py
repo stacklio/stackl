@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any, List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 from pydantic import BaseModel
 
 from enums.stackl_codes import StatusCode
@@ -26,10 +26,18 @@ task_broker = task_broker_factory.get_task_broker()
 class StackInstanceInvocation(BaseModel):
     params: Dict[str, Any] = {}
     connection_credentials: ConnectionCredentials = None
-    stack_infrastructure_template: str
-    stack_application_template: str
-    stack_instance_name: str
-    
+    stack_infrastructure_template: str = "stackl"
+    stack_application_template: str = "web"
+    stack_instance_name: str = "default_test_instance"
+
+example_stack_instance_invocation = {
+    "params" : {},
+    "connection_credentials": {"username": "example_user", "password": "example_pwd"},
+    "stack_infrastructure_template": "stackl",
+    "stack_application_template": "web",
+    "stack_instance_name": "default_test_instance"
+}
+
 @router.get('/{stack_instance_name}', response_model=StackInstance)
 def get_stack_instance(stack_instance_name: str):
     """Returns a stack instance with a specific name"""
@@ -54,7 +62,7 @@ def get_stack_instances():
 
 
 @router.post('')
-def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
+def post_stack_instance(stack_instance_invocation: StackInstanceInvocation = Body(..., example=example_stack_instance_invocation)):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
     # check if SIT exists
@@ -99,7 +107,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
 
 
 @router.put('')
-def put_stack_instance(stack_instance_invocation: StackInstanceInvocation):
+def put_stack_instance(stack_instance_invocation: StackInstanceInvocation = Body(..., example=example_stack_instance_invocation)):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
     logger.info("[StackInstances POST] Received POST request")
     # check if SIT exists
