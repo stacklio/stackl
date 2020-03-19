@@ -42,21 +42,21 @@ build_worker:
 .PHONY: build_websocket_agent
 build_websocket_agent:
 	@echo "Building stackl websocket agent"
-	cd stackl/agent/websocket_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_WEBSOCKET_AGENT):$(VERSIONTAG) .
+	cd stackl/agents/websocket_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_WEBSOCKET_AGENT):$(VERSIONTAG) .
 
 .PHONY: build_kubernetes_agent
 build_kubernetes_agent:
 	@echo "Building stackl kubernetes agent"
-	cd stackl/agent/kubernetes_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_KUBERNETES_AGENT):$(VERSIONTAG) .
+	cd stackl/agents/kubernetes_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_KUBERNETES_AGENT):$(VERSIONTAG) .
 
 build_grpc_base:
 	@echo "Building grpc base"
-	cd stackl/agent/grpc_base; ${CONTAINER_ENGINE} build -t stacklio/grpc-base:latest .
+	cd stackl/agents/grpc_base; ${CONTAINER_ENGINE} build -t stacklio/grpc-base:latest .
 
 .PHONY: build_docker_agent
 build_docker_agent:
 	@echo "Building stackl docker agent"
-	cd stackl/agent/docker_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_DOCKER_AGENT):$(VERSIONTAG) .
+	cd stackl/agents/docker_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_DOCKER_AGENT):$(VERSIONTAG) .
 
 .PHONY: push_prepare
 push_prepare:
@@ -91,7 +91,7 @@ prepare:
 
 .PHONY: proto
 proto:
-	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/agent/grpc_base/protos/. --grpc_python_out=stackl/agent/grpc_base/protos/. stackl/protos/agent.proto
+	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/agents/grpc_base/protos/. --grpc_python_out=stackl/agents/grpc_base/protos/. stackl/protos/agent.proto
 	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/application/protos/. --grpc_python_out=stackl/application/protos/. stackl/protos/agent.proto
 
 .PHONY: start
@@ -100,7 +100,7 @@ start:
 	docker-compose -f build/make/dev/docker-compose.yml up -d
 	@echo "Started stackl"
 
-.PHONY: start
+.PHONY: restart
 restart:
 	@echo "Restarting stackl"
 	docker-compose -f build/make/dev/docker-compose.yml down

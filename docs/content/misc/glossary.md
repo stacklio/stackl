@@ -15,7 +15,7 @@ Servers or containers that execute a client-side workflow for configuration and 
 
 ##### Application (app)
 
-Software entity, potentially distributed, that fulfills a larger use-case and results from linked (micro)services and the functional, non-functional and extra-functional requirements. In effect, the executing parts of a stack instance on the IT infrastructure.
+Software entity, potentially distributed, that fulfills a larger use-case and results from linked (micro)services and the functional, non-functional and policies. In effect, the executing parts of a stack instance on the IT infrastructure.
 
 ##### Services (srv)
 

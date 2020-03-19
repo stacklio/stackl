@@ -1,20 +1,19 @@
 import logging
-import socket
 import threading
 import time
+from redis import StrictRedis
 
-from redis.sentinel import Sentinel
-
-logger = logging.getLogger("STACKL_LOGGER")
 from message_channel import MessageChannel
 from task.task_factory import TaskFactory
 from utils.general_utils import get_config_key
 
+logger = logging.getLogger("STACKL_LOGGER")
 
 class RedisQueue(MessageChannel):
 
     def __init__(self):
         super(RedisQueue, self).__init__()
+        self.redis_host = get_config_key("REDIS_HOST")
 
         self.queue = None
         self.pubsub = None
@@ -26,7 +25,7 @@ class RedisQueue(MessageChannel):
             logger.info("[RedisQueue] RedisQueue already started!")
         else:
             logger.info("[RedisQueue] RedisQueue connecting to redis")
-            self.queue = self.RedisWrapper()
+            self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             self.pubsub = self.queue.pubsub()
             if task_handler is None:
                 raise Exception("[RedisQueue] Task handler must be set when starting Broker!")
@@ -105,7 +104,7 @@ class RedisQueue(MessageChannel):
         except Exception as e:
             logger.debug("[RedisQueue] Exception occured in push '{}'".format(e))
             logger.debug("[RedisQueue] Trying one more time with wait of 5 seconds")
-            self.queue = self.RedisWrapper()
+            self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             time.sleep(5)
             result = self.queue.lpush(name, *values)
         return result
@@ -117,7 +116,7 @@ class RedisQueue(MessageChannel):
         except Exception as e:
             logger.debug("[RedisQueue] Exception occured in pop '{}'".format(e))
             logger.debug("[RedisQueue] Trying one more time with wait of 5 seconds")
-            self.queue = self.RedisWrapper()
+            self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             time.sleep(5)
             result = self.queue.brpop(name)
         return result
@@ -130,145 +129,3 @@ class RedisQueue(MessageChannel):
             if action == 'unsubscribe':
                 logger.info("[RedisQueue] Unsubscribing to channel: " + str(channel))
                 pubsub.unsubscribe(channel)
-
-    # Inner class
-    class RedisWrapper:
-        def __init__(self):
-            self.broker_is_sentinel_host = get_config_key('redisSentinelHost')
-
-            logger.debug("[RedisWrapper] Configkey broker_is_sentinel_host: " + str(self.broker_is_sentinel_host))
-            self.master = None
-            self._get_sentinel()
-            self._wait_redis()
-
-        def exists(self, name):
-            logger.debug("[RedisWrapper] Doing exists(). Name {0}".format(name))
-            return self.get_master().exists(name)
-
-        def pubsub_channels(self):
-            logger.debug("[RedisWrapper] Doing pubsub_channels()")
-            return self.get_slave().pubsub_channels()
-
-        def pubsub(self):
-            logger.debug("[RedisWrapper] Doing pubsub()")
-            return self.get_master().pubsub()
-
-        def publish(self, channel, message):
-            logger.debug("[RedisWrapper] Doing publish(). channel {0} and message {1}".format(channel, message))
-            return self.get_master().publish(channel, message)
-
-        def delete(self, *names):
-            logger.debug("[RedisWrapper] Doing delete(). Names {0}".format(*names))
-            return self.get_master().delete(*names)
-
-        def set(self, name, value):
-            logger.debug("[RedisWrapper] Doing set(). Name {0} and value {1}".format(name, value))
-            return self.get_master().set(name, value)
-
-        def setnx(self, name, value):
-            logger.debug("[RedisWrapper] Doing setnx(). Name {0} and value {1}".format(name, value))
-            return self.get_master().setnx(name, value)
-
-        def expire(self, name, time):
-            logger.debug("[RedisWrapper] Doing expire(). Name {0} and time {1}".format(name, time))
-            return self.get_master().expire(name, time)
-
-        def rpush(self, name, *values):
-            logger.debug("[RedisWrapper] Doing rpush(). Name {0} and values {1}".format(name, *values))
-            return self.get_master().rpush(name, *values)
-
-        def lpush(self, name, *values):
-            logger.debug("[RedisWrapper] Doing lpush(). Name {0} and values {1}".format(name, *values))
-            return self.get_master().lpush(name, *values)
-
-        def lrange(self, name, start, stop):
-            logger.debug(
-                "[RedisWrapper] Doing lrange(). Name '{0}', start '{1}', stop '{2}'".format(name, start, stop))
-            return self.get_slave().lrange(name, start, stop)
-
-        def rpop(self, name):
-            logger.debug("[RedisWrapper] Doing rpop(). Name '{0}'".format(name))
-            return self.get_master().rpop(name)
-
-        def block_rpop(self, name):
-            logger.debug("[RedisWrapper] Doing block_rpop(). Name '{0}'".format(name))
-            return self.get_master().brpop(name)
-
-        def brpop(self, name):
-            logger.debug("[RedisWrapper] Doing block_rpop(). Name '{0}'".format(name))
-            return self.get_master().brpop(name)
-
-        def setex(self, name, value, time):
-            logger.debug(
-                "[RedisWrapper] Doing setex(). Name '{0}', value '{1}' and time '{2}'".format(name, value, time))
-            return self.get_master().setex(name, value, time)
-
-        def scan_iter(self, match=None, count=None):
-            logger.debug("[RedisWrapper] Doing scan_iter(). Match '{0}' and count '{1}'".format(match, count))
-            return self.get_master().scan_iter(match, count)
-
-        def get(self, name):
-            return self.get_slave().get(name)
-
-        def get_slave(self):
-            try:
-                logger.debug("[RedisWrapper] get_slave for 'mymaster'")
-                slave = self.sentinel.slave_for('mymaster')
-                slave.ping()
-                return slave
-            except Exception as e:
-                logger.debug("[RedisWrapper] Exception occured while getting slave '{}' ".format(e))
-                logger.debug("[RedisWrapper] Trying other sentinel...")
-                self._get_sentinel()
-                time.sleep(2)
-            return self.get_slave()
-
-        def get_master(self):
-            try:
-                if self.master:
-                    # logger.debug("[RedisWrapper] get_master. There is a master. Ping.")
-                    self.master.ping()
-                    return self.master
-                else:
-                    logger.debug("[RedisWrapper] get_master. There isn't a master. calling _get_master_helper")
-                    return self._get_master_helper()
-            except Exception:
-                logger.debug("[RedisWrapper] Exception in get_master: calling _get_master_helper")
-                return self._get_master_helper()
-
-        def _get_master_helper(self):
-            while True:
-                try:
-                    self.master = self.sentinel.master_for('mymaster')
-                    logger.debug("[RedisWrapper] Pinging master: '{0}', on address '{1}'".format(str(self.master),
-                                                                                                 self.sentinel.discover_master(
-                                                                                                     'mymaster')))
-                    self.master.ping()
-                    return self.master
-                except Exception as e:
-                    logger.debug("[RedisWrapper] Exception occured while getting master '{}' ".format(e))
-                    logger.debug("[RedisWrapper] Trying other sentinel...")
-                    self._get_sentinel()
-                    time.sleep(2)
-
-        def _get_sentinel(self):
-            self.sentinel = Sentinel([(self.broker_is_sentinel_host, 26379)])
-
-        def _wait_redis(self):
-            logger.debug('[RedisWrapper] waiting for redis sentinel...')
-            while True:
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    result = s.connect_ex((self.broker_is_sentinel_host, 26379))
-                    if result == 0:
-                        logger.debug(
-                            "[RedisWrapper] redis sentinel is listening... trying to invoke sentinel action to check if master is online")
-                        s.close()
-                        self.get_master()
-                        break
-                    else:
-                        logger.debug("[RedisWrapper] waiting for connection...")
-                except Exception as e:
-                    logger.debug(
-                        "[RedisWrapper] exception occured waiting for redis. Error: '{}'. Trying again.".format(e))
-                time.sleep(5)

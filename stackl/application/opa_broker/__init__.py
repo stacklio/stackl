@@ -5,16 +5,17 @@ import os
 import globals
 import logging
 from utils.general_utils import get_config_key
-from model.configs.stack_application_template import StackApplicationTemplate
-from model.configs.stack_infrastructure_template import StackInfrastructureTemplate
+from model.configs.stack_application_template_model import StackApplicationTemplate
+from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 
-from model.configs.document import PolicyDocument
+from model.configs.policy_model import Policy
 
 from manager.manager_factory import ManagerFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
 document_manager = ManagerFactory().get_document_manager()
 
+##TODO WIP!
 class OPABroker():
 
     def __init__(self):
@@ -90,7 +91,7 @@ class OPABroker():
         logger.debug("[OPABroker] delete_opa_data. Result: {}".format(result))
         return result
 
-    def load_opa_policy(self, policy_doc: PolicyDocument, policy_id="default"):
+    def load_opa_policy(self, policy_doc: Policy, policy_id="default"):
         logger.debug("[OPABroker] load_opa_policy.For policy_doc '{0}'".format(policy_doc))
         response = requests.put(self.opa_host + "/v1/policies/" + policy_id, data=policy_doc.policy)
         logger.debug("[OPABroker] load_opa_policy. Response:{}".format(response))

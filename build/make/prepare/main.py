@@ -38,7 +38,6 @@ def parse_yaml_config(config_file_path):
 
     return config_dict
 
-
 @click.command()
 @click.option('--conf', help="the path of the stackl configuration file")
 def main(conf):

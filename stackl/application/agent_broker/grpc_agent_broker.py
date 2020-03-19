@@ -5,11 +5,10 @@ import grpc
 import protos.agent_pb2
 import protos.agent_pb2_grpc
 from agent_broker import AgentBroker
-from model.items.functional_requirement_status import FunctionalRequirementStatus, Status
+from model.items.functional_requirement_status_model import FunctionalRequirementStatus, Status
 from utils.general_utils import get_config_key
 
 logger = logging.getLogger("STACKL_LOGGER")
-
 
 class GrpcAgentBroker(AgentBroker):
 
@@ -18,7 +17,7 @@ class GrpcAgentBroker(AgentBroker):
 
         stackl_agent = get_config_key("AGENT_HOST")
         self.channel = grpc.insecure_channel(str(stackl_agent))
-        self.stub = protos.agent_pb2_grpc.StacklAgentStub(self.channel)
+        self.stub = protos.agent_pb2_grpc.StacklAgentStub(self.channel) #TODO This throws an error in vscode: Module 'protos' has no 'agent_pb2_grpc' member
 
     def start(self):
         logger.info("[GrpcAgentBroker] Starting GrpcAgentBroker")
@@ -26,12 +25,13 @@ class GrpcAgentBroker(AgentBroker):
     def get_agent_for_task(self, task):
         return "gRPC"
 
-    def send_to_agent(self, agent_connect_info, obj):
+    def send_obj_to_agent(self, agent_connect_info, obj):
         logger.info("[GrpcAgentBroker] sending automation message to channel {0}".format(self.channel))
         result = self.stub.InvokeAutomation(obj)
         # logger.info("[GrpcAgentBroker] received result: {0}".format(result))
         return result
 
+    #TODO bad name, what does it process? to what does it process it to?
     def process_result(self, stack_instance, result, document_manager):
         logger.info("[GrpcAgentBroker] processing result: {0}".format(result))
         sts = result.automation_result
@@ -55,9 +55,10 @@ class GrpcAgentBroker(AgentBroker):
                 stack_instance.services[sts.service].hosts.append(h)
         document_manager.write_stack_instance(stack_instance)
 
+    #TODO change_obj is no longer a good name. This should be adjusted.
     def create_change_obj(self, stack_instance, action, document_manager):
         logger.debug(
-            "[GrpcAgentBroker] create_change_o\bj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
+            "[GrpcAgentBroker] create_change_obj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
                                                                                                      action))
         change_obj = []
         for service in stack_instance.services:
@@ -70,7 +71,7 @@ class GrpcAgentBroker(AgentBroker):
                 logger.debug(
                     "[GrpcAgentBroker] create_change_obj. Retrieved fr '{0}' from service_doc '{1}''".format(fr_doc,
                                                                                                            service_doc))
-                automation_message = protos.agent_pb2.AutomationMessage()
+                automation_message = protos.agent_pb2.AutomationMessage()  # TODO This throws an error in vscode: Module 'protos' has no 'agent_pb2' member
                 automation_message.action = action
                 invoc = automation_message.invocation
                 invoc.functional_requirement = fr

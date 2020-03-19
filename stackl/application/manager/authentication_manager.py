@@ -4,7 +4,7 @@ import os
 logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 
-
+##TODO: Deprecate. This should be handled in a future stage by OPA
 class AuthenticationManager(Manager):
 
     def __init__(self, manager_factory):

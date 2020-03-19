@@ -7,7 +7,7 @@ from manager.stack_manager import StackManager
 from manager.user_manager import UserManager
 from utils.stackl_singleton import Singleton
 
-
+##TOOD: update based on what stays and what goes
 class ManagerFactory(metaclass=Singleton):
 
     def __init__(self):
