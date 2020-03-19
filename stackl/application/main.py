@@ -10,8 +10,8 @@ from fastapi.routing import APIRoute
 import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
-from routers import documents, stack_instances, functional_requirements, services, stack_application_templates, \
-    stack_infrastructure_templates, about, terraform, policies
+from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
+    stack_infrastructure_templates_router, about_router, terraform_router, policies_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
@@ -49,6 +49,7 @@ task_broker_thread.daemon = True
 task_broker_thread.start()
 
 opa_broker.start()
+
 logger.info("___________________ STARTING STACKL_API ____________________")
 
 # Add routes
@@ -57,51 +58,51 @@ app = FastAPI(
     description="stackl",)
 
 app.include_router(
-    documents.router,
+    documents_router.router,
     prefix="/documents",
     tags=["documents"]
 )
 app.include_router(
-    policies.router,
+    policies_router.router,
     prefix="/policies",
     tags=["policies"]
 )
 app.include_router(
-    stack_instances.router,
+    stack_instances_router.router,
     prefix="/stack_instances",
     tags=["stack_instances"]
 )
 app.include_router(
-    functional_requirements.router,
+    functional_requirements_router.router,
     prefix="/functional_requirements",
     tags=["functional_requirements"]
 )
 app.include_router(
-    services.router,
+    services_router.router,
     prefix="/services",
     tags=["services"]
 )
 app.include_router(
-    stack_application_templates.router,
+    stack_application_templates_router.router,
     prefix="/stack_application_templates",
     tags=["stack_application_templates"]
 )
 app.include_router(
-    stack_infrastructure_templates.router,
+    stack_infrastructure_templates_router.router,
     prefix="/stack_infrastructure_templates",
     tags=["stack_infrastructure_templates"]
 )
+#TODO Technological dependency
 app.include_router(
-    terraform.router,
+    terraform_router.router,
     prefix="/terraform",
     tags=["terraform"]
 )
 app.include_router(
-    about.router,
+    about_router.router,
     prefix="/about",
     tags=["about"]
 )
-
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
     """

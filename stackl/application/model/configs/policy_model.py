@@ -4,6 +4,6 @@ from pydantic import BaseModel
 
 
 class Policy(BaseModel):
-    name: str
+    id: str
     description: Optional[str]
-    policy_in_rego: str
+    policy: str

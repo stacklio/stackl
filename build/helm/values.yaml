@@ -4,13 +4,13 @@ image:
 datastore:
   type: Redis
 #  type: LFS
-#  path: /lfs_test_store
+#  path: /lfs_store
 
 task_broker:
   type: Custom
 
 message_channel:
-  type: RedisSingle
+  type: Redis
 
 agent_broker:
   type: grpc

@@ -145,7 +145,7 @@ Stack application templates are templates that define an application. It consist
     "name": "webserver",
     "type": "virtual_machine",
     "functional_requirements": ["linux"],
-    "non_functional_requirements": {
+    "resource_requirements": {
         "CPU": "1GHz",
         "RAM": "2GB"
     },
@@ -162,8 +162,7 @@ Stack application templates are templates that define an application. It consist
     "name": "web",
     "type": "stack_application_template",
     "services": ["webserver"],
-    "extra_functional_requirements": {},
-    "service_policies": {
+    "policies": {
         "webserver": {
             "replicas": 2,
             "policies": ["opa_policy1", "opa_policy2"]

@@ -20,7 +20,7 @@ Following parameters can be modified in order to change the STACKL Docker compos
 | `STACKL_AGENT_BROKER` | Set the agent broker type  | Local |
 | `STACKL_AGENT_HOST` | Set the agent host and port | stackl-agent:50051 |
 | `STACKL_HOST` | Set the STACKL host and port | stackl-rest:80 |
-| `STACKL_MESSAGE_CHANNEL` | Set the task message channel type | RedisSingle |
+| `STACKL_MESSAGE_CHANNEL` | Set the task message channel type | Redis |
 | `STACKL_REDIS_HOST` | Set the Redis host | stackl-redis |
 | `STACKL_REDISSENTINELHOST` | Set the Redis sentinel host | stackl-redis |
 | `STACKL_STORE` | Set the store type | LFS |
@@ -35,7 +35,7 @@ Following parameters can be modified in order to change the STACKL Helm deployme
 | `image.pullPolicy` | Set the pull policy for all deployments  | Always |
 | `datastore.type` | Set the type of the datastore to use | LFS |
 | `task_broker.type` | Set the task broker type | Custom |
-| `message_channel.type` | Set the message channel type | RedisSingle |
+| `message_channel.type` | Set the message channel type | Redis |
 | `agent_broker.type` | Set the agent_broker type | grpc |
 | `stacklrest.image` | Set the image to use for the stackl rest api | stacklio/stackl-rest |
 | `stacklrest.name` | Set the name of stackl-rest | stackl-rest |

@@ -4,16 +4,16 @@ import logging
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
 from globals import types, types_configs, types_items
-from model.configs.document import BaseDocument
-from model.configs.environment import Environment
-from model.configs.functional_requirement import FunctionalRequirement
-from model.configs.location import Location
-from model.configs.stack_application_template import StackApplicationTemplate
-from model.configs.stack_infrastructure_template import StackInfrastructureTemplate
-from model.configs.zone import Zone
+from model.configs.document_model import BaseDocument
+from model.configs.environment_model import Environment
+from model.configs.functional_requirement_model import FunctionalRequirement
+from model.configs.location_model import Location
+from model.configs.stack_application_template_model import StackApplicationTemplate
+from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from model.configs.zone_model import Zone
 from model.configs.policy_model import Policy
-from model.items.service import Service
-from model.items.stack_instance import StackInstance
+from model.items.service_model import Service
+from model.items.stack_instance_model import StackInstance
 
 logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
@@ -21,7 +21,7 @@ from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 
-
+##TODO: strong link with internal implementation
 class DocumentManager(Manager):
 
     def __init__(self, manager_factory):
@@ -63,7 +63,7 @@ class DocumentManager(Manager):
     def get_document(self, **keys):
         logger.debug("[DocumentManager] get_document. Keys '{0}'".format(keys))
         keys = self._process_document_keys(keys)
-        logger.debug("[DocumentManager] get_document. Post process Keys '{0}'".format(keys))
+        logger.debug("[DocumentManager] get_document. Post Process Keys '{0}'".format(keys))
         try:
             store_response = self.store.get(**keys)
             if store_response.status_code == StatusCode.NOT_FOUND:
@@ -79,6 +79,7 @@ class DocumentManager(Manager):
         store_response = self.store.put(base_document.dict())
         return store_response.content
 
+    ##TODO methods like these introduce strong coupling - better is get/write document and analysis on the document to then process it correctly.
     def get_policy(self, policy_name):
         """gets a Policy Object from the store"""
         store_response = self.store.get(type="policy", document_name=policy_name, category="items")
