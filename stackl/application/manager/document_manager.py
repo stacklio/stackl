@@ -117,7 +117,7 @@ class DocumentManager(Manager):
         store_response = self.store.put(stack_infrastructure_template.dict())
         return store_response.content
 
-    def get_stack_application_template(self, stack_application_template_name):
+    def get_stack_application_template(self, stack_application_template_name) -> StackApplicationTemplate:
         """gets a StackApplicationTemplate Object from the store"""
         store_response = self.store.get(type="stack_application_template",
                                         document_name=stack_application_template_name, category="configs")
