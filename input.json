@@ -1,51 +1,48 @@
 {
-    "infrastructure_targets": [
-        {
-            "id": "production.brussels.cluster1",
+    "infrastructure_targets": {
+        "production.brussels.cluster1": {
             "resources": {
-                "CPU": "4GHz",
-                "RAM": "4GB",
-                "DISK": "9999GB"
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
             },
             "config": [
                 "linux",
                 "nginx"
             ]
         },
-        {
-            "id": "production.brussels.cluster2",
+        "production.brussels.cluster2": {
             "resources": {
-                "CPU": "4GHz",
-                "RAM": "4GB",
-                "DISK": "5GB"
+                "cpu_cores": "80",
+                "memory": "4GB",
+                "disk": "80GB"
             },
             "config": [
                 "linux",
-                "nginx"
+                "nginx",
+                "postgresql"
             ]
         }
-    ],
-    "services": [
-        {
-            "id": "webserver",
+    },
+    "services": {
+        "webserver": {
             "resource_requirements": {
-                "CPU": "4GHz",
-                "RAM": "4GB"
+                "cpu_cores": "1",
+                "memory": "1GB"
             },
             "functional_requirements": [
                 "linux"
             ]
         },
-        {
-            "id": "database",
+        "database": {
             "resource_requirements": {
-                "CPU": "3GHz",
-                "RAM": "4GB",
-                "DISK": "10GB"
+                "cpu_cores": "1",
+                "memory": "2GB",
+                "disk": "20GB"
             },
             "functional_requirements": [
-                "alpine"
+                "postgresql"
             ]
         }
-    ]
+    }
 }

@@ -19,9 +19,19 @@ class TerraformHandler(ConfiguratorHandler):
         self.api_instance = kubernetes.client.BatchV1Api(kubernetes.client.ApiClient(self.configuration))
         self.api_instance_core = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(self.configuration))
         configuration = stackl_client.Configuration()
-        configuration.host = os.environ['stackl_host']
+        configuration.host = "http://" + os.environ['stackl_host']
         api_client = stackl_client.ApiClient(configuration=configuration)
         self.stack_instance_api = stackl_client.StackInstancesApi(api_client=api_client)
+
+    def create_config_map(self, name, namespace, stack_instance, service):
+        cm = client.V1ConfigMap()
+        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+        stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
+        terraform_variables = {}
+        for key, value in stack_instance.services[service].provisioning_parameters.items():
+            terraform_variables[key] = value
+        cm.data = {"variables.json": json.dumps(terraform_variables)}
+        return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
                           container_name="jobcontainer"):
@@ -45,18 +55,20 @@ class TerraformHandler(ConfiguratorHandler):
         env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
                     client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
                     client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
+
+
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
                                        volume_mounts=volume_mounts,
                                        image_pull_policy="Always",
                                        command=["/bin/sh", "-c"],
-                                       args=["terraform init -backend-config=address="
+                                       args=["terraform init -backend-config=address=http://"
                                              + os.environ['stackl_host']
                                              + "/terraform/" + stack_instance +
                                              " && terraform apply --auto-approve -var-file=/opt/terraform/plan/variables.json"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
                                                   image_pull_secrets=secrets, volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
+        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
 
     def delete_job_object(self, name, container_image, stack_instance, service, namespace="stackl",
@@ -71,15 +83,36 @@ class TerraformHandler(ConfiguratorHandler):
                     client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
                                        command=["/bin/sh", "-c"],
-                                       args=["terraform init -backend-config=address=/"
+                                       args=["terraform init -backend-config=address=http://"
                                              + os.environ['stackl_host']
                                              + "/terraform/" + stack_instance +
                                              " && terraform destroy --auto-approve"])
         secrets = [client.V1LocalObjectReference(name="dome-nexus")]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
                                                   image_pull_secrets=secrets)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=1)
+        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
+
+    def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
+    def wait_for_job(self, job_name, namespace):
+        ready = False
+        api_response = None
+        while not ready:
+            time.sleep(5)
+            print("check status")
+            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
+            print(api_response)
+            if api_response.status.failed is not None or api_response.status.succeeded is not None:
+                ready = True
+        return api_response
+
+    def get_hosts(self, stack_instance):
+        # Get the statefile
+        r = requests.get("http://" + os.environ['stackl_host'] + '/terraform/' + stack_instance)
+        statefile = r.json()
+        return statefile["outputs"]["hosts"]["value"]
 
     def handle(self, invocation, action):
         print(invocation)
@@ -89,12 +122,15 @@ class TerraformHandler(ConfiguratorHandler):
         print("create cm")
         config_map = self._create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
         if action == "create" or action == "update":
+            print("update")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
+            print("bodyke")
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
         try:
+            print("try")
             api_response = self.api_instance_core.create_namespaced_config_map(stackl_namespace, config_map)
             print(api_response)
             api_response = self.api_instance.create_namespaced_job(stackl_namespace, body, pretty=True)

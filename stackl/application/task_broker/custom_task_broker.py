@@ -31,10 +31,10 @@ class CustomTaskBroker(TaskBroker):
         try:
             super().give_task(task_obj)
 
-            if getattr(task_obj, "topic", None) is not "result":
+            if getattr(task_obj, "topic", None) != "result":
                 self.add_task_to_queue(task_obj)
 
-            if task_obj.cast_type is "anycast":
+            if task_obj.cast_type == "anycast":
                 if getattr(task_obj, "return_channel", None) is None:
                     task_obj.return_channel = get_hostname()
                     logger.debug(
