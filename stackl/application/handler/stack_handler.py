@@ -1,9 +1,8 @@
-import copy
 import logging
 
 from enums.stackl_codes import StatusCode
 from handler import Handler
-
+from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from model.items.functional_requirement_status_model import FunctionalRequirementStatus, Status
 from model.items.stack_instance_model import StackInstance
 from model.items.stack_instance_service_model import StackInstanceService
@@ -12,12 +11,16 @@ from utils.general_utils import get_timestamp
 logger = logging.getLogger("STACKL_LOGGER")
 
 
+class NoOpaResultException(Exception):
+    pass
+
+
 class StackHandler(Handler):
 
-    def __init__(self, manager_factory):
+    def __init__(self, manager_factory, opa_broker):
         super(StackHandler, self).__init__(manager_factory)
-
         self.document_manager = manager_factory.get_document_manager()
+        self.opa_broker = opa_broker
         self.hiera = manager_factory.get_item_manager()
 
     def handle(self, item):
@@ -33,29 +36,34 @@ class StackHandler(Handler):
             return self._handle_delete(item['document'])
         return StatusCode.BAD_REQUEST
 
-    def _create_stack_instance(self, item, merged_sit_sat):
+    def _create_stack_instance(self, item, opa_decision, stack_infrastructure_template: StackInfrastructureTemplate):
         stack_instance_doc = StackInstance(name=item['stack_instance_name'])
         services = {}
-        for svc in merged_sit_sat:
+        for svc, targets in opa_decision.items():
+            # if a svc doesnt have a result raise an error cause we cant resolve it
+            if len(targets) == 0:
+                raise NoOpaResultException
             svc_doc = self.document_manager.get_service(svc)
             service_definition = StackInstanceService()
             service_definition_status = []
-            for infra_target in merged_sit_sat[svc]:
-                service_definition.infrastructure_target = infra_target
-                merged_capabilities = {**merged_sit_sat[svc][infra_target], **svc_doc.params}
-                for fr in svc_doc.functional_requirements:
-                    fr_status = FunctionalRequirementStatus(
-                        functional_requirement=fr,
-                        status=Status.in_progress,
-                        error_message=""
-                    )
-                    service_definition_status.append(fr_status)
-                    fr_doc = self.document_manager.get_functional_requirement(fr)
-                    merged_capabilities = {**merged_capabilities, **fr_doc.params}
-                service_definition.provisioning_parameters = {**merged_capabilities, **item['params']}
-                service_definition.status = service_definition_status
-                service_definition.connection_credentials = item['connection_credentials']
-                services[svc] = service_definition
+            # TODO take first target in list if multiple, maybe we should let opa always only return one?
+            infra_target = targets[0]
+            service_definition.infrastructure_target = infra_target
+            capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[infra_target]
+            merged_capabilities = {**capabilities_of_target, **svc_doc.params}
+            for fr in svc_doc.functional_requirements:
+                fr_status = FunctionalRequirementStatus(
+                    functional_requirement=fr,
+                    status=Status.in_progress,
+                    error_message=""
+                )
+                service_definition_status.append(fr_status)
+                fr_doc = self.document_manager.get_functional_requirement(fr)
+                merged_capabilities = {**merged_capabilities, **fr_doc.params}
+            service_definition.provisioning_parameters = {**merged_capabilities, **item['params']}
+            service_definition.status = service_definition_status
+            service_definition.connection_credentials = item['connection_credentials']
+            services[svc] = service_definition
             stack_instance_doc.services = services
         return stack_instance_doc
 
@@ -83,148 +91,26 @@ class StackHandler(Handler):
         stack_infr = self._update_infr_capabilities(stack_infr_template, "yes")
         logger.debug("[StackHandler] _handle_create. stack_infr: {0}".format(stack_infr))
 
-        # TODO fix again
-        # if "infrastructure_target" in item:
-        #     logger.debug("[StackHandler] _handle_create. target specified so no need for constraint processing")
-        #     stack_instance_doc = {}
-        #     stack_instance_doc['name'] = item['stack_instance_name']
-        #     stack_instance_doc['type'] = "stack_instance"
-        #     infra_capabilities = stack_infr.infrastructure_capabilities[item["infrastructure_target"]]
-        #     services = {}
-        #     for svc in stack_app_template.services:
-        #         svc_doc = self.document_manager.get_document(
-        #                                 type='service',
-        #                                 document_name=svc)
-        #         service_definition = {}
-        #         service_definition['infrastructure_target'] = item['infrastructure_target']
-        #         merged_capabilities = {**infra_capabilities, **svc_doc['params']}
-        #         for fr in svc_doc['functional_requirements']:
-        #             fr_doc = self.document_manager.get_document(
-        #                 type='functional_requirement',
-        #                 document_name=fr)
-        #             merged_capabilities = {**merged_capabilities, **fr_doc['params']}
-        #         service_definition['provisioning_parameters'] = {**merged_capabilities, **item['params']}
-        #         services[svc] = service_definition
-        #     stack_instance_doc['services'] = services
-        #     return stack_instance_doc, 200
+        # Transform to OPA format
+        sit_as_opa_data = self.opa_broker.convert_sit_to_opa_data(stack_infr)
+        services = []
+        for s in stack_app_template.services:
+            services.append(self.document_manager.get_service(s))
+        sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(stack_app_template, services)
+        opa_data = {**sat_as_opa_data, **sit_as_opa_data}
 
-        # Create a single list of requirements per service
-        logger.debug(
-            "[StackHandler] _handle_create. Constraint solving. Each service in the application should have a list of potential infr_targets. If not the case, the given SIT cannot satisfy the SAT.")
+        logger.debug("[StackHandler] _handle_create. performing opa query with data: {0}".format(opa_data))
 
-        should_restart = True
-        first_run = True
-        new_sat = None
-        while should_restart:
-            if should_restart and not first_run:
-                logger.debug("[StackHandler] _handle_create. Constraint solving was restarted")
-                stack_app_template = new_sat
-            should_restart = False
-            first_run = False
-            merged_app_infr = {}
-            list_of_req_serv = []
-            list_of_req_matching_zones = []
-            for service in stack_app_template.services:
-                # Get service document
-                svc_doc = self.document_manager.get_service(service)
-                merged_app_infr.update({service: {}})
-                serv_req = {}
-                serv_req.update({"config": svc_doc.functional_requirements})
-                if hasattr(svc_doc, "non_functional_requirements"):
-                    serv_req.update(svc_doc.non_functional_requirements)
-                if hasattr(stack_app_template, "extra_functional_requirements"):
-                    serv_req.update(stack_app_template.extra_functional_requirements)
-                logger.debug("[StackHandler] _handle_create. Serv_req {0}".format(serv_req))
-                # determine possible infra targets for the service
-                for infr_target in stack_infr.infrastructure_capabilities:
-                    capabilities = stack_infr.infrastructure_capabilities[infr_target]
-                    # TODO: an intelligent system needs to be put here so that the infrastructure capabilities can be matched with the service requirements. Something that allows to determine that, for instance, AWS servers can host a certain set of functional dependencies. At the moment this is hardcoded in _update_infr_capabilities and we only check some service requirements.
-                    logger.debug(
-                        "[StackHandler] _handle_create. Constraint solving. infr_target {0} and capabilities  '{1}'".format(
-                            infr_target, capabilities))
+        # TODO Define queries here for now only one
+        opa_result = self.opa_broker.ask_opa_policy_decision("orchestration", "all_solutions", opa_data)
+        logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(opa_result['result']))
 
-                    potential_target = True
-                    for req in list(serv_req.keys()):
-                        logger.debug("[StackHandler] _handle_create. Constraint solving for serv_req {}".format(req))
-                        if req == "config":
-                            if not all(config_req in capabilities["config"] for config_req in serv_req["config"]):
-                                logger.debug(
-                                    "[StackHandler] _handle_create. Constraint solving. serv_req[config] '{0}' not in capabilities[config] '{1}'".format(
-                                        serv_req["config"], capabilities["config"]))
-                                potential_target = False
-                                break
-                        elif req == "count":
-                            logger.debug(
-                                "[StackHandler] _handle_create. Constraint solving. resolving count as individually named services")
-                            new_sat = copy.deepcopy(stack_app_template)
-                            new_service = copy.deepcopy(svc_doc)
-                            del new_sat.services[service]
-                            del new_service.extra_functional_dependencies["count"]
-                            logger.debug(
-                                "[StackHandler] _handle_create. Constraint solving. resolving count. Deleted original service group '{0}' results in new sat'{1}' and created new service params '{2}' ".format(
-                                    service, new_sat, new_service))
-                            for i in range(serv_req[req]):
-                                new_sat.services.update({service + str(i): new_service})
-                            logger.debug(
-                                "[StackHandler] _handle_create. Constraint solving. new_sat with filled in service group {0}. Restarting loop".format(
-                                    new_sat))
-                            should_restart = True
-                            break
-                        elif req == "zone":
-                            logger.debug("[StackHandler] _handle_create. Constraint solving. Adding zone req")
-                            list_of_req_matching_zones.append((service, serv_req["zone"]))
-                        elif req == "service":
-                            logger.debug("[StackHandler] _handle_create. Constraint solving. Adding service req")
-                            list_of_req_serv.append(serv_req["service"])
-                        elif req in ["CPU", "RAM"]:
-                            if not serv_req[req] <= capabilities[req]:
-                                logger.debug(
-                                    "[StackHandler] _handle_create. Constraint solving. not {0}{2} serv_req[req] <= {1}{2} capabilities[req]".format(
-                                        serv_req[req], capabilities[req], req))
-                                potential_target = False
-                                break
-                        else:  # ATM we just allow all other requirements
-                            pass
-                    if should_restart:
-                        logger.debug(
-                            "[StackHandler] _handle_create. Constraint solving. Should restart. Exiting for infr_target in stack_infr loop")
-                        break
-                    if potential_target:
-                        logger.debug(
-                            "[StackHandler] _handle_create. Constraint solving. For service '{0}' adding potential target '{1}'".format(
-                                service, infr_target))
-                        merged_app_infr[service].update({infr_target: capabilities})
-                    else:
-                        logger.debug(
-                            "[StackHandler] _handle_create. Constraint solving. infr_target {0} NOT a potential target".format(
-                                infr_target))
-                if should_restart:
-                    logger.debug(
-                        "[StackHandler] _handle_create. Constraint solving. Should restart. Exiting for service in stack_app_template loop")
-                    break
+        try:
+            return self._create_stack_instance(item, opa_result['result'], stack_infr), 200
+        except NoOpaResultException:
+            return None, StatusCode.FORBIDDEN
 
-        logger.debug(
-            "[StackHandler] _handle_create. Constraint solving. Per-service done. merged_app_infr '{0}'. list_of_req_serv '{1}'. list_of_req_matching_zones '{2}'".format(
-                merged_app_infr, list_of_req_serv, list_of_req_matching_zones))
-        # Now we check if the merge satisfies all services and cross-services dependencies as well
-        merged_filtered_app_infr = self._filter_zones_req_application(list_of_req_matching_zones, merged_app_infr)
-        logger.debug("[StackHandler] _handle_create. Constraint solving. merged_filtered_app_infr '{0}'".format(
-            merged_filtered_app_infr))
-        if isinstance(merged_filtered_app_infr, str):
-            logger.debug(
-                "[StackHandler] _handle_create. Constraint solving failed. String was returned '{0}'".format(
-                    merged_filtered_app_infr))
-            return (merged_filtered_app_infr, 400)
-        if not all(False if merged_app_infr[service] == {} else True for service in list(merged_app_infr.keys())):
-            logger.debug("[StackHandler] _handle_create. Constraint solving failed. service with no target")
-            return "The given SIT cannot satisfy the SAT: there is an unsatisfied service with no infrastructure target", 400
-        if not all(req_serv in list(merged_app_infr.keys()) for req_serv in list_of_req_serv):
-            logger.debug(
-                "[StackHandler] _handle_create. Constraint solving failed. service with unresolved service dependency")
-            return "The given SIT cannot satisfy the SAT: there is an unsatisfied service with an unresolved service dependency", 400
-        logger.debug(
-            "[StackHandler] _handle_create. Constraint solving finished. merged_filtered_app_infr is realisible!'")
-        return self._create_stack_instance(item, merged_filtered_app_infr), 200
+
 
     ##TODO Deprecate in the future once OPA is up
     def _filter_zones_req_application(self, matching_zones_app_req, app_infr):
@@ -251,14 +137,14 @@ class StackHandler(Handler):
         return app_infr
 
     ##TODO can probably be offloaded to OPA and doesn't belong here in any case I think
-    def _update_infr_capabilities(self, stack_infr_template, update="auto"):
+    def _update_infr_capabilities(self, stack_infr_template, update="auto") -> StackInfrastructureTemplate:
         infr_targets = stack_infr_template.infrastructure_targets
         prev_infr_capabilities = stack_infr_template.infrastructure_capabilities
 
-        if update is "no":
+        if update == "no":
             logger.debug("[StackHandler] _update_infr_capabilities. update is '{0}', returning.".format(update))
             return stack_infr_template
-        elif update is "auto":
+        elif update == "auto":
             # TODO Implement. update (partly) when and if necessary: nothing is there yet or some time out value occured
             logger.debug(
                 "[StackHandler] _update_infr_capabilities. update is '{0}', evaluating condition.".format(update))
