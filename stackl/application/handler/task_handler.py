@@ -2,10 +2,10 @@ import logging
 
 from enums.cast_type import CastType
 from handler import Handler
-
-logger = logging.getLogger("STACKL_LOGGER")
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
+
+logger = logging.getLogger("STACKL_LOGGER")
 
 ##TODO at the moment this class is sparse but it will be necessary for rollback and failure mechanisms
 class TaskHandler(Handler):
