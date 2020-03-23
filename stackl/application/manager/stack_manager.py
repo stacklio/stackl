@@ -4,14 +4,15 @@ from agent_broker.agent_broker_factory import AgentBrokerFactory
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
 from handler.stack_handler import StackHandler
-
 from manager import Manager
+from opa_broker.opa_broker_factory import OPABrokerFactory
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-##TODO this class and its terminology need to be updated significantly. 
+
+##TODO this class and its terminology need to be updated significantly.
 class StackManager(Manager):
 
     def __init__(self, manager_factory):
@@ -24,6 +25,9 @@ class StackManager(Manager):
 
         self.task_broker_factory = TaskBrokerFactory()
         self.task_broker = self.task_broker_factory.get_task_broker()
+
+        self.opa_broker_factory = OPABrokerFactory()
+        self.opa_broker = self.opa_broker_factory.get_opa_broker()
 
     ##TODO: Deprecate the change_obj terminology
     def handle_task(self, task):
@@ -77,7 +81,7 @@ class StackManager(Manager):
         change_obj['action'] = stack_action
         change_obj['document'] = instance_data
         change_obj['type'] = 'stack_instance'
-        handler = StackHandler(self.manager_factory)
+        handler = StackHandler(self.manager_factory, self.opa_broker)
         merged_sat_sit_obj, status_code = handler.handle(change_obj)
         logger.debug("[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' "
                      .format(status_code,

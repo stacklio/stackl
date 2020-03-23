@@ -31,15 +31,15 @@ class CustomTaskBroker(TaskBroker):
         try:
             super().give_task(task_obj)
 
-            if getattr(task_obj, "topic", None) is not "result":
+            if getattr(task_obj, "topic", None) != "result":
                 self.add_task_to_queue(task_obj)
 
-            if task_obj.cast_type is "anycast":
+            if task_obj.cast_type == "anycast":
                 if getattr(task_obj, "return_channel", None) is None:
                     task_obj.return_channel = get_hostname()
                     logger.debug(
                         "[CustomTaskBroker] Task given. Added return_channel: '{0}'".format(task_obj.return_channel))
-                if getattr(task_obj, "send_channel", None) is "agent":
+                if getattr(task_obj, "send_channel", None) == "agent":
                     task_obj.send_channel = self.agent_broker.get_agent_for_task(task_obj)
                     logger.debug(
                         "[CustomTaskBroker] Task given. Added send_channel: '{0}'".format(task_obj.send_channel))

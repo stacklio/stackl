@@ -9,6 +9,8 @@ import time
 sys.path.append('/opt/stackl')
 
 from utils.general_utils import get_hostname  # pylint: disable=import-error
+from task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
+from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disable=import-error
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 import logging.config
 
@@ -21,8 +23,6 @@ formatter = logging.Formatter(
     "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-from task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
-from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disable=import-error
 
 
 class Worker:
@@ -60,13 +60,9 @@ class Worker:
             task_pop_thread.daemon = True  # ensures that this thread stops if worker stops
             task_pop_thread.start()
 
-            kill = False
-            while kill == False:
+            while task_pop_thread.is_alive():
                 time.sleep(10)
-                if task_pop_thread.isAlive() == False:
-                    logger.info("[Worker] task_pop_thread was found dead. Killing Worker.")
-                    kill = True
-                    break
+            logger.info("[Worker] task_pop_thread was found dead. Killing Worker.")
         except Exception as e:
             logger.error("[Worker] Exception occured in Worker: {0}".format(e))
 
