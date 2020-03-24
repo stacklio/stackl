@@ -50,6 +50,7 @@ task_broker_thread.start()
 
 opa_broker.start()
 
+
 logger.info("___________________ STARTING STACKL_API ____________________")
 
 # Add routes
