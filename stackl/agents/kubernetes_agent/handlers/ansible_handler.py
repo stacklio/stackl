@@ -10,6 +10,7 @@ from kubernetes.client.rest import ApiException
 
 from configurator_handler import ConfiguratorHandler
 
+
 class AnsibleHandler(ConfiguratorHandler):
     def __init__(self):
         config.load_incluster_config()

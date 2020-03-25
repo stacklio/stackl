@@ -1,6 +1,5 @@
-import logging
-
 from abc import ABC, abstractmethod
+
 
 class ConfiguratorHandler(ABC):
 
