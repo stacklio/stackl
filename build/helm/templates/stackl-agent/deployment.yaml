@@ -6,7 +6,7 @@ metadata:
     {{ include "stackl.labels" . | nindent 4 }}
     component: agent
 spec:
-  replicas: {{ .Values.stacklagent.replicas }}
+  replicas: {{ .Values.stacklAgent.replicas }}
   selector:
     matchLabels:
       {{- include "stackl.selectorLabels" . | nindent 6 }}
@@ -24,7 +24,7 @@ spec:
       serviceAccountName: {{ template "stackl.agent" . }}-stackl-agent
       containers:
         - name: stackl-agent
-          image: "{{ .Values.stacklagent.image }}"
+          image: "{{ .Values.stacklAgent.image }}"
           resources:
             requests:
               memory: 64Mi

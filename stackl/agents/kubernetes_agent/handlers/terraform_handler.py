@@ -10,6 +10,8 @@ import stackl_client
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
+from configurator_handler import ConfiguratorHandler
+
 
 class TerraformHandler(ConfiguratorHandler):
     def __init__(self):
@@ -54,7 +56,6 @@ class TerraformHandler(ConfiguratorHandler):
         env_list = [client.V1EnvVar(name="TF_VAR_stackl_stack_instance", value=stack_instance),
                     client.V1EnvVar(name="TF_VAR_stackl_service", value=service),
                     client.V1EnvVar(name="TF_VAR_stackl_host", value=os.environ['stackl_host'])]
-
 
         container = client.V1Container(name=container_name, image=container_image, env=env_list,
                                        volume_mounts=volume_mounts,
