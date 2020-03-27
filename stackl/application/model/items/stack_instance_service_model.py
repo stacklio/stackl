@@ -11,6 +11,6 @@ class ConnectionCredentials(BaseModel):
 class StackInstanceService(BaseModel):
     infrastructure_target: str = None
     hosts: List[str] = None
-    connection_credentials: ConnectionCredentials = None
     provisioning_parameters: Dict[str, Any] = None
+    provisioning_secrets: Dict[str, Any] = None
     status: List[FunctionalRequirementStatus] = None

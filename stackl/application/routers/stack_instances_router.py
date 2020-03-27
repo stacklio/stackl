@@ -25,7 +25,7 @@ task_broker = task_broker_factory.get_task_broker()
 
 class StackInstanceInvocation(BaseModel):
     params: Dict[str, Any] = {}
-    connection_credentials: ConnectionCredentials = None
+    secrets:  Dict[str, Any] = {}
     stack_infrastructure_template: str
     stack_application_template: str
     stack_instance_name: str

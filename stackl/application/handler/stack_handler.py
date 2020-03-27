@@ -50,7 +50,8 @@ class StackHandler(Handler):
             infra_target = targets[0]
             service_definition.infrastructure_target = infra_target
             capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[infra_target]
-            merged_capabilities = {**capabilities_of_target, **svc_doc.params}
+            merged_capabilities = {**capabilities_of_target["params"], **svc_doc.params}
+            merged_secrets = {**capabilities_of_target["secrets"], **svc_doc.secrets}
             for fr in svc_doc.functional_requirements:
                 fr_status = FunctionalRequirementStatus(
                     functional_requirement=fr,
@@ -60,9 +61,10 @@ class StackHandler(Handler):
                 service_definition_status.append(fr_status)
                 fr_doc = self.document_manager.get_functional_requirement(fr)
                 merged_capabilities = {**merged_capabilities, **fr_doc.params}
+                merged_secrets = {**merged_secrets, **fr_doc.secrets}
             service_definition.provisioning_parameters = {**merged_capabilities, **item['params']}
+            service_definition.provisioning_secrets = {**merged_secrets, **item['secrets']}
             service_definition.status = service_definition_status
-            service_definition.connection_credentials = item['connection_credentials']
             services[svc] = service_definition
             stack_instance_doc.services = services
         return stack_instance_doc
@@ -78,7 +80,6 @@ class StackHandler(Handler):
                 fr_doc = self.document_manager.get_functional_requirement(fr)
                 merged_capabilities = {**merged_capabilities, **fr_doc.params}
             stack_instance.services[svc].provisioning_parameters = {**merged_capabilities, **item['params']}
-            stack_instance.services[svc].connection_credentials = item['connection_credentials']
         return stack_instance
 
     ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
@@ -159,8 +160,14 @@ class StackHandler(Handler):
             location = self.document_manager.get_location(infr_target.location)
             zone = self.document_manager.get_zone(infr_target.zone)
             infr_target_capability = {**environment.params, **location.params, **zone.params}
+            infr_targets_secrets = {**environment.secrets, **location.secrets, **zone.secrets}
             infr_target_key = ".".join([environment.name, location.name, zone.name])
-            infr_targets_capabilities[infr_target_key] = infr_target_capability
+            infr_targets_capabilities[infr_target_key] = {}
+            infr_targets_capabilities[infr_target_key]["params"] = infr_target_capability
+            infr_targets_capabilities[infr_target_key]["secrets"] = infr_targets_secrets
+            infr_targets_capabilities[infr_target_key]["configs"] = environment.configs
+            infr_targets_capabilities[infr_target_key]["resources"] = {"cpu_cores": "100"}
+
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(get_timestamp())
         self.document_manager.write_stack_infrastructure_template(stack_infr_template)
