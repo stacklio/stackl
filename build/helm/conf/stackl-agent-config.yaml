@@ -8,5 +8,11 @@ terraform:
   variables:
     format: json
     filename: variables.json
+  service_account: stackl-agent-stackl-agent
+  secrets:
+    vault:
+      address: http://10.11.12.7:8200
+      contents: '{{ with secret "secret/data/infra/vmw" }}{{ .Data.data | toJSON }}{{ end }}'
+      destination: /tmp/vault-variables/credentials.json
   image_pull_secrets:
     - dome-nexus
