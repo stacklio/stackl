@@ -29,6 +29,9 @@ spec:
             requests:
               memory: 64Mi
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: stackl-agent-config
+              mountPath: /etc/stackl-agent
           env:
             - name: "stackl_host"
               value: "{{ template "stackl.rest" . }}:8080"
@@ -36,3 +39,7 @@ spec:
               value: "{{ .Release.Namespace }}"
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
+      volumes:
+        - name: stackl-agent-config
+          configMap:
+            name: stackl-agent-config

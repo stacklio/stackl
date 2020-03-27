@@ -119,7 +119,7 @@ class OPABroker:
         sit_as_opa_data = {"infrastructure_targets": targets_as_data}
         for target in sit_targets:
             target_data = {"resources": sit_doc.infrastructure_capabilities[target]["resources"],
-                           "config": sit_doc.infrastructure_capabilities[target]["config"]}
+                           "config": sit_doc.infrastructure_capabilities[target]["configs"]}
             targets_as_data[target] = target_data
         logger.debug("[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{0}'".format(sit_as_opa_data))
         return sit_as_opa_data
@@ -142,7 +142,7 @@ class OPABroker:
         sit_as_opa_data = {"infrastructure_targets": targets_as_data}
         for target in sit_targets:
             target_data = {"id": target, "resources": sit_doc.infrastructure_capabilities[target]["resources"],
-                           "config": sit_doc.infrastructure_capabilities[target]["config"]}
+                           "config": sit_doc.infrastructure_capabilities[target]["configs"]}
             targets_as_data.append(target_data)
         logger.debug("[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{0}'".format(sit_as_opa_data))
         return sit_as_opa_data
