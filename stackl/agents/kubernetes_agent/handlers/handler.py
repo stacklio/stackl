@@ -28,8 +28,10 @@ auto_auth {
 }
 
 template {
-  content = "{0}"
-  destination = "{1}"
+  contents = <<EOH
+  %s
+  EOH
+  destination = "%s"
 }
 """
 
@@ -64,18 +66,20 @@ class Handler:
         cm = client.V1ConfigMap()
         cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
         cm.data = {"vault-agent-config.hcl": cm_data}
+        return cm
 
     def create_job_object(self, name, container_image, stack_instance, service, cmd, args, namespace="stackl",
-                          container_name="jobcontainer", pull_secrets=[]):
-        body = self.create_kubernetes_job(args, cmd, container_image, container_name, name, namespace, pull_secrets)
+                          container_name="jobcontainer", pull_secrets=[], service_account="default"):
+        body = self.create_kubernetes_job(args, cmd, container_image, container_name, name, namespace, pull_secrets,
+                                          service_account)
         return body
 
     def add_vault_agent_init_container(self, body: client.V1Job, vault_config):
         vault_agent_env_list = [client.V1EnvVar(name="VAULT_ADDR", value=vault_config["address"])]
 
-        templated_vault_config = vault_agent_config.format(vault_config["content"], vault_config["destination"])
+        templated_vault_config = vault_agent_config % (vault_config["contents"], vault_config["destination"])
+        print(templated_vault_config)
         cm = self.create_agent_cm(body.metadata.name + "-vault-agent", body.metadata.namespace, templated_vault_config)
-
         volumes = []
 
         vault_variables_vol = client.V1Volume(name="vault-variables")
@@ -90,7 +94,7 @@ class Handler:
         volume_mounts = []
 
         volume_vault_config_mount = client.V1VolumeMount(name="vault-config", mount_path="/etc/vault-config")
-        volume_vault_variables_mount = client.V1VolumeMount(name="vault-variables", mount_path="/etc/vault-variables")
+        volume_vault_variables_mount = client.V1VolumeMount(name="vault-variables", mount_path="/tmp/vault-variables")
 
         volume_mounts.extend([volume_vault_config_mount, volume_vault_variables_mount])
 
@@ -101,15 +105,17 @@ class Handler:
                                                    env=vault_agent_env_list,
                                                    volume_mounts=volume_mounts,
                                                    args=["agent",
-                                                         "-config=/etc/vault-config/vault-agent-config.hcl"])
+                                                         "-config=/etc/vault-config/vault-agent-config.hcl",
+                                                         "-exit-after-auth"])
 
         body.spec.template.spec.containers[0].volume_mounts.append(volume_vault_variables_mount)
         body.spec.template.spec.volumes.extend(volumes)
         body.spec.template.spec.init_containers = [vault_agent_container]
+
         return body, cm
 
-
-    def create_kubernetes_job(self, args, cmd, container_image, container_name, name, namespace, pull_secrets):
+    def create_kubernetes_job(self, args, cmd, container_image, container_name, name, namespace, pull_secrets,
+                              service_account):
         body = client.V1Job(api_version="batch/v1", kind="Job")
         body.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
         body.status = client.V1JobStatus()
@@ -131,7 +137,8 @@ class Handler:
                                        args=args)
         secrets = [client.V1LocalObjectReference(name=s) for s in pull_secrets]
         template.template.spec = client.V1PodSpec(containers=[container], restart_policy='Never',
-                                                  image_pull_secrets=secrets, volumes=volumes)
+                                                  image_pull_secrets=secrets, volumes=volumes,
+                                                  service_account_name=service_account)
         body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
 
@@ -189,13 +196,17 @@ class Handler:
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace, cmd=tool_config["create_command"],
                                           args=tool_config["create_args"],
-                                          pull_secrets=tool_config["image_pull_secrets"])
-            if hasattr(tool_config["secrets"],'vault'):
-                #add init container
+                                          pull_secrets=tool_config["image_pull_secrets"],
+                                          service_account=tool_config["service_account"])
+            print("vault:")
+            print(tool_config["secrets"])
+            if 'vault' in tool_config["secrets"]:
+                print("vault configuration")
+                # add init container
                 body, vault_config_map = self.add_vault_agent_init_container(body, tool_config["secrets"]["vault"])
-                print("body and cm: %s\n%s" % body, vault_agent_config)
                 try:
-                    api_response = self.api_instance_core.create_namespaced_config_map(stackl_namespace, vault_config_map)
+                    api_response = self.api_instance_core.create_namespaced_config_map(stackl_namespace,
+                                                                                       vault_config_map)
                 except ApiException as e:
                     print("Exception when calling V1Api->create_namespaced_configmap: %s\n" % e)
         else:
