@@ -21,4 +21,3 @@ cli.add_command(apply)
 cli.add_command(create)
 cli.add_command(update)
 cli.add_command(edit)
-

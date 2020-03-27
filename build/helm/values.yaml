@@ -18,6 +18,7 @@ agentBroker:
 stacklRest:
   image: stacklio/stackl-rest:dev
   name: stackl-rest
+  serviceType: LoadBalancer
   hostname: stackl.dome.dev
   replicaCount: 1
 

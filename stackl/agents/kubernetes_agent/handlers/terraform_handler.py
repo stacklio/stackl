@@ -10,10 +10,8 @@ import stackl_client
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
-from configurator_handler import ConfiguratorHandler
-
-
-class TerraformHandler(ConfiguratorHandler):
+#TODO implement abstract
+class TerraformHandler:
     def __init__(self):
         config.load_incluster_config()
         self.configuration = kubernetes.client.Configuration()
@@ -108,11 +106,11 @@ class TerraformHandler(ConfiguratorHandler):
                 ready = True
         return api_response
 
-    def get_hosts(self, stack_instance):
-        # Get the statefile
-        r = requests.get("http://" + os.environ['stackl_host'] + '/terraform/' + stack_instance)
-        statefile = r.json()
-        return statefile["outputs"]["hosts"]["value"]
+    # def get_hosts(self, stack_instance):
+    #     # Get the statefile
+    #     r = requests.get("http://" + os.environ['stackl_host'] + '/terraform/' + stack_instance)
+    #     statefile = r.json()
+    #     return statefile["outputs"]["hosts"]["value"]
 
     def handle(self, invocation, action):
         print(invocation)
@@ -122,10 +120,8 @@ class TerraformHandler(ConfiguratorHandler):
         print("create cm")
         config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
         if action == "create" or action == "update":
-            print("update")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
-            print("bodyke")
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
@@ -140,6 +136,6 @@ class TerraformHandler(ConfiguratorHandler):
         api_response = self.wait_for_job(name, stackl_namespace)
         if api_response.status.succeeded == 1:
             print("job succeeded")
-            return 0, "", self.get_hosts(invocation.stack_instance)
+            return 0, "", None
         else:
             return 1, "Still need proper output", None
