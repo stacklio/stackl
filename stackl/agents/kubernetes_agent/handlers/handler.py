@@ -60,6 +60,11 @@ class Handler:
             cm.data = {variables_config["filename"]: json.dumps(variables)}
         return cm
 
+    def create_agent_cm(self, name, namespace, cm_data):
+        cm = client.V1ConfigMap()
+        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+        cm.data = {"vault-agent-config.hcl": cm_data}
+
     def create_job_object(self, name, container_image, stack_instance, service, cmd, args, namespace="stackl",
                           container_name="jobcontainer", pull_secrets=[]):
         body = self.create_kubernetes_job(args, cmd, container_image, container_name, name, namespace, pull_secrets)
@@ -69,11 +74,40 @@ class Handler:
         vault_agent_env_list = [client.V1EnvVar(name="VAULT_ADDR", value=vault_config["address"])]
 
         templated_vault_config = vault_agent_config.format(vault_config["content"], vault_config["destination"])
+        cm = self.create_agent_cm(body.metadata.name + "-vault-agent", body.metadata.namespace, templated_vault_config)
+
+        volumes = []
+
+        vault_variables_vol = client.V1Volume(name="vault-variables")
+        empty_dir = client.V1EmptyDirVolumeSource()
+        empty_dir.medium = "Memory"
+
+        vault_config_map = client.V1ConfigMapVolumeSource()
+        vault_config_map.name = cm.metadata.name
+        vol_vault_config = client.V1Volume(name="vault-config")
+        vol_vault_config.config_map = vault_config_map
+
+        volume_mounts = []
+
+        volume_vault_config_mount = client.V1VolumeMount(name="vault-config", mount_path="/etc/vault-config")
+        volume_vault_variables_mount = client.V1VolumeMount(name="vault-variables", mount_path="/etc/vault-variables")
+
+        volume_mounts.extend([volume_vault_config_mount, volume_vault_variables_mount])
+
+        volumes.extend([vol_vault_config, vault_variables_vol])
+
         vault_agent_container = client.V1Container(name="vault-agent",
                                                    image="vault",
                                                    env=vault_agent_env_list,
+                                                   volume_mounts=volume_mounts,
                                                    args=["agent",
-                                                         "-config=/etc/vault/vault-agent-config.hcl"])
+                                                         "-config=/etc/vault-config/vault-agent-config.hcl"])
+
+        body.spec.template.spec.containers[0].volume_mounts.append(volume_vault_variables_mount)
+        body.spec.template.spec.volumes.extend(volumes)
+        body.spec.template.spec.init_containers = [vault_agent_container]
+        return body, cm
+
 
     def create_kubernetes_job(self, args, cmd, container_image, container_name, name, namespace, pull_secrets):
         body = client.V1Job(api_version="batch/v1", kind="Job")
@@ -158,7 +192,12 @@ class Handler:
                                           pull_secrets=tool_config["image_pull_secrets"])
             if hasattr(tool_config["secrets"],'vault'):
                 #add init container
-                body = self.add_vault_agent_init_container(body, tool_config["secrets"]["vault"])
+                body, vault_config_map = self.add_vault_agent_init_container(body, tool_config["secrets"]["vault"])
+                print("body and cm: %s\n%s" % body, vault_agent_config)
+                try:
+                    api_response = self.api_instance_core.create_namespaced_config_map(stackl_namespace, vault_config_map)
+                except ApiException as e:
+                    print("Exception when calling V1Api->create_namespaced_configmap: %s\n" % e)
         else:
             body = self.delete_job_object(name, container_image, invocation.stack_instance, invocation.service,
                                           namespace=stackl_namespace)
