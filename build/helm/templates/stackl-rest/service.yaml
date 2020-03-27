@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "stackl.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.stacklRest.serviceType }}
   ports:
     - port: 8080
       targetPort: 80

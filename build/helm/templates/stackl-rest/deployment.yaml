@@ -52,7 +52,7 @@ spec:
             - name: "STACKL_AGENT_HOST"
               value: "{{ template "stackl.agent" . }}"
             - name: "STACKL_OPA_HOST"
-              value: "{{ template "stackl.opa" . }}"
+              value: "{{ template "stackl.opa" . }}:8181"
             - name: "WEB_CONCURRENCY"
               value: "1"
             - name: "PYTHONUNBUFFERED"
