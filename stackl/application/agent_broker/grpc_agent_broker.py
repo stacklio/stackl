@@ -17,7 +17,7 @@ class GrpcAgentBroker(AgentBroker):
 
         stackl_agent = get_config_key("AGENT_HOST")
         self.channel = grpc.insecure_channel(str(stackl_agent))
-        self.stub = protos.agent_pb2_grpc.StacklAgentStub(self.channel) #TODO This throws an error in vscode: Module 'protos' has no 'agent_pb2_grpc' member
+        self.stub = protos.agent_pb2_grpc.StacklAgentStub(self.channel)
 
     def start(self):
         logger.info("[GrpcAgentBroker] Starting GrpcAgentBroker")
@@ -25,14 +25,13 @@ class GrpcAgentBroker(AgentBroker):
     def get_agent_for_task(self, task):
         return "gRPC"
 
-    def send_obj_to_agent(self, agent_connect_info, obj):
+    def send_job_to_agent(self, agent_connect_info, job):
         logger.info("[GrpcAgentBroker] sending automation message to channel {0}".format(self.channel))
-        result = self.stub.InvokeAutomation(obj)
+        result = self.stub.InvokeAutomation(job)
         # logger.info("[GrpcAgentBroker] received result: {0}".format(result))
         return result
 
-    #TODO bad name, what does it process? to what does it process it to?
-    def process_result(self, stack_instance, result, document_manager):
+    def process_job_result(self, stack_instance, result, document_manager):
         logger.info("[GrpcAgentBroker] processing result: {0}".format(result))
         sts = result.automation_result
         stack_instance.services[sts.service].status = []
@@ -55,11 +54,9 @@ class GrpcAgentBroker(AgentBroker):
                 stack_instance.services[sts.service].hosts.append(h)
         document_manager.write_stack_instance(stack_instance)
 
-    #TODO change_obj is no longer a good name. This should be adjusted.
-    def create_change_obj(self, stack_instance, action, document_manager):
+    def create_job_for_agent(self, stack_instance, action, document_manager):
         logger.debug(
-            "[GrpcAgentBroker] create_change_obj. For stack_instance '{0}' and action '{1}'".format(stack_instance,
-                                                                                                     action))
+            "[GrpcAgentBroker] create_job_for_agent. For stack_instance '{0}' and action '{1}'".format(stack_instance, action))
         change_obj = []
         for service in stack_instance.services:
             service_name = service
@@ -69,21 +66,21 @@ class GrpcAgentBroker(AgentBroker):
             for fr in service_doc["functional_requirements"]:
                 fr_doc = document_manager.get_document(type="functional_requirement", document_name=fr)
                 logger.debug(
-                    "[GrpcAgentBroker] create_change_obj. Retrieved fr '{0}' from service_doc '{1}''".format(fr_doc,
+                    "[GrpcAgentBroker] create_job_for_agent. Retrieved fr '{0}' from service_doc '{1}''".format(fr_doc,
                                                                                                            service_doc))
-                automation_message = protos.agent_pb2.AutomationMessage()  # TODO This throws an error in vscode: Module 'protos' has no 'agent_pb2' member
+                automation_message = protos.agent_pb2.AutomationMessage()
                 automation_message.action = action
                 invoc = automation_message.invocation
                 invoc.functional_requirement = fr
                 invoc.image = fr_doc['invocation']['image']
-                logger.debug("[GrpcAgentBroker] create_change_obj. service debug '{0}'".format(
+                logger.debug("[GrpcAgentBroker] create_job_for_agent. service debug '{0}'".format(
                     stack_instance.services[service_name]))
                 invoc.infrastructure_target = stack_instance.services[service_name].infrastructure_target
                 invoc.stack_instance = stack_instance.name
                 invoc.tool = fr_doc['invocation']['tool']
                 invoc.service = service_name
                 logger.debug(
-                    "[GrpcAgentBroker] create_change_obj. Added fr '{0}' and invoc '{1}'"
+                    "[GrpcAgentBroker] create_job_for_agent. Added fr '{0}' and invoc '{1}'"
                         .format(fr_doc, invoc.SerializeToString()))
                 change_obj.append(automation_message)
         return change_obj
