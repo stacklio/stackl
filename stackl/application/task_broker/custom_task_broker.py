@@ -7,13 +7,14 @@ from utils.general_utils import get_hostname
 
 logger = logging.getLogger("STACKL_LOGGER")
 
+##TODO WIP for during the Task Rework
+
 class CustomTaskBroker(TaskBroker):
 
     def __init__(self):
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
-##TODO Better naming
     def start_stackl(self, subscribe_channels=[], agent_broker=None):
         super().start_stackl(subscribe_channels, agent_broker)
         logger.debug("[CustomTaskBroker] Starting CustomTaskBroker for STACKL.")

@@ -77,8 +77,7 @@ class Worker:
 
             logger.info("[Worker] Popped item. Type '{0}'. Item: '{1}'".format(type(task), task))
 
-            task_attr = json.loads(task)  # TODO: do we pass tasks or do we pass dictionary?
-            # logger.info("[Worker] Item as task_attr:  '{0}'. Type: '{1}'".format(task_attr, task_attr["topic"]))
+            task_attr = json.loads(task)
 
             if task_attr["topic"] == "document_task":
                 logger.info("[Worker] Document_Task with subtasks '{0}'".format(task_attr["subtasks"]))
@@ -105,8 +104,7 @@ class Worker:
 
     def exit_handler(self, signum=None, frame=None):
         logger.info("[Worker] Signal handler called with signal {0}".format(str(signum)))
-        logger.info(
-            "[Worker] flushing queue")  # TODO: Is this still needed? Will we ever have tasks for specific workers so that they need to resubmit these tasks when they die?
+        logger.info("[Worker] flushing queue")
         # tasks = self.queue.lrange('task_' + self.hostname + ':process', 0 , -1)
         # if tasks:
         #     for task in tasks:
