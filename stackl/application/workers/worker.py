@@ -34,7 +34,6 @@ class Worker:
         self.stack_manager = self.manager_factory.get_stack_manager()
         self.document_manager = self.manager_factory.get_document_manager()
         self.user_manager = self.manager_factory.get_user_manager()
-        self.item_manager = self.manager_factory.get_item_manager()
 
         self.agent_broker_factory = AgentBrokerFactory()
         self.agent_broker = self.agent_broker_factory.get_agent_broker()

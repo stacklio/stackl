@@ -78,7 +78,6 @@ class DocumentManager(Manager):
         store_response = self.store.put(base_document.dict())
         return store_response.content
 
-    ##TODO methods like these introduce strong coupling - better is get/write document and analysis on the document to then process it correctly.
     def get_policy(self, policy_name):
         """gets a Policy Object from the store"""
         store_response = self.store.get(type="policy", document_name=policy_name, category="items")
