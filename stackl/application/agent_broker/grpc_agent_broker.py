@@ -57,7 +57,7 @@ class GrpcAgentBroker(AgentBroker):
     def create_job_for_agent(self, stack_instance, action, document_manager):
         logger.debug(
             "[GrpcAgentBroker] create_job_for_agent. For stack_instance '{0}' and action '{1}'".format(stack_instance, action))
-        change_obj = []
+        job = []
         for service in stack_instance.services:
             service_name = service
             logger.debug("[GrpcAgentBroker] service name: '{0}".format(service_name))
@@ -82,5 +82,5 @@ class GrpcAgentBroker(AgentBroker):
                 logger.debug(
                     "[GrpcAgentBroker] create_job_for_agent. Added fr '{0}' and invoc '{1}'"
                         .format(fr_doc, invoc.SerializeToString()))
-                change_obj.append(automation_message)
-        return change_obj
+                job.append(automation_message)
+        return job
