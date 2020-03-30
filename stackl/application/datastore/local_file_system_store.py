@@ -57,7 +57,7 @@ class LocalFileSystemStore(DataStore):
         logger.debug("[LocalFileSystemStore] StoreResponse for get: " + str(response))
         return response
 
-    def get_terraform_statefile(self, name):
+    def get_configurator_file(self, name):
         document_key = self.datastore_url + 'statefiles/' + name + ".json"
         try:
             with open(document_key, 'r') as storedfile:
@@ -67,7 +67,7 @@ class LocalFileSystemStore(DataStore):
         logger.debug("[LocalFileSystemStore] StoreResponse for get: " + str(response))
         return response
 
-    def put_terraform_statefile(self, name, content):
+    def put_configurator_file(self, name, content):
         document_key = self.datastore_url + 'statefiles/' + name + ".json"
         with open(document_key, 'w+') as outfile:
             json.dump(content, outfile, sort_keys=True, indent=4, separators=(',', ': '))
@@ -76,7 +76,7 @@ class LocalFileSystemStore(DataStore):
         logger.debug("[LocalFileSystemStore] StoreResponse for put: " + str(response))
         return response
 
-    def delete_terraform_statefile(self, name, statefile):
+    def delete_configurator_file(self, name, statefile):
         document_key = self.datastore_url + 'statefiles/' + name + ".json"
         os.remove(document_key)
         response = self._create_store_response(status_code=200, content={})

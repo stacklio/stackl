@@ -15,16 +15,16 @@ class DataStore(ABC):
     def delete(self, **keys):
         pass
 
-    @abstractmethod  # TODO Technology dependency
-    def get_terraform_statefile(self, statefile_name):
+    @abstractmethod 
+    def get_configurator_file(self, statefile_name):
         pass
 
-    @abstractmethod #TODO Technology dependency
-    def put_terraform_statefile(self, name, statefile):
+    @abstractmethod
+    def put_configurator_file(self, name, statefile):
         pass
 
-    @abstractmethod  # TODO Technology dependency
-    def delete_terraform_statefile(self, name, statefile):
+    @abstractmethod
+    def delete_configurator_file(self, name, statefile):
         pass
 
     def _create_store_response(self, status_code=400, reason=None, content=None):

@@ -11,7 +11,7 @@ import globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
-    stack_infrastructure_templates_router, about_router, terraform_router, policies_router
+    stack_infrastructure_templates_router, about_router, configurator_router, policies_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
@@ -93,11 +93,10 @@ app.include_router(
     prefix="/stack_infrastructure_templates",
     tags=["stack_infrastructure_templates"]
 )
-#TODO Technological dependency
 app.include_router(
-    terraform_router.router,
-    prefix="/terraform",
-    tags=["terraform"]
+    configurator_router.router,
+    prefix="/configurator",
+    tags=["configurator"]
 )
 app.include_router(
     about_router.router,

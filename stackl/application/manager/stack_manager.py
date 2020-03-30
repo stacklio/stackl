@@ -38,15 +38,15 @@ class StackManager(Manager):
                 logger.debug("[StackManager] handling subtask '{0}'".format(subtask))
                 if subtask == "CREATE":
                     (stack_instance, status_code) = self.process_stack_request(task["json_data"], "create")
-                    change_obj = self.agent_broker.create_change_obj(stack_instance, "create", self.document_manager)
+                    change_obj = self.agent_broker.create_job_for_agent(stack_instance, "create", self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "UPDATE":
                     (stack_instance, status_code) = self.process_stack_request(task["json_data"], "update")
-                    change_obj = self.agent_broker.create_change_obj(stack_instance, "update", self.document_manager)
+                    change_obj = self.agent_broker.create_job_for_agent(stack_instance, "update", self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "DELETE":
                     (stack_instance, status_code) = self.process_stack_request(task["json_data"], "delete")
-                    change_obj = self.agent_broker.create_change_obj(stack_instance, "delete", self.document_manager)
+                    change_obj = self.agent_broker.create_job_for_agent(stack_instance, "delete", self.document_manager)
                     stack_instance.deleted = True
                     self.document_manager.write_stack_instance(stack_instance)
                 else:
@@ -57,8 +57,8 @@ class StackManager(Manager):
                         "[StackManager] Processing subtask succeeded. Sending to agent with connect_info '{0}' the stack_instance '{1}'".format(
                             agent_connect_info, change_obj))
                     for am in change_obj:
-                        result = self.agent_broker.send_obj_to_agent(agent_connect_info, am)
-                        self.agent_broker.process_result(stack_instance, result, self.document_manager)
+                        result = self.agent_broker.send_job_to_agent(agent_connect_info, am)
+                        self.agent_broker.process_job_result(stack_instance, result, self.document_manager)
                     logger.debug("[StackManager] Sent to agent. Result '{0}'".format(result))
                 else:
                     raise Exception("[StackManager] Processing subtask failed. Status_code '{0}'".format(status_code))

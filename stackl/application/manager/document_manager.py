@@ -21,7 +21,6 @@ from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 
-##TODO: strong link with internal implementation
 class DocumentManager(Manager):
 
     def __init__(self, manager_factory):
@@ -173,19 +172,19 @@ class DocumentManager(Manager):
         store_response = self.store.put(fr.dict())
         return store_response.content
 
-    def get_terraform_statefile(self, statefile_name):
-        """gets a terraform statefile from the store"""
-        store_response = self.store.get_terraform_statefile(statefile_name)
+    def get_configurator_file(self, statefile_name):
+        """gets a configurator file from the store"""
+        store_response = self.store.get_configurator_file(statefile_name)
         return store_response.content
 
-    def write_terraform_statefile(self, name, statefile):
-        """writes a terraform statefile to the store
+    def write_configurator_file(self, name, statefile):
+        """writes a configurator statefile to the store
         """
-        store_response = self.store.put_terraform_statefile(name, statefile)
+        store_response = self.store.put_configurator_file(name, statefile)
         return store_response.content
 
-    def delete_terraform_statefile(self, statefile_name):
-        store_response = self.store.delete_terraform_statefile(statefile_name)
+    def delete_configurator_file(self, statefile_name):
+        store_response = self.store.delete_configurator_file(statefile_name)
         return store_response.content
 
     def write_document(self, **keys):
