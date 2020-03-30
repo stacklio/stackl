@@ -10,7 +10,7 @@ from utils.general_utils import get_timestamp
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-
+#TODO move
 class NoOpaResultException(Exception):
     pass
 
@@ -21,7 +21,6 @@ class StackHandler(Handler):
         super(StackHandler, self).__init__(manager_factory)
         self.document_manager = manager_factory.get_document_manager()
         self.opa_broker = opa_broker
-        self.hiera = manager_factory.get_item_manager()
 
     def handle(self, item):
         action = item['action']
