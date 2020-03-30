@@ -13,7 +13,7 @@ class MessageChannel(ABC):
     def start_pubsub(self, task_handler, subscribe_channels):
         pass
 
-    # topics can be: query, result or ping
+    # topics can be: report, result or ping
     @abstractmethod
     def publish(self, task):
         pass

@@ -22,7 +22,7 @@ class TaskHandler(Handler):
 
     def handle(self, task):
         result = None
-        if task.topic == 'query':  # TODO This is old stackl terminology, independent of OPA Queries
+        if task.topic == 'report':  # TODO This is old stackl terminology, independent of OPA Queries
             if task.get_attribute('function'):
                 result = getattr(self.call_object, task.get_attribute('function'))(*task.get_attribute('args'))
             else:
