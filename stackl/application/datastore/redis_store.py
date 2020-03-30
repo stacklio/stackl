@@ -40,7 +40,7 @@ class RedisStore(DataStore):
         logger.debug("[RedisStore] StoreResponse for get: " + str(response))
         return response
 
-    def get_terraform_statefile(self, name):
+    def get_configurator_file(self, name):
         document_key = 'statefiles/' + name
         redis_value = self.redis.get(document_key)
         if redis_value is None:
@@ -50,14 +50,14 @@ class RedisStore(DataStore):
         logger.debug("[RedisStore] StoreResponse for get: " + str(response))
         return response
 
-    def put_terraform_statefile(self, name, content):
+    def put_configurator_file(self, name, content):
         document_key = 'statefiles/' + name
         self.redis.set(document_key, json.dumps(content))
         response = self._create_store_response(status_code=StatusCode.CREATED, content=json.loads(self.redis.get(document_key)))
         logger.debug("[RedisStore] StoreResponse for put: " + str(response))
         return response
 
-    def delete_terraform_statefile(self, name):
+    def delete_configurator_file(self, name):
         document_key = 'statefiles/' + name
         self.redis.delete(document_key)
         response = self._create_store_response(status_code=200, content={})

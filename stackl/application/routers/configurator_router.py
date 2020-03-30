@@ -14,10 +14,10 @@ document_manager = ManagerFactory().get_document_manager()
 
 
 @router.get('/{state}')
-def get_terraform_statefile(state: str):
-    """Returns a terraform statefile"""
+def get_configurator_file(state: str):
+    """Returns a configurator statefile"""
     try:
-        document = document_manager.get_terraform_statefile(state)
+        document = document_manager.get_configurator_file(state)
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
@@ -28,12 +28,12 @@ def get_terraform_statefile(state: str):
 
 
 @router.post('/{state}')
-def post_terraform_statefile(state: str, body: Any = Body(...)):
-    document = document_manager.write_terraform_statefile(state, body)
+def post_configurator_file(state: str, body: Any = Body(...)):
+    document = document_manager.write_configurator_file(state, body)
     return document
 
 
 @router.delete('/{state}', status_code=200)
-def delete_terraform_statefile(state: str):
-    document_manager.delete_terraform_statefile(state)
+def delete_configurator_file(state: str):
+    document_manager.delete_configurator_file(state)
     return {"message": "Deleted document"}
