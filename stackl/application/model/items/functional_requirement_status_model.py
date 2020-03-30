@@ -1,12 +1,5 @@
-from enum import IntEnum
-
+from enums.status_enum import Status
 from pydantic import BaseModel
-
-#TODO Bring this to the enum package
-class Status(IntEnum):
-    in_progress = 1
-    ready = 2
-    failed = 3
 
 class FunctionalRequirementStatus(BaseModel):
     functional_requirement: str
