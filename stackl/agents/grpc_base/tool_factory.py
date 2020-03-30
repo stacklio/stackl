@@ -12,5 +12,5 @@ class ToolFactory:
             return AnsibleHandler()
         elif tool == "packer":
             return PackerHandler()
-        else
+        else:
             raise ValueError("[ToolFactory] gTool '{}' is not recognized".format(tool))
