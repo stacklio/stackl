@@ -13,11 +13,7 @@ class TaskBrokerFactory(metaclass=Singleton):
         logger.info("[TaskBrokerFactory] Creating Task Broker with type: {}".format(self.task_broker_type))
         self.task_broker = None
 
-        if self.task_broker is not None:
-            pass
-        elif self.task_broker_type == "Celery": ##TODO Example. Might not be the first target
-            pass
-        elif self.task_broker_type == "Custom":
+        if self.task_broker_type == "Custom":
             from task_broker.custom_task_broker import CustomTaskBroker
             self.task_broker = CustomTaskBroker()
         else:  # assume local custom redis broker
