@@ -19,8 +19,6 @@ First off, thank you for considering to contribute to STACKL. As an open source 
 - [Making a contribution](#making-a-contribution)
   - [Submitting a contribution](#submitting-a-contribution)
   - [Submitting an issue fix](#submitting-an-issue-fix)
-  - [Submitting a bug report](#submitting-a-bug-report)
-  - [Submitting a feature or enhancement suggestion](#submitting-a-feature-or-enhancement-suggestion)
 - [Styleguides](#styleguides)
 
 Why they should read this
@@ -63,14 +61,21 @@ To install STACKL and start having a look at the codebase and tinkering around w
 
 ## Submitting a contribution
 
+Small bugfixes can be submitted directly by making a Pull Request. We try to review those quickly.
+
+For larger changes or more difficult bugs, open an issue on GitHub with the following info:
+
+- Use case explaining the need for this feature
+- Description of what needs to changes
+- For bugfixes: steps to reproduce the issue
+- For improvements: Alternative solution or approach
+
+If you are not sure if something is a large change, please feel free to just submit an issue on GitHub.
+
 ## Submitting an issue fix
 
 Please go through existing issues and pull requests to check if somebody else is already working on it.
 
 Also, make sure to run the tests and lint the code before you commit your changes.
-
-## Submitting a bug report
-
-## Submitting a feature or enhancement suggestion
 
 # Styleguides

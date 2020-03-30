@@ -94,6 +94,7 @@ If everything worked fine, you should be able to access the rest-api at
 1. Develop your changes and regularly update your local branch against upstream.
 
     - Always rebase with the latest master before making a pull request
+    - Preferably make all your changes in one commit, if you need multiple commits for some reason please explain why
 
 1. Commit changes and push to your fork.
 
