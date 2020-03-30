@@ -2,11 +2,11 @@
     "name": "database",
     "type": "service",
     "category": "items",
-    "functional_requirements": ["alpine"],
+    "functional_requirements": ["postgresql"],
     "resource_requirements": {
-        "CPU": "3GHz",
-        "RAM": "4GB",
-        "DISK": "10GB"
+        "cpu_cores": "1",
+        "memory": "2GB",
+        "disk": "20GB"
     },
     "params": {
         "webserver": "CouchDB"
