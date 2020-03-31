@@ -1,0 +1,19 @@
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    name: "Python ${{ matrix.python-version }}"
+    runs-on: [ubuntu-18.04]
+    env:
+      USING_COVERAGE: '3.6,3.8'
+
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.8", "pypy3"]
+    steps:
+    - name: GitHub Action for pylint
+      uses: cclauss/GitHub-Action-for-pylint@0.7.0
