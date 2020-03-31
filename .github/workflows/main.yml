@@ -1,8 +1,9 @@
 
 on:
   push:
-    branches:
-      - "*"
+    paths:
+    - "**/*"
+
 
 jobs:
   test:
