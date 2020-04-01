@@ -16,7 +16,7 @@ from agent_broker import AgentBroker
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-#TODO Redo the CustomAgentBroker to WebsocketBroker
+#TODO WIP Redo the CustomAgentBroker to WebsocketBroker and clean
 class CustomAgentBroker(AgentBroker):
     agent_connections = []
 

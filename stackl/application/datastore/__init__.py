@@ -16,15 +16,15 @@ class DataStore(ABC):
         pass
 
     @abstractmethod 
-    def get_configurator_file(self, statefile_name):
+    def get_configurator_file(self, configurator_file):
         pass
 
     @abstractmethod
-    def put_configurator_file(self, name, statefile):
+    def put_configurator_file(self, name, configurator_file):
         pass
 
     @abstractmethod
-    def delete_configurator_file(self, name, statefile):
+    def delete_configurator_file(self, configurator_file):
         pass
 
     def _create_store_response(self, status_code=400, reason=None, content=None):
