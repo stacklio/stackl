@@ -16,5 +16,5 @@ jobs:
       matrix:
         python-version: ["3.6", "3.7", "3.8", "pypy3"]
     steps:
-    - name: GitHub Action for pylint
-      uses: cclauss/GitHub-Action-for-pylint@0.7.0
+      - run: pip install pylint  # -r requirements.txt
+      - run: pylint stackl/**.py
