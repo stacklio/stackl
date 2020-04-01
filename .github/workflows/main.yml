@@ -2,7 +2,7 @@
 on:
   push:
     paths:
-    - "**/*"
+    - "**/*.py"
 
 
 jobs:
@@ -16,5 +16,10 @@ jobs:
       matrix:
         python-version: ["3.6", "3.7", "3.8", "pypy3"]
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
       - run: pip install pylint  # -r requirements.txt
       - run: pylint stackl/**.py
