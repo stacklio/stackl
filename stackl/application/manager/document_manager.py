@@ -14,12 +14,14 @@ from model.configs.zone_model import Zone
 from model.configs.policy_model import Policy
 from model.items.service_model import Service
 from model.items.stack_instance_model import StackInstance
-
-logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
+
+
+logger = logging.getLogger("STACKL_LOGGER")
+
 
 class DocumentManager(Manager):
 
@@ -30,10 +32,10 @@ class DocumentManager(Manager):
         self.task_broker = self.task_broker_factory.get_task_broker()
 
     def handle_task(self, document_task):
-        logger.debug("[DocumentManager] handling subtasks of task_obj {0}".format(document_task))
+        logger.debug(f"[DocumentManager] handling subtasks of task_obj {document_task}")
         try:
             for subtask in document_task["subtasks"]:
-                logger.debug("[DocumentManager] handling subtask '{0}'".format(subtask))
+                logger.debug(f"[DocumentManager] handling subtask '{subtask}'")
                 if subtask == "POST_DOCUMENT":
                     document = document_task["document"]
                     status_code = self.write_document(document_name=document['name'], type=document['type'],
@@ -48,7 +50,7 @@ class DocumentManager(Manager):
 
                 if status_code not in {StatusCode.OK, StatusCode.CREATED}:
                     raise Exception(
-                        "[DocumentManager] Processing subtask failed. Status_code '{0}'".format(status_code))
+                        f"[DocumentManager] Processing subtask failed. Status_code '{status_code}'")
             logger.debug("[DocumentManager] Succesfully handled document task. Creating ResultTask.")
             self.task_broker.give_task(ResultTask({
                 'channel': document_task['return_channel'],
@@ -56,22 +58,22 @@ class DocumentManager(Manager):
                 'cast_type': CastType.BROADCAST.value,
                 'source_task': document_task
             }))  # this way the STACKL broker is notified of the result and wheter he should remove the task from the task queue
-        except Exception as e:
-            logger.error("[DocumentManager] Error with processing task. Error: '{0}'".format(e))
+        except Exception as e: #TODO improve the Exception system in STACKL. TBD as part of Task rework
+            logger.error(f"[DocumentManager] Error with processing task. Error: '{e}'")
 
     def get_document(self, **keys):
-        logger.debug("[DocumentManager] get_document. Keys '{0}'".format(keys))
+        logger.debug(f"[DocumentManager] get_document. Keys '{keys}'")
         keys = self._process_document_keys(keys)
-        logger.debug("[DocumentManager] get_document. Post Process Keys '{0}'".format(keys))
+        logger.debug(f"[DocumentManager] get_document. Post Process Keys '{keys}'")
         try:
             store_response = self.store.get(**keys)
             if store_response.status_code == StatusCode.NOT_FOUND:
                 return {}
             else:
                 return store_response.content
-        except Exception as e:
+        except Exception as e: #TODO improve the Exception system in STACKL. TBD as part of Task rework
             logger.error(
-                "[DocumentManager] Exception occured in get_document: {0}. Returning empty object".format(str(e)))
+                f"[DocumentManager] Exception occured in get_document: {e}. Returning empty object")
             return None
 
     def write_base_document(self, base_document: BaseDocument):
@@ -187,7 +189,7 @@ class DocumentManager(Manager):
         return store_response.content
 
     def write_document(self, **keys):
-        logger.debug("[DocumentManager] write_document.  Keys '{0}'".format(keys))
+        logger.debug(f"[DocumentManager] write_document.  Keys '{keys}'")
         keys = self._process_document_keys(keys)
 
         document = keys.get("file")
@@ -202,15 +204,15 @@ class DocumentManager(Manager):
 
         if store_response.status_code == StatusCode.NOT_FOUND:
             logger.debug(
-                "[DocumentManager] No document found yet. Creating document with data: " + str(json.dumps(document)))
+                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}")
             store_response = self.store.put(document)
 
             return store_response.status_code
         else:
             prev_document_string = json.dumps(prev_document)
-            logger.debug("[DocumentManager] Updating document with original contents: " + prev_document_string)
+            logger.debug(f"[DocumentManager] Updating document with original contents: {prev_document_string}")
             doc_new_string = json.dumps(document)
-            logger.debug("[DocumentManager] Updating document with modified contents: " + doc_new_string)
+            logger.debug(f"[DocumentManager] Updating document with modified contents: {doc_new_string}")
             if (prev_document_string == doc_new_string):
                 logger.debug("[DocumentManager] Original document and new document are the same! NOT updating")
             else:
@@ -218,7 +220,7 @@ class DocumentManager(Manager):
                 return store_response.status_code
 
     def remove_document(self, **keys):
-        logger.debug("[DocumentManager] Remove_document. Keys '{0}'".format(keys))
+        logger.debug(f"[DocumentManager] Remove_document. Keys '{keys}'")
         keys = self._process_document_keys(keys)
 
         logger.debug("[DocumentManager] Checking if document already exists")
@@ -227,11 +229,11 @@ class DocumentManager(Manager):
             logger.debug("[DocumentManager] No document found or already deleted. Nothing to do.")
         else:
             doc_org_string = json.dumps(doc_obj)
-            logger.debug("[DocumentManager] Removing document with concent '{}' ".format(doc_org_string))
+            logger.debug(f"[DocumentManager] Removing document with concent '{doc_org_string}'")
             keys['file'] = doc_obj
             store_response = self.store.delete(**keys)
             logger.debug(
-                "[DocumentManager] status: {0}. Reason: {1}".format(store_response.status_code, store_response.reason))
+                f"[DocumentManager] status: {store_response.status_code}. Reason: {store_response.reason}")
             if store_response.status_code == 200:
                 logger.debug("[DocumentManager] Document REMOVED.")
             else:
@@ -260,5 +262,5 @@ class DocumentManager(Manager):
             else:
                 raise InvalidDocNameError(document_name)
 
-        logger.debug("[DocumentManager] _process_document_keys. Post Process Keys '{0}'".format(keys))
+        logger.debug(f"[DocumentManager] _process_document_keys. Post Process Keys '{keys}'")
         return keys

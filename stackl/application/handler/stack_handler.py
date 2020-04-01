@@ -7,12 +7,9 @@ from model.items.functional_requirement_status_model import FunctionalRequiremen
 from model.items.stack_instance_model import StackInstance
 from model.items.stack_instance_service_model import StackInstanceService
 from utils.general_utils import get_timestamp
+from utils.stackl_exceptions import NoOpaResultException
 
 logger = logging.getLogger("STACKL_LOGGER")
-
-#TODO move
-class NoOpaResultException(Exception):
-    pass
 
 
 class StackHandler(Handler):

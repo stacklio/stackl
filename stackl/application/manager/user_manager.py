@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 
-##TODO FUTURE: Rework entirely to integrate with OPA
+##TODO TBD: Rework entirely to integrate with OPA, part of the authorisation/authentication rework
 class UserManager(Manager):
 
     def __init__(self, manager_factory):
