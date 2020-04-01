@@ -7,7 +7,7 @@ on:
 
 jobs:
   stackl-cli:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }}-stackl-cli"
     runs-on: [ubuntu-18.04]
     env:
       USING_COVERAGE: '3.6,3.8'
@@ -25,7 +25,7 @@ jobs:
       - run: listf=$(find stackl/stackl_cli -name "*.py") && pylint $listf
 
   stackl-rest:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }}-stackl-rest"
     runs-on: [ubuntu-18.04]
     env:
       USING_COVERAGE: '3.6,3.8'
@@ -43,7 +43,7 @@ jobs:
       - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
 
   stackl-worker:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }}-stackl-worker"
     runs-on: [ubuntu-18.04]
     env:
       USING_COVERAGE: '3.6,3.8'
@@ -61,7 +61,7 @@ jobs:
       - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
 
   stackl-docker-agent:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }}-stackl-docker-agent"
     runs-on: [ubuntu-18.04]
     env:
       USING_COVERAGE: '3.6,3.8'
@@ -79,7 +79,7 @@ jobs:
       - run: listf=$(find stackl/agent/docker_agent -name "*.py") && pylint $listf
 
   stackl-kubernetes-agent:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }}-stackl-kubernetes-agent"
     runs-on: [ubuntu-18.04]
     env:
       USING_COVERAGE: '3.6,3.8'
@@ -97,7 +97,7 @@ jobs:
       - run: listf=$(find stackl/agent/kubernetes_agent -name "*.py") && pylint $listf
 
   stackl-websocket-agent:
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }}-stackl-websocket-agent"
     runs-on: [ubuntu-18.04]
     env:
       USING_COVERAGE: '3.6,3.8'
