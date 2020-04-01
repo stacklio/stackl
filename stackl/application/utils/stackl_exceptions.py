@@ -21,3 +21,7 @@ class InvalidDocNameError(Exception):
         super(InvalidDocNameError, self).__init__(msg)
         self.invalid_document_name = invalid_document_name
         self.msg = msg
+
+
+class NoOpaResultException(Exception):
+    pass

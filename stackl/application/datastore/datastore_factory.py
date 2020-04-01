@@ -6,13 +6,12 @@ from utils.stackl_singleton import Singleton
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-
 class DataStoreFactory(metaclass=Singleton):
 
     def __init__(self):
         self.store_type = get_config_key('STORE')
 
-        logger.info("[DataStoreFactory] Creating config store with type: " + self.store_type)
+        logger.info(f"[DataStoreFactory] Creating config store with type: {self.store_type}")
         if self.store_type == "Redis":
             from datastore.redis_store import RedisStore
             self.store = RedisStore()

@@ -1,12 +1,14 @@
 import logging
 
-logger = logging.getLogger("STACKL_LOGGER")
 from manager.document_manager import DocumentManager
 from manager.stack_manager import StackManager
 from manager.user_manager import UserManager
 from utils.stackl_singleton import Singleton
 
-##TOOD: update based on what stays and what goes
+
+logger = logging.getLogger("STACKL_LOGGER")
+
+
 class ManagerFactory(metaclass=Singleton):
 
     def __init__(self):
