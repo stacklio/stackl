@@ -22,5 +22,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       - run: pip install pylint==2.4.4
-      - run: listf=$(find stackl -name "*.py" | grep -v application/protos)
-      - run: pylint $listf
+      - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
