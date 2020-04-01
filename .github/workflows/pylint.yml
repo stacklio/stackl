@@ -2,7 +2,7 @@
 on:
   push:
     paths:
-    - "**/*.py"
+    - "**/*"
 
 
 jobs:
@@ -21,5 +21,5 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - run: pip install pylint  # -r requirements.txt
+      - run: pip install pylint
       - run: pylint stackl/**.py
