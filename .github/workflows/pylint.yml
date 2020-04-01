@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r requirements_rest.txt
+      - run: pip install pylint==2.4.4 && pip install -r stackl/application/requirements_rest.txt
       - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
 
   stackl-worker:
@@ -57,7 +57,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r requirements_worker
+      - run: pip install pylint==2.4.4 && pip install -r stackl/application/requirements_worker.txt
       - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
 
   stackl-docker-agent:
