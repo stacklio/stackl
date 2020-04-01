@@ -10,7 +10,7 @@ class AgentBrokerFactory(metaclass=Singleton):
     def __init__(self):
         self.agent_broker_type = get_config_key('AGENT_BROKER')
 
-        logger.info("[AgentBrokerFactory] Creating Agent Broker with type: " + self.agent_broker_type)
+        logger.info("[AgentBrokerFactory] Creating Agent Broker with type: %s", self.agent_broker_type)
         self.agent_broker = None
 
         if self.agent_broker_type == "gitlab-runner":
