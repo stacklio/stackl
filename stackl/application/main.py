@@ -94,6 +94,7 @@ app.include_router(
     tags=["stack_infrastructure_templates"]
 )
 app.include_router(
+    configurator_router.router,
     prefix="/configurator",
     tags=["configurator"]
 )
