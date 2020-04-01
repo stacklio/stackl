@@ -23,4 +23,5 @@ jobs:
           architecture: x64
       - run: pip install pylint
       - run: ls
+      - run: bash -c 'ls && pwd'
       - run: bash -c 'pylint stackl/**.py'
