@@ -76,7 +76,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       - run: pip install pylint==2.4.4 && pip install -r stackl/agents/grpc_base/requirements.txt
-      - run: listf=$(find stackl/agent/docker_agent -name "*.py") && pylint $listf
+      - run: listf=$(find stackl/agents/docker_agent -name "*.py") && pylint $listf
 
   stackl-kubernetes-agent:
     name: "Python ${{ matrix.python-version }}-stackl-kubernetes-agent"
@@ -94,7 +94,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       - run: pip install pylint==2.4.4 && pip install -r stackl/agents/grpc_base/requirements.txt
-      - run: listf=$(find stackl/agent/kubernetes_agent -name "*.py") && pylint $listf
+      - run: listf=$(find stackl/agents/kubernetes_agent -name "*.py") && pylint $listf
 
   stackl-websocket-agent:
     name: "Python ${{ matrix.python-version }}-stackl-websocket-agent"
@@ -112,4 +112,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       - run: pip install pylint==2.4.4 && pip install -r stackl/agents/grpc_base/requirements.txt
-      - run: listf=$(find stackl/agent/websocket_agent -name "*.py") && pylint $listf
+      - run: listf=$(find stackl/agents/websocket_agent -name "*.py") && pylint $listf
