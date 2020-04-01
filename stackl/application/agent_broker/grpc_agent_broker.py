@@ -56,13 +56,13 @@ class GrpcAgentBroker(AgentBroker):
 
     def create_job_for_agent(self, stack_instance, action, document_manager):
         logger.debug(
-            f"[GrpcAgentBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{1}'".format(stack_instance, action))
+            f"[GrpcAgentBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'")
         job = []
         for service in stack_instance.services:
             service_name = service
             logger.debug(f"[GrpcAgentBroker] service name: '{service_name}")
             service_doc = document_manager.get_document(type="service", document_name=service_name)
-            logger.debug(f"[GrpcAgentBroker] service doc: '{service_doc}".format(service_doc))
+            logger.debug(f"[GrpcAgentBroker] service doc: '{service_doc}")
             for fr in service_doc["functional_requirements"]:
                 fr_doc = document_manager.get_document(type="functional_requirement", document_name=fr)
                 logger.debug(f"[GrpcAgentBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'")
