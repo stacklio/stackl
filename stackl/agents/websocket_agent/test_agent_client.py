@@ -18,10 +18,13 @@ class Agent_Server_Client:
         async with websockets.connect(self.agent_server_uri) as websocket:
             while True:
                 count += 1
-                print("[Test_Agent_Server_Client] Sending Test Msg {}".format(count))
+                print("[Test_Agent_Server_Client] Sending Test Msg {}".format(
+                    count))
                 await websocket.send(json.dumps({"Test Message ": str(count)}))
                 response = await websocket.recv()
-                print("[Test_Agent_Server_Client] Received response: {}".format(response))
+                print(
+                    "[Test_Agent_Server_Client] Received response: {}".format(
+                        response))
                 await asyncio.sleep(15)
 
 
@@ -31,4 +34,6 @@ if __name__ == "__main__":
         agent = Agent_Server_Client()
 
     except Exception as e:
-        print("[Test_Agent_Server_Client] !!!ERROR!!! EXCEPTION OCCURED IN AGENT TOP LEVEL:'{}'. Exit.".format(e))
+        print(
+            "[Test_Agent_Server_Client] !!!ERROR!!! EXCEPTION OCCURED IN AGENT TOP LEVEL:'{}'. Exit."
+            .format(e))
