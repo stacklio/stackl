@@ -101,8 +101,8 @@ class Handler(ABC):
     def __init__(self, invocation, action):
         config.load_incluster_config()
         self.configuration = client.Configuration()
-        self.secret_handler = VaultSecretHandler()
         self.api_instance = client.BatchV1Api(client.ApiClient(self.configuration))
+        self.secret_handler = VaultSecretHandler()
         self.api_instance_core = client.CoreV1Api(client.ApiClient(self.configuration))
         configuration = stackl_client.Configuration()
         configuration.host = "http://" + os.environ['stackl_host']
@@ -134,6 +134,8 @@ class Handler(ABC):
         image_pull_secrets = ["dome-nexus"]
         # config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance, invocation.service)
         body = create_job_object(name, container_image, env_list, command, command_args, volumes, image_pull_secrets)
+        secret_handler = VaultSecretHandler(body)
+        body, cm = self.secret_handler.handle_secret()
         try:
             # api_response = self.api_instance_core.create_namespaced_config_map(stackl_namespace, config_map)
             # print(api_response)
@@ -149,11 +151,13 @@ class Handler(ABC):
             return 1, "Still need proper output", None
 
     def get_k8s_objects(self, action):
-        env_list = self.get_env_list()
-        volumes = self.get_volumes()
+        env_list = self.get_env_list() + self.secret_handler.get_env_list()
+        volumes = self.get_volumes() + self.secret_handler.get_volumes()
+        init_containers = self.secret_handler.get_init_container()
         command = self.get_command(action)
         command_args = self.get_command_args()
-        return env_list, volumes, command, command_args
+
+        return env_list, volumes, command, command_args, init_containers
 
     def get_secrets(self):
         return self.secret_handler.get_secrets()
