@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class MessageChannel(ABC):
-
     def __init__(self):
         self.started = False
 

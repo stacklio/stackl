@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 import click
 
 
@@ -14,8 +15,8 @@ def connect(host):
     with open(config_path, 'w+') as stackl_config:
         stackl_config.write(host)
 
+
 if len(str(Path.home())) == 0:
     config_path = os.getcwd() + os.sep + '.stackl' + os.sep + 'config'
 else:
     config_path = str(Path.home()) + os.sep + '.stackl' + os.sep + 'config'
-
