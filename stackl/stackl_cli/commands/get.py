@@ -57,8 +57,10 @@ def parse(stackl_object, output_type):
         if output_type == 'yaml':
             return yaml.dump(dump_object, Dumper=Dumper)
         elif output_type == 'json':
-            return json.dumps(dump_object, sort_keys=True,
-                              indent=4, separators=(',', ': '))
+            return json.dumps(dump_object,
+                              sort_keys=True,
+                              indent=4,
+                              separators=(',', ': '))
         else:
             return "Output type not supported"
 
@@ -84,7 +86,8 @@ def environment(stackl_context: StacklContext, output, name):
     if name is None:
         env = stackl_context.documents_api.get_documents_by_type(document_type)
     else:
-        env = stackl_context.documents_api.get_document_by_type_and_name(document_type, name)
+        env = stackl_context.documents_api.get_document_by_type_and_name(
+            document_type, name)
     click.echo(parse(env, output))
 
 
@@ -97,7 +100,8 @@ def location(stackl_context: StacklContext, output, name):
     if name is None:
         env = stackl_context.documents_api.get_documents_by_type(document_type)
     else:
-        env = stackl_context.documents_api.get_document_by_type_and_name(document_type, name)
+        env = stackl_context.documents_api.get_document_by_type_and_name(
+            document_type, name)
     click.echo(parse(env, output))
 
 
@@ -110,7 +114,8 @@ def zone(stackl_context: StacklContext, output, name):
     if name is None:
         env = stackl_context.documents_api.get_documents_by_type(document_type)
     else:
-        env = stackl_context.documents_api.get_document_by_type_and_name(document_type, name)
+        env = stackl_context.documents_api.get_document_by_type_and_name(
+            document_type, name)
     click.echo(parse(env, output))
 
 
@@ -122,7 +127,8 @@ def sat(stackl_context: StacklContext, output, name):
     if name is None:
         env = stackl_context.sat_api.get_stack_application_templates()
     else:
-        env = stackl_context.sat_api.get_stack_application_template_by_name(name)
+        env = stackl_context.sat_api.get_stack_application_template_by_name(
+            name)
     click.echo(parse(env, output))
 
 
@@ -134,7 +140,8 @@ def sit(stackl_context: StacklContext, output, name):
     if name is None:
         env = stackl_context.sit_api.get_stack_infrastructure_templates()
     else:
-        env = stackl_context.sit_api.get_stack_infrastructure_template_by_name(name)
+        env = stackl_context.sit_api.get_stack_infrastructure_template_by_name(
+            name)
     click.echo(parse(env, output))
 
 
@@ -156,7 +163,9 @@ def service(stackl_context: StacklContext, output, name):
 @pass_stackl_context
 def functional_requirement(stackl_context: StacklContext, output, name):
     if name is None:
-        env = stackl_context.functional_requirements_api.get_functional_requirements()
+        env = stackl_context.functional_requirements_api.get_functional_requirements(
+        )
     else:
-        env = stackl_context.functional_requirements_api.get_functional_requirement_by_name(name)
+        env = stackl_context.functional_requirements_api.get_functional_requirement_by_name(
+            name)
     click.echo(parse(env, output))

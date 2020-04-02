@@ -1,12 +1,11 @@
 from enums.cast_type import CastType
 from task import Task
 
+
 class ReportTask(Task):
     @property
     def valid_subtasks(self):
-        return [
-            "TBD"
-        ]
+        return ["TBD"]
 
     def _load_json_object(self, json_obj):
         super()._load_json_object(json_obj)

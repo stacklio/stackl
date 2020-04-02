@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class OPABrokerFactory(metaclass=Singleton):
-
     def __init__(self):
         logger.info("[OPABrokerFactory] Creating OPABroker")
         self.opa_broker = OPABroker()

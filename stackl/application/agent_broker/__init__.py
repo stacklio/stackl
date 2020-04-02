@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class AgentBroker(ABC):
 
+class AgentBroker(ABC):
     def __init__(self):
         pass
 

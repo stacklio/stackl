@@ -6,11 +6,12 @@ from utils.stackl_singleton import Singleton
 
 
 class TaskBrokerFactory(metaclass=Singleton):
-
     def __init__(self):
         self.task_broker_type = get_config_key("TASK_BROKER")
 
-        logger.info(f"[TaskBrokerFactory] Creating Task Broker with type: {self.task_broker_type}")
+        logger.info(
+            f"[TaskBrokerFactory] Creating Task Broker with type: {self.task_broker_type}"
+        )
         self.task_broker = None
         if self.task_broker_type == "Custom":
             from task_broker.custom_task_broker import CustomTaskBroker
