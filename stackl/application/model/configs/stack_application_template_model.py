@@ -1,5 +1,7 @@
 from typing import List, Dict, Any
-from pydantic import BaseModel #pylint: disable=E0611 #error in pylint
+
+from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
+
 
 class StackApplicationTemplate(BaseModel):
     category = "configs"

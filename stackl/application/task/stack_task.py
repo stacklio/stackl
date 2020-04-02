@@ -2,7 +2,6 @@ from task import Task, logger
 
 
 class StackTask(Task):
-
     @property
     def valid_subtasks(self):
         return [
@@ -18,8 +17,10 @@ class StackTask(Task):
         self.json_data = json_obj.get('json_data', None)
         self.send_channel = "agent"
         given_subtasks_list = json_obj.get('subtasks', [None])
-        if all(subtasks in self.valid_subtasks for subtasks in given_subtasks_list):
+        if all(subtasks in self.valid_subtasks
+               for subtasks in given_subtasks_list):
             self.subtasks = given_subtasks_list
         else:
-            logger.info("[StackTask] The given StackTask contains invalid tasks")
+            logger.info(
+                "[StackTask] The given StackTask contains invalid tasks")
             raise Exception("The given StackTask contains invalid tasks")

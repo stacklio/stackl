@@ -14,7 +14,6 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 ##TODO this class and its terminology need to be updated significantly.
 class StackManager(Manager):
-
     def __init__(self, manager_factory):
         super(StackManager, self).__init__(manager_factory)
 
@@ -30,58 +29,82 @@ class StackManager(Manager):
         self.opa_broker = self.opa_broker_factory.get_opa_broker()
 
     def handle_task(self, task):
-        logger.debug("[StackManager] handling subtasks in task {0}".format(task))
+        logger.debug(
+            "[StackManager] handling subtasks in task {0}".format(task))
         try:
             stack_instance = None
             for subtask in task["subtasks"]:
-                logger.debug("[StackManager] handling subtask '{0}'".format(subtask))
+                logger.debug(
+                    "[StackManager] handling subtask '{0}'".format(subtask))
                 if subtask == "CREATE":
-                    (stack_instance, status_code) = self.process_stack_request(task["json_data"], "create")
-                    job = self.agent_broker.create_job_for_agent(stack_instance, "create", self.document_manager)
+                    (stack_instance, status_code) = self.process_stack_request(
+                        task["json_data"], "create")
+                    job = self.agent_broker.create_job_for_agent(
+                        stack_instance, "create", self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "UPDATE":
-                    (stack_instance, status_code) = self.process_stack_request(task["json_data"], "update")
-                    job = self.agent_broker.create_job_for_agent(stack_instance, "update", self.document_manager)
+                    (stack_instance, status_code) = self.process_stack_request(
+                        task["json_data"], "update")
+                    job = self.agent_broker.create_job_for_agent(
+                        stack_instance, "update", self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "DELETE":
-                    (stack_instance, status_code) = self.process_stack_request(task["json_data"], "delete")
-                    job = self.agent_broker.create_job_for_agent(stack_instance, "delete", self.document_manager)
+                    (stack_instance, status_code) = self.process_stack_request(
+                        task["json_data"], "delete")
+                    job = self.agent_broker.create_job_for_agent(
+                        stack_instance, "delete", self.document_manager)
                     stack_instance.deleted = True
                     self.document_manager.write_stack_instance(stack_instance)
                 else:
                     status_code = StatusCode.BAD_REQUEST
-                if status_code in [StatusCode.OK, StatusCode.CREATED, StatusCode.ACCEPTED]:
+                if status_code in [
+                        StatusCode.OK, StatusCode.CREATED, StatusCode.ACCEPTED
+                ]:
                     agent_connect_info = task["send_channel"]
                     logger.debug(
-                        "[StackManager] Processing subtask succeeded. Sending to agent with connect_info '{0}' the stack_instance '{1}'".format(
-                            agent_connect_info, job))
+                        "[StackManager] Processing subtask succeeded. Sending to agent with connect_info '{0}' the stack_instance '{1}'"
+                        .format(agent_connect_info, job))
                     for am in job:
-                        result = self.agent_broker.send_job_to_agent(agent_connect_info, am)
-                        self.agent_broker.process_job_result(stack_instance, result, self.document_manager)
-                    logger.debug("[StackManager] Sent to agent. Result '{0}'".format(result))
+                        result = self.agent_broker.send_job_to_agent(
+                            agent_connect_info, am)
+                        self.agent_broker.process_job_result(
+                            stack_instance, result, self.document_manager)
+                    logger.debug(
+                        "[StackManager] Sent to agent. Result '{0}'".format(
+                            result))
                 else:
-                    raise Exception("[StackManager] Processing subtask failed. Status_code '{0}'".format(status_code))
+                    raise Exception(
+                        "[StackManager] Processing subtask failed. Status_code '{0}'"
+                        .format(status_code))
 
-            logger.debug("[StackManager] Succesfully handled task_attr. Notifying task broker.")
-            self.task_broker.give_task(ResultTask({
-                'channel': task.get('return_channel'),
-                'cast_type': CastType.BROADCAST.value,
-                'result': "success",
-                'source_task': task
-            }))  # this way the broker is notified of the result and whether he should remove the task from the task queue
+            logger.debug(
+                "[StackManager] Succesfully handled task_attr. Notifying task broker."
+            )
+            self.task_broker.give_task(
+                ResultTask({
+                    'channel': task.get('return_channel'),
+                    'cast_type': CastType.BROADCAST.value,
+                    'result': "success",
+                    'source_task': task
+                })
+            )  # this way the broker is notified of the result and whether he should remove the task from the task queue
         except Exception as e:
-            logger.error("[StackManager] Error with processing task. Error: '{0}'".format(e), exc_info=True)
+            logger.error(
+                "[StackManager] Error with processing task. Error: '{0}'".
+                format(e),
+                exc_info=True)
 
     def process_stack_request(self, instance_data, stack_action):
         # create new object with the action and document in it
-        logger.debug("[StackManager] converting instance data to change wrapper object")
+        logger.debug(
+            "[StackManager] converting instance data to change wrapper object")
         job = {}
         job['action'] = stack_action
         job['document'] = instance_data
         job['type'] = 'stack_instance'
         handler = StackHandler(self.manager_factory, self.opa_broker)
         merged_sat_sit_obj, status_code = handler.handle(job)
-        logger.debug("[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' "
-                     .format(status_code,
-                             merged_sat_sit_obj))
+        logger.debug(
+            "[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' "
+            .format(status_code, merged_sat_sit_obj))
         return merged_sat_sit_obj, status_code

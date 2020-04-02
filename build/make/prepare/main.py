@@ -4,7 +4,9 @@ from jinja2 import Environment, FileSystemLoader
 
 
 def render_jinja(src, dest, **kw):
-    jinja_env = Environment(loader=FileSystemLoader('/templates'), trim_blocks=True, lstrip_blocks=True)
+    jinja_env = Environment(loader=FileSystemLoader('/templates'),
+                            trim_blocks=True,
+                            lstrip_blocks=True)
     t = jinja_env.get_template(src)
     with open(dest, 'w') as f:
         f.write(t.render(**kw))
@@ -21,10 +23,12 @@ def parse_yaml_config(config_file_path):
 
     datastore_config = configs.get('datastore')
     config_dict['datastore_type'] = datastore_config.get('type')
-    config_dict['datastore_lfs_volume'] = datastore_config.get('lfs_volume', '')
+    config_dict['datastore_lfs_volume'] = datastore_config.get(
+        'lfs_volume', '')
 
     datastore_config = configs.get('opa')
-    config_dict['opa_files_location'] = datastore_config.get('opa_files_location', '')
+    config_dict['opa_files_location'] = datastore_config.get(
+        'opa_files_location', '')
 
     task_broker_config = configs.get('task_broker')
     config_dict['task_broker_type'] = task_broker_config.get('type')
@@ -38,11 +42,13 @@ def parse_yaml_config(config_file_path):
 
     return config_dict
 
+
 @click.command()
 @click.option('--conf', help="the path of the stackl configuration file")
 def main(conf):
     config_dict = parse_yaml_config(conf)
-    render_jinja('docker-compose.yml.j2', '/output/docker-compose.yml', **config_dict)
+    render_jinja('docker-compose.yml.j2', '/output/docker-compose.yml',
+                 **config_dict)
 
 
 if __name__ == '__main__':

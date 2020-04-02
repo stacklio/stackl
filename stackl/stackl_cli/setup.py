@@ -6,10 +6,7 @@ setup(
     py_modules=['stackl', 'commands', 'context'],
     packages=find_packages(),
     install_requires=[
-        'stackl-client==1.0.5',
-        'pyYAML==5.3',
-        'Click==7.0',
-        'tabulate==0.8.6'
+        'stackl-client==1.0.2', 'pyYAML==5.3', 'Click==7.0', 'tabulate==0.8.6'
     ],
     entry_points='''
         [console_scripts]
