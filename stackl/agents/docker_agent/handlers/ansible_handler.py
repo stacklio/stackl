@@ -1,6 +1,4 @@
 import os
-import random
-import string
 import subprocess
 
 from configurator_handler import ConfiguratorHandler

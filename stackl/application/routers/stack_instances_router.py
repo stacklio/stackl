@@ -1,7 +1,8 @@
 import logging
 from typing import Dict, Any, List
+
 from fastapi import APIRouter, HTTPException, Body
-from pydantic import BaseModel  #pylint: disable=E0611 #pylint error
+from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory

@@ -1,11 +1,11 @@
+import os
 from concurrent import futures
 
 import grpc
-import os
 
 import protos.agent_pb2_grpc
-from tool_factory import ToolFactory
 from protos.agent_pb2 import AutomationResponse
+from tool_factory import ToolFactory
 
 
 class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):

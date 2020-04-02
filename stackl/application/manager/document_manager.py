@@ -3,18 +3,18 @@ import logging
 
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
-from stackl_globals import types, types_configs, types_items
+from manager import Manager
 from model.configs.document_model import BaseDocument
 from model.configs.environment_model import Environment
 from model.configs.functional_requirement_model import FunctionalRequirement
 from model.configs.location_model import Location
+from model.configs.policy_model import Policy
 from model.configs.stack_application_template_model import StackApplicationTemplate
 from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from model.configs.zone_model import Zone
-from model.configs.policy_model import Policy
 from model.items.service_model import Service
 from model.items.stack_instance_model import StackInstance
-from manager import Manager
+from stackl_globals import types, types_configs, types_items
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError

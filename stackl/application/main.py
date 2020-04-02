@@ -10,10 +10,11 @@ from fastapi.routing import APIRoute
 import stackl_globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
-from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
+from opa_broker.opa_broker_factory import OPABrokerFactory
+from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
+    stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router, configurator_router, policies_router
 from task_broker.task_broker_factory import TaskBrokerFactory
-from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
 
 # Logger stuff

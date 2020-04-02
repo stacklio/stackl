@@ -1,4 +1,5 @@
 import logging
+
 from fastapi import APIRouter, Query
 
 from manager.manager_factory import ManagerFactory

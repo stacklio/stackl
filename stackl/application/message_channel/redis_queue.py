@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+
 from redis import StrictRedis
 
 from message_channel import MessageChannel
