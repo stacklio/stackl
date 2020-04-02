@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 
+
 class MessageChannel(ABC):
 
     def __init__(self):
         self.started = False
 
     @abstractmethod
-    def start(self, task_handler, subscribe_channels=[]):
+    def start(self, task_handler, subscribe_channels):
         pass
 
     @abstractmethod
-    def start_pubsub(self, task_handler, subscribe_channels):
+    def start_pubsub(self, subscribe_channels):
         pass
 
-    # topics can be: query, result or ping
     @abstractmethod
     def publish(self, task):
         pass

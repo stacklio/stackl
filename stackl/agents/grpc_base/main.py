@@ -14,7 +14,6 @@ class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
     def __init__(self):
         self.tool_factory = ToolFactory()
 
-    # TODO Name in violation of python style guide https://google.github.io/styleguide/pyguide.html#316-naming
     def InvokeAutomation(self, automation_message, context):
         print(automation_message)
         invoc = automation_message.invocation

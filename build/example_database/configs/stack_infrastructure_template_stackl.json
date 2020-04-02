@@ -3,12 +3,16 @@
     "description": "SIT updated at 2020-02-17 14h35m28s",
     "infrastructure_capabilities": {
         "production.brussels.cluster1": {
-            "CPU": "4GHz",
-            "RAM": "4GB",
+            "resources": {
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
+            },
             "cluster": "CL01",
             "config": [
                 "linux",
-                "nginx"
+                "nginx",
+                "postgresql"
             ],
             "datacenter": "DC01",
             "datastore": "vsanDatastore",
