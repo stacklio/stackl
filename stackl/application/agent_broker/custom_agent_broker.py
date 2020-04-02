@@ -11,11 +11,12 @@ import tornado.web
 import tornado.websocket
 import websockets
 
-import globals
+import stackl_globals
 from agent_broker import AgentBroker
 
 logger = logging.getLogger("STACKL_LOGGER")
 
+#TODO WIP Redo the CustomAgentBroker to WebsocketBroker and clean
 class CustomAgentBroker(AgentBroker):
     agent_connections = []
 
@@ -47,19 +48,19 @@ class CustomAgentBroker(AgentBroker):
     def register_agent_connect_info(self, agent_connect_info):
         logger.debug("[CustomAgentBroker] register_agent_connect_info. Registering agent_ws info '{}'".format(
             agent_connect_info))
-        reg_agents = globals.get_registered_agents()
+        reg_agents = stackl_globals.get_registered_agents()
         if agent_connect_info in reg_agents:
             logger.debug(
                 "[CustomAgentBroker] register_agent_ws. Agent already registered! Registered agents: '{0}'".format(
                     reg_agents))
         else:
             reg_agents.append(agent_connect_info)
-            globals.set_registered_agents(reg_agents)
+            stackl_globals.set_registered_agents(reg_agents)
             logger.debug(
                 "[CustomAgentBroker] register_agent_ws. New agent added. Registered agents: '{0}'".format(reg_agents))
 
     def get_agent_for_task(self, task):
-        registered_agents = globals.get_registered_agents()
+        registered_agents = stackl_globals.get_registered_agents()
         logger.debug(
             "[CustomAgentBroker] get_agent_for_task. Determining appropriate agent for task '{0}' from  registered_agents '{1}'".format(
                 task.__dict__, registered_agents))
@@ -68,7 +69,7 @@ class CustomAgentBroker(AgentBroker):
                 logger.debug(
                     "[CustomAgentBroker] get_agent_for_task. Looking at agent '{0}' for task with requester_auth '{1}".format(
                         agent_info, task.requester_auth))
-                if task.requester_auth["tags"] in agent_info["tags"]:  # TODO get the tagging system going
+                if task.requester_auth["tags"] in agent_info["tags"]: 
                     logger.debug("[CustomAgentBroker] get_agent_for_task. Found appropriate agent! Returning.")
                 return agent_info
         except Exception as e:
@@ -76,13 +77,13 @@ class CustomAgentBroker(AgentBroker):
                 "[CustomAgentBroker] get_agent_for_task. Failed. Exception: '{0}'. Returning none.".format(e))
             return None
 
-    async def send_obj_to_agent(self, agent_connect_info, obj):
-        try:  # TODO ugly fix for the grpc methodology
-            obj_str = json.dumps(obj)
+    async def send_job_to_agent(self, agent_connect_info, job):
+        try:
+            obj_str = json.dumps(job)
         except:
             obj_str = obj.SerializeToString()
         websocket_uri = agent_connect_info["websocket"]
-        logger.debug("[CustomAgentBroker] send_obj_to_agent. Sending to agent with uri '{0}' the obj '{1}'".format(
+        logger.debug("[CustomAgentBroker] send_job_to_agent. Sending to agent with uri '{0}' the obj '{1}'".format(
             agent_connect_info, obj_str))
         try:
             response = ""
@@ -97,7 +98,7 @@ class CustomAgentBroker(AgentBroker):
             return response
         except Exception as e:
             logger.debug(
-                "[CustomAgentBroker] send_obj_to_agent. Exception occurred: '{0}'. Returning empty response ".format(e))
+                "[CustomAgentBroker] send_job_to_agent. Exception occurred: '{0}'. Returning empty response ".format(e))
 
     def get_websocket_overview(self):
         logger.debug("[CustomAgentBroker] In get_websocket_overview. ")

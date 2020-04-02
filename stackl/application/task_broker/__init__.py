@@ -3,22 +3,28 @@ import logging
 import threading
 from abc import ABC, abstractmethod
 
-import globals
-
-logger = logging.getLogger("STACKL_LOGGER")
+import stackl_globals
 from utils.general_utils import get_absolute_time_seconds
 
 
+logger = logging.getLogger("STACKL_LOGGER")
+
+
 class TaskBroker(ABC):
+
+    def __init__(self):
+        self.agent_broker = None
+        self.task_signal = None
+
     @abstractmethod
-    def start_stackl(self, subscribe_channels=[], agent_broker=None):  # subscribe channels used by subclasses
-        logger.debug("[{0}] Starting Task Broker for STACKL".format(logger.name))
+    def start_stackl(self, subscribe_channels=None, agent_broker=None):  # subscribe channels used by subclasses
+        logger.debug(f"[{logger.name}] Starting Task Broker for STACKL")
         self.agent_broker = agent_broker
         self.task_signal = threading.Event()
 
     @abstractmethod
-    def start_worker(self, subscribe_channels=[]):  # subscribe channels used by subclasses
-        logger.debug("[{0}] Starting Task Broker for Worker".format(logger.name))
+    def start_worker(self, subscribe_channels=None):  # subscribe channels used by subclasses
+        logger.debug(f"[{logger.name}] Starting Task Broker for Worker")
 
     @abstractmethod
     def give_task(self, task):
@@ -29,34 +35,29 @@ class TaskBroker(ABC):
         pass
 
     def remove_task_from_queue(self, task):
-        task_queue = globals.get_task_queue()
+        task_queue = stackl_globals.get_task_queue()
         if task.topic == "result":
-            logger.debug("[{2}] Task is ResultTask, removing the source_task '{0}' from task_queue '{1}'".format(
-                task.source_task, task_queue, logger.name))
+            logger.debug(f"[{logger.name}] Task is ResultTask, removing the source_task '{task.source_task}' from task_queue '{task_queue}'")
             id_task_to_remove = ast.literal_eval(task.source_task)["id"]
         else:
             id_task_to_remove = task.id
             logger.debug(
-                "[{2}] Task has id '{0}', removing from task_queue '{1}'".format(id_task_to_remove, task_queue,
-                                                                                 logger.name))
+                 f"[{logger.name}] Task has id '{id_task_to_remove}', removing from task_queue '{task_queue}'")
         for i in range(len(task_queue)):
             if task_queue[i]["id"] == id_task_to_remove:
                 task_queue.pop(i)
                 logger.debug(
-                    "[{1}] Task with id '{0}' succesfully removed !".format(id_task_to_remove, logger.name))
+                    f"[{logger.name}] Task with id '{id_task_to_remove}' succesfully removed !")
                 return
         logger.debug(
-            "[{2}] Tried to remove task with id '{0}' but not found in queue '{1}' !".format(id_task_to_remove,
-                                                                                             task_queue,
-                                                                                             logger.name))
+            f"[{logger.name}] Tried to remove task with id '{id_task_to_remove}' but not found in queue '{task_queue}' !")
 
     def add_task_to_queue(self, task_obj):
-        task_queue = globals.get_task_queue()
+        task_queue = stackl_globals.get_task_queue()
         task_queue.append(
             {"task": task_obj.as_json_string(), "id": task_obj.id, "start_time": get_absolute_time_seconds(),
              "wait_time": task_obj.wait_time})
-        globals.set_task_queue(task_queue)
+        stackl_globals.set_task_queue(task_queue)
         logger.debug(
-            "[{2}] Added task to queue. Task is '{0}'. Updated queue: '{1}'".format(task_obj, globals.get_task_queue(),
-                                                                                    logger.name))
+            f"[{logger.name}] Added task to queue. Task is '{task_obj}'. Updated queue: '{stackl_globals.get_task_queue()}'")
         self.task_signal.set()

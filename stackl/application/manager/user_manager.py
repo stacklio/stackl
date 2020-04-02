@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger("STACKL_LOGGER")
 from manager import Manager
 
-##TODO Similarly to auth_manager this will change depending on OPA
+##TODO TBD: Rework entirely to integrate with OPA, part of the authorisation/authentication rework
 class UserManager(Manager):
 
     def __init__(self, manager_factory):
@@ -14,13 +14,13 @@ class UserManager(Manager):
     def get_user_for_cert(self, user_certificate):
         serial = user_certificate['user_serial']
         if serial is None:
-            return "default"  # TODO: this is temporary to allow everybody access
+            return "default"  
         logger.info("[UserManager] get_user_for_cert. Getting user for certificate '{0}'".format(user_certificate))
         user_data = self.document_manager.get_document(type='authentication', document_name=str(serial))
         if user_data:
             return user_data['user']
         else:
-            return "default"  # TODO: this is temporary to allow everybody access
+            return "default"  
             # raise Unauthorized()
 
     def get_user_for_serial(self, serial):
@@ -29,7 +29,7 @@ class UserManager(Manager):
         if user_data:
             return user_data
         else:
-            return "default"  # TODO: this is temporary to allow everybody access
+            return "default" 
             # raise Unauthorized()
 
     def create_user(self, user_data):
@@ -65,7 +65,6 @@ class UserManager(Manager):
                 return_obj = {'tags': user_doc.get('tags', None)}
                 return return_obj
         else:
-            # TODO We need to improve and correct authentication. Due to the LFS, at the moment we spoof the system a bit
             return_obj = {'tags': ["common", "tom", "sven", "frederic"]}
             return return_obj
 

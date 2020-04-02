@@ -14,9 +14,6 @@ class PackerHandler(ConfiguratorHandler):
     def create_delete_command(self, name, container_image, stack_instance, service):
         pass
 
-    def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
     def handle(self, invocation, action):
         print(invocation)
         container_image = invocation.image

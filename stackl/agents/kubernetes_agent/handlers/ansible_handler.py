@@ -10,7 +10,9 @@ from kubernetes.client.rest import ApiException
 
 from configurator_handler import ConfiguratorHandler
 
+
 class AnsibleHandler(ConfiguratorHandler):
+    
     def __init__(self):
         config.load_incluster_config()
         self.configuration = kubernetes.client.Configuration()
@@ -127,26 +129,13 @@ class AnsibleHandler(ConfiguratorHandler):
         body.spec = client.V1JobSpec(ttl_seconds_after_finished=600, template=template.template, backoff_limit=0)
         return body
 
-    def id_generator(self, size=12, chars=string.ascii_lowercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
-    def wait_for_job(self, job_name, namespace):
-        ready = False
-        api_response = None
-        while not ready:
-            time.sleep(5)
-            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
-            if api_response.status.failed != 0 or api_response.status.succeeded != 0:
-                ready = True
-        return api_response
-
     def handle(self, invocation, action):
         print(invocation)
         stackl_namespace = os.environ['stackl_namespace']
         container_image = invocation.image
         name = "stackl-job-" + self.id_generator()
         print("create cm")
-        config_map = self.create_config_map(name, stackl_namespace, invocation.stack_instance)
+        config_map = self._create_config_map(name, stackl_namespace, invocation.stack_instance)
         if action == "create" or action == "update":
             print("create object")
             body = self.create_job_object(name, container_image, invocation.stack_instance, invocation.service,
@@ -167,3 +156,20 @@ class AnsibleHandler(ConfiguratorHandler):
             return 1, "Still need proper output", None
         else:
             return 0, "", None
+
+    def _create_config_map(self, name, namespace, stack_instance):
+        cm = client.V1ConfigMap()
+        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+        cm.data = {"stackl.yml": json.dumps({"plugin": "stackl", "host": os.environ['stackl_host'],
+                                             "stack_instance": stack_instance})}
+        return cm
+
+    def _wait_for_job(self, job_name, namespace):
+        ready = False
+        api_response = None
+        while not ready:
+            time.sleep(5)
+            api_response = self.api_instance.read_namespaced_job(job_name, namespace)
+            if api_response.status.failed != 0 or api_response.status.succeeded != 0:
+                ready = True
+        return api_response
