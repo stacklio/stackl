@@ -1,6 +1,5 @@
 import logging
 from typing import List
-
 from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
@@ -8,6 +7,7 @@ from manager.manager_factory import ManagerFactory
 from model.configs.stack_application_template_model import StackApplicationTemplate
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError
+
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
@@ -26,7 +26,6 @@ def get_stack_application_templates():
 
     return documents
 
-
 @router.get('/{document_name}', response_model=StackApplicationTemplate)
 def get_stack_application_template_by_name(document_name: str):
     """Returns a functional requirement"""
@@ -37,9 +36,8 @@ def get_stack_application_template_by_name(document_name: str):
 
     if document == {}:
         raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="No document with name " + document_name)
-    logger.debug("[DocumentsByType GET] document(s): " + str(document))
+    logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
-
 
 @router.post('', response_model=StackApplicationTemplate)
 def post_stack_application_template(document: StackApplicationTemplate):
@@ -56,14 +54,12 @@ def post_stack_application_template(document: StackApplicationTemplate):
     document = document_manager.write_stack_application_template(document)
     return document
 
-
 @router.put('', response_model=StackApplicationTemplate)
 def put_stack_application_template(document: StackApplicationTemplate):
     """Create the document with a specific type and an optional name given in the payload"""
     # check if doc already exists
     document = document_manager.write_stack_application_template(document)
     return document
-
 
 @router.delete('/{document_name}', status_code=202)
 def delete_stack_application_template(type_name: str, document_name: str):

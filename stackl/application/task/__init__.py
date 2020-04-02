@@ -18,6 +18,7 @@ class Task(ABC):
         pass
 
     def __init__(self, task_data):
+        self.source = None
         if type(task_data) == str:
             self._load_json_string(task_data)
         elif type(task_data) == dict:
@@ -58,8 +59,8 @@ class Task(ABC):
         return self.channel
 
     def as_json_string(self):
-        dict = self.__dict__
+        dictionary = self.__dict__
         # logger.info("[Task] Dictionary of task: {0}".format(dict))
-        json_string = json.dumps(dict)
+        json_string = json.dumps(dictionary)
         # logger.info("[Task] json of task: {0}".format(json_string))
         return json_string

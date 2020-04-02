@@ -4,8 +4,8 @@
     "category": "items",
     "functional_requirements": ["linux"],
     "resource_requirements": {
-        "CPU": "1GHz",
-        "RAM": "2GB"
+        "cpu_cores": "1",
+        "memory": "1GB"
     },
     "params": {
         "webserver": "nginx"

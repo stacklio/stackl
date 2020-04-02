@@ -1,6 +1,5 @@
 import logging
 from typing import List
-
 from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
@@ -9,12 +8,13 @@ from model.configs.stack_infrastructure_template_model import StackInfrastructur
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError
 
+
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
+
 document_manager = ManagerFactory().get_document_manager()
 task_broker = TaskBrokerFactory().get_task_broker()
-
 
 @router.get('', response_model=List[StackInfrastructureTemplate])
 def get_stack_infrastructure_templates():
@@ -26,7 +26,6 @@ def get_stack_infrastructure_templates():
 
     return documents
 
-
 @router.get('/{document_name}', response_model=StackInfrastructureTemplate)
 def get_stack_infrastructure_template_by_name(document_name: str):
     """Returns a functional requirement"""
@@ -37,9 +36,8 @@ def get_stack_infrastructure_template_by_name(document_name: str):
 
     if document == {}:
         raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="No document with name " + document_name)
-    logger.debug("[DocumentsByType GET] document(s): " + str(document))
+    logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
-
 
 @router.post('', response_model=StackInfrastructureTemplate)
 def post_stack_infrastructure_template(document: StackInfrastructureTemplate):
@@ -56,14 +54,12 @@ def post_stack_infrastructure_template(document: StackInfrastructureTemplate):
     document = document_manager.write_stack_infrastructure_template(document)
     return document
 
-
 @router.put('', response_model=StackInfrastructureTemplate)
 def put_stack_infrastructure_template(document: StackInfrastructureTemplate):
     """Create the document with a specific type and an optional name given in the payload"""
     # check if doc already exists
     document = document_manager.write_stack_infrastructure_template(document)
     return document
-
 
 @router.delete('/{document_name}', status_code=202)
 def delete_stack_infrastructure_template(type_name: str, document_name: str):
