@@ -1,14 +1,14 @@
 import logging
 from typing import List
-
 from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
-from globals import document_types
+from stackl_globals import types
 from manager.manager_factory import ManagerFactory
 from model.configs.document_model import BaseDocument
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError
+
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
@@ -19,21 +19,19 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 @router.get('/types')
 def get_types():
-    return document_types
-
+    return types
 
 @router.get('/{type_name}', response_model=List[BaseDocument])
 def get_documents_by_type(type_name: str):
     """Returns all documents with a specific type"""
-    logger.info("[DocumentsByType GET] Receiver GET request with data: " + type_name)
+    logger.info(f"[DocumentsByType GET] Receiver GET request with data: {type_name}")
     try:
         documents = document_manager.get_document(type=type_name)
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
-    logger.debug("[DocumentsByType GET] document(s): " + str(documents))
+    logger.debug(f"[DocumentsByType GET] document(s): {documents}")
     return documents
-
 
 @router.get('/{type_name}/{document_name}', response_model=BaseDocument)
 def get_document_by_type_and_name(type_name: str, document_name: str):
@@ -46,9 +44,8 @@ def get_document_by_type_and_name(type_name: str, document_name: str):
 
     if document == {}:
         raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="No document with name " + document_name)
-    logger.debug("[DocumentsByType GET] document(s): " + str(document))
+    logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
-
 
 @router.post('', response_model=BaseDocument)
 def post_document(document: BaseDocument):
@@ -65,13 +62,11 @@ def post_document(document: BaseDocument):
     document = document_manager.write_base_document(document)
     return document
 
-
 @router.put('', response_model=BaseDocument)
 def put_document(document: BaseDocument):
     """UPDATES the document with a specific type and an optional name given in the payload"""
     document = document_manager.write_base_document(document)
     return document
-
 
 @router.delete('/{type_name}/{document_name}', status_code=202)
 def delete_document(type_name: str, document_name: str):

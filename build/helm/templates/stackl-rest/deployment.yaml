@@ -33,11 +33,11 @@ spec:
               containerPort: 80
               protocol: TCP
           env:
-            - name: STACKL_DATABASE_PATH
+            - name: STACKL_DATASTORE_PATH
               value: /lfs_test_store
             - name: "STACKL_STORE"
               value: "{{ .Values.datastore.type }}"
-            - name: "STACKL_DATABASE_PATH"
+            - name: "STACKL_DATASTORE_PATH"
               value: "{{ .Values.datastore.path }}"
             - name: "STACKL_TASK_BROKER"
               value: "{{ .Values.taskBroker.type }}"
@@ -65,6 +65,3 @@ spec:
             httpGet:
               path: /docs
               port: http
-
-
-       

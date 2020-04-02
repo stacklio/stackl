@@ -7,11 +7,11 @@ import threading
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
-import globals
+import stackl_globals
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from manager.manager_factory import ManagerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
-    stack_infrastructure_templates_router, about_router, terraform_router, policies_router
+    stack_infrastructure_templates_router, about_router, configurator_router, policies_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from utils.general_utils import get_hostname
@@ -27,7 +27,7 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 # Start initialisation of Application Logic
-globals.initialize()
+stackl_globals.initialize()
 
 manager_factory = ManagerFactory()
 task_broker_factory = TaskBrokerFactory()
@@ -49,6 +49,7 @@ task_broker_thread.daemon = True
 task_broker_thread.start()
 
 opa_broker.start()
+
 
 logger.info("___________________ STARTING STACKL_API ____________________")
 
@@ -92,11 +93,10 @@ app.include_router(
     prefix="/stack_infrastructure_templates",
     tags=["stack_infrastructure_templates"]
 )
-#TODO Technological dependency
 app.include_router(
-    terraform_router.router,
-    prefix="/terraform",
-    tags=["terraform"]
+    configurator_router.router,
+    prefix="/configurator",
+    tags=["configurator"]
 )
 app.include_router(
     about_router.router,
@@ -104,14 +104,14 @@ app.include_router(
     tags=["about"]
 )
 
-def use_route_names_as_operation_ids(app: FastAPI) -> None:
+def use_route_names_as_operation_ids(application: FastAPI) -> None:
     """
     Simplify operation IDs so that generated API clients have simpler function
     names.
 
     Should be called only after all routes have been added.
     """
-    for route in app.routes:
+    for route in application.routes:
         if isinstance(route, APIRoute):
             route.operation_id = route.name  # in this case, 'read_items'
 

@@ -2,6 +2,8 @@
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
+[![Pylint](https://github.com/stacklio/stackl/workflows/.github/workflows/pylint.yml/badge.svg)](https://github.com/stacklio/stackl/actions?query=workflow%3A.github%2Fworkflows%2Fpylint.yml)
+
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 STACKL supports the autonomous configuration, coordination, and management of applications and IT infrastructure by:
 

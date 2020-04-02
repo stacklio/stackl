@@ -1,6 +1,5 @@
-from typing import List, Dict, Any, Optional
-
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel #pylint: disable=E0611 #error in pylint
 
 
 class Policy(BaseModel):

@@ -14,10 +14,9 @@ class AgentBroker(ABC):
         pass
 
     @abstractmethod
-    def send_obj_to_agent(self, agent_connect_info, obj):
+    def send_job_to_agent(self, agent_connect_info, job):
         pass
 
-    #TODO change_obj is no longer a good name. This should be adjusted.
     @abstractmethod
-    def create_change_obj(self, stack_instance, action, document_manager):
+    def create_job_for_agent(self, stack_instance, action, document_manager):
         pass

@@ -7,7 +7,9 @@ from message_channel import MessageChannel
 from task.task_factory import TaskFactory
 from utils.general_utils import get_config_key
 
+
 logger = logging.getLogger("STACKL_LOGGER")
+
 
 class RedisQueue(MessageChannel):
 
@@ -18,8 +20,9 @@ class RedisQueue(MessageChannel):
         self.queue = None
         self.pubsub = None
         self.task_handler = None
+        self.listen_management_thread = None
 
-    def start(self, task_handler, subscribe_channels=[]):
+    def start(self, task_handler, subscribe_channels):
         logger.info("[RedisQueue] Starting RedisQueue.")
         if self.started:
             logger.info("[RedisQueue] RedisQueue already started!")
@@ -34,7 +37,7 @@ class RedisQueue(MessageChannel):
 
     def start_pubsub(self, subscribe_channels):
         if len(subscribe_channels) > 0:
-            logger.info("[RedisQueue] starting listening to subscribed channels: {0}".format(subscribe_channels))
+            logger.info(f"[RedisQueue] starting listening to subscribed channels: {subscribe_channels}")
             self.listen_management_thread = threading.Thread(target=self.listen_permanent, args=[subscribe_channels])
             self.listen_management_thread.daemon = True
             self.listen_management_thread.start()
@@ -47,7 +50,7 @@ class RedisQueue(MessageChannel):
         channel = task.get_channel()
         message_str = task.as_json_string()
         logger.info(
-            "[RedisQueue] Channel '{0}': Sending message via pubsub: {1}".format(str(channel), message_str))
+            f"[RedisQueue] Channel '{channel}': Sending message via pubsub: {message_str}")
         self.queue.publish(channel, message_str)
         if return_channel is not None:
             return self.listen(return_channel, wait_time=wait_time)
@@ -56,11 +59,11 @@ class RedisQueue(MessageChannel):
     def listen_permanent(self, channels):
         try:
             self._pubsub_channels(self.pubsub, channels, action='subscribe')
-            logger.info("[RedisQueue] Broker listening on: {0}".format(channels))
+            logger.info(f"[RedisQueue] Broker listening on: {channels}")
             self.started = True
 
             for message in self.pubsub.listen():
-                logger.info("[RedisQueue] Broker got message: '{0}'".format(message))
+                logger.info(f"[RedisQueue] Broker got message: '{message}'")
                 if message['type'] != 'subscribe':
                     # parse task
                     task = TaskFactory.create_task(message['data'])
@@ -72,37 +75,37 @@ class RedisQueue(MessageChannel):
             logger.debug("[RedisQueue] Error listen_permanent stopped!")
             self._pubsub_channels(self.pubsub, channels, action='unsubscribe')
             raise Exception("[RedisQueue] Error listen_permanent stopped!")
-        except Exception as e:
-            logger.error("[RedisQueue] ERROR!!! EXCEPTION OCCURED IN listen_permanent: " + str(e))
+        except Exception as e: #TODO TBD as part of Task/Robustness rework
+            logger.error(f"[RedisQueue] ERROR!!! EXCEPTION OCCURED IN listen_permanent: {e}")
             logger.error("[RedisQueue] Retrying to connect...")
             self.pubsub = self.queue.pubsub()
             self.listen_permanent(channels)
 
     def listen(self, channel, wait_time=5):
-        logger.info("[RedisQueue] Listening temporary to channel " + str(channel))
+        logger.info(f"[RedisQueue] Listening temporary to channel {channel}")
         pubsub = self.queue.pubsub()
         self._pubsub_channels(pubsub, [channel], action='subscribe')
         return_array = []
         t_end = time.time() + wait_time
         while time.time() < t_end:
             message = pubsub.get_message()
-            logger.info("[RedisQueue] Broker got message listen: " + str(message))
+            logger.info(f"[RedisQueue] Broker got message listen: {message}")
             if message and (message['type'] != 'subscribe' and message['type'] != 'unsubscribe'):
                 result_task = TaskFactory.create_task(message['data'])
-                logger.debug("[RedisQueue] resultTask: " + str(result_task.as_json_string()))
+                logger.debug(f"[RedisQueue] resultTask: {result_task.as_json_string()}")
                 return_array.append(result_task)
                 continue
             time.sleep(0.1)
         self._pubsub_channels(pubsub, [channel], action='unsubscribe')
-        logger.info("[RedisQueue] Broker listen returning: " + str(return_array))
+        logger.info(f"[RedisQueue] Broker listen returning: {return_array}")
         return return_array
 
     def push(self, name, *values):
-        logger.debug("[RedisQueue] Doing push(). Name {0} and values {1}".format(name, *values))
+        logger.debug(f"[RedisQueue] Doing push(). Name {name} and values {values}")
         try:
             result = self.queue.lpush(name, *values)
-        except Exception as e:
-            logger.debug("[RedisQueue] Exception occured in push '{}'".format(e))
+        except Exception as e: #TODO TBD as part of Task/Robustness rework
+            logger.debug(f"[RedisQueue] Exception occured in push '{e}'")
             logger.debug("[RedisQueue] Trying one more time with wait of 5 seconds")
             self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             time.sleep(5)
@@ -110,11 +113,11 @@ class RedisQueue(MessageChannel):
         return result
 
     def pop(self, name):
-        logger.debug("[RedisQueue] Doing pop(). Name {0}".format(name))
+        logger.debug(f"[RedisQueue] Doing pop(). Name {name}")
         try:
             result = self.queue.brpop(name)
-        except Exception as e:
-            logger.debug("[RedisQueue] Exception occured in pop '{}'".format(e))
+        except Exception as e: #TODO TBD as part of Task/Robustness rework
+            logger.debug(f"[RedisQueue] Exception occured in pop '{e}'")
             logger.debug("[RedisQueue] Trying one more time with wait of 5 seconds")
             self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             time.sleep(5)
@@ -124,8 +127,8 @@ class RedisQueue(MessageChannel):
     def _pubsub_channels(self, pubsub, channels, action='subscribe'):
         for channel in channels:
             if action == 'subscribe':
-                logger.info("[RedisQueue] Subscribing to channel: " + str(channel))
+                logger.info(f"[RedisQueue] Subscribing to channel: {channel}")
                 pubsub.subscribe(channel)
             if action == 'unsubscribe':
-                logger.info("[RedisQueue] Unsubscribing to channel: " + str(channel))
+                logger.info(f"[RedisQueue] Unsubscribing to channel: {channel}")
                 pubsub.unsubscribe(channel)

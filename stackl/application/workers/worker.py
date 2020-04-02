@@ -14,13 +14,13 @@ from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disa
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 import logging.config
 
-logger = logging.getLogger("STACKL_LOGGER")
+
+logger = logging.getLogger("WORKER_LOGGER")
 level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
-formatter = logging.Formatter(
-    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}")
+formatter = logging.Formatter('[[[%(asctime)s|%(message)s', "%d.%m.%y|%H:%M:%S")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
@@ -31,7 +31,6 @@ class Worker:
         self.stack_manager = self.manager_factory.get_stack_manager()
         self.document_manager = self.manager_factory.get_document_manager()
         self.user_manager = self.manager_factory.get_user_manager()
-        self.item_manager = self.manager_factory.get_item_manager()
 
         self.agent_broker_factory = AgentBrokerFactory()
         self.agent_broker = self.agent_broker_factory.get_agent_broker()
@@ -44,7 +43,7 @@ class Worker:
         self.task_broker.agent_broker = self.agent_broker
 
         signal_list = [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]
-        logger.debug("[Worker] Adding signal handlers for {0}".format(signal_list))
+        logger.debug(f"[Worker] Adding signal handlers for {signal_list}")
         for sig in signal_list:
             signal.signal(sig, self.exit_handler)
         logger.debug("[Worker] Initialised Worker.")
@@ -63,8 +62,8 @@ class Worker:
             while task_pop_thread.is_alive():
                 time.sleep(10)
             logger.info("[Worker] task_pop_thread was found dead. Killing Worker.")
-        except Exception as e:
-            logger.error("[Worker] Exception occured in Worker: {0}".format(e))
+        except Exception as e: #TODO TBD during task rework
+            logger.error(f"[Worker] Exception occured in Worker: {e}")
 
     def start_task_popping(self):
         logger.info("[Worker] start_task_popping. Starting listening on redis queue")
@@ -73,23 +72,22 @@ class Worker:
             tag = "common"
             task = self.task_broker.get_task(tag)
 
-            logger.info("[Worker] Popped item. Type '{0}'. Item: '{1}'".format(type(task), task))
+            logger.info(f"[Worker] Popped item. Type '{type(task)}'. Item: '{task}'")
 
-            task_attr = json.loads(task)  # TODO: do we pass tasks or do we pass dictionary?
-            # logger.info("[Worker] Item as task_attr:  '{0}'. Type: '{1}'".format(task_attr, task_attr["topic"]))
+            task_attr = json.loads(task)
 
             if task_attr["topic"] == "document_task":
-                logger.info("[Worker] Document_Task with subtasks '{0}'".format(task_attr["subtasks"]))
+                logger.info(f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'")
                 thread = threading.Thread(target=self.document_manager.handle_task, args=[task_attr])
                 thread.start()
                 continue
             elif task_attr["topic"] == "agent_task":
-                logger.info("[Worker] Agent_Task with subtasks '{0}'".format(task_attr["subtasks"]))
+                logger.info(f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'")
                 thread = threading.Thread(target=self.agent_broker.handle_task, args=[task_attr])
                 thread.start()
                 continue
             elif task_attr["topic"] == "stack_task":
-                logger.info("[Worker] Stack_task with subtasks '{0}'".format(task_attr["subtasks"]))
+                logger.info(f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'")
                 thread = threading.Thread(target=self.stack_manager.handle_task, args=[task_attr])
                 thread.start()
                 continue
@@ -101,10 +99,9 @@ class Worker:
             self.hostname
         ]
 
-    def exit_handler(self, signum=None, frame=None):
-        logger.info("[Worker] Signal handler called with signal {0}".format(str(signum)))
-        logger.info(
-            "[Worker] flushing queue")  # TODO: Is this still needed? Will we ever have tasks for specific workers so that they need to resubmit these tasks when they die?
+    def exit_handler(self, signum=None):
+        logger.info(f"[Worker] Signal handler called with signal {signum}")
+        logger.info("[Worker] flushing queue")
         # tasks = self.queue.lrange('task_' + self.hostname + ':process', 0 , -1)
         # if tasks:
         #     for task in tasks:

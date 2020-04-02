@@ -9,6 +9,7 @@ class ResultTask(Task):
         ]
 
     def __init__(self, task_data):
+        self.source_task = None
         super(ResultTask, self).__init__(task_data)
 
     def _load_json_object(self, json_obj):

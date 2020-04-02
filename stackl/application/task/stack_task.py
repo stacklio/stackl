@@ -11,9 +11,6 @@ class StackTask(Task):
             "DELETE",
         ]
 
-    def __init__(self, task_data):
-        super(StackTask, self).__init__(task_data)
-
     def _load_json_object(self, json_obj):
         super()._load_json_object(json_obj)
         self.topic = 'stack_task'

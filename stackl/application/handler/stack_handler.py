@@ -7,12 +7,9 @@ from model.items.functional_requirement_status_model import FunctionalRequiremen
 from model.items.stack_instance_model import StackInstance
 from model.items.stack_instance_service_model import StackInstanceService
 from utils.general_utils import get_timestamp
+from utils.stackl_exceptions import NoOpaResultException
 
 logger = logging.getLogger("STACKL_LOGGER")
-
-
-class NoOpaResultException(Exception):
-    pass
 
 
 class StackHandler(Handler):
@@ -21,7 +18,6 @@ class StackHandler(Handler):
         super(StackHandler, self).__init__(manager_factory)
         self.document_manager = manager_factory.get_document_manager()
         self.opa_broker = opa_broker
-        self.hiera = manager_factory.get_item_manager()
 
     def handle(self, item):
         action = item['action']

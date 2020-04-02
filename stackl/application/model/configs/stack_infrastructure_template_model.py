@@ -1,6 +1,5 @@
 from typing import List, Dict, Any
-
-from pydantic import BaseModel
+from pydantic import BaseModel #pylint: disable=E0611 #error in pylint
 
 from model.configs.infrastructure_target_model import InfrastructureTarget
 
