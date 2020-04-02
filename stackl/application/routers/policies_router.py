@@ -1,5 +1,4 @@
 import logging
-
 from fastapi import APIRouter, Query
 
 from manager.manager_factory import ManagerFactory
@@ -11,10 +10,11 @@ from opa_broker.opa_broker_factory import OPABrokerFactory
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
 opa_broker_factory = OPABrokerFactory()
 opa_broker = opa_broker_factory.get_opa_broker()
-
 document_manager = ManagerFactory().get_document_manager()
+
 
 queries_for_sit_sats_set = Query(
     "solution_set_per_service",

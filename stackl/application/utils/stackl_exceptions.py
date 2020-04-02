@@ -4,7 +4,7 @@ class InvalidDocTypeError(Exception):
     def __init__(self, invalid_type_name, msg=None):
         if msg is None:
             # Set some default useful error message
-            msg = "The requested document's type '{}' is not  a valid type".format(invalid_type_name)
+            msg = f"The requested document's type '{invalid_type_name}' is not  a valid type"
         super(InvalidDocTypeError, self).__init__(msg)
         self.invalid_type_name = invalid_type_name
         self.msg = msg
@@ -16,8 +16,7 @@ class InvalidDocNameError(Exception):
     def __init__(self, invalid_document_name, msg=None):
         if msg is None:
             # Set some default useful error message
-            msg = "The document with the given name '{}' cannot be resolved into a store understandable format".format(
-                invalid_document_name)
+            msg = f"The document with the given name '{invalid_document_name}' cannot be resolved into a store understandable format"
         super(InvalidDocNameError, self).__init__(msg)
         self.invalid_document_name = invalid_document_name
         self.msg = msg

@@ -23,7 +23,7 @@ def get_configurator_file(state: str):
 
     if document == {}:
         raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="No document with name " + state)
-    logger.debug("[DocumentsByType GET] document(s): " + str(document))
+    logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
 
 

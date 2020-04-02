@@ -5,10 +5,11 @@ from message_channel.message_channel_factory import MessageChannelFactory
 from task_broker import TaskBroker
 from utils.general_utils import get_hostname
 
+
 logger = logging.getLogger("STACKL_LOGGER")
 
-##TODO WIP for during the Task Rework
 
+##TODO WIP for during the Task Rework
 class CustomTaskBroker(TaskBroker):
 
     def __init__(self):
@@ -51,7 +52,7 @@ class CustomTaskBroker(TaskBroker):
             else:
                 self.message_channel.publish(task_obj)
         except Exception as e:
-            logger.error("[CustomTaskBroker] Invalid task received. Error message '{0}'", e)
+            logger.error(f"[CustomTaskBroker] Invalid task received. Error message '{e}'")
 
     def get_task(self, tag):
         task = self.message_channel.pop("task_" + tag + ':process')[1]
