@@ -28,7 +28,7 @@ def initialize():
     try:
         time.sleep(5)
         redis_cache = redis.StrictRedis(host=get_config_key("REDIS_HOST"), port=6379)
-    except:
+    except Exception: #TODO TBD Fix during Task rework
         redis_cache = redis.StrictRedis(host="localhost", port=6379)
     set_registered_agents(registered_agents_global)
     set_task_queue(task_queue_global)
