@@ -11,7 +11,7 @@ import tornado.web
 import tornado.websocket
 import websockets
 
-import globals
+import stackl_globals
 from agent_broker import AgentBroker
 
 logger = logging.getLogger("STACKL_LOGGER")
@@ -48,19 +48,19 @@ class CustomAgentBroker(AgentBroker):
     def register_agent_connect_info(self, agent_connect_info):
         logger.debug("[CustomAgentBroker] register_agent_connect_info. Registering agent_ws info '{}'".format(
             agent_connect_info))
-        reg_agents = globals.get_registered_agents()
+        reg_agents = stackl_globals.get_registered_agents()
         if agent_connect_info in reg_agents:
             logger.debug(
                 "[CustomAgentBroker] register_agent_ws. Agent already registered! Registered agents: '{0}'".format(
                     reg_agents))
         else:
             reg_agents.append(agent_connect_info)
-            globals.set_registered_agents(reg_agents)
+            stackl_globals.set_registered_agents(reg_agents)
             logger.debug(
                 "[CustomAgentBroker] register_agent_ws. New agent added. Registered agents: '{0}'".format(reg_agents))
 
     def get_agent_for_task(self, task):
-        registered_agents = globals.get_registered_agents()
+        registered_agents = stackl_globals.get_registered_agents()
         logger.debug(
             "[CustomAgentBroker] get_agent_for_task. Determining appropriate agent for task '{0}' from  registered_agents '{1}'".format(
                 task.__dict__, registered_agents))

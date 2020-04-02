@@ -3,7 +3,7 @@ import logging
 
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
-from globals import types, types_configs, types_items
+from stackl_globals import types, types_configs, types_items
 from model.configs.document_model import BaseDocument
 from model.configs.environment_model import Environment
 from model.configs.functional_requirement_model import FunctionalRequirement
@@ -213,7 +213,7 @@ class DocumentManager(Manager):
             logger.debug(f"[DocumentManager] Updating document with original contents: {prev_document_string}")
             doc_new_string = json.dumps(document)
             logger.debug(f"[DocumentManager] Updating document with modified contents: {doc_new_string}")
-            if (prev_document_string == doc_new_string):
+            if prev_document_string == doc_new_string:
                 logger.debug("[DocumentManager] Original document and new document are the same! NOT updating")
             else:
                 store_response = self.store.put(document)
