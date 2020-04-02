@@ -22,7 +22,8 @@ def get_configurator_file(state: str):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
     if document == {}:
-        raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="No document with name " + state)
+        raise HTTPException(status_code=StatusCode.NOT_FOUND,
+                            detail="No document with name " + state)
     logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
 

@@ -5,12 +5,10 @@ from manager.stack_manager import StackManager
 from manager.user_manager import UserManager
 from utils.stackl_singleton import Singleton
 
-
 logger = logging.getLogger("STACKL_LOGGER")
 
 
 class ManagerFactory(metaclass=Singleton):
-
     def __init__(self):
         logger.info("[ManagerFactory] Creating Managers")
 

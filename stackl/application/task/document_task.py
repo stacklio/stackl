@@ -2,7 +2,6 @@ from task import Task, logger
 
 
 class DocumentTask(Task):
-
     @property
     def valid_subtasks(self):
         return [
@@ -16,8 +15,12 @@ class DocumentTask(Task):
         self.topic = 'document_task'
         self.document = json_obj.get('document', None)
         given_subtasks_list = json_obj.get('subtasks', [None])
-        if all(subtasks in self.valid_subtasks for subtasks in given_subtasks_list):
+        if all(subtasks in self.valid_subtasks
+               for subtasks in given_subtasks_list):
             self.subtasks = given_subtasks_list
         else:
-            logger.info("[DocumentTask] The given DocumentTask contains invalid subtasks")
-            raise Exception("The given DocumentTasks contains invalid subtasks")
+            logger.info(
+                "[DocumentTask] The given DocumentTask contains invalid subtasks"
+            )
+            raise Exception(
+                "The given DocumentTasks contains invalid subtasks")
