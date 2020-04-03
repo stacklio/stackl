@@ -148,6 +148,20 @@ def create_cm(name, namespace, data):
     return cm
 
 
+# def create_variables_cm(name, namespace, stack_instance, service,
+#                         variables_config):
+#     cm = client.V1ConfigMap()
+#     cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
+#     stack_instance = self.stack_instance_api.get_stack_instance(stack_instance)
+#     variables = {}
+#     for key, value in stack_instance.services[
+#             service].provisioning_parameters.items():
+#         variables[key] = value
+#     if variables_config["format"] == "json":
+#         cm.data = {variables_config["filename"]: json.dumps(variables)}
+#     return cm
+
+
 class Handler(ABC):
     def __init__(self):
         config.load_incluster_config()
@@ -161,6 +175,8 @@ class Handler(ABC):
         api_client = stackl_client.ApiClient(configuration=configuration)
         self.stack_instance_api = stackl_client.StackInstancesApi(
             api_client=api_client)
+        self.stack_instance = None
+        self.service = None
 
     def wait_for_job(self, job_name, namespace):
         ready = False
@@ -176,6 +192,9 @@ class Handler(ABC):
         return api_response
 
     def handle(self, invocation, action):
+        self.stack_instance = self.stack_instance_api.get_stack_instance(
+            invocation.stack_instance)
+        self.service = invocation.service
         logger.info("Invocation received: %s" % invocation)
         logger.info("Action received: %s" % action)
         stackl_namespace = os.environ['stackl_namespace']
