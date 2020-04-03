@@ -151,8 +151,10 @@ class OPABroker:
             target_data = {
                 "resources":
                 sit_doc.infrastructure_capabilities[target]["resources"],
-                "config":
-                sit_doc.infrastructure_capabilities[target]["config"]
+                "configs":
+                sit_doc.infrastructure_capabilities[target]["configs"],
+                "tags":
+                sit_doc.infrastructure_capabilities[target]["tags"]
             }
             targets_as_data[target] = target_data
         logger.debug(

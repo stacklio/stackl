@@ -35,6 +35,7 @@ example_stack_instance_invocation = {
 
 class StackInstanceInvocation(BaseModel):
     params: Dict[str, Any] = {}
+    tags: Dict[str, str] = {}
     stack_infrastructure_template: str = "stackl"
     stack_application_template: str = "web"
     stack_instance_name: str = "default_test_instance"
