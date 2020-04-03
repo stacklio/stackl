@@ -17,7 +17,7 @@ class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
         invoc = automation_message.invocation
         automation_response = protos.agent_pb2.AutomationResponse()
         automation_result = automation_response.automation_result
-        handler = self.tool_factory.get_handler(invoc.tool)
+        handler = self.tool_factory.get_handler(invoc.tool, invoc, action)
         result, error_message, hosts = handler.handle(
             invoc, automation_message.action)
         automation_result.service = invoc.service

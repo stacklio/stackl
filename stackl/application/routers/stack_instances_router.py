@@ -7,7 +7,6 @@ from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
 from model.items.stack_instance_model import StackInstance
-from model.items.stack_instance_service_model import ConnectionCredentials
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
@@ -36,7 +35,6 @@ example_stack_instance_invocation = {
 
 class StackInstanceInvocation(BaseModel):
     params: Dict[str, Any] = {}
-    connection_credentials: ConnectionCredentials = None
     stack_infrastructure_template: str = "stackl"
     stack_application_template: str = "web"
     stack_instance_name: str = "default_test_instance"
