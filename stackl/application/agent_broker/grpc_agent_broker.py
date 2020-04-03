@@ -40,10 +40,11 @@ class GrpcAgentBroker(AgentBroker):
 
         logger.info(f"[GrpcAgentBroker] check sts: {sts}")
 
-        if sts.error_message == "":
+        if sts.status == protos.agent_pb2.AutomationResponse.Status.READY:
             status = Status.ready
-        else:
+        elif sts.status == protos.agent_pb2.AutomationResponse.Status.FAILED:
             status = Status.failed
+
         fr_status = FunctionalRequirementStatus(
             functional_requirement=sts.functional_requirement,
             status=status,
@@ -73,8 +74,8 @@ class GrpcAgentBroker(AgentBroker):
                     f"[GrpcAgentBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
                 )
                 automation_message = protos.agent_pb2.AutomationMessage()
-                automation_message.action = action
                 invoc = automation_message.invocation
+                invoc.action = action
                 invoc.functional_requirement = fr
                 invoc.image = fr_doc['invocation']['image']
                 logger.debug(

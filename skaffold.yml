@@ -1,0 +1,57 @@
+apiVersion: skaffold/v2beta2
+kind: Config
+build:
+  artifacts:
+  - image: registry.container-registry.svc.cluster.local:5000/stackl-rest
+    context: stackl/application
+    sync:
+      infer:
+      - '**/*.py'
+      - '**/.*swp'
+    kaniko:
+      dockerfile: Dockerfile_rest
+      cache:
+        repo: registry.container-registry.svc.cluster.local:5000/stackl-rest
+        hostPath: /var/snap/microk8s/common/kaniko/cache
+  - image: registry.container-registry.svc.cluster.local:5000/stackl-worker
+    context: stackl/application
+    sync:
+      infer:
+      - '**/*.py'
+      - '**/.*swp'
+    kaniko:
+      dockerfile: Dockerfile_worker
+      cache:
+        repo: registry.container-registry.svc.cluster.local:5000/stackl-worker
+        hostPath: /var/snap/microk8s/common/kaniko/cache
+  - image: registry.container-registry.svc.cluster.local:5000/stackl-kubernetes-agent
+    context: stackl/agents/kubernetes_agent
+    sync:
+      infer:
+      - '**/*.py'
+      - '**/.*swp'
+    kaniko:
+      dockerfile: Dockerfile-dev
+      cache:
+        repo: registry.container-registry.svc.cluster.local:5000/stackl-kubernetes-agent
+        hostPath: /var/snap/microk8s/common/kaniko/cache
+  insecureRegistries:
+  - registry.container-registry.svc.cluster.local:5000
+  cluster: {}
+deploy:
+  helm:
+    releases:
+    - name: stackl
+      chartPath: build/helm
+      setValues:
+        mode: dev
+      values:
+        stacklAgent.image: registry.container-registry.svc.cluster.local:5000/stackl-kubernetes-agent
+        stacklRest.image: registry.container-registry.svc.cluster.local:5000/stackl-rest
+        stacklWorker.image: registry.container-registry.svc.cluster.local:5000/stackl-worker
+portForward:
+- resourceType: Service
+  resourceName: stackl-rest
+  namespace: default
+  port: 8080
+  localPort: 8080

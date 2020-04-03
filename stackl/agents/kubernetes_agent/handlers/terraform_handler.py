@@ -1,73 +1,107 @@
 import json
-from json import dumps
-
 from handlers.base_handler import Handler
-from handlers.vault_secret_handler import VaultSecretHandler
+from outputs.terraform_output import TerraformOutput
+from secret_factory import get_secret_handler
 
 
 class TerraformHandler(Handler):
+    """Handler for functional requirements using the 'terraform' tool
+
+    :param invoc: Invocation parameters received by grpc, the exact fields can be found at [stackl/agents/grpc_base/protos/agent_pb2.py](stackl/agents/grpc_base/protos/agent_pb2.py)
+    :type invoc: Invocation instance with attributes
+Example invoc:
+class Invocation():
     def __init__(self):
-        super().__init__()
-        self.secret_handler = VaultSecretHandler("json")
+        self.image = "tf_vm_vmw_win"
+        self.infrastructure_target = "vsphere.brussels.vmw-vcenter-01"
+        self.stack_instance = "instance-1"
+        self.service = "windows2019"
+        self.functional_requirement = "windows2019"
+        self.tool = "terraform"
+        self.action = "create"
+"""
+    def __init__(self, invoc):
+        super().__init__(invoc)
+        self._secret_handler = get_secret_handler(invoc, self._stack_instance,
+                                                  "json")
+        self._command = ["/bin/sh", "-c"]
+        if self._functional_requirement_obj.outputs:
+            self._output = TerraformOutput(self._functional_requirement_obj,
+                                           self._invoc.stack_instance)
+        """ Volumes is an array containing dicts that define Kubernetes volumes
+        volume = {
+            name: affix for volume name, str
+            type: 'config_map' or 'empty_dir', str
+            data: dict with keys for files and values with strings, dict
+            mount_path: the volume mount path in the automation container, str
+            sub_path: a specific file in the volume, str
+        }
+        """
+        self._volumes = [self.variables_volume_mount]
+        self._env_list = {"TF_IN_AUTOMATION": "1"}
+        self.secret_variables_file = '/tmp/secrets/secret.json'
+        self.variables_file = '/tmp/variables/variables.json'
 
-    def parse_secrets(self):
-        return dumps(self.secrets)
-
-    def get_env_list(self):
-        return {"TF_IN_AUTOMATION": "1"}
-
-    def get_variables_json(self):
-        return json.dumps(
-            self.stack_instance.services[self.service].provisioning_parameters)
-
-    def get_volumes(self):
-        volumes = []
-        variables = {
+    @property
+    def variables_volume_mount(self):
+        return {
             "name": "variables",
             "type": "config_map",
             "mount_path": "/tmp/variables",
             "data": {
-                "variables.json": self.get_variables_json()
+                "variables.json": self.provisioning_parameters_json_string()
             }
         }
 
-        secrets = {
-            "name": "secrets",
-            "type": "empty_dir",
-            "mount_path": "/tmp/secrets"
-        }
+    @property
+    def provisioning_parameters(self):
+        return self._provisioning_parameters
 
-        backend_config = {
-            "name": "backend-config",
-            "mount_path": "/opt/terraform/plan/backend.tf",
-            "sub_path": "backend.tf",
-            "type": "config_map",
-            "data": {
-                "backend.tf":
-                """terraform {
-  backend "s3" {
-    bucket = "dome-nexus"
-    access_key    = ""
-    secret_key    = ""
-    region = "eu-west-1"
-  }
-}"""
-            }
-        }
-        volumes.append(variables)
-        volumes.append(backend_config)
-        volumes.append(secrets)
-        return volumes
+    @provisioning_parameters.setter
+    def provisioning_parameters(self, provisioning_parameters: dict):
+        self._provisioning_parameters = provisioning_parameters
 
-    def get_command(self):
+    def provisioning_parameters_json_string(self) -> str:
+        """Returns provisioning_parameters which is a json dict to a flat string
+
+        :return: provisioning_parameters
+        :rtype: str
+        """
+        return json.dumps(self.provisioning_parameters)
+
+    @property
+    def command(self):
         return ["/bin/sh", "-c"]
 
-    def get_command_args(self, action):
-        args = ["terraform init"]
-        if action == "create" or action == "update":
-            args[0] += " && terraform apply"
-        else:
-            args[0] += " && terraform destroy"
-        args[
-            0] += " -var-file /tmp/secrets/secret.json -var-file /tmp/variables/variables.json --auto-approve"
-        return args
+    @property
+    def create_command_args(self) -> list:
+        command_args = []
+        command_args.append(f'terraform init')
+        if self._secret_handler and self._secret_handler.terraform_backend_enabled:
+            command_args[
+                0] += f' -backend-config=key={self._stack_instance.name}'
+        command_args[
+            0] += f' && terraform apply -auto-approve -var-file {self.variables_file}'
+
+        if self._secret_handler:
+            command_args[0] += f' -var-file {self.secret_variables_file}'
+        if self._output:
+            command_args[0] += f' {self._output.command_args}'
+        return command_args
+
+    @property
+    def delete_command_args(self) -> list:
+        command_args = []
+        command_args.append(f'terraform init')
+        if self._secret_handler and self._secret_handler.terraform_backend_enabled:
+            command_args[
+                0] += f' -backend-config="key={self._stack_instance.name}"'
+
+        command_args[
+            0] += f' && terraform apply -auto-approve -var-file {self.variables_file}'
+
+        if self._secret_handler:
+            command_args[0] += f' -var-file {self.secret_variables_file}'
+        if self._output:
+            command_args[0] += f' {self._output.command_args}'
+        return command_args

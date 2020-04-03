@@ -1,0 +1,367 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.12.20",
+    "values": {
+        "outputs": {
+            "hosts": {
+                "sensitive": false,
+                "value": [
+                    "10.10.4.171"
+                ]
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "data.template_file.inventory_ansible",
+                    "mode": "data",
+                    "type": "template_file",
+                    "name": "inventory_ansible",
+                    "provider_name": "template",
+                    "schema_version": 0,
+                    "values": {
+                        "filename": null,
+                        "id": "48df6ad3b4287893161d6b2d385847076bad363c992674453ef713ea2739dd78",
+                        "rendered": "---\nall:\n  hosts:\n    machine:\n      ansible_host: testeken58.nubera.local\n",
+                        "template": "---\nall:\n  hosts:\n    machine:\n      ansible_host: ${machine_name}.${dns_suffix}\n",
+                        "vars": {
+                            "dns_suffix": "nubera.local",
+                            "machine_name": "testeken58"
+                        }
+                    }
+                },
+                {
+                    "address": "data.vsphere_compute_cluster.cluster",
+                    "mode": "data",
+                    "type": "vsphere_compute_cluster",
+                    "name": "cluster",
+                    "provider_name": "vsphere",
+                    "schema_version": 0,
+                    "values": {
+                        "datacenter_id": "datacenter-2",
+                        "id": "domain-c7",
+                        "name": "CL01",
+                        "resource_pool_id": "resgroup-8"
+                    }
+                },
+                {
+                    "address": "data.vsphere_datacenter.dc",
+                    "mode": "data",
+                    "type": "vsphere_datacenter",
+                    "name": "dc",
+                    "provider_name": "vsphere",
+                    "schema_version": 0,
+                    "values": {
+                        "id": "datacenter-2",
+                        "name": "DC01"
+                    }
+                },
+                {
+                    "address": "data.vsphere_datastore.datastore",
+                    "mode": "data",
+                    "type": "vsphere_datastore",
+                    "name": "datastore",
+                    "provider_name": "vsphere",
+                    "schema_version": 0,
+                    "values": {
+                        "datacenter_id": "datacenter-2",
+                        "id": "datastore-12",
+                        "name": "vsanDatastore"
+                    }
+                },
+                {
+                    "address": "data.vsphere_network.network",
+                    "mode": "data",
+                    "type": "vsphere_network",
+                    "name": "network",
+                    "provider_name": "vsphere",
+                    "schema_version": 0,
+                    "values": {
+                        "datacenter_id": "datacenter-2",
+                        "distributed_virtual_switch_uuid": null,
+                        "id": "dvportgroup-3736",
+                        "name": "ls4-samy",
+                        "type": "DistributedVirtualPortgroup"
+                    }
+                },
+                {
+                    "address": "data.vsphere_resource_pool.pool",
+                    "mode": "data",
+                    "type": "vsphere_resource_pool",
+                    "name": "pool",
+                    "provider_name": "vsphere",
+                    "schema_version": 0,
+                    "values": {
+                        "datacenter_id": "datacenter-2",
+                        "id": "resgroup-8",
+                        "name": "CL01/Resources"
+                    }
+                },
+                {
+                    "address": "data.vsphere_virtual_machine.template",
+                    "mode": "data",
+                    "type": "vsphere_virtual_machine",
+                    "name": "template",
+                    "provider_name": "vsphere",
+                    "schema_version": 0,
+                    "values": {
+                        "alternate_guest_name": "",
+                        "datacenter_id": "datacenter-2",
+                        "disks": [
+                            {
+                                "eagerly_scrub": false,
+                                "size": 40,
+                                "thin_provisioned": true
+                            }
+                        ],
+                        "firmware": "bios",
+                        "guest_id": "windows9Server64Guest",
+                        "guest_ip_addresses": [],
+                        "id": "423a88f2-ae89-da2b-c44d-9872c35a5afd",
+                        "name": "templates/win2019/win2019_template_v0.0.1",
+                        "network_interface_types": [
+                            "vmxnet3"
+                        ],
+                        "scsi_bus_sharing": "noSharing",
+                        "scsi_controller_scan_count": 1,
+                        "scsi_type": "lsilogic-sas"
+                    }
+                },
+                {
+                    "address": "dns_a_record_set.machine",
+                    "mode": "managed",
+                    "type": "dns_a_record_set",
+                    "name": "machine",
+                    "provider_name": "dns",
+                    "schema_version": 0,
+                    "values": {
+                        "addresses": [
+                            "10.10.4.171"
+                        ],
+                        "id": "testeken58.nubera.local.",
+                        "name": "testeken58",
+                        "ttl": 3600,
+                        "zone": "nubera.local."
+                    },
+                    "depends_on": [
+                        "vsphere_folder.folder",
+                        "vsphere_virtual_machine.machine"
+                    ]
+                },
+                {
+                    "address": "local_file.inventory_vms",
+                    "mode": "managed",
+                    "type": "local_file",
+                    "name": "inventory_vms",
+                    "provider_name": "local",
+                    "schema_version": 0,
+                    "values": {
+                        "content": "---\nall:\n  hosts:\n    machine:\n      ansible_host: testeken58.nubera.local\n",
+                        "content_base64": null,
+                        "directory_permission": "0777",
+                        "file_permission": "0777",
+                        "filename": "inventory.yml",
+                        "id": "9b17ce90a4ca13d471807dc02a0110a6f5b16ebf",
+                        "sensitive_content": null
+                    }
+                },
+                {
+                    "address": "vsphere_folder.folder",
+                    "mode": "managed",
+                    "type": "vsphere_folder",
+                    "name": "folder",
+                    "provider_name": "vsphere",
+                    "schema_version": 1,
+                    "values": {
+                        "custom_attributes": null,
+                        "datacenter_id": "datacenter-2",
+                        "id": "group-v3821",
+                        "path": "samy_10.10.4.0/testeken",
+                        "tags": null,
+                        "type": "vm"
+                    }
+                },
+                {
+                    "address": "vsphere_virtual_machine.machine",
+                    "mode": "managed",
+                    "type": "vsphere_virtual_machine",
+                    "name": "machine",
+                    "provider_name": "vsphere",
+                    "schema_version": 3,
+                    "values": {
+                        "alternate_guest_name": "",
+                        "annotation": "",
+                        "boot_delay": 0,
+                        "boot_retry_delay": 10000,
+                        "boot_retry_enabled": false,
+                        "cdrom": [],
+                        "change_version": "2020-04-08T16:22:35.522101Z",
+                        "clone": [
+                            {
+                                "customize": [
+                                    {
+                                        "dns_server_list": null,
+                                        "dns_suffix_list": null,
+                                        "ipv4_gateway": "",
+                                        "ipv6_gateway": "",
+                                        "linux_options": [],
+                                        "network_interface": [
+                                            {
+                                                "dns_domain": null,
+                                                "dns_server_list": null,
+                                                "ipv4_address": null,
+                                                "ipv4_netmask": null,
+                                                "ipv6_address": null,
+                                                "ipv6_netmask": null
+                                            }
+                                        ],
+                                        "timeout": 10,
+                                        "windows_options": [
+                                            {
+                                                "admin_password": "automation",
+                                                "auto_logon": true,
+                                                "auto_logon_count": 1,
+                                                "computer_name": "testeken58",
+                                                "domain_admin_password": "",
+                                                "domain_admin_user": "",
+                                                "full_name": "Administrator",
+                                                "join_domain": "",
+                                                "organization_name": "Managed by Terraform",
+                                                "product_key": "",
+                                                "run_once_command_list": [
+                                                    "net.exe user automation automation /add /y /expires:never",
+                                                    "net.exe localgroup Administrators automation /add",
+                                                    "powershell.exe -ExecutionPolicy Unrestricted Set-Service -Name WinRM -StartupType Automatic",
+                                                    "netsh advfirewall firewall add rule name=WinRM dir=in action=allow protocol=TCP localport=5985",
+                                                    "Start-Service -Name WinRM -ErrorAction Stop"
+                                                ],
+                                                "time_zone": 85,
+                                                "workgroup": ""
+                                            }
+                                        ],
+                                        "windows_sysprep_text": ""
+                                    }
+                                ],
+                                "linked_clone": false,
+                                "ovf_network_map": null,
+                                "ovf_storage_map": null,
+                                "template_uuid": "423a88f2-ae89-da2b-c44d-9872c35a5afd",
+                                "timeout": 30
+                            }
+                        ],
+                        "cpu_hot_add_enabled": false,
+                        "cpu_hot_remove_enabled": false,
+                        "cpu_limit": -1,
+                        "cpu_performance_counters_enabled": false,
+                        "cpu_reservation": 0,
+                        "cpu_share_count": 2000,
+                        "cpu_share_level": "normal",
+                        "custom_attributes": null,
+                        "datastore_cluster_id": null,
+                        "datastore_id": "datastore-12",
+                        "default_ip_address": "10.10.4.171",
+                        "disk": [
+                            {
+                                "attach": false,
+                                "datastore_id": "datastore-12",
+                                "device_address": "scsi:0:0",
+                                "disk_mode": "persistent",
+                                "disk_sharing": "sharingNone",
+                                "eagerly_scrub": false,
+                                "io_limit": -1,
+                                "io_reservation": 0,
+                                "io_share_count": 1000,
+                                "io_share_level": "normal",
+                                "keep_on_remove": false,
+                                "key": 2000,
+                                "label": "disk0",
+                                "name": "",
+                                "path": "f7f98d5e-c4ac-423e-7b4b-0cc47a3ae612/testeken58.vmdk",
+                                "size": 40,
+                                "storage_policy_id": "aa6d5a82-1c88-45da-85d3-3d74b91a5bad",
+                                "thin_provisioned": true,
+                                "unit_number": 0,
+                                "uuid": "6000C29e-f5a5-41ff-d967-3d3df5e3165a",
+                                "write_through": false
+                            }
+                        ],
+                        "efi_secure_boot_enabled": false,
+                        "enable_disk_uuid": true,
+                        "enable_logging": false,
+                        "ept_rvi_mode": "automatic",
+                        "extra_config": null,
+                        "firmware": "bios",
+                        "folder": "samy_10.10.4.0/testeken",
+                        "force_power_off": true,
+                        "guest_id": "windows9Server64Guest",
+                        "guest_ip_addresses": [
+                            "10.10.4.171",
+                            "fe80::49c4:d49d:e6fa:f8b1"
+                        ],
+                        "hardware_version": 14,
+                        "host_system_id": "host-15",
+                        "hv_mode": "hvAuto",
+                        "id": "423a4113-3490-7879-96ec-3e5102663d87",
+                        "ignored_guest_ips": null,
+                        "imported": null,
+                        "latency_sensitivity": "normal",
+                        "memory": 2000,
+                        "memory_hot_add_enabled": false,
+                        "memory_limit": -1,
+                        "memory_reservation": 0,
+                        "memory_share_count": 20000,
+                        "memory_share_level": "normal",
+                        "migrate_wait_timeout": 30,
+                        "moid": "vm-3822",
+                        "name": "testeken58",
+                        "nested_hv_enabled": false,
+                        "network_interface": [
+                            {
+                                "adapter_type": "vmxnet3",
+                                "bandwidth_limit": -1,
+                                "bandwidth_reservation": 0,
+                                "bandwidth_share_count": 50,
+                                "bandwidth_share_level": "normal",
+                                "device_address": "pci:0:7",
+                                "key": 4000,
+                                "mac_address": "00:50:56:ba:b2:7a",
+                                "network_id": "dvportgroup-3736",
+                                "ovf_mapping": "",
+                                "use_static_mac": false
+                            }
+                        ],
+                        "num_cores_per_socket": 1,
+                        "num_cpus": 2,
+                        "poweron_timeout": 300,
+                        "reboot_required": false,
+                        "resource_pool_id": "resgroup-8",
+                        "run_tools_scripts_after_power_on": true,
+                        "run_tools_scripts_after_resume": true,
+                        "run_tools_scripts_before_guest_reboot": false,
+                        "run_tools_scripts_before_guest_shutdown": true,
+                        "run_tools_scripts_before_guest_standby": true,
+                        "scsi_bus_sharing": "noSharing",
+                        "scsi_controller_count": 1,
+                        "scsi_type": "lsilogic-sas",
+                        "shutdown_wait_timeout": 3,
+                        "storage_policy_id": "aa6d5a82-1c88-45da-85d3-3d74b91a5bad",
+                        "swap_placement_policy": "inherit",
+                        "sync_time_with_host": false,
+                        "tags": null,
+                        "uuid": "423a4113-3490-7879-96ec-3e5102663d87",
+                        "vapp": [],
+                        "vapp_transport": [],
+                        "vmware_tools_status": "guestToolsRunning",
+                        "vmx_path": "f7f98d5e-c4ac-423e-7b4b-0cc47a3ae612/testeken58.vmx",
+                        "wait_for_guest_ip_timeout": 0,
+                        "wait_for_guest_net_routable": true,
+                        "wait_for_guest_net_timeout": 5
+                    },
+                    "depends_on": [
+                        "vsphere_folder.folder"
+                    ]
+                }
+            ]
+        }
+    }
+}
