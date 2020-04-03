@@ -9,5 +9,5 @@ class StackInstanceService(BaseModel):
     infrastructure_target: str = None
     hosts: List[str] = None
     provisioning_parameters: Dict[str, Any] = None
-    provisioning_secrets: Dict[str, Any] = None
+    secrets: Dict[str, Any] = None
     status: List[FunctionalRequirementStatus] = None

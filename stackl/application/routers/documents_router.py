@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
-from model.configs.document_model import BaseDocument
+from model.configs.infrastructure_base_document import InfrastructureBaseDocument
 from stackl_globals import types
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError
@@ -22,7 +22,7 @@ def get_types():
     return types
 
 
-@router.get('/{type_name}', response_model=List[BaseDocument])
+@router.get('/{type_name}', response_model=List[InfrastructureBaseDocument])
 def get_documents_by_type(type_name: str):
     """Returns all documents with a specific type"""
     logger.info(
@@ -36,7 +36,7 @@ def get_documents_by_type(type_name: str):
     return documents
 
 
-@router.get('/{type_name}/{document_name}', response_model=BaseDocument)
+@router.get('/{type_name}/{document_name}', response_model=InfrastructureBaseDocument)
 def get_document_by_type_and_name(type_name: str, document_name: str):
     """Returns a specific document with a type and name"""
     logger.info(
@@ -55,8 +55,8 @@ def get_document_by_type_and_name(type_name: str, document_name: str):
     return document
 
 
-@router.post('', response_model=BaseDocument)
-def post_document(document: BaseDocument):
+@router.post('', response_model=InfrastructureBaseDocument)
+def post_document(document: InfrastructureBaseDocument):
     """Create the document with a specific type and an optional name given in the payload"""
     # check if doc already exists
     try:
@@ -77,8 +77,8 @@ def post_document(document: BaseDocument):
     return document
 
 
-@router.put('', response_model=BaseDocument)
-def put_document(document: BaseDocument):
+@router.put('', response_model=InfrastructureBaseDocument)
+def put_document(document: InfrastructureBaseDocument):
     """UPDATES the document with a specific type and an optional name given in the payload"""
     document = document_manager.write_base_document(document)
     return document
