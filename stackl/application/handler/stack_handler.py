@@ -62,8 +62,6 @@ class StackHandler(Handler):
                 **item['params']
             }
             service_definition.status = service_definition_status
-            service_definition.connection_credentials = item[
-                'connection_credentials']
             services[svc] = service_definition
             stack_instance_doc.services = services
         return stack_instance_doc
@@ -82,8 +80,6 @@ class StackHandler(Handler):
                 **merged_capabilities,
                 **item['params']
             }
-            stack_instance.services[svc].connection_credentials = item[
-                'connection_credentials']
         return stack_instance
 
     ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
