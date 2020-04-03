@@ -53,6 +53,11 @@ build_grpc_base:
 	@echo "Building grpc base"
 	cd stackl/agents/grpc_base; ${CONTAINER_ENGINE} build -t stacklio/grpc-base:latest .
 
+.PHONY: build_grpc_base_dev
+build_grpc_base_dev:
+	@echo "Building grpc base"
+	cd stackl/agents/grpc_base; ${CONTAINER_ENGINE} build  -t registry.container-registry.svc.cluster.local:5000/grpc_base .
+
 .PHONY: build_docker_agent
 build_docker_agent:
 	@echo "Building stackl docker agent"
@@ -67,6 +72,11 @@ push_prepare:
 push_rest:
 	@echo "Pushing rest"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_REST):$(VERSIONTAG)
+
+.PHONY: push_grpc_base_dev
+push_grpc_base_dev:
+	@echo "Pushing push_grpc_base_dev"
+	${CONTAINER_ENGINE} push registry.container-registry.svc.cluster.local:5000/grpc_base
 
 .PHONY: push_worker
 push_worker:
@@ -108,6 +118,29 @@ restart:
 	docker-compose -f build/make/dev/docker-compose.yml up -d
 	@echo "Started stackl"
 
+.PHONY: kaniko-warmer
+kaniko-warmer:
+	@echo "Pulling images for caching"
+	skaffold version || (curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.8.0/skaffold-linux-amd64 && chmod +x skaffold && sudo mv skaffold /usr/local/bin)
+	sudo mkdir -p /var/snap/microk8s/common/kaniko/ && sudo chmod -R 766 /var/snap/microk8s/common/kaniko
+	${CONTAINER_ENGINE} run -v /var/snap/microk8s/common/kaniko/:/workspace \
+	  gcr.io/kaniko-project/warmer:latest\
+	  --cache-dir=/workspace/cache \
+	  --image=python:3.8.2-slim-buster \
+	  --image=tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim-2020-04-27
+
+.PHONY: config-microk8s-registry
+config-microk8s-registry:
+	# microk8s.enable registry dns storage
+	# echo '127.0.0.1 registry.container-registry.svc.cluster.local' | sudo tee --append /etc/hosts
+	kubectl port-forward service/registry -n container-registry 5000:5000 &
+
+.PHONY: skaffold
+skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
+	kubectl port-forward service/registry -n container-registry 5000:5000 &
+	skaffold dev --force=false --port-forward --no-prune=true --no-prune-children=true
+
 build: build_prepare build_rest build_worker build_websocket_agent build_grpc_base build_kubernetes_agent build_docker_agent
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start
+dev: kaniko-warmer skaffold

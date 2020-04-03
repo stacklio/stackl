@@ -38,6 +38,10 @@ stacklAgent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
   replicaCount: 1
+  secretHandler: base64
+  # secretHandler: vault
+  # vaultAddr: http://10.11.12.7:8200
+  # vaultRole: stackl
 
 stacklOpa:
   image: openpolicyagent/opa:latest

@@ -6,7 +6,6 @@ service StacklAgent {
 }
 
 message AutomationMessage {
-    string action = 1;
     message Invocation {
         string image = 1;
         string infrastructure_target = 2;
@@ -14,6 +13,7 @@ message AutomationMessage {
         string service = 4;
         string functional_requirement = 5;
         string tool = 6;
+        string action = 7;
     }
     Invocation invocation = 2;
 }

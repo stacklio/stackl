@@ -1,5 +1,5 @@
 FROM stacklio/grpc-base:latest
 
-ENV agent_name="docker"
+ENV AGENT_NAME="docker"
 
 COPY . .
