@@ -129,13 +129,15 @@ Once the box is properly set up, you can easily enter it issuing following comma
 vagrant ssh
 ```
 
-Don't forget to clone the STACKL repository into the Vagrant box (execute following command inside the Vagrant box):
+If synced folders are enabled, you will see it in the output and you can access it by going to `cd /vagrant`.
+
+Without synced folder clone the STACKL repository into the Vagrant box (execute following command inside the Vagrant box):
 
 ```sh
 git clone https://github.com/stacklio/stackl.git
 ```
 
-Now you're all set to get started installing STACKL using Helm templates! You can continue with the next [step](#installing-with-helm).
+Now you're all set to get started installing STACKL using Helm templates! You can continue with the next steps like STACKL [installation](#installing-with-helm) or [development with Skaffold]([http://development](https://skaffold.dev/docs/workflows/dev/)), for example with `make dev`.
 
 Done using the Vagrant box? You can either stop this box so that you can use it again later or delete it entirely with one of following commands:
 

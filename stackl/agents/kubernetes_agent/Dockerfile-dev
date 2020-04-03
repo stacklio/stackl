@@ -1,6 +1,6 @@
-FROM stacklio/grpc-base
+FROM registry.container-registry.svc.cluster.local:5000/grpc_base
 
-ENV agent_name="kubernetes"
+ENV AGENT_NAME="kubernetes"
 
 RUN apt-get update && \
     apt-get install --no-install-recommends npm=5.8.0+ds6-4 -y && \

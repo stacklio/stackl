@@ -1,5 +1,5 @@
 import logging
-
+import protos.agent_pb2
 from agent_broker.agent_broker_factory import AgentBrokerFactory
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
@@ -71,8 +71,15 @@ class StackManager(Manager):
                     for am in job:
                         result = self.agent_broker.send_job_to_agent(
                             agent_connect_info, am)
+                        stack_instance = self.document_manager.get_stack_instance(
+                            stack_instance.name)
                         self.agent_broker.process_job_result(
                             stack_instance, result, self.document_manager)
+                        if result.automation_result.status == protos.agent_pb2.AutomationResponse.Status.FAILED:
+                            logger.error(
+                                f'Job failed for {am.invocation.stack_instance} {am.invocation.functional_requirement}'
+                            )
+                            break
                         logger.debug(
                             "[StackManager] Sent to agent. Result '{0}'".
                             format(result))

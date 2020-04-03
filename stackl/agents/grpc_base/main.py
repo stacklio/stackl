@@ -17,9 +17,8 @@ class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
         invoc = automation_message.invocation
         automation_response = protos.agent_pb2.AutomationResponse()
         automation_result = automation_response.automation_result
-        handler = self.tool_factory.get_handler(invoc.tool)
-        result, error_message, hosts = handler.handle(
-            invoc, automation_message.action)
+        handler = self.tool_factory.get_handler(invoc)
+        result, error_message, hosts = handler.handle()
         automation_result.service = invoc.service
         automation_result.functional_requirement = invoc.functional_requirement
         if result == 0:
@@ -42,5 +41,5 @@ def serve():
 
 
 if __name__ == '__main__':
-    print(f'starting {os.environ["agent_name"]} agent')
+    print(f'starting {os.environ["AGENT_NAME"]} agent')
     serve()

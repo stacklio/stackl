@@ -1,238 +1,298 @@
+from os import environ
+from json import dumps
+from typing import List
+from handlers.base_handler import Handler
+from secrets.base64_secret_handler import Base64SecretHandler
+from secrets.vault_secret_handler import VaultSecretHandler
+from secret_factory import get_secret_handler
+from outputs.ansible_output import AnsibleOutput
+
+stackl_plugin = """
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+DOCUMENTATION = '''
+name: stackl
+plugin_type: inventory
+author:
+  - Stef Graces <@stgrace>
+  - Frederic Van Reet <@GBrawl>
+  - Samy Coenen <@samycoenen>
+short_description: Stackl inventory
+description:
+  - Fetch a Stack instance from Stackl.
+  - Uses a YAML configuration file that ends with C(stackl.(yml|yaml)).
+options:
+  plugin:
+      description: Name of the plugin
+      required: true
+      choices: ['stackl']
+  host:
+      description: Stackl's host url
+      required: true
+  stack_instance:
+      description: Stack instance name
+      required: true
+  secret_handler:
+      description: Name of the secret handler
+      required: false
+      default: base64
+      choices: 
+        - vault
+        - base64
+  vault_addr:
+      description: Vault Address
+      required: false
+  vault_token_path:
+      description: Vault token path
+      required: false
+'''
+
+EXAMPLES = '''
+plugin: stackl
+host: "http://localhost:8080"
+stack_instance: "test_vm"
+'''
+
 import json
-import os
-import time
+import hvac
+import stackl_client
+import base64
 
-import kubernetes.client
-from kubernetes import client, config
-from kubernetes.client.rest import ApiException
-
-from configurator_handler import ConfiguratorHandler
+from ansible.errors import AnsibleError, AnsibleParserError
+from ansible.plugins.inventory import BaseInventoryPlugin
 
 
-class AnsibleHandler(ConfiguratorHandler):
-    def __init__(self):
-        config.load_incluster_config()
-        self.configuration = kubernetes.client.Configuration()
-        self.api_instance = kubernetes.client.BatchV1Api(
-            kubernetes.client.ApiClient(self.configuration))
-        self.api_instance_core = kubernetes.client.CoreV1Api(
-            kubernetes.client.ApiClient(self.configuration))
+def get_vault_secrets(service, address, token_path):
+    f = open(token_path, "r")
+    token = f.readline()
+    client = hvac.Client(url=address, token=token)
+    secret_dict = {}
+    for _, value in service.secrets.items():
+        secret_value = client.read(value)
+        for key, value in secret_value['data']['data'].items():
+            secret_dict[key] = value
+    return secret_dict
 
-    def create_config_map(self, name, namespace, stack_instance):
-        cm = client.V1ConfigMap()
-        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        cm.data = {
-            "stackl.yml":
-            json.dumps({
-                "plugin": "stackl",
-                "host": os.environ['stackl_host'],
-                "stack_instance": stack_instance
-            })
-        }
-        return cm
 
-    def create_job_object(self,
-                          name,
-                          container_image,
-                          stack_instance,
-                          service,
-                          functional_requirement,
-                          namespace="stackl",
-                          container_name="jobcontainer"):
-        body = client.V1Job(api_version="batch/v1", kind="Job")
-        body.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        body.status = client.V1JobStatus()
-        template = client.V1PodTemplate()
-        template.template = client.V1PodTemplateSpec()
-        volumes = []
-        vol = client.V1Volume(name="inventory")
-
-        inventory_config_map = client.V1ConfigMapVolumeSource()
-        inventory_config_map.name = name
-        vol.config_map = inventory_config_map
-
-        volume_mounts = []
-        volume_mount = client.V1VolumeMount(
-            name="inventory",
-            mount_path="/opt/ansible/playbooks/inventory/stackl.yml",
-            sub_path="stackl.yml")
-        volume_mount_stackl_inventory = client.V1VolumeMount(
-            name="stackl-plugin",
-            mount_path="/opt/ansible/plugins/inventory/stackl.py",
-            sub_path="stackl.py")
-        volume_mounts.append(volume_mount)
-        volume_mounts.append(volume_mount_stackl_inventory)
-
-        volumes.append(vol)
-
-        vol_plugin = client.V1Volume(name="stackl-plugin")
-        plugin_config_map = client.V1ConfigMapVolumeSource()
-        plugin_config_map.name = "ansible"
-        vol_plugin.config_map = plugin_config_map
-
-        volumes.append(vol_plugin)
-        env_list = [
-            client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS",
-                            value="/opt/ansible/plugins/inventory")
-        ]
-        root_hack = client.V1SecurityContext()
-        root_hack.run_as_user = 0
-        container = client.V1Container(
-            name=container_name,
-            image=container_image,
-            env=env_list,
-            image_pull_policy="Always",
-            volume_mounts=volume_mounts,
-            command=["ansible"],
-            args=[
-                service, "-m", "include_role", "-v", "-i",
-                "/opt/ansible/playbooks/inventory/stackl.yml", "-a",
-                "name=" + functional_requirement, "-e",
-                "stackl_stack_instance=" + stack_instance, "-e",
-                "stackl_service=" + service, "-e",
-                "stackl_host=" + os.environ['stackl_host']
-            ])
-        secrets = [client.V1LocalObjectReference(name="dome-nexus")]
-        template.template.spec = client.V1PodSpec(containers=[container],
-                                                  restart_policy='Never',
-                                                  security_context=root_hack,
-                                                  image_pull_secrets=secrets,
-                                                  volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600,
-                                     template=template.template,
-                                     backoff_limit=0)
-        return body
-
-    def delete_job_object(self,
-                          name,
-                          container_image,
-                          stack_instance,
-                          service,
-                          namespace="stackl",
-                          container_name="jobcontainer"):
-        body = client.V1Job(api_version="batch/v1", kind="Job")
-        body.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        body.status = client.V1JobStatus()
-        template = client.V1PodTemplate()
-        template.template = client.V1PodTemplateSpec()
-        volumes = []
-        vol = client.V1Volume(name="inventory")
-
-        inventory_config_map = client.V1ConfigMapVolumeSource()
-        inventory_config_map.name = name
-        vol.config_map = inventory_config_map
-
-        volume_mounts = []
-        volume_mount = client.V1VolumeMount(
-            name="inventory",
-            mount_path="/opt/ansible/playbooks/inventory/stackl.yml",
-            sub_path="stackl.yml")
-        volume_mount_stackl_inventory = client.V1VolumeMount(
-            name="stackl-plugin",
-            mount_path="/opt/ansible/plugins/inventory/stackl.py",
-            sub_path="stackl.py")
-        volume_mounts.append(volume_mount)
-        volume_mounts.append(volume_mount_stackl_inventory)
-
-        volumes.append(vol)
-
-        vol_plugin = client.V1Volume(name="stackl-plugin")
-        plugin_config_map = client.V1ConfigMapVolumeSource()
-        plugin_config_map.name = "ansible"
-        vol_plugin.config_map = plugin_config_map
-
-        volumes.append(vol_plugin)
-        env_list = [
-            client.V1EnvVar(name="ANSIBLE_INVENTORY_PLUGINS",
-                            value="/opt/ansible/plugins/inventory")
-        ]
-        root_hack = client.V1SecurityContext()
-        root_hack.run_as_user = 0
-        container = client.V1Container(
-            name=container_name,
-            image=container_image,
-            env=env_list,
-            volume_mounts=volume_mounts,
-            image_pull_policy="Always",
-            security_context=root_hack,
-            command=["ansible"],
-            args=[
-                service, "-m", "inventory/stackl.yml", "-e",
-                "stackl_stack_instance=" + stack_instance, "-e",
-                "stackl_service=" + service, "-e",
-                "stackl_host=" + os.environ['stackl_host'], "-e",
-                "state=absent"
-            ])
-        secrets = [client.V1LocalObjectReference(name="dome-nexus")]
-        template.template.spec = client.V1PodSpec(containers=[container],
-                                                  restart_policy='Never',
-                                                  security_context=root_hack,
-                                                  image_pull_secrets=secrets,
-                                                  volumes=volumes)
-        body.spec = client.V1JobSpec(ttl_seconds_after_finished=600,
-                                     template=template.template,
-                                     backoff_limit=0)
-        return body
-
-    def handle(self, invocation, action):
-        print(invocation)
-        stackl_namespace = os.environ['stackl_namespace']
-        container_image = invocation.image
-        name = "stackl-job-" + self.id_generator()
-        print("create cm")
-        config_map = self._create_config_map(name, stackl_namespace,
-                                             invocation.stack_instance)
-        if action == "create" or action == "update":
-            print("create object")
-            body = self.create_job_object(name,
-                                          container_image,
-                                          invocation.stack_instance,
-                                          invocation.service,
-                                          invocation.functional_requirement,
-                                          namespace=stackl_namespace)
-        else:
-            body = self.delete_job_object(name,
-                                          container_image,
-                                          invocation.stack_instance,
-                                          invocation.service,
-                                          namespace=stackl_namespace)
+def get_base64_secrets(service):
+    secrets = service.secrets
+    decoded_secrets = {}
+    for key, secret in secrets.items():
         try:
-            api_response = self.api_instance_core.create_namespaced_config_map(
-                stackl_namespace, config_map)
-            print(api_response)
-            api_response = self.api_instance.create_namespaced_job(
-                stackl_namespace, body, pretty=True)
-            print(api_response)
-        except ApiException as e:
-            print(
-                "Exception when calling BatchV1Api->create_namespaced_job: %s\n"
-                % e)
-        api_response = self.wait_for_job(name, stackl_namespace)
-        if api_response.status.failed == 1:
-            return 1, "Still need proper output", None
-        else:
-            return 0, "", None
+            decoded_secrets[key] = base64.b64decode(secret + "===").decode("utf-8").rstrip()
+        except Exception:
+            raise AnsibleParserError("Could not decode secret")
+    return decoded_secrets
 
-    def _create_config_map(self, name, namespace, stack_instance):
-        cm = client.V1ConfigMap()
-        cm.metadata = client.V1ObjectMeta(namespace=namespace, name=name)
-        cm.data = {
-            "stackl.yml":
-            json.dumps({
-                "plugin": "stackl",
-                "host": os.environ['stackl_host'],
-                "stack_instance": stack_instance
-            })
+
+class InventoryModule(BaseInventoryPlugin):
+
+    NAME = 'stackl'
+
+    def verify_file(self, path):
+        valid = False
+        if super(InventoryModule, self).verify_file(path):
+            # base class verifies that file exists and is readable by current user
+            if path.endswith(('stackl.yaml', 'stackl.yml')):
+                valid = True
+        return valid
+
+    def parse(self, inventory, loader, path, cache):
+        super(InventoryModule, self).parse(inventory, loader, path, cache)
+        self._read_config_data(path)
+        try:
+            self.plugin = self.get_option('plugin')
+            configuration = stackl_client.Configuration()
+            configuration.host = self.get_option("host")
+            api_client = stackl_client.ApiClient(configuration=configuration)
+            api_instance = stackl_client.StackInstancesApi(
+                api_client=api_client)
+
+            stack_instance_name = self.get_option("stack_instance")
+            stack_instance = api_instance.get_stack_instance(
+                stack_instance_name)
+
+            for service, si_service in stack_instance.services.items():
+                self.inventory.add_group(service)
+                self.inventory.set_variable(service, "infrastructure_target",
+                                            si_service.infrastructure_target)
+                for key, value in si_service.provisioning_parameters.items():
+                    self.inventory.set_variable(service, key, value)
+                if si_service.provisioning_parameters.get('hosts'):
+                    for host in si_service.provisioning_parameters['hosts']:
+                        self.inventory.add_host(host=host, group=service)
+                        self.inventory.set_variable(host, "ansible_host", host)
+
+                else:
+                    self.inventory.add_host(host="kubernetes-" + service,
+                                            group=service)
+
+                if hasattr(si_service, "secrets"):
+                    if self.get_option("secret_handler") == "vault":
+                        secrets = get_vault_secrets(
+                            si_service, self.get_option("vault_addr"),
+                            self.get_option("vault_token_path"))
+                    elif self.get_option("secret_handler") == "base64":
+                        secrets = get_base64_secrets(si_service)
+                    for key, value in secrets.items():
+                        self.inventory.set_variable(service, key, value)
+
+        except Exception as e:
+            raise AnsibleParserError(
+                'All correct options required: {}'.format(e))
+"""
+
+playbook_include_role = """
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: "{{ ansible_role }}"
+    - set_fact:
+        output_dict: {}
+    - set_fact:
+        output_dict: "{{ output_dict | combine(vars) }}"
+    - set_fact:
+        output_dict: "{{ output_dict | combine({'environment': environment}) }}"
+    - set_fact:
+        output_dict: "{{ output_dict | combine({'group_names': group_names}) }}"
+    - set_fact:
+        output_dict: "{{ output_dict | combine({'groups': groups}) }}"
+    - set_fact:
+        output_dict: "{{ output_dict | combine({'hostvars': hostvars}) }}"
+    - copy:
+        content: "{{ output_dict | to_nice_json }}"
+        dest: "{{ outputs_path | default('/tmp/outputs.json') }}"
+"""
+
+
+class AnsibleHandler(Handler):
+    """Handler for functional requirements using the 'ansible' tool
+
+    :param invoc: Invocation parameters received by grpc, the exact fields can be found at [stackl/agents/grpc_base/protos/agent_pb2.py](stackl/agents/grpc_base/protos/agent_pb2.py)
+    :type invoc: Invocation instance with attributes
+Example invoc:
+class Invocation():
+    def __init__(self):
+        self.image = "tf_vm_vmw_win"
+        self.infrastructure_target = "vsphere.brussels.vmw-vcenter-01"
+        self.stack_instance = "instance-1"
+        self.service = "windows2019"
+        self.functional_requirement = "windows2019"
+        self.tool = "ansible"
+        self.action = "create"
+"""
+    def __init__(self, invoc):
+        super().__init__(invoc)
+        self._secret_handler = get_secret_handler(invoc, self._stack_instance,
+                                                  "yaml")
+        # If any outputs are defined in the functional requirement set in base_handler
+        if self._functional_requirement_obj.outputs:
+            self._output = AnsibleOutput(self._functional_requirement_obj,
+                                         self._invoc.stack_instance)
+        self._env_list = {
+            "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory"
         }
-        return cm
+        if isinstance(self._secret_handler, VaultSecretHandler):
+            stackl_inv = {
+                "plugin": "stackl",
+                "host": environ['STACKL_HOST'],
+                "stack_instance": self._invoc.stack_instance,
+                "vault_token_path": self._secret_handler._vault_token_path,
+                "vault_addr": self._secret_handler._vault_addr,
+                "secret_handler": "vault"
+            }
+        elif isinstance(self._secret_handler, Base64SecretHandler):
+            stackl_inv = {
+                "plugin": "stackl",
+                "host": environ['STACKL_HOST'],
+                "stack_instance": self._invoc.stack_instance,
+                "secret_handler": "base64"
+            }
+        else:
+            stackl_inv = {
+                "plugin": "stackl",
+                "host": environ['STACKL_HOST'],
+                "stack_instance": self._invoc.stack_instance,
+                "secret_handler": "none"
+            }
 
-    def _wait_for_job(self, job_name, namespace):
-        ready = False
-        api_response = None
-        while not ready:
-            time.sleep(5)
-            api_response = self.api_instance.read_namespaced_job(
-                job_name, namespace)
-            if api_response.status.failed != 0 or api_response.status.succeeded != 0:
-                ready = True
-        return api_response
+        """ Volumes is an array containing dicts that define Kubernetes volumes
+        volume = {
+            name: affix for volume name, str
+            type: 'config_map' or 'empty_dir', str
+            data: dict with keys for files and values with strings, dict
+            mount_path: the volume mount path in the automation container, str
+            sub_path: a specific file in the volume, str
+        }
+        """
+        self._volumes = [{
+            "name": "inventory",
+            "type": "config_map",
+            "mount_path": "/opt/ansible/playbooks/inventory/stackl.yml",
+            "sub_path": "stackl.yml",
+            "data": {
+                "stackl.yml": dumps(stackl_inv)
+            }
+        }, {
+            "name": "stackl-plugin",
+            "type": "config_map",
+            "mount_path": "/opt/ansible/plugins/inventory/stackl.py",
+            "sub_path": "stackl.py",
+            "data": {
+                "stackl.py": stackl_plugin
+            }
+        }, {
+            "name": "stackl-playbook",
+            "type": "config_map",
+            "mount_path": "/opt/ansible/playbooks/stackl/",
+            "data": {
+                "playbook-role.yml": playbook_include_role
+            }
+        }]
+        if self._output:
+            self._volumes.append(self._output.volume_mount)
+            self._volumes.append(self._output.spec_mount)
+        self._init_containers = []
+        self._command = ["/bin/sh", "-c"]
+        self._command_args = [
+            self._service, "-m", "include_role", "-v", "-i",
+            "/opt/ansible/playbooks/inventory/stackl.yml", "-a",
+            "name=" + self._functional_requirement
+        ]
+
+    @property
+    def create_command_args(self) -> List[str]:
+        """The command arguments used in a job to create something with Ansible
+
+        :return: A list with strings containing shell commands
+        :rtype: List[str]
+        """
+        self._command_args = [
+            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
+        ]
+        self._command_args[
+            0] += f' && ansible {self._service} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
+        self._command_args[
+            0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
+        self._command_args[
+            0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
+        self._command_args[
+            0] += f'-e ansible_role={self._functional_requirement} '
+        if self._output:
+            self._command_args[
+                0] += f'-e outputs_path={self._output.output_file} '
+        return self._command_args
+
+    @property
+    def delete_command_args(self) -> List[str]:
+        """The command arguments used in a job to delete something with Ansible
+
+        :return: A list with strings containing shell commands
+        :rtype: List[str]
+        """
+        delete_command_args = self.create_command_args
+        delete_command_args[0] += ' -e state=absent'
+        return delete_command_args

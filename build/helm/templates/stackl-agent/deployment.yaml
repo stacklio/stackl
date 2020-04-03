@@ -33,12 +33,24 @@ spec:
             - name: stackl-agent-config
               mountPath: /etc/stackl-agent
           env:
-            - name: "stackl_host"
+            - name: "STACKL_HOST"
               value: "{{ template "stackl.rest" . }}:8080"
-            - name: "stackl_namespace"
-              value: "{{ .Release.Namespace }}"
+            - name: STACKL_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
+            - name: "SECRET_HANDLER"
+              value: "{{ .Values.stacklAgent.secretHandler }}"
+            {{- with .Values.stacklAgent.vaultAddr }}
+            - name: "VAULT_ADDR"
+              value: "{{ . }}"
+            {{- end }}
+            {{- with .Values.stacklAgent.vaultRole }}
+            - name: "VAULT_ROLE"
+              value: "{{ . }}"
+            {{- end }}
       volumes:
         - name: stackl-agent-config
           configMap:

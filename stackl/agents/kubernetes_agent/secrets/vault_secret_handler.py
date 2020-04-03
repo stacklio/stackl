@@ -1,0 +1,110 @@
+from secrets.base_secret_handler import SecretHandler
+
+vault_agent_config = """
+exit_after_auth = false
+pid_file = "%s"
+auto_auth {
+    method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+            role = "%s"
+        }
+    }
+    sink "file" {
+        config = {
+            path = "%s"
+        }
+    }
+}
+
+template {
+  destination = "%s"
+  contents = <<EOH
+%s
+EOH
+}
+"""
+
+extra_template = """
+
+template {
+  destination = "%s"
+  contents = <<EOH
+%s
+EOH
+}
+"""
+
+
+class VaultSecretHandler(SecretHandler):
+    def __init__(self, invoc, stack_instance, vault_addr: str,
+                 secret_format: str, vault_role: str):
+        self._vault_role = vault_role
+        self._vault_addr = vault_addr
+        self.terraform_backend_enabled = False
+        self._invoc = invoc
+        self._secret_format = secret_format.lower()
+        self._pid_file = "/home/vault/pidfile"
+        self._vault_token_path = "/home/vault/.vault-token"
+        self._stack_instance = stack_instance
+        self._destination = f"/tmp/secrets/secret.{self._secret_format}"
+        self._volumes = [{
+            'name': 'vault-agent-config',
+            'mount_path': '/etc/vault-config',
+            'type': 'config_map',
+            'data': {
+                'vault-agent-config.hcl': self._format_template()
+            }
+        }, {
+            "name": "secrets",
+            "type": "empty_dir",
+            "mount_path": "/tmp/secrets"
+        }, {
+            "name": "vault-token",
+            "type": "empty_dir",
+            "mount_path": "/home/vault"
+        }]
+        if self.terraform_backend_enabled:
+            self._volumes.append({
+                "name": "terraform-backend-secrets",
+                "type": "empty_dir",
+                "mount_path": "/opt/terraform/plan",
+                "sub_path": "backend.tf.json"
+            })
+        self._init_containers = [{
+            "name":
+            "vault-agent",
+            "image":
+            "vault",
+            "args": [
+                "agent", "-config=/etc/vault-config/vault-agent-config.hcl",
+                "-exit-after-auth"
+            ]
+        }]
+        self._env_list = {"VAULT_ADDR": self._vault_addr}
+
+    def _format_template(self):
+        content_string = ""
+        if "backend_secret_path" in self._stack_instance.services[
+                self._invoc.service].secrets:
+            self.terraform_backend_enabled = True
+            backend_secret_path = self._stack_instance.services[
+                self._invoc.service].secrets['backend_secret_path']
+        for index, (key, value) in enumerate(self._stack_instance.services[
+                self._invoc.service].secrets.items()):
+            content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}{{ scratch.MapSet "secrets" $key $value }}{{ end }}{{ end }}""" % value
+        if self._secret_format == "json":
+            content_string += '{{ scratch.Get "secrets" | toJSON }}'
+        elif self._secret_format == "yaml":
+            content_string += '{{ scratch.Get "secrets" | toYAML }}'
+        elif self._secret_format == "toml":
+            content_string += '{{ scratch.Get "secrets" | toTOML }}'
+        va_config = vault_agent_config % (self._pid_file, self._vault_role,
+                                          self._vault_token_path,
+                                          self._destination, content_string)
+        if self.terraform_backend_enabled:
+            content_string = """{{ with secret "%s" }}{{ .Data.data | toJSON }}{{ end }}""" % backend_secret_path
+            va_config += extra_template % (
+                "/opt/terraform/plan/backend.tf.json", content_string)
+
+        return va_config

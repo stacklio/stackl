@@ -10,6 +10,7 @@ class InfrastructureBaseDocument(BaseModel):
     type: str
     params: dict = {}
     secrets: dict = {}
+    outputs: dict = {}
     resources: dict = {}
     packages: List[str] = []
     tags: dict = {}
