@@ -1,9 +1,7 @@
 from typing import Dict, List
 
-from model.configs.document_model import BaseDocument
+from model.configs.infrastructure_base_document import InfrastructureBaseDocument
 
 
-class Environment(BaseDocument):
+class Environment(InfrastructureBaseDocument):
     type = "environment"
-    tags: Dict[str, str] = {}
-    configs: List[str] = []
