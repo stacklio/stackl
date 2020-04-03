@@ -47,7 +47,7 @@ class StackHandler(Handler):
             infra_target = targets[0]
             service_definition.infrastructure_target = infra_target
             capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                infra_target]
+                infra_target]["provisioning_parameters"]
             merged_capabilities = {**capabilities_of_target, **svc_doc.params}
             for fr in svc_doc.functional_requirements:
                 fr_status = FunctionalRequirementStatus(
@@ -103,7 +103,9 @@ class StackHandler(Handler):
             services.append(self.document_manager.get_service(s))
         sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(
             stack_app_template, services)
-        opa_data = {**sat_as_opa_data, **sit_as_opa_data}
+        required_tags = {}
+        required_tags["required_tags"] = item["tags"]
+        opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
 
         logger.debug(
             "[StackHandler] _handle_create. performing opa query with data: {0}"
@@ -186,9 +188,25 @@ class StackHandler(Handler):
                 **location.params,
                 **zone.params
             }
+            infr_targets_tags = {
+                **environment.tags,
+                **location.tags,
+                **zone.tags
+            }
+            infr_targets_configs = {
+                **environment.configs,
+                **location.configs,
+                **zone.configs
+            }
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
-            infr_targets_capabilities[infr_target_key] = infr_target_capability
+            infr_targets_capabilities[infr_target_key] = {}
+            infr_targets_capabilities[infr_target_key][
+                "provisioning_parameters"] = infr_target_capability
+            infr_targets_capabilities[infr_target_key][
+                "tags"] = infr_targets_tags
+            infr_targets_capabilities[infr_target_key][
+                "configs"] = infr_targets_configs
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())

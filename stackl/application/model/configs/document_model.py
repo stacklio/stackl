@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from pydantic import BaseModel  #pylint: disable=E0611 #error in pylint
 
@@ -10,4 +10,3 @@ class BaseDocument(BaseModel):
     type: str
     params: dict = {}
     secrets: dict = {}
-    configs: List[str] = []
