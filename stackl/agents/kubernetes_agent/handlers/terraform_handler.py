@@ -1,3 +1,4 @@
+import json
 from json import dumps
 
 from handlers.base_handler import Handler
@@ -13,19 +14,22 @@ class TerraformHandler(Handler):
         return dumps(self.secrets)
 
     def get_env_list(self):
-        return {}
+        return {"TF_IN_AUTOMATION": "1"}
+
+    def get_variables_json(self):
+        return json.dumps(
+            self.stack_instance.services[self.service].provisioning_parameters)
 
     def get_volumes(self):
         volumes = []
-        # if self.invocation.stack_instance.services.secrets:
-        # secret_volume = {
-        #     "name": "secrets",
-        #     "mount_path": "/opt/terraform/plan/secrets.tf",
-        #     "sub_path": "secrets.tf",
-        #     "type": "emptydir",
-        #     "data": self.parse_secrets()
-        # }
-        # volumes.append(secret_volume)
+        variables = {
+            "name": "variables",
+            "type": "config_map",
+            "mount_path": "/tmp/variables",
+            "data": {
+                "variables.json": self.get_variables_json()
+            }
+        }
 
         secrets = {
             "name": "secrets",
@@ -50,6 +54,7 @@ class TerraformHandler(Handler):
 }"""
             }
         }
+        volumes.append(variables)
         volumes.append(backend_config)
         volumes.append(secrets)
         return volumes
@@ -63,5 +68,6 @@ class TerraformHandler(Handler):
             args[0] += " && terraform apply"
         else:
             args[0] += " && terraform destroy"
-        args[0] += " -var-file /tmp/secrets/secret.json"
+        args[
+            0] += " -var-file /tmp/secrets/secret.json -var-file /tmp/variables/variables.json --auto-approve"
         return args
