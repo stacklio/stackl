@@ -14,13 +14,14 @@ from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disa
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 import logging.config
 
-logger = logging.getLogger("WORKER_LOGGER")
+logger = logging.getLogger("STACKL_LOGGER")
 level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
-formatter = logging.Formatter('[[[%(asctime)s|%(message)s',
-                              "%d.%m.%y|%H:%M:%S")
+formatter = logging.Formatter(
+    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}"
+)
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 

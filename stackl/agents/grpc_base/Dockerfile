@@ -4,8 +4,7 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker.io=18.09.1+dfsg1-7.1+deb10u1 && \
+RUN apt-get update && apt-get install -y --no-install-recommends docker.io=18.09.1+dfsg1-7.1+deb10u1 && \
     pip3 install --no-cache-dir -r requirements.txt && \
     rm -rf /var/lib/apt/lists/*
 

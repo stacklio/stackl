@@ -47,8 +47,11 @@ class StackHandler(Handler):
             infra_target = targets[0]
             service_definition.infrastructure_target = infra_target
             capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                infra_target]
+                infra_target]["provisioning_parameters"]
+            secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                infra_target]["secrets"]
             merged_capabilities = {**capabilities_of_target, **svc_doc.params}
+            merged_secrets = {**secrets_of_target, **svc_doc.secrets}
             for fr in svc_doc.functional_requirements:
                 fr_status = FunctionalRequirementStatus(
                     functional_requirement=fr,
@@ -57,13 +60,16 @@ class StackHandler(Handler):
                 service_definition_status.append(fr_status)
                 fr_doc = self.document_manager.get_functional_requirement(fr)
                 merged_capabilities = {**merged_capabilities, **fr_doc.params}
+                merged_secrets = {**merged_secrets, **fr_doc.secrets}
             service_definition.provisioning_parameters = {
                 **merged_capabilities,
                 **item['params']
             }
+            service_definition.secrets = {
+                **merged_secrets,
+                **item['secrets']
+            }
             service_definition.status = service_definition_status
-            service_definition.connection_credentials = item[
-                'connection_credentials']
             services[svc] = service_definition
             stack_instance_doc.services = services
         return stack_instance_doc
@@ -82,8 +88,6 @@ class StackHandler(Handler):
                 **merged_capabilities,
                 **item['params']
             }
-            stack_instance.services[svc].connection_credentials = item[
-                'connection_credentials']
         return stack_instance
 
     ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
@@ -107,7 +111,9 @@ class StackHandler(Handler):
             services.append(self.document_manager.get_service(s))
         sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(
             stack_app_template, services)
-        opa_data = {**sat_as_opa_data, **sit_as_opa_data}
+        required_tags = {}
+        required_tags["required_tags"] = item["tags"]
+        opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
 
         logger.debug(
             "[StackHandler] _handle_create. performing opa query with data: {0}"
@@ -190,9 +196,31 @@ class StackHandler(Handler):
                 **location.params,
                 **zone.params
             }
+            infr_target_tags = {
+                **environment.tags,
+                **location.tags,
+                **zone.tags
+            }
+            infr_target_resources = environment.resources
+            infr_target_secrets = {
+                **environment.secrets,
+                **location.secrets,
+                **zone.secrets
+            }
+            infr_target_configs = environment.configs + location.configs + zone.configs
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
-            infr_targets_capabilities[infr_target_key] = infr_target_capability
+            infr_targets_capabilities[infr_target_key] = {}
+            infr_targets_capabilities[infr_target_key][
+                "provisioning_parameters"] = infr_target_capability
+            infr_targets_capabilities[infr_target_key][
+                "tags"] = infr_target_tags
+            infr_targets_capabilities[infr_target_key][
+                "configs"] = infr_target_configs
+            infr_targets_capabilities[infr_target_key][
+                "resources"] = infr_target_resources
+            infr_targets_capabilities[infr_target_key][
+                "secrets"] = infr_target_secrets
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())

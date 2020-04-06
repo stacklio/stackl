@@ -6,7 +6,7 @@ metadata:
     {{ include "stackl.labels" . | nindent 4 }}
     component: rest
 spec:
-  replicas: {{ .Values.stacklrest.replicas }}
+  replicas: {{ .Values.stacklRest.replicas }}
   selector:
     matchLabels:
       {{- include "stackl.selectorLabels" . | nindent 6 }}
@@ -23,7 +23,7 @@ spec:
     {{- end }}
       containers:
         - name: stackl-rest
-          image: "{{ .Values.stacklrest.image }}"
+          image: "{{ .Values.stacklRest.image }}"
           resources:
             requests:
               memory: 256Mi
@@ -40,17 +40,21 @@ spec:
             - name: "STACKL_DATASTORE_PATH"
               value: "{{ .Values.datastore.path }}"
             - name: "STACKL_TASK_BROKER"
-              value: "{{ .Values.task_broker.type }}"
+              value: "{{ .Values.taskBroker.type }}"
             - name: "STACKL_AGENT_BROKER"
-              value: "{{ .Values.agent_broker.type }}"
+              value: "{{ .Values.agentBroker.type }}"
             - name: "STACKL_MESSAGE_CHANNEL"
-              value: "{{ .Values.message_channel.type }}"
+              value: "{{ .Values.messageChannel.type }}"
             - name: "LOGLEVEL"
               value: "DEBUG"
             - name: "STACKL_REDIS_HOST"
               value: "{{ template "stackl.redis" . }}"
             - name: "STACKL_AGENT_HOST"
               value: "{{ template "stackl.agent" . }}"
+            - name: "STACKL_OPA_HOST"
+              value: "{{ template "stackl.opa" . }}:8181"
+            - name: "WEB_CONCURRENCY"
+              value: "1"
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
           livenessProbe:
