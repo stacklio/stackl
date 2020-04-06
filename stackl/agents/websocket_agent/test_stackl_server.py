@@ -12,7 +12,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         self.certificate = None  # self.request.get_ssl_certificate()
         self.remote_ip = self.request.remote_ip
 
-        print("connection has cert '{0}' and ip '{1}'".format(self.certificate, self.remote_ip))
+        print("connection has cert '{0}' and ip '{1}'".format(
+            self.certificate, self.remote_ip))
         self.write_message("Test_Stackl_Server says Hello!")
 
     def on_message(self, message):
@@ -21,7 +22,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         print("message received as loaded message:  {}".format(loaded_message))
 
         reversed_msg = loaded_message[::-1]
-        # Reverse Message and send it back        
+        # Reverse Message and send it back
         print("sending back reversed message: {}".format(reversed_msg))
         self.write_message(json.dumps(reversed_msg))
 

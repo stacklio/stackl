@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ template "stackl.opa" . }}"
+  labels:
+    {{ include "stackl.labels" . | nindent 4 }}
+    component: rest
+spec:
+  rules:
+    - host: {{ .Values.stacklOpa.hostname }}
+      http:
+        paths:
+          - backend:
+              serviceName: "{{ template "stackl.opa" . }}"
+              servicePort: 8181

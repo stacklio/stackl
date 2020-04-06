@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "stackl-agent-config"
+  labels:
+    {{ include "stackl.labels" . | nindent 4 }}
+data:
+  {{ (.Files.Glob "conf/stackl-agent-config.yaml").AsConfig | nindent 2 }}

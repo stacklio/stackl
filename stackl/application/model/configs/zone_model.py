@@ -1,5 +1,5 @@
-from model.configs.document_model import BaseDocument
+from model.configs.infrastructure_base_document import InfrastructureBaseDocument
 
 
-class Zone(BaseDocument):
+class Zone(InfrastructureBaseDocument):
     type = "zone"

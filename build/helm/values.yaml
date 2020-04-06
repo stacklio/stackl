@@ -6,34 +6,41 @@ datastore:
 #  type: LFS
 #  path: /lfs_store
 
-task_broker:
+taskBroker:
   type: Custom
 
-message_channel:
+messageChannel:
   type: Redis
 
-agent_broker:
+agentBroker:
   type: grpc
 
-stacklrest:
+stacklRest:
   image: stacklio/stackl-rest:dev
   name: stackl-rest
-  hostname: stackl.local
+  serviceType: LoadBalancer
+  hostname: stackl.dome.dev
   replicaCount: 1
 
-stacklworker:
+stacklWorker:
   image: stacklio/stackl-worker:dev
   name: stackl-worker
   replicaCount: 1
 
-stacklredis:
+stacklRedis:
   image: redis:5.0.5
   name: stackl-redis
   replicaCount: 1
 
-stacklagent:
+stacklAgent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
+  replicaCount: 1
+
+stacklOpa:
+  image: openpolicyagent/opa:latest
+  name: stackl-opa
+  hostname: opa.dome.dev
   replicaCount: 1
 
 # example imagePullSecrets: [name: pull-secret-name]

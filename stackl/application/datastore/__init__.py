@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class DataStore(ABC):
-
     @abstractmethod
     def get(self, **keys):
         pass
@@ -15,7 +14,7 @@ class DataStore(ABC):
     def delete(self, **keys):
         pass
 
-    @abstractmethod 
+    @abstractmethod
     def get_configurator_file(self, configurator_file):
         pass
 
@@ -27,7 +26,10 @@ class DataStore(ABC):
     def delete_configurator_file(self, configurator_file):
         pass
 
-    def _create_store_response(self, status_code=400, reason=None, content=None):
+    def _create_store_response(self,
+                               status_code=400,
+                               reason=None,
+                               content=None):
         response = self.StoreResponse()
         response.status_code = status_code
         response.reason = reason
@@ -39,9 +41,7 @@ class DataStore(ABC):
         Potentially other interesting attributes can be added from HTTP, such as elapsed, encoding, etc.
         """
 
-        __attrs__ = [
-            'content', 'status_code', 'reason'
-        ]
+        __attrs__ = ['content', 'status_code', 'reason']
 
         def __init__(self):
             self.content = False

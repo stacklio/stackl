@@ -8,7 +8,6 @@ router = APIRouter()
 #     """Returns hostname of the REST API instance"""
 #     return utils_hostname()
 
-
 # @api.route('', strict_slashes=False)
 # class Users(StacklApiResource):
 #     def get(self):
@@ -29,7 +28,6 @@ router = APIRouter()
 #             return {'return_code': StatusCode.CREATED, 'message': 'Created'}, StatusCode.CREATED
 #         except Exception as e:
 #             return {'return_code': StatusCode.CONFLICT, 'message': 'Error: {}'.format(e)}, StatusCode.CONFLICT
-
 
 # @api.route('/<serial>', strict_slashes=False)
 # class UsersSpecific(StacklApiResource):

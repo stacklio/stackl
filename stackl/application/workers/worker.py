@@ -14,13 +14,14 @@ from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disa
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 import logging.config
 
-
-logger = logging.getLogger("WORKER_LOGGER")
+logger = logging.getLogger("STACKL_LOGGER")
 level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
-formatter = logging.Formatter('[[[%(asctime)s|%(message)s', "%d.%m.%y|%H:%M:%S")
+formatter = logging.Formatter(
+    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}"
+)
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
@@ -42,7 +43,9 @@ class Worker:
         self.task_broker = self.task_broker_factory.get_task_broker()
         self.task_broker.agent_broker = self.agent_broker
 
-        signal_list = [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]
+        signal_list = [
+            signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT
+        ]
         logger.debug(f"[Worker] Adding signal handlers for {signal_list}")
         for sig in signal_list:
             signal.signal(sig, self.exit_handler)
@@ -52,52 +55,62 @@ class Worker:
         try:
             logger.debug("[Worker] Starting Worker")
             time.sleep(5)
-            self.task_broker.start_worker(subscribe_channels=self.get_subscribe_channels())
+            self.task_broker.start_worker(
+                subscribe_channels=self.get_subscribe_channels())
 
             logger.debug("[Worker] Starting queue listen")
-            task_pop_thread = threading.Thread(target=self.start_task_popping, args=[])
+            task_pop_thread = threading.Thread(target=self.start_task_popping,
+                                               args=[])
             task_pop_thread.daemon = True  # ensures that this thread stops if worker stops
             task_pop_thread.start()
 
             while task_pop_thread.is_alive():
                 time.sleep(10)
-            logger.info("[Worker] task_pop_thread was found dead. Killing Worker.")
-        except Exception as e: #TODO TBD during task rework
+            logger.info(
+                "[Worker] task_pop_thread was found dead. Killing Worker.")
+        except Exception as e:  #TODO TBD during task rework
             logger.error(f"[Worker] Exception occured in Worker: {e}")
 
     def start_task_popping(self):
-        logger.info("[Worker] start_task_popping. Starting listening on redis queue")
+        logger.info(
+            "[Worker] start_task_popping. Starting listening on redis queue")
         while True:
             logger.info("[Worker] Waiting for items to appear in queue")
             tag = "common"
             task = self.task_broker.get_task(tag)
 
-            logger.info(f"[Worker] Popped item. Type '{type(task)}'. Item: '{task}'")
+            logger.info(
+                f"[Worker] Popped item. Type '{type(task)}'. Item: '{task}'")
 
             task_attr = json.loads(task)
 
             if task_attr["topic"] == "document_task":
-                logger.info(f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'")
-                thread = threading.Thread(target=self.document_manager.handle_task, args=[task_attr])
+                logger.info(
+                    f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'"
+                )
+                thread = threading.Thread(
+                    target=self.document_manager.handle_task, args=[task_attr])
                 thread.start()
                 continue
             elif task_attr["topic"] == "agent_task":
-                logger.info(f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'")
-                thread = threading.Thread(target=self.agent_broker.handle_task, args=[task_attr])
+                logger.info(
+                    f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'"
+                )
+                thread = threading.Thread(target=self.agent_broker.handle_task,
+                                          args=[task_attr])
                 thread.start()
                 continue
             elif task_attr["topic"] == "stack_task":
-                logger.info(f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'")
-                thread = threading.Thread(target=self.stack_manager.handle_task, args=[task_attr])
+                logger.info(
+                    f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'"
+                )
+                thread = threading.Thread(
+                    target=self.stack_manager.handle_task, args=[task_attr])
                 thread.start()
                 continue
 
     def get_subscribe_channels(self):
-        return [
-            'all',
-            'worker',
-            self.hostname
-        ]
+        return ['all', 'worker', self.hostname]
 
     def exit_handler(self, signum=None):
         logger.info(f"[Worker] Signal handler called with signal {signum}")

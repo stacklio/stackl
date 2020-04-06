@@ -10,8 +10,8 @@ from utils.general_utils import get_config_key
 
 logger = logging.getLogger("STACKL_LOGGER")
 
-class GrpcAgentBroker(AgentBroker):
 
+class GrpcAgentBroker(AgentBroker):
     def __init__(self):
         super(GrpcAgentBroker, self).__init__()
 
@@ -26,7 +26,9 @@ class GrpcAgentBroker(AgentBroker):
         return "gRPC"
 
     def send_job_to_agent(self, agent_connect_info, job):
-        logger.info(f"[GrpcAgentBroker] sending automation message to channel {self.channel}")
+        logger.info(
+            f"[GrpcAgentBroker] sending automation message to channel {self.channel}"
+        )
         result = self.stub.InvokeAutomation(job)
         # logger.info("[GrpcAgentBroker] received result: {0}".format(result))
         return result
@@ -45,8 +47,7 @@ class GrpcAgentBroker(AgentBroker):
         fr_status = FunctionalRequirementStatus(
             functional_requirement=sts.functional_requirement,
             status=status,
-            error_message=sts.error_message
-        )
+            error_message=sts.error_message)
         stack_instance.services[sts.service].status.append(fr_status)
         if len(sts.hosts) > 0:
             stack_instance.services[sts.service].hosts = []
@@ -56,26 +57,36 @@ class GrpcAgentBroker(AgentBroker):
 
     def create_job_for_agent(self, stack_instance, action, document_manager):
         logger.debug(
-            f"[GrpcAgentBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'")
+            f"[GrpcAgentBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
+        )
         job = []
         for service in stack_instance.services:
             service_name = service
             logger.debug(f"[GrpcAgentBroker] service name: '{service_name}")
-            service_doc = document_manager.get_document(type="service", document_name=service_name)
+            service_doc = document_manager.get_document(
+                type="service", document_name=service_name)
             logger.debug(f"[GrpcAgentBroker] service doc: '{service_doc}")
             for fr in service_doc["functional_requirements"]:
-                fr_doc = document_manager.get_document(type="functional_requirement", document_name=fr)
-                logger.debug(f"[GrpcAgentBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'")
+                fr_doc = document_manager.get_document(
+                    type="functional_requirement", document_name=fr)
+                logger.debug(
+                    f"[GrpcAgentBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
+                )
                 automation_message = protos.agent_pb2.AutomationMessage()
                 automation_message.action = action
                 invoc = automation_message.invocation
                 invoc.functional_requirement = fr
                 invoc.image = fr_doc['invocation']['image']
-                logger.debug(f"[GrpcAgentBroker] create_job_for_agent. service debug '{stack_instance.services[service_name]}'")
-                invoc.infrastructure_target = stack_instance.services[service_name].infrastructure_target
+                logger.debug(
+                    f"[GrpcAgentBroker] create_job_for_agent. service debug '{stack_instance.services[service_name]}'"
+                )
+                invoc.infrastructure_target = stack_instance.services[
+                    service_name].infrastructure_target
                 invoc.stack_instance = stack_instance.name
                 invoc.tool = fr_doc['invocation']['tool']
                 invoc.service = service_name
-                logger.debug(f"[GrpcAgentBroker] create_job_for_agent. Added fr '{fr_doc}' and invoc '{invoc.SerializeToString()}'")
+                logger.debug(
+                    f"[GrpcAgentBroker] create_job_for_agent. Added fr '{fr_doc}' and invoc '{invoc.SerializeToString()}'"
+                )
                 job.append(automation_message)
         return job
