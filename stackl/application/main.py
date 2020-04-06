@@ -58,7 +58,7 @@ task_broker_thread = threading.Thread(name="Task Broker Thread",
 task_broker_thread.daemon = True
 task_broker_thread.start()
 
-opa_broker.start()
+opa_broker.start(manager_factory)
 
 logger.info("___________________ STARTING STACKL_API ____________________")
 

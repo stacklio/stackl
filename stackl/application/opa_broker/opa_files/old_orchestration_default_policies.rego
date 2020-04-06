@@ -19,7 +19,6 @@ solution_set_per_service[solution_sets] {
     target := input.infrastructure_targets[tgt]
     satisfies_resources(service, target)
     satisfies_functional_requirement(service, target)
-    not satisfies_tags(input.required_tags, target)
     solution_sets := {svc: tgt}
 }
 
@@ -38,12 +37,7 @@ satisfies_resources(service, target) {
 satisfies_functional_requirement(service, target) {
     # Convert arrays to set
     fr := {x | x := service.functional_requirements[_]}
-    cfg := {x | x := target.configs[_]}
+    cfg := {x | x := target.config[_]}
     # Take the intersection to see if the cfg satisfies all the functional requirements
     fr & cfg == fr
-}
-
-satisfies_tags(required_tags, target) {
-    some t
-    required_tags[t] != target.tags[t]
 }

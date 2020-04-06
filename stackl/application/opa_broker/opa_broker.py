@@ -16,134 +16,132 @@ logger = logging.getLogger("STACKL_LOGGER")
 class OPABroker:
     def __init__(self):
         self.opa_host = "http://{}".format(get_config_key("OPA_HOST"))
+        self.manager_factory = None
+        self.document_manager = None
 
-    def start(self):
+    def start(self, manager_factory):
         logger.debug("[OPABroker] Initialising OPABroker.")
+        self.manager_factory = manager_factory
+        self.document_manager = self.manager_factory.get_document_manager()
         self.load_default_policies()
 
     def load_default_policies(self):
-        pass
         # Note that the ordering of the policies is important
-        # logger.debug("[OPABroker] load_default_policies.")
-        # data = open('/app/opa_broker/opa_files/functions.rego', 'r').read()
-        # response = requests.put(self.opa_host + "/v1/policies/default", data=data)
+        logger.debug("[OPABroker] load_default_policies.")
+        data = open('/app/opa_broker/opa_files/helper_functions.rego',
+                    'r').read()
+        response = requests.put(self.opa_host + "/v1/policies/default",
+                                data=data)
 
-        # data = open('/app/opa_broker/opa_files/orchestration_default_policies.rego', 'r').read()
-        # response = requests.put(self.opa_host + "/v1/policies/orchestration", data=data)
-        # logger.debug("[OPABroker] load_default_policies. Response:{}".format(response))
+        data = open(
+            '/app/opa_broker/opa_files/orchestration_default_policies.rego',
+            'r').read()
+        response = requests.put(self.opa_host + "/v1/policies/orchestration",
+                                data=data)
+        logger.debug(f"[OPABroker] load_default_policies. Response:{response}")
 
     def ask_opa_policy_decision(self,
                                 policy_package="default",
                                 policy_rule="default",
-                                data={}):
+                                data=None):
         logger.debug(
-            "[OPABroker] ask_opa_policy_decision. For policy_package '{0}' and policy_rule '{1}'' and data '{2}'"
-            .format(policy_package, policy_rule, data))
-
+            f"[OPABroker] ask_opa_policy_decision. For policy_package '{policy_package}' and policy_rule '{policy_rule}'' and data '{data}'"
+        )
         # create input to hand to OPA
         input_dict = {"input": data}
-
         try:
             response = requests.post(self.opa_host + "/v1/data/" +
                                      policy_package + "/" + policy_rule,
                                      data=json.dumps(input_dict))
-        except Exception as err:
-            logger.debug(
-                "[OPABroker] ask_opa_policy_decision. error '{0}'".format(err))
+        except Exception as err:  #pylint: disable=broad-except
+            logger.debug(f"[OPABroker] ask_opa_policy_decision. error '{err}'")
             return {}
         if response.status_code >= 300:
             logger.debug(
-                "[OPABroker] ask_opa_policy_decision. Error checking policy, got status %s and message: %s"
-                % (response.status_code, response.text))
+                f"[OPABroker] ask_opa_policy_decision. Error checking policy, got status {response.status_code} and message: {response.text}"
+            )
             return {}
         response_as_json = response.json()
         logger.debug(
-            "[OPABroker] ask_opa_policy_decision. response '{0}'".format(
-                response_as_json))
+            f"[OPABroker] ask_opa_policy_decision. response: {response_as_json}"
+        )
         return response_as_json
 
     def get_opa_policies(self):
         logger.debug("[OPABroker] get_opa_policies.")
         response = requests.get(self.opa_host + "/v1/policies")
         result = response.json()
-        logger.debug("[OPABroker] get_opa_policies. Result: {}".format(result))
+        logger.debug(f"[OPABroker] get_opa_policies. Result: {result}")
         return result
 
     def get_opa_policy(self, policy_id):
-        logger.debug("[OPABroker] get_opa_policy. For policy_id '{0}'".format(
-            policy_id))
+        logger.debug(
+            f"[OPABroker] get_opa_policy. For policy_id '{policy_id}'")
         response = requests.get(self.opa_host + "/v1/policies/" + policy_id)
         result = response.json()
-        logger.debug("[OPABroker] get_opa_policy. Result: {}".format(result))
+        logger.debug(f"[OPABroker] get_opa_policy. Result: {result}")
         return result
 
     def get_opa_data(self, data_path="default"):
-        logger.debug(
-            "[OPABroker] get_opa_data. For path '{}'".format(data_path))
+        logger.debug("[OPABroker] get_opa_data. For path '{data_path}'")
         response = requests.get(self.opa_host + "/v1/data/" + data_path)
         result = response.json()
-        logger.debug("[OPABroker] get_opa_data. Result: {}".format(result))
+        logger.debug(f"[OPABroker] get_opa_data. Result: {result}")
         return result
 
     def load_opa_data(self, data, path="default"):
         logger.debug(
-            "[OPABroker] load_opa_data. For data '{0}' and path '{1}'".format(
-                data, path))
+            f"[OPABroker] load_opa_data. For data '{data}' and path '{path}'")
         response = requests.put(self.opa_host + "/v1/data/" + path,
                                 data=json.dumps(data))
         logger.debug(
-            "[OPABroker] load_opa_data. Response: {}".format(response))
+            f"[OPABroker] load_opa_data. Response: {response}")
 
     def delete_opa_data(self, data_path="default"):
         logger.debug(
-            "[OPABroker] delete_opa_data. For path '{}'".format(data_path))
+            f"[OPABroker] delete_opa_data. For path '{data_path}'")
         response = requests.delete(self.opa_host + "/v1/data/" + data_path)
         result = response.json()
-        logger.debug("[OPABroker] delete_opa_data. Result: {}".format(result))
+        logger.debug(f"[OPABroker] delete_opa_data. Result: {result}")
         return result
 
     def load_opa_policy(self, policy_doc: Policy, policy_id="default"):
-        logger.debug("[OPABroker] load_opa_policy.For policy_doc '{0}'".format(
-            policy_doc))
+        logger.debug(
+            f"[OPABroker] load_opa_policy.For policy_doc '{policy_doc}'")
         response = requests.put(self.opa_host + "/v1/policies/" + policy_id,
                                 data=policy_doc.policy)
         logger.debug(
-            "[OPABroker] load_opa_policy. Response:{}".format(response))
+            f"[OPABroker] load_opa_policy. Response:{response}")
 
     def load_opa_policies_from_sit(self, sit_doc: StackInfrastructureTemplate):
         logger.debug(
-            "[OPABroker] load_opa_policies_from_sit.For policy_doc '{0}'".
-            format(sit_doc))
+            f"[OPABroker] load_opa_policies_from_sit. For policy_doc '{sit_doc}'")
         policy_id = "sit_policies_" + sit_doc.name
         response = requests.put(self.opa_host + "/v1/policies/" + policy_id,
                                 data={})
         logger.debug(
-            "[OPABroker] load_opa_policies_from_sit. Response:{}".format(
-                response))
+            f"[OPABroker] load_opa_policies_from_sit. Response: {response}")
 
     def load_opa_policies_from_sat(self, sat_doc: StackApplicationTemplate):
         logger.debug(
-            "[OPABroker] load_opa_policies_from_sat.For policy_doc '{0}'".
-            format(sat_doc))
+            f"[OPABroker] load_opa_policies_from_sat.For policy_doc '{sat_doc}'")
         policy_id = "sat_policies_" + sat_doc.name
         response = requests.put(self.opa_host + "/v1/policies/" + policy_id,
                                 data={})
         logger.debug(
-            "[OPABroker] load_opa_policies_from_sat. Response:{}".format(
-                response))
+            f"[OPABroker] load_opa_policies_from_sat. Response: {response}")
 
     def delete_opa_policy(self, policy_id="default"):
         logger.debug(
-            "[OPABroker] delete_opa_policy. For policy_id '{0}'".format(
-                policy_id))
+            f"[OPABroker] delete_opa_policy. For policy_id '{policy_id}'"
+            )
         response = requests.delete(self.opa_host + "/v1/policies/" + policy_id)
         logger.debug(
-            "[OPABroker] delete_opa_policy. Response:{}".format(response))
+            f"[OPABroker] delete_opa_policy. Response:{response}")
 
     def convert_sit_to_opa_data(self, sit_doc: StackInfrastructureTemplate):
         logger.debug(
-            "[OPABroker] convert_sit_to_opa_data. For sit_doc '{0}'".format(
-                sit_doc))
+            f"[OPABroker] convert_sit_to_opa_data. For sit_doc '{sit_doc}'")
         sit_targets = sit_doc.infrastructure_capabilities.keys()
         targets_as_data = {}
         sit_as_opa_data = {"infrastructure_targets": targets_as_data}
@@ -158,15 +156,14 @@ class OPABroker:
             }
             targets_as_data[target] = target_data
         logger.debug(
-            "[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{0}'".
-            format(sit_as_opa_data))
+            f"[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{sit_as_opa_data}'"
+            )
         return sit_as_opa_data
 
     def convert_sat_to_opa_data(self, sat_doc: StackApplicationTemplate,
                                 services: [Service]):
         logger.debug(
-            "[OPABroker] convert_sat_to_opa_data. For sat_doc '{0}'".format(
-                sat_doc))
+            f"[OPABroker] convert_sat_to_opa_data. For sat_doc '{sat_doc}'")
         services_as_data = {}
         sat_as_opa_data = {"services": services_as_data}
         for service in services:
@@ -176,15 +173,13 @@ class OPABroker:
             }
             services_as_data[service.name] = service_data
         logger.debug(
-            "[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{0}'".
-            format(sat_as_opa_data))
+            f"[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{sat_as_opa_data}'")
         return sat_as_opa_data
 
     def convert_sit_to_opa_policies(self,
                                     sit_doc: StackInfrastructureTemplate):
         logger.debug(
-            "[OPABroker] convert_sit_to_opa_data. For sit_doc '{0}'".format(
-                sit_doc))
+            f"[OPABroker] convert_sit_to_opa_data. For sit_doc '{sit_doc}'")
         sit_targets = sit_doc.infrastructure_capabilities.keys()
         targets_as_data = []
         sit_as_opa_data = {"infrastructure_targets": targets_as_data}
@@ -199,14 +194,12 @@ class OPABroker:
             }
             targets_as_data.append(target_data)
         logger.debug(
-            "[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{0}'".
-            format(sit_as_opa_data))
+            f"[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{sit_as_opa_data}'")
         return sit_as_opa_data
 
     def convert_sat_to_opa_policies(self, sat_doc: StackApplicationTemplate):
         logger.debug(
-            "[OPABroker] convert_sat_to_opa_policies. For sat_doc '{0}'".
-            format(sat_doc))
+            f"[OPABroker] convert_sat_to_opa_policies. For sat_doc '{sat_doc}'")
         sat_policies = sat_doc.policies
         # services_as_data = []
         # sat_as_opa_data = {"services": services_as_data}

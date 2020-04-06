@@ -1,0 +1,61 @@
+{
+    "required_tags": {
+        "environment": "tst",
+        "region": "europe"
+    },
+    "services": {
+        "windows_2019_vmw_vsphere": {
+            "functional_requirements": [
+                "windows2019",
+                "os_win_base"
+            ],
+            "resource_requirements": {
+                "cpu_cores": "2"
+            }
+        }
+    },
+    "infrastructure_targets": {
+        "vsphere.brussels.vmw-vcenter-01": {
+            "tags": {
+                "region": "europe",
+                "environment": "tst"
+            },
+            "resources": {
+                "cpu_cores": "100"
+            },
+            "config": [
+                "windows2019",
+                "windows2019_template",
+                "os_win_base"
+            ]
+        },
+        "vsphere.shanghai.vmw-vcenter-02": {
+            "tags": {
+                "region": "asia",
+                "environment": "acc"
+            },
+            "resources": {
+                "cpu_cores": "100"
+            },
+            "config": [
+                "windows2019",
+                "windows2019_template",
+                "os_win_base"
+            ]
+        },
+        "vsphere.houston.vmw-vcenter-03": {
+            "tags": {
+                "region": "america",
+                "environment": "prd"
+            },
+            "resources": {
+                "cpu_cores": "100"
+            },
+            "config": [
+                "windows2019",
+                "windows2019_template",
+                "os_win_base"
+            ]
+        }
+    }
+}
