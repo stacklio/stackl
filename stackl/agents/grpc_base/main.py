@@ -1,15 +1,14 @@
+import os
 from concurrent import futures
 
 import grpc
-import os
 
 import protos.agent_pb2_grpc
-from tool_factory import ToolFactory
 from protos.agent_pb2 import AutomationResponse
+from tool_factory import ToolFactory
 
 
 class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
-
     def __init__(self):
         self.tool_factory = ToolFactory()
 
@@ -19,7 +18,8 @@ class StacklAgentServicer(protos.agent_pb2_grpc.StacklAgentServicer):
         automation_response = protos.agent_pb2.AutomationResponse()
         automation_result = automation_response.automation_result
         handler = self.tool_factory.get_handler(invoc.tool)
-        result, error_message, hosts = handler.handle(invoc, automation_message.action)
+        result, error_message, hosts = handler.handle(
+            invoc, automation_message.action)
         automation_result.service = invoc.service
         automation_result.functional_requirement = invoc.functional_requirement
         if result == 0:

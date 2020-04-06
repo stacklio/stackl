@@ -10,29 +10,39 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 # TODO at the moment this class is sparse but it will be necessary for rollback and failure mechanisms
 class TaskHandler(Handler):
-
     def __init__(self, stackl_type, call_object):
         super(TaskHandler, self).__init__(None)
 
         self.call_object = call_object
         self.stackl_type = stackl_type
-        logger.info(f"[TaskHandler] Created with stackl_type {stackl_type}' and call_object '{call_object}'")
+        logger.info(
+            f"[TaskHandler] Created with stackl_type {stackl_type}' and call_object '{call_object}'"
+        )
         self.task_broker_factory = TaskBrokerFactory()
         self.task_broker = self.task_broker_factory.get_task_broker()
 
-    def handle(self, task): #pylint: disable=arguments-differ
+    def handle(self, task):  #pylint: disable=arguments-differ
         result = None
-        if task.topic == 'report': 
+        if task.topic == 'report':
             if task.get_attribute('function'):
-                result = getattr(self.call_object, task.get_attribute('function'))(*task.get_attribute('args'))
+                result = getattr(self.call_object,
+                                 task.get_attribute('function'))(
+                                     *task.get_attribute('args'))
             else:
-                result = getattr(self.call_object, task.get_attribute('attribute'))
+                result = getattr(self.call_object,
+                                 task.get_attribute('attribute'))
         elif task.topic == 'result':
-            logger.info(f"[TaskHandler] Received result (as json_string): {task.as_json_string()}")
-            logger.info(f"[TaskHandler] asking broker '{self.task_broker}' to remove it from queue")
+            logger.info(
+                f"[TaskHandler] Received result (as json_string): {task.as_json_string()}"
+            )
+            logger.info(
+                f"[TaskHandler] asking broker '{self.task_broker}' to remove it from queue"
+            )
             self.task_broker.remove_task_from_queue(task)
         else:
-            logger.info("[TaskHandler] Unknown task with type '{task.topic}'! Ignoring.")
+            logger.info(
+                "[TaskHandler] Unknown task with type '{task.topic}'! Ignoring."
+            )
         if result is None:
             return
         if task.get_attribute('return_channel'):

@@ -6,7 +6,7 @@ metadata:
     {{ include "stackl.labels" . | nindent 4 }}
     component: redis
 spec:
-  replicas: {{ .Values.stacklredis.replicas }}
+  replicas: {{ .Values.stacklRedis.replicas }}
   selector:
     matchLabels:
       {{- include "stackl.selectorLabels" . | nindent 6 }}
@@ -23,7 +23,7 @@ spec:
     {{- end }}
       containers:
         - name: stackl-redis
-          image: "{{ .Values.stacklredis.image }}"
+          image: "{{ .Values.stacklRedis.image }}"
           resources:
             requests:
               memory: 64Mi

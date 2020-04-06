@@ -6,7 +6,7 @@ metadata:
     {{ include "stackl.labels" . | nindent 4 }}
     component: worker
 spec:
-  replicas: {{ .Values.stacklworker.replicas }}
+  replicas: {{ .Values.stacklWorker.replicas }}
   selector:
     matchLabels:
       {{- include "stackl.selectorLabels" . | nindent 6 }}
@@ -23,7 +23,7 @@ spec:
       {{- end }}
       containers:
         - name: stackl-worker
-          image: "{{ .Values.stacklworker.image }}"
+          image: "{{ .Values.stacklWorker.image }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: "STACKL_STORE"
@@ -31,16 +31,18 @@ spec:
             - name: "STACKL_DATASTORE_PATH"
               value: "{{ .Values.datastore.path }}"
             - name: "STACKL_TASK_BROKER"
-              value: "{{ .Values.task_broker.type }}"
+              value: "{{ .Values.taskBroker.type }}"
             - name: "STACKL_AGENT_BROKER"
-              value: "{{ .Values.agent_broker.type }}"
+              value: "{{ .Values.agentBroker.type }}"
             - name: "STACKL_MESSAGE_CHANNEL"
-              value: "{{ .Values.message_channel.type }}"
+              value: "{{ .Values.messageChannel.type }}"
             - name: "LOGLEVEL"
               value: "DEBUG"
             - name: "STACKL_REDIS_HOST"
               value: "{{ template "stackl.redis" . }}"
             - name: "STACKL_AGENT_HOST"
               value: "{{ template "stackl.agent" . }}:50051"
+            - name: "STACKL_OPA_HOST"
+              value: "{{ template "stackl.opa" . }}:8181"
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
