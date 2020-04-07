@@ -3,26 +3,34 @@
 ###
 package orchestration
 
-all_solutions = services_and_suitable_targets {
-    matches := {service: { target | target := solution_set_per_service[_][service] } | 
-                solution_set_per_service[_][service]}
-    services_and_suitable_targets := object.union(all_services_empty, matches)
+advanced_application_placement_solutions = solutions {
+    unfiltered_app_placement = basic_application_placement
+
+    solutions := unfiltered_app_placement
+}
+
+basic_application_placement = basic_application_placement {
+    matches := {service: { target | target := targets_for_service[_][service] } | 
+                targets_for_service[_][service]}
+    basic_application_placement := object.union(all_services_empty, matches)
 }
 
 all_services_empty = res {
     res := { s: [] | input.services[s]}
 }
 
-## get suitable infrastructrure targets
-solution_set_per_service[solution_sets] {
+#Rule: get basic suitable infrastructure target for the service
+targets_for_service[set_of_suited_targets] {
     service := input.services[svc]
     target := input.infrastructure_targets[tgt]
     satisfies_resources(service, target)
     satisfies_functional_requirement(service, target)
     not satisfies_tags(input.required_tags, target)
-    solution_sets := {svc: tgt}
+
+    set_of_suited_targets := {svc: tgt}
 }
 
+#Function
 satisfies_resources(service, target) {
      # service.resource_requirements[resource] iterates over keys. 
      # The array contains a true or false for each resource the target satisfies
@@ -35,15 +43,46 @@ satisfies_resources(service, target) {
     all(satisfied_resource_array) = true
 }
 
+#Function
 satisfies_functional_requirement(service, target) {
     # Convert arrays to set
     fr := {x | x := service.functional_requirements[_]}
-    cfg := {x | x := target.configs[_]}
+    cfg := {x | x := target.config[_]}
     # Take the intersection to see if the cfg satisfies all the functional requirements
     fr & cfg == fr
 }
 
+#Function
 satisfies_tags(required_tags, target) {
     some t
     required_tags[t] != target.tags[t]
+    required_tags[t] != "all"
+}
+
+satisfies_additional_sat_policies(service, target){
+    # tgt := target.tgt
+    # not contains(tgt.config, "red")
+    true
+}
+
+satisfies_additional_sit_policies(service, target){
+    true
+}
+
+##################################
+######## Helper Function #########
+##################################
+### Helper function for checking if a key is present
+has_key(x, k) { _ = x[k] }
+
+pick_first(k, a, b) = a[k]
+pick_first(k, a, b) = b[k] { not has_key(a, k) }
+
+merge_objects(a, b) = c {
+    ks := {k | some k; _ = a[k]} | {k | some k; _ = b[k]}
+    c := {k: v | some k; ks[k]; v := pick_first(k, b, a)}
+}
+
+contains(colors, elem) {
+  colors[_] = elem
 }

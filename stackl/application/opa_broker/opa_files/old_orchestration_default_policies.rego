@@ -1,7 +1,7 @@
 ###
 ### This package contains all the default policies for application orchestration on provided input data
 ###
-package orchestration
+package old_orchestration
 
 all_solutions = services_and_suitable_targets {
     matches := {service: { target | target := solution_set_per_service[_][service] } | 
