@@ -22,7 +22,6 @@ queries_for_sit_sats_set = Query("solution_set_per_service",
                                      "services_target_resources_no_match"
                                  ])
 
-
 @router.get('/query')
 def run_query_for_sit_and_sat(
     sit_name: str = "stack_infrastructure_template_opa_test1",
@@ -81,33 +80,25 @@ def delete_data(data_path: str = "default"):
     result = opa_broker.load_opa_data(data_path)
     return result
 
-
-@router.put('/data/sit')
-def put_sit_data(data: dict, data_path: str = "default"):
-    ### WIP
-    result = opa_broker.load_opa_data(data_path)
-    return result
-
-
-@router.get('')
+@router.get('/all')
 def get_policies():
     result = opa_broker.get_opa_policies()
     return result
 
 
-@router.get('/{policy_id}')
-def get_policy(policy_id: str):
+@router.get('/policy')
+def get_policy(policy_id: str = "default"):
     result = opa_broker.get_opa_policy(policy_id)
     return result
 
 
-@router.delete('/{policy_id}')
-def delete_policy(policy_id: str):
+@router.delete('/policy')
+def delete_policy(policy_id: str = "default"):
     result = opa_broker.delete_opa_policy(policy_id)
     return result
 
 
-@router.put('')
+@router.put('/policy')
 def put_policy(policy_doc: Policy):
     result = opa_broker.load_opa_policy(policy_doc)
     return result
