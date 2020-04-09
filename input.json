@@ -12,6 +12,15 @@
             "resource_requirements": {
                 "cpu_cores": "2"
             }
+        },
+        "windows_2019_vmw_vsphere_heavy": {
+            "functional_requirements": [
+                "windows2019",
+                "os_win_base"
+            ],
+            "resource_requirements": {
+                "cpu_cores": "200"
+            }
         }
     },
     "infrastructure_targets": {
@@ -21,7 +30,7 @@
                 "environment": "tst"
             },
             "resources": {
-                "cpu_cores": "100"
+                "cpu_cores": "200"
             },
             "config": [
                 "windows2019",

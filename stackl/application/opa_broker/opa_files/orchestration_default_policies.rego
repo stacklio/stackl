@@ -4,12 +4,13 @@
 package orchestration
 
 advanced_application_placement_solutions = solutions {
-    unfiltered_app_placement = basic_application_placement
-
-    solutions := unfiltered_app_placement
+    unfiltered_application_placement_solutions = basic_application_placement_solution_sets
+    part_filtered_application_placement_solutions = satisfies_additional_sat_policies(unfiltered_application_placement_solutions)
+    filtered_application_placement_solutions = satisfies_additional_sit_policies(part_filtered_application_placement_solutions)
+    solutions := filtered_application_placement_solutions
 }
 
-basic_application_placement = basic_application_placement {
+basic_application_placement_solution_sets = basic_application_placement {
     matches := {service: { target | target := targets_for_service[_][service] } | 
                 targets_for_service[_][service]}
     basic_application_placement := object.union(all_services_empty, matches)
@@ -59,13 +60,11 @@ satisfies_tags(required_tags, target) {
     required_tags[t] != "all"
 }
 
-satisfies_additional_sat_policies(service, target){
-    # tgt := target.tgt
-    # not contains(tgt.config, "red")
+satisfies_additional_sat_policies(application_placement_solutions){
     true
 }
 
-satisfies_additional_sit_policies(service, target){
+satisfies_additional_sit_policies(application_placement_solutions){
     true
 }
 

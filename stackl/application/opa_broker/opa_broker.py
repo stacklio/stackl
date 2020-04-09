@@ -176,6 +176,22 @@ class OPABroker:
             f"[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{sat_as_opa_data}'")
         return sat_as_opa_data
 
+    def convert_sat_to_opa_policies(self, sat_doc: StackApplicationTemplate):
+        logger.debug(
+            f"[OPABroker] convert_sat_to_opa_policies. For sat_doc '{sat_doc}'")
+        sat_policies = sat_doc.policies
+        # services_as_data = []
+        # sat_as_opa_data = {"services": services_as_data}
+        for policy in sat_policies:
+            policy_doc = self.document_manager.get_policy(policy)
+        #     service_data = {}
+        #     service_data["id"] = service_doc.name
+        #     service_data["functional_requirements"] = service_doc.functional_requirements
+        #     service_data["resource_requirements"] = service_doc.resource_requirements
+        #     services_as_data.append(service_data)
+        # logger.debug("[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{0}'".format(sat_as_opa_data))
+        # return sat_as_opa_data
+
     def convert_sit_to_opa_policies(self,
                                     sit_doc: StackInfrastructureTemplate):
         logger.debug(
@@ -194,21 +210,6 @@ class OPABroker:
             }
             targets_as_data.append(target_data)
         logger.debug(
-            f"[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{sit_as_opa_data}'")
+            f"[OPABroker] convert_sit_to_opa_data. sit_as_opa_data '{sit_as_opa_data}'"
+        )
         return sit_as_opa_data
-
-    def convert_sat_to_opa_policies(self, sat_doc: StackApplicationTemplate):
-        logger.debug(
-            f"[OPABroker] convert_sat_to_opa_policies. For sat_doc '{sat_doc}'")
-        sat_policies = sat_doc.policies
-        # services_as_data = []
-        # sat_as_opa_data = {"services": services_as_data}
-        for policy in sat_policies:
-            policy_doc = self.document_manager.get_policy(policy)
-        #     service_data = {}
-        #     service_data["id"] = service_doc.name
-        #     service_data["functional_requirements"] = service_doc.functional_requirements
-        #     service_data["resource_requirements"] = service_doc.resource_requirements
-        #     services_as_data.append(service_data)
-        # logger.debug("[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{0}'".format(sat_as_opa_data))
-        # return sat_as_opa_data

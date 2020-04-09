@@ -98,7 +98,7 @@ class DocumentManager(Manager):
         """gets a Policy Object from the store"""
         store_response = self.store.get(type="policy",
                                         document_name=policy_name,
-                                        category="items")
+                                        category="configs")
         policy = Policy.parse_obj(store_response.content)
         return policy
 

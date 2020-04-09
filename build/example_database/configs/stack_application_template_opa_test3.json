@@ -4,8 +4,9 @@
     "category": "configs",
     "services": [
         "webserver",
-        "database"],
+        "database"
+    ],
     "policies": {
-        "policy_multiple_redundancy" : "webserver"
+        "policy_multiple_redundancy" : ["webserver", 2]
     }
 }

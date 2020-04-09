@@ -1,5 +1,5 @@
 {
     "name": "Redundancy Policy",
     "description": "Policy to ensure that at least 2 databases",
-    "policy_rego_file": "policy_multiple_redundancy.rego"
+    "policy_rego": "\n#This policy is used for multiple redundancy, through the value parameter\nmultiple_redundancy {\n    value := 1\n    count(infrastructure_targets[0]) >= value\n}"
 }
