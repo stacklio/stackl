@@ -65,10 +65,7 @@ class StackHandler(Handler):
                 **merged_capabilities,
                 **item['params']
             }
-            service_definition.secrets = {
-                **merged_secrets,
-                **item['secrets']
-            }
+            service_definition.secrets = {**merged_secrets, **item['secrets']}
             service_definition.status = service_definition_status
             services[svc] = service_definition
             stack_instance_doc.services = services
@@ -119,11 +116,24 @@ class StackHandler(Handler):
             "[StackHandler] _handle_create. performing opa query with data: {0}"
             .format(opa_data))
 
-        # TODO Define queries here for now only one
         opa_result = self.opa_broker.ask_opa_policy_decision(
             "orchestration", "all_solutions", opa_data)
         logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
             opa_result['result']))
+
+        for policy_name, attributes in stack_app_template.policies.items():
+            policy_input = {}
+            previous = {}
+            policy = self.document_manager.get_policy(policy_name)
+            policy_input["policy_input"] = {}
+            policy_input["policy_input"]["service"] = attributes["service"]
+            for i in policy.inputs:
+                policy_input["policy_input"][i] = attributes[i]
+            previous["services"] = opa_result['result']
+            opa_data = {**previous, **policy_input}
+            new_result = self.opa_broker.ask_opa_policy_decision(
+                "orchestration", policy_name, opa_data)
+            opa_result = {**opa_result, **new_result}
 
         try:
             return self._create_stack_instance(item, opa_result['result'],

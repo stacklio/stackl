@@ -169,3 +169,15 @@ def functional_requirement(stackl_context: StacklContext, output, name):
         env = stackl_context.functional_requirements_api.get_functional_requirement_by_name(
             name)
     click.echo(parse(env, output))
+
+
+@get.command()
+@click.option('-o', '--output')
+@click.argument('name', required=False)
+@pass_stackl_context
+def policy(stackl_context: StacklContext, output, name):
+    if name is None:
+        env = stackl_context.policies_api.get_policies()
+    else:
+        env = stackl_context.policies_api.get_policy_by_name(name)
+    click.echo(parse(env, output))
