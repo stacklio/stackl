@@ -61,16 +61,41 @@ To install STACKL and start having a look at the codebase and tinkering around w
 
 # Making a contribution
 
-## Submitting a contribution
-
 ## Submitting an issue fix
+
+To submit an issue fix, fork the repository by clicking on `Fork` in the top right corner, create a new branch according to the following naming conventions:
+
+- feature/issue-100
+- bug/issue-100
+
+Try to make all your changes in one commit. Make sure the commit message is structured as follows:
+
+```markdown
+Subject -> max 140 characters, describe the change
+
+Body -> describe why the change was necessary 
+
+Fixes #issue-number -> the issue number you are fixing
+```
 
 Please go through existing issues and pull requests to check if somebody else is already working on it.
 
-Also, make sure to run the tests and lint the code before you commit your changes.
+Also, make sure to run the tests and lint the code before you commit your changes. Stackl uses [YAPF](https://github.com/google/yapf) to format Python code.
+
+Make sure to create a pull request. Additionally, you can provide extra information.
+
+If changes are requested, you can make a new commit. If there are multiple commits, the Stackl team will [squash](https://github.blog/2016-04-01-squash-your-commits/) the commits when merging.
+
+Feel free to also make a pull request to start a discussion or ask questions.
 
 ## Submitting a bug report
 
-## Submitting a feature or enhancement suggestion
+To submit a bug report, visit the GitHub page, click on `issues`, click on `New Issue`, pick the `Bug` template and describe the bug.
+The Stackl team tries to answer these as fast as possible.
+
+## Submitting a feature or enhancement request
+
+To submit a feature or enhancement request, visit the GitHub page, click on `issues`, click on `New Issue`, pick the `Feature` template and describe the feature you would like to have implemented.
+The Stackl team tries to answer these as fast as possible.
 
 # Styleguides
