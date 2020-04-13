@@ -1,8 +1,6 @@
 import logging
-from typing import List
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
 from model.configs.document_model import GetAllDocuments
 
 from enums.stackl_codes import StatusCode
