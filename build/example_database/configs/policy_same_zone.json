@@ -1,4 +1,4 @@
 {
     "name": "Same Zone",
-    "description": "Same Zone policy to ensure that the services are deployed in the same zone",
+    "description": "Same Zone policy to ensure that the services are deployed in the same zone"
 }
