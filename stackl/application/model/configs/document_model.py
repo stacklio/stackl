@@ -10,3 +10,10 @@ class BaseDocument(BaseModel):
     type: str
     params: dict = {}
     secrets: dict = {}
+
+
+class GetAllDocuments(BaseModel):
+    name: str
+    description = "GetAllDocuments"
+    type: str
+    documents: str

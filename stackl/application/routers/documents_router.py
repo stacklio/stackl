@@ -2,6 +2,8 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
+from model.configs.document_model import GetAllDocuments
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
@@ -22,21 +24,28 @@ def get_types():
     return types
 
 
-@router.get('/{type_name}', response_model=List[InfrastructureBaseDocument])
+@router.get('/{type_name}', response_model=GetAllDocuments)
 def get_documents_by_type(type_name: str):
     """Returns all documents with a specific type"""
     logger.info(
         f"[DocumentsByType GET] Receiver GET request with data: {type_name}")
     try:
         documents = document_manager.get_document(type=type_name)
+
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
     logger.debug(f"[DocumentsByType GET] document(s): {documents}")
-    return documents
+    document = {
+        "name": "All {type_name} Documents",
+        "type": type_name,
+        "documents": str(documents)
+    }
+    return document
 
 
-@router.get('/{type_name}/{document_name}', response_model=InfrastructureBaseDocument)
+@router.get('/{type_name}/{document_name}',
+            response_model=InfrastructureBaseDocument)
 def get_document_by_type_and_name(type_name: str, document_name: str):
     """Returns a specific document with a type and name"""
     logger.info(
