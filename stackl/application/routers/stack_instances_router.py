@@ -164,6 +164,21 @@ def put_stack_instance(
                             detail='SAT with name ' +
                             str(infr_template_exists) + ' does not exist')
 
+    # check if stack_instance already exists. Should be the case
+    stack_instance_exists = document_manager.get_document(
+        type="stack_instance",
+        document_name=stack_instance_invocation.stack_instance_name)
+    logger.info(
+        f"[StackInstances POST] stack_instance_exists (should not be case): {stack_instance_exists}"
+    )
+
+    if not stack_instance_exists:
+        raise HTTPException(
+            status_code=StatusCode.NOT_FOUND,
+            detail='SI with name ' +
+            str(stack_instance_invocation.stack_instance_name) +
+            ' does not exists')
+
     try:
         task = StackTask({
             'channel': 'worker',
