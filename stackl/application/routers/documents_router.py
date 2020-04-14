@@ -37,7 +37,7 @@ def get_documents_by_type(type_name: str):
     document = {
         "name": "All {type_name} Documents",
         "type": type_name,
-        "documents": str(documents)
+        "documents": documents
     }
     return document
 

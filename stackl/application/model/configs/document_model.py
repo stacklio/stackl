@@ -1,4 +1,5 @@
 from pydantic import BaseModel  #pylint: disable=E0611 #error in pylint
+from typing import Any
 
 
 class BaseDocument(BaseModel):
@@ -14,4 +15,4 @@ class GetAllDocuments(BaseModel):
     name: str
     description = "GetAllDocuments"
     type: str
-    documents: str
+    documents: Any
