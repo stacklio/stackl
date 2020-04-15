@@ -13,7 +13,8 @@ from manager.manager_factory import ManagerFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
     stack_application_templates_router, \
-    stack_infrastructure_templates_router, about_router, configurator_router, policies_router
+    stack_infrastructure_templates_router, about_router, configurator_router, \
+    policy_agent_router, policy_template_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
@@ -71,9 +72,12 @@ app = FastAPI(
 app.include_router(documents_router.router,
                    prefix="/documents",
                    tags=["documents"])
-app.include_router(policies_router.router,
-                   prefix="/policies",
-                   tags=["policies"])
+app.include_router(policy_template_router.router,
+                   prefix="/policy_template",
+                   tags=["policy_template"])
+app.include_router(policy_agent_router.router,
+                   prefix="/policy_agent",
+                   tags=["policy_agent"])
 app.include_router(stack_instances_router.router,
                    prefix="/stack_instances",
                    tags=["stack_instances"])

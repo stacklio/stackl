@@ -3,7 +3,7 @@ import logging
 
 import requests
 
-from model.configs.policy_model import Policy
+from model.configs.policy_template_model import PolicyTemplate
 from model.configs.stack_application_template_model import StackApplicationTemplate
 from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from model.items.service_model import Service
@@ -108,7 +108,7 @@ class OPABroker:
         logger.debug(f"[OPABroker] delete_opa_data. Result: {result}")
         return result
 
-    def load_opa_policy(self, policy_doc: Policy, policy_id="default"):
+    def load_opa_policy(self, policy_doc: PolicyTemplate, policy_id="default"):
         logger.debug(
             f"[OPABroker] load_opa_policy.For policy_doc '{policy_doc}'")
         response = requests.put(self.opa_host + "/v1/policies/" + policy_id,

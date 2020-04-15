@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, HTTPException
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
-from model.configs.policy_model import Policy
+from model.configs.policy_template_model import PolicyTemplate
 from model.configs.stack_application_template_model import StackApplicationTemplate
 from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from opa_broker.opa_broker_factory import OPABrokerFactory
@@ -89,7 +89,7 @@ queries_for_sit_sats_set = Query("solution_set_per_service",
 #     return result
 
 
-@router.get('/{policy}', response_model=Policy)
+@router.get('/{policy}', response_model=PolicyTemplate)
 def get_policy_by_name(policy: str):
     """Returns a policy"""
     try:
@@ -112,7 +112,7 @@ def get_policy_by_name(policy: str):
 
 
 @router.put('/policy')
-def put_policy(policy_doc: Policy):
+def put_policy(policy_doc: PolicyTemplate):
     opa_broker.add_policy(policy_doc.name, policy_doc.policy)
     result = document_manager.write_policy(policy_doc)
     return result

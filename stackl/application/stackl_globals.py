@@ -15,7 +15,7 @@ types_categories = ["configs", "items"]
 types_configs = [
     "environment", "location", "zone", "stack_application_template",
     "stack_infrastructure_template", "functional_requirement",
-    "resource_requirement", "authentication", "policy"
+    "resource_requirement", "authentication", "policy_template"
 ]
 types_items = [
     "stack_instance", "stack_template", "infrastructure_target", "service"
