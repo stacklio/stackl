@@ -2,7 +2,7 @@
 package orchestration
 ​
 ​
-multiple_targets = x {
+replicas = x {
 	service = input.policy_input.service
 	amount = input.policy_input.amount
 	count(input.services[service]) >= amount

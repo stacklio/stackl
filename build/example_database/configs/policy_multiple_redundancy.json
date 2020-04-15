@@ -1,8 +1,0 @@
-{
-    "name": "Redundancy Policy",
-    "description": "Policy to ensure that at least 2 databases",
-    "category" : "configs",
-    "type": "policy",
-    "policy": "\nmultiple_targets = x {\n\tservice = input.policy_input.service\n\tamount = input.policy_input.amount\n\tcount(input.services[service]) >= amount\n\tx = {service: array.slice(input.services[service], 0, amount)}\n} else = x {\n    x = {input.policy_input.service: []}\n}\n",
-    "inputs": ["service","amount"]
-}
