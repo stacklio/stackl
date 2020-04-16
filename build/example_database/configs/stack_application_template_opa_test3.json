@@ -4,13 +4,8 @@
     "category": "configs",
     "services": [
         "webserver",
-        "database"
-    ],
+        "database"],
     "policies": {
-        "policy_template_replica" : ["webserver", 2]
-    },
-    "required_tags": {
-        "environment": "prd",
-        "region": "america"
+        "policy_multiple_redundancy" : "webserver"
     }
 }

@@ -2,12 +2,6 @@
     "name": "web",
     "type": "stack_application_template",
     "category": "configs",
-    "services": [
-        "webserver"
-    ],
-    "policies": {},
-    "required_tags": {
-        "environment": "prd",
-        "region": "america"
-    }
+    "services": ["webserver"],
+    "policies": {}
 }

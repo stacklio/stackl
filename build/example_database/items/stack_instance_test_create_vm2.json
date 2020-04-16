@@ -10,7 +10,7 @@
                 "RAM": "4GB",
                 "aws_ami": "ami-12345",
                 "cluster": "CL01",
-                "packages": [
+                "config": [
                     "linux",
                     "nginx"
                 ],

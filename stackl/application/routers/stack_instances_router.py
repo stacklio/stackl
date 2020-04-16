@@ -34,10 +34,7 @@ class StackInstanceInvocation(BaseModel):
         schema_extra = {
             "example": {
                 "params": {},
-                "connection_credentials": {
-                    "username": "example_user",
-                    "password": "example_pwd"
-                },
+                "secrets": {},
                 "stack_infrastructure_template": "stackl",
                 "stack_application_template": "web",
                 "stack_instance_name": "default_test_instance"
