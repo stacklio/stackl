@@ -3,7 +3,7 @@ import logging
 
 import requests
 
-from model.configs.policy_template_model import PolicyTemplate
+from model.configs.policy_model import Policy
 from model.configs.stack_application_template_model import StackApplicationTemplate
 from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from model.items.service_model import Service
@@ -23,28 +23,11 @@ class OPABroker:
         logger.debug("[OPABroker] Initialising OPABroker.")
         self.manager_factory = manager_factory
         self.document_manager = self.manager_factory.get_document_manager()
-        self.load_default_policies()
-
-    def load_default_policies(self):
-        # Note that the ordering of the policies is important
-        logger.debug("[OPABroker] load_default_policies.")
-        data = open('/app/opa_broker/opa_files/helper_functions.rego',
-                    'r').read()
-        response = requests.put(self.opa_host + "/v1/policies/default",
-                                data=data)
-
-        data = open(
-            '/app/opa_broker/opa_files/orchestration_default_policies.rego',
-            'r').read()
-        response = requests.put(self.opa_host + "/v1/policies/orchestration",
-                                data=data)
-        logger.debug(f"[OPABroker] load_default_policies. Response:{response}")
 
     def add_policy(self, policy_name, policy_data):
         response = requests.put(self.opa_host + "/v1/policies/" + policy_name,
                                 data=policy_data)
-        logger.debug(
-            f"[OPABroker] add_policy. Response:{response}")
+        logger.debug(f"[OPABroker] add_policy. Response:{response}")
 
     def ask_opa_policy_decision(self,
                                 policy_package="default",
@@ -109,7 +92,7 @@ class OPABroker:
         logger.debug(f"[OPABroker] delete_opa_data. Result: {result}")
         return result
 
-    def load_opa_policy(self, policy_doc: PolicyTemplate, policy_id="default"):
+    def load_opa_policy(self, policy_doc: Policy, policy_id="default"):
         logger.debug(
             f"[OPABroker] load_opa_policy.For policy_doc '{policy_doc}'")
         response = requests.put(self.opa_host + "/v1/policies/" + policy_id,

@@ -117,7 +117,8 @@ class StackHandler(Handler):
             .format(opa_data))
 
         opa_result = self.opa_broker.ask_opa_policy_decision(
-            "orchestration", "all_solutions", opa_data)
+            "orchestration", "basic_application_placement_solution_sets",
+            opa_data)
         logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
             opa_result['result']))
 

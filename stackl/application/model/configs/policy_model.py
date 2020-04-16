@@ -3,7 +3,7 @@ from typing import Optional, List
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
 
 
-class PolicyTemplate(BaseModel):
+class Policy(BaseModel):
     name: str
     description: Optional[str]
     category: str = "configs"
@@ -14,11 +14,11 @@ class PolicyTemplate(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "name": "policy_template_example",
-                "description": "example descrition",
+                "name": "policy_example",
+                "description": "example description",
                 "policy": "",
                 "inputs": ["string"],
                 "category": "configs",
-                "type": "policy_template"
+                "type": "policy"
             }
         }
