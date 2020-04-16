@@ -23,6 +23,8 @@ class StacklContext(object):
             api_client=self.api_client)
         self.stack_instances_api = stackl_client.StackInstancesApi(
             api_client=self.api_client)
+        self.policies_api = stackl_client.PoliciesApi(
+            api_client=self.api_client)
 
 
 pass_stackl_context = click.make_pass_decorator(StacklContext, ensure=True)

@@ -29,6 +29,7 @@ def get_documents_by_type(type_name: str):
         f"[DocumentsByType GET] Receiver GET request with data: {type_name}")
     try:
         documents = document_manager.get_document(type=type_name)
+
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
@@ -36,7 +37,8 @@ def get_documents_by_type(type_name: str):
     return documents
 
 
-@router.get('/{type_name}/{document_name}', response_model=InfrastructureBaseDocument)
+@router.get('/{type_name}/{document_name}',
+            response_model=InfrastructureBaseDocument)
 def get_document_by_type_and_name(type_name: str, document_name: str):
     """Returns a specific document with a type and name"""
     logger.info(

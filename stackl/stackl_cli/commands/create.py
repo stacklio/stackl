@@ -28,3 +28,18 @@ def instance(stackl_context: StacklContext, stack_infrastructure_template,
         tags=json.loads(tags))
     res = stackl_context.stack_instances_api.post_stack_instance(invocation)
     click.echo(res)
+
+
+@create.command()
+@click.option('-p', '--policy-file', type=click.File())
+@click.option('-i', '--inputs', type=click.STRING, default="")
+@click.argument('policy-name')
+@pass_stackl_context
+def policy(stackl_context: StacklContext, policy_file, policy_name, inputs):
+    inputs = [i.strip() for i in inputs.split(',')]
+    policy = stackl_client.Policy(name=policy_name,
+                                  description="policy through cli",
+                                  policy=policy_file.read(),
+                                  inputs=inputs)
+    res = stackl_context.policies_api.put_policy(policy)
+    click.echo(res)
