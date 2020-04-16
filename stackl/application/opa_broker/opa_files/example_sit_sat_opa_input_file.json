@@ -7,7 +7,7 @@
                 "RAM": "4GB",
                 "DISK": "9999GB"
             },
-            "config": [
+            "packages": [
                 "linux",
                 "nginx"
             ]
@@ -19,7 +19,7 @@
                 "RAM": "4GB",
                 "DISK": "5GB"
             },
-            "config": [
+            "packages": [
                 "linux",
                 "nginx"
             ]

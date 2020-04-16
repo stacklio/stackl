@@ -35,7 +35,7 @@ satisfies_resources(service, target) {
 satisfies_functional_requirement(service, target) {
     # Convert arrays to set
     fr := {x | x := service.functional_requirements[_]}
-    cfg := {x | x := target.configs[_]}
+    cfg := {x | x := target.packages[_]}
     # Take the intersection to see if the cfg satisfies all the functional requirements
     fr & cfg == fr
 }

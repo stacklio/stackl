@@ -217,7 +217,7 @@ class StackHandler(Handler):
                 **location.secrets,
                 **zone.secrets
             }
-            infr_target_configs = environment.configs + location.configs + zone.configs
+            infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
             infr_targets_capabilities[infr_target_key] = {}
@@ -226,7 +226,7 @@ class StackHandler(Handler):
             infr_targets_capabilities[infr_target_key][
                 "tags"] = infr_target_tags
             infr_targets_capabilities[infr_target_key][
-                "configs"] = infr_target_configs
+                "packages"] = infr_target_packages
             infr_targets_capabilities[infr_target_key][
                 "resources"] = infr_target_resources
             infr_targets_capabilities[infr_target_key][
@@ -237,17 +237,6 @@ class StackHandler(Handler):
         self.document_manager.write_stack_infrastructure_template(
             stack_infr_template)
         return stack_infr_template
-
-    # TODO Lets remove this since we are going to use OPA
-    # def _post_processing_capability(self, infr_target_capability):
-    #     #TODO: an intelligent system needs to be put here so that the infrastructure capabilities can be matched with the service requirements. Something that allows to determine that, for instance, AWS servers can host a certain set of functional dependencies. At the moment this is hardcoded in _update_infr_capabilities and we only check some service requirements.
-    #     if "aws" in infr_target_capability["name"]:
-    #         infr_target_capability.update({"config": ["Ubuntu", "Alpine", "DatabaseConfig"]})
-    #         infr_target_capability.update({"CPU": "2GHz", "RAM": "2GB"})
-    #     if "vmw" in infr_target_capability["name"]:
-    #         infr_target_capability.update({"config": ["linux", "nginx"]})
-    #         infr_target_capability.update({"CPU": "4GHz", "RAM": "4GB"})
-    #     return
 
     def _handle_update(self, item):
         logger.debug(

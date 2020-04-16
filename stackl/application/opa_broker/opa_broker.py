@@ -152,8 +152,8 @@ class OPABroker:
             target_data = {
                 "resources":
                 sit_doc.infrastructure_capabilities[target]["resources"],
-                "configs":
-                sit_doc.infrastructure_capabilities[target]["configs"],
+                "packages":
+                sit_doc.infrastructure_capabilities[target]["packages"],
                 "tags":
                 sit_doc.infrastructure_capabilities[target]["tags"]
             }
@@ -210,8 +210,8 @@ class OPABroker:
                 target,
                 "resources":
                 sit_doc.infrastructure_capabilities[target]["resources"],
-                "config":
-                sit_doc.infrastructure_capabilities[target]["config"]
+                "packages":
+                sit_doc.infrastructure_capabilities[target]["packages"]
             }
             targets_as_data.append(target_data)
         logger.debug(

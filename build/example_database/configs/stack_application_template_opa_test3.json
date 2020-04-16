@@ -7,6 +7,10 @@
         "database"
     ],
     "policies": {
-        "policy_multiple_redundancy" : ["webserver", 2]
+        "policy_template_replica" : ["webserver", 2]
+    },
+    "required_tags": {
+        "environment": "prd",
+        "region": "america"
     }
 }

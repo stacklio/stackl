@@ -6,5 +6,9 @@
         "webserver",
         "database",
         "heavy_database"],
-    "policies": {}
+    "policies": {},
+    "required_tags": {
+        "environment": "prd",
+        "region": "america"
+    }
 }

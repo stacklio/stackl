@@ -9,7 +9,7 @@
                 "DISK": "9999GB"
             },
             "cluster": "CL01",
-            "config": [
+            "packages": [
                 "linux",
                 "nginx"
             ],
@@ -18,7 +18,11 @@
             "hostname": "p00vca01.nubera.local",
             "network": "ls3-Fred",
             "password": "Nubera1!",
-            "username": "administrator@vsphere.local"
+            "username": "administrator@vsphere.local",
+            "tags": {
+                "region": "america",
+                "environment": "prd"
+            }
         },
         "production.brussels.cluster2": {
             "resources": {
@@ -27,7 +31,7 @@
                 "DISK": "5GB"
             },
             "cluster": "CL01",
-            "config": [
+            "packages": [
                 "linux",
                 "nginx"
             ],
@@ -36,7 +40,11 @@
             "hostname": "p00vca01.nubera.local",
             "network": "ls3-Fred",
             "password": "Nubera1!",
-            "username": "administrator@vsphere.local"
+            "username": "administrator@vsphere.local",
+            "tags": {
+                "region": "america",
+                "environment": "prd"
+            }
         }
     },
     "infrastructure_targets": [

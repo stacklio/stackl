@@ -30,7 +30,11 @@ def run_query_for_sit_and_sat(
     sit_doc = document_manager.get_stack_infrastructure_template(sit_name)
     sat_doc = document_manager.get_stack_application_template(sat_name)
     sit_as_opa_data = opa_broker.convert_sit_to_opa_data(sit_doc)
-    sat_as_opa_data = opa_broker.convert_sat_to_opa_data(sat_doc)
+
+    services = []   #TODO check if this can't be done in another way
+    for s in sat_doc.services:
+        services.append(document_manager.get_service(s))
+    sat_as_opa_data = opa_broker.convert_sat_to_opa_data(sat_doc, services)
     opa_data = {**sat_as_opa_data, **sit_as_opa_data}
     return opa_broker.ask_opa_policy_decision("orchestration", query, opa_data)
 

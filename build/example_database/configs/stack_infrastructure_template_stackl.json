@@ -9,7 +9,7 @@
                 "disk": "1000GB"
             },
             "cluster": "CL01",
-            "config": [
+            "packages": [
                 "linux",
                 "nginx",
                 "postgresql"
@@ -19,7 +19,11 @@
             "hostname": "p00vca01.nubera.local",
             "network": "ls3-Fred",
             "password": "Nubera1!",
-            "username": "administrator@vsphere.local"
+            "username": "administrator@vsphere.local",
+            "tags": {
+                "region": "america",
+                "environment": "prd"
+            }
         }
     },
     "infrastructure_targets": [

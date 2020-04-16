@@ -7,7 +7,7 @@
     "cluster": "CL01",
     "CPU": "4GHz",
     "RAM": "4GB",
-    "config": [
+    "packages": [
       "linux",
       "nginx"
     ],

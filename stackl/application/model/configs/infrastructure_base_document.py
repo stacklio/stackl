@@ -10,5 +10,5 @@ class InfrastructureBaseDocument(BaseModel):
     params: dict = {}
     secrets: dict = {}
     resources: dict = {}
-    configs: List[str] = []
+    packages: List[str] = []
     tags: dict = {}

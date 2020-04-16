@@ -5,5 +5,9 @@
     "services": [
         "webserver",
         "database"],
-    "policies": {}
+    "policies": {},
+    "required_tags": {
+        "environment": "prd",
+        "region": "america"
+    }        
 }
