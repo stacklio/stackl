@@ -10,3 +10,15 @@ class PolicyTemplate(BaseModel):
     type: str = "policy"
     policy: str
     inputs: List[str]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "policy_template_example",
+                "description": "example descrition",
+                "policy": "",
+                "inputs": ["string"],
+                "category": "configs",
+                "type": "policy_template"
+            }
+        }

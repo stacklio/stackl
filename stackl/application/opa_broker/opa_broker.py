@@ -43,7 +43,8 @@ class OPABroker:
     def add_policy(self, policy_name, policy_data):
         response = requests.put(self.opa_host + "/v1/policies/" + policy_name,
                                 data=policy_data)
-        logger.debug("[OPABroker] add_policy. Response:{}".format(response))
+        logger.debug(
+            f"[OPABroker] add_policy. Response:{response}")
 
     def ask_opa_policy_decision(self,
                                 policy_package="default",
