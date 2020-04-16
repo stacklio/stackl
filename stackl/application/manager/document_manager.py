@@ -95,15 +95,15 @@ class DocumentManager(Manager):
         return store_response.content
 
     def get_policy(self, policy_name):
-        """gets a Policy Object from the store"""
-        store_response = self.store.get(type="policy",
+        """gets a Policy from the store"""
+        store_response = self.store.get(type="policies",
                                         document_name=policy_name,
-                                        category="items")
+                                        category="configs")
         policy = Policy.parse_obj(store_response.content)
         return policy
 
     def write_policy(self, policy):
-        """writes a Policy object to the store
+        """writes a Policy to the store
         """
         store_response = self.store.put(policy.dict())
         return store_response.status_code

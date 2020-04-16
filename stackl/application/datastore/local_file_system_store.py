@@ -44,7 +44,8 @@ class LocalFileSystemStore(DataStore):
                         logger.debug(
                             f"[LocalFileSystemStore] get_all. Looking at file '{file}' for type {keys.get('type')}"
                         )
-                        if file.startswith(keys.get("type")):
+                        if file.startswith(
+                                keys.get("type")) and file.endswith(".json"):
                             with open(dirpath + file) as file_to_get:
                                 content.append(json.load(file_to_get))
                             logger.debug(

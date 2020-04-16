@@ -1,5 +1,6 @@
-from pydantic import BaseModel  #pylint: disable=E0611 #error in pylint
 from typing import List
+
+from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
 
 
 class InfrastructureBaseDocument(BaseModel):
@@ -10,5 +11,5 @@ class InfrastructureBaseDocument(BaseModel):
     params: dict = {}
     secrets: dict = {}
     resources: dict = {}
-    configs: List[str] = []
+    packages: List[str] = []
     tags: dict = {}

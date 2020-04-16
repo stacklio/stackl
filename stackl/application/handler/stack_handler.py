@@ -65,10 +65,7 @@ class StackHandler(Handler):
                 **merged_capabilities,
                 **item['params']
             }
-            service_definition.secrets = {
-                **merged_secrets,
-                **item['secrets']
-            }
+            service_definition.secrets = {**merged_secrets, **item['secrets']}
             service_definition.status = service_definition_status
             services[svc] = service_definition
             stack_instance_doc.services = services
@@ -119,11 +116,25 @@ class StackHandler(Handler):
             "[StackHandler] _handle_create. performing opa query with data: {0}"
             .format(opa_data))
 
-        # TODO Define queries here for now only one
         opa_result = self.opa_broker.ask_opa_policy_decision(
-            "orchestration", "all_solutions", opa_data)
+            "orchestration", "basic_application_placement_solution_sets",
+            opa_data)
         logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
             opa_result['result']))
+
+        for policy_name, attributes in stack_app_template.policies.items():
+            policy_input = {}
+            previous = {}
+            policy = self.document_manager.get_policy(policy_name)
+            policy_input["policy_input"] = {}
+            policy_input["policy_input"]["service"] = attributes["service"]
+            for i in policy.inputs:
+                policy_input["policy_input"][i] = attributes[i]
+            previous["services"] = opa_result['result']
+            opa_data = {**previous, **policy_input}
+            new_result = self.opa_broker.ask_opa_policy_decision(
+                "orchestration", policy_name, opa_data)
+            opa_result = {**opa_result, **new_result}
 
         try:
             return self._create_stack_instance(item, opa_result['result'],
@@ -207,7 +218,7 @@ class StackHandler(Handler):
                 **location.secrets,
                 **zone.secrets
             }
-            infr_target_configs = environment.configs + location.configs + zone.configs
+            infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
             infr_targets_capabilities[infr_target_key] = {}
@@ -216,7 +227,7 @@ class StackHandler(Handler):
             infr_targets_capabilities[infr_target_key][
                 "tags"] = infr_target_tags
             infr_targets_capabilities[infr_target_key][
-                "configs"] = infr_target_configs
+                "packages"] = infr_target_packages
             infr_targets_capabilities[infr_target_key][
                 "resources"] = infr_target_resources
             infr_targets_capabilities[infr_target_key][
@@ -227,17 +238,6 @@ class StackHandler(Handler):
         self.document_manager.write_stack_infrastructure_template(
             stack_infr_template)
         return stack_infr_template
-
-    # TODO Lets remove this since we are going to use OPA
-    # def _post_processing_capability(self, infr_target_capability):
-    #     #TODO: an intelligent system needs to be put here so that the infrastructure capabilities can be matched with the service requirements. Something that allows to determine that, for instance, AWS servers can host a certain set of functional dependencies. At the moment this is hardcoded in _update_infr_capabilities and we only check some service requirements.
-    #     if "aws" in infr_target_capability["name"]:
-    #         infr_target_capability.update({"config": ["Ubuntu", "Alpine", "DatabaseConfig"]})
-    #         infr_target_capability.update({"CPU": "2GHz", "RAM": "2GB"})
-    #     if "vmw" in infr_target_capability["name"]:
-    #         infr_target_capability.update({"config": ["linux", "nginx"]})
-    #         infr_target_capability.update({"CPU": "4GHz", "RAM": "4GB"})
-    #     return
 
     def _handle_update(self, item):
         logger.debug(
