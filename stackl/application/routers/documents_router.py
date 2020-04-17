@@ -1,10 +1,10 @@
 import logging
-from typing import List
 
 from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
+from model.configs.document_model import GetAllDocuments
 from model.configs.infrastructure_base_document import InfrastructureBaseDocument
 from stackl_globals import types
 from task_broker.task_broker_factory import TaskBrokerFactory
@@ -22,7 +22,7 @@ def get_types():
     return types
 
 
-@router.get('/{type_name}', response_model=List[InfrastructureBaseDocument])
+@router.get('/{type_name}', response_model=GetAllDocuments)
 def get_documents_by_type(type_name: str):
     """Returns all documents with a specific type"""
     logger.info(
@@ -34,7 +34,12 @@ def get_documents_by_type(type_name: str):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
     logger.debug(f"[DocumentsByType GET] document(s): {documents}")
-    return documents
+    document = {
+        "name": "All {type_name} Documents",
+        "type": type_name,
+        "documents": documents
+    }
+    return document
 
 
 @router.get('/{type_name}/{document_name}',
