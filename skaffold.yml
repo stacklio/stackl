@@ -41,6 +41,7 @@ deploy:
       - name: stackl
         chartPath: build/helm
         values:
+          mode: dev
           stacklRest.image: registry.container-registry.svc.cluster.local:5000/stackl-rest
           stacklWorker.image: registry.container-registry.svc.cluster.local:5000/stackl-worker
           stacklAgent.image: registry.container-registry.svc.cluster.local:5000/stackl-kubernetes-agent
