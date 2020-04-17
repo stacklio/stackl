@@ -19,7 +19,7 @@ GIT_VERSION=$(git --version)
 if [[ -z ${OFFLINE} ]]; then
     # Temporarily changed as the repo is not public yet
     # git fetch --tags ${REPOSITORY_URL:-https://github.com/stacklio/stackl.git}
-    git fetch --tags ${URL:-https://github.com/stacklio/stackl.git}
+    git fetch --tags ${GIT_URL:-https://github.com/stacklio/stackl.git}
 fi
 ALL_RELEASES=$(git tag -l | sort -r -V)
 RELEASES=()
