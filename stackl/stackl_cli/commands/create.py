@@ -38,6 +38,8 @@ def instance(stackl_context: StacklContext, stack_infrastructure_template,
 def policy(stackl_context: StacklContext, policy_file, policy_name, inputs):
     inputs = [i.strip() for i in inputs.split(',')]
     policy = stackl_client.Policy(name=policy_name,
+                                  type="policy",
+                                  category="configs",
                                   description="policy through cli",
                                   policy=policy_file.read(),
                                   inputs=inputs)

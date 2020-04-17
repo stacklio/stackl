@@ -96,7 +96,7 @@ class DocumentManager(Manager):
 
     def get_policy(self, policy_name):
         """gets a Policy from the store"""
-        store_response = self.store.get(type="policies",
+        store_response = self.store.get(type="policy",
                                         document_name=policy_name,
                                         category="configs")
         policy = Policy.parse_obj(store_response.content)
