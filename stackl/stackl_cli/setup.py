@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='stackl-cli',
-    version='0.0.1-alpha7',
+    version='0.0.1-alpha8',
     py_modules=['stackl', 'commands', 'context'],
     packages=find_packages(),
     install_requires=[
-        'stackl-client==1.0.0', 'pyYAML==5.3', 'Click==7.0', 'tabulate==0.8.6'
+        'stackl-client==1.0.11', 'pyYAML==5.3', 'Click==7.0', 'tabulate==0.8.6'
     ],
     entry_points='''
         [console_scripts]
