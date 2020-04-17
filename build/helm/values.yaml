@@ -1,6 +1,8 @@
 image:
   pullPolicy: Always
 
+mode: prod # dev
+
 datastore:
   type: Redis
 #  type: LFS
