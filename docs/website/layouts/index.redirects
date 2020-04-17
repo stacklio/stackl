@@ -3,9 +3,9 @@
 {{- $docRedirects := site.Data.redirects }}
 
 # Redirect to latest doc version by default
-/         /docs/latest
-/docs     /docs/latest
+/         /docs/latest      301!
+/docs     /docs/latest      301!
 
 {{- range $docRedirects }}
-/docs/{{ . }}     /docs/latest/{{ . }}
+/docs/{{ . }}     /docs/latest/{{ . }}     301!
 {{- end }}
