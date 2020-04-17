@@ -24,6 +24,10 @@ spec:
       containers:
         - name: stackl-rest
           image: "{{ .Values.stacklRest.image }}"
+          {{ if eq .Values.mode "dev" }}
+          args:
+            - /start-reload.sh
+          {{ end }}
           resources:
             requests:
               memory: 256Mi
@@ -57,6 +61,7 @@ spec:
               value: "1"
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
+          {{ if eq .Values.mode "prod"}}
           livenessProbe:
             httpGet:
               path: /docs
@@ -65,3 +70,4 @@ spec:
             httpGet:
               path: /docs
               port: http
+          {{ end }}

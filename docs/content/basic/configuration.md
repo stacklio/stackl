@@ -32,6 +32,7 @@ Following parameters can be modified in order to change the STACKL Helm deployme
 
 | Parameter | Description | Default |
 |------------|------|------|
+| `mode` | Set the deployment mode  | prod |
 | `image.pullPolicy` | Set the pull policy for all deployments  | Always |
 | `datastore.type` | Set the type of the datastore to use | LFS |
 | `task_broker.type` | Set the task broker type | Custom |
