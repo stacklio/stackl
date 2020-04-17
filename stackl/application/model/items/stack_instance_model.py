@@ -10,4 +10,6 @@ class StackInstance(BaseModel):
     type = "stack_instance"
     deleted: bool = False
     services: Dict[str, StackInstanceService] = {}
+    stack_infrastructure_template: str
+    stack_application_template: str
     category = "items"

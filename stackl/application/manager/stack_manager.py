@@ -45,8 +45,12 @@ class StackManager(Manager):
                 elif subtask == "UPDATE":
                     (stack_instance, status_code) = self.process_stack_request(
                         task["json_data"], "update")
-                    job = self.agent_broker.create_job_for_agent(
-                        stack_instance, "update", self.document_manager)
+                    # Lets not create the job object when we don't want an invocation
+                    if not task["json_data"]["disable_invocation"]:
+                        job = self.agent_broker.create_job_for_agent(
+                            stack_instance, "update", self.document_manager)
+                    else:
+                        job = []
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "DELETE":
                     (stack_instance, status_code) = self.process_stack_request(
@@ -69,9 +73,9 @@ class StackManager(Manager):
                             agent_connect_info, am)
                         self.agent_broker.process_job_result(
                             stack_instance, result, self.document_manager)
-                    logger.debug(
-                        "[StackManager] Sent to agent. Result '{0}'".format(
-                            result))
+                        logger.debug(
+                            "[StackManager] Sent to agent. Result '{0}'".
+                            format(result))
                 else:
                     raise Exception(
                         "[StackManager] Processing subtask failed. Status_code '{0}'"

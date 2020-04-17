@@ -12,17 +12,18 @@ def update():
 
 
 @update.command()
-@click.option('--stack-infrastructure-template')
-@click.option('--stack-application-template')
 @click.option('-p', '--params', default="{}")
+@click.option('-s', '--secrets', default="{}")
+@click.option('-d', '--disable-invocation', is_flag=True)
 @click.argument('instance-name')
 @pass_stackl_context
-def instance(stackl_context: StacklContext, stack_infrastructure_template,
-             stack_application_template, params, instance_name):
-    invocation = stackl_client.StackInstanceInvocation(
+def instance(stackl_context: StacklContext, params, secrets,
+             disable_invocation, instance_name):
+    invocation = stackl_client.StackInstanceUpdate(
         stack_instance_name=instance_name,
-        stack_infrastructure_template=stack_infrastructure_template,
-        stack_application_template=stack_application_template,
-        params=json.loads(params))
+        params=json.loads(params),
+        secrets=json.loads(secrets))
+    if disable_invocation:
+        invocation.disable_invocation = True
     res = stackl_context.stack_instances_api.put_stack_instance(invocation)
     click.echo(res)
