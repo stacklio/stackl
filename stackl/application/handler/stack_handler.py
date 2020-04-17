@@ -34,7 +34,12 @@ class StackHandler(Handler):
     def _create_stack_instance(
         self, item, opa_decision,
         stack_infrastructure_template: StackInfrastructureTemplate):
-        stack_instance_doc = StackInstance(name=item['stack_instance_name'])
+        stack_instance_doc = StackInstance(
+            name=item['stack_instance_name'],
+            stack_infrastructure_template=item[
+                'stack_infrastructure_template'],
+            stack_application_template=item['stack_application_template'])
+
         services = {}
         for svc, targets in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
@@ -42,10 +47,11 @@ class StackHandler(Handler):
                 raise NoOpaResultException
             svc_doc = self.document_manager.get_service(svc)
             service_definition = StackInstanceService()
-            service_definition_status = []
             # TODO take first target in list if multiple, maybe we should let opa always only return one?
             infra_target = targets[0]
             service_definition.infrastructure_target = infra_target
+
+            service_definition_status = []
             capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
                 infra_target]["provisioning_parameters"]
             secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
@@ -68,23 +74,42 @@ class StackHandler(Handler):
             service_definition.secrets = {**merged_secrets, **item['secrets']}
             service_definition.status = service_definition_status
             services[svc] = service_definition
-            stack_instance_doc.services = services
+        stack_instance_doc.services = services
         return stack_instance_doc
 
-    def merge_capabilities(self, stack_infr_template, stack_instance, item):
-        """This method takes a stack_infr_template, a stack instance and an item which contains the extra parameters"""
-        for svc in stack_instance.services:
-            infra_capabilities = stack_infr_template.infrastructure_capabilities[
-                stack_instance.services[svc].infrastructure_target]
+    def _update_stack_instance(self, stack_instance: StackInstance, item):
+        """This method takes a stack instance and an item which contains the extra parameters and secrets"""
+        stack_infr_template = self.document_manager.get_stack_infrastructure_template(
+            stack_instance.stack_infrastructure_template)
+        stack_infrastructure_template = self._update_infr_capabilities(
+            stack_infr_template, "yes")
+        for svc, service_definition in stack_instance.services.items():
             svc_doc = self.document_manager.get_service(svc)
-            merged_capabilities = {**infra_capabilities, **svc_doc.params}
+            service_definition_status = []
+            capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                service_definition.
+                infrastructure_target]["provisioning_parameters"]
+            secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                service_definition.infrastructure_target]["secrets"]
+            merged_capabilities = {**capabilities_of_target, **svc_doc.params}
+            merged_secrets = {**secrets_of_target, **svc_doc.secrets}
             for fr in svc_doc.functional_requirements:
+                if not item["disable_invocation"]:
+                    fr_status = FunctionalRequirementStatus(
+                        functional_requirement=fr,
+                        status=Status.in_progress,
+                        error_message="")
+                    service_definition_status.append(fr_status)
                 fr_doc = self.document_manager.get_functional_requirement(fr)
                 merged_capabilities = {**merged_capabilities, **fr_doc.params}
-            stack_instance.services[svc].provisioning_parameters = {
+                merged_secrets = {**merged_secrets, **fr_doc.secrets}
+            service_definition.provisioning_parameters = {
                 **merged_capabilities,
                 **item['params']
             }
+            service_definition.secrets = {**merged_secrets, **item['secrets']}
+            service_definition.status = service_definition_status
+            stack_instance.services[svc] = service_definition
         return stack_instance
 
     ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
@@ -243,14 +268,9 @@ class StackHandler(Handler):
         logger.debug(
             "[StackHandler] _handle_update received with item: {0}.".format(
                 item))
-        stack_infr_template = self.document_manager.get_stack_infrastructure_template(
-            item['stack_infrastructure_template'])
-
-        stack_infr = self._update_infr_capabilities(stack_infr_template, "yes")
         stack_instance = self.document_manager.get_stack_instance(
             item['stack_instance_name'])
-        stack_instance = self.merge_capabilities(stack_infr, stack_instance,
-                                                 item)
+        stack_instance = self._update_stack_instance(stack_instance, item)
         return stack_instance, 200
 
     def _handle_delete(self, item):

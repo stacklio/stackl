@@ -13,7 +13,7 @@ router = APIRouter()
 document_manager = ManagerFactory().get_document_manager()
 
 
-@router.get('/{policy}', response_model=Policy)
+@router.get('/{policy_name}', response_model=Policy)
 def get_policy_by_name(policy_name: str):
     """Returns a policy"""
     try:
@@ -23,8 +23,7 @@ def get_policy_by_name(policy_name: str):
 
     if document == {}:
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail="No document with name " +
-                            policy_name)
+                            detail="No document with name " + policy_name)
     logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
 
