@@ -108,6 +108,17 @@ restart:
 	docker-compose -f build/make/dev/docker-compose.yml up -d
 	@echo "Started stackl"
 
+.PHONY: kaniko-warmer
+kaniko-warmer:
+	@echo "Pulling images for caching"
+	mkdir -p /var/snap/microk8s/common/kaniko/
+	${CONTAINER_ENGINE} run -v /var/snap/microk8s/common/kaniko/:/workspace gcr.io/kaniko-project/warmer:latest --cache-dir=/workspace/cache --image=stacklio/grpc-base:latest --image=python:3.8.1-slim-buster --image=tiangolo/uvicorn-gunicorn-fastapi:python3.7-2020-04-06
+
+.PHONY: skaffold
+skaffold:
+	skaffold dev --force=false --port-forward
+
 build: build_prepare build_rest build_worker build_websocket_agent build_grpc_base build_kubernetes_agent build_docker_agent
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start
+dev: kaniko-warmer skaffold
