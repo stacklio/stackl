@@ -132,6 +132,11 @@ class StackHandler(Handler):
                 policy_input["policy_input"][i] = attributes[i]
             previous["services"] = opa_result['result']
             opa_data = {**previous, **policy_input}
+
+            # Make sure the policy is in OPA
+            self.opa_broker.add_policy(policy.name, policy.policy)
+
+            # And verify it
             new_result = self.opa_broker.ask_opa_policy_decision(
                 "orchestration", policy_name, opa_data)
             opa_result = {**opa_result, **new_result}
