@@ -1,0 +1,12 @@
+FROM stacklio/grpc-base
+
+ENV agent_name="kubernetes"
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends npm=5.8.0+ds6-4 -y && \
+    npm install -g nodemon@2.0.2 && \
+    rm -rf /var/lib/apt/lists/* && npm cache clean --force
+
+ENTRYPOINT ["nodemon", "main.py"]
+
+COPY . .
