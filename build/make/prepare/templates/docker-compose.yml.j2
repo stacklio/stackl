@@ -115,6 +115,6 @@ services:
       - "--log-format=json-pretty"
       - "--log-level=debug"
       - "--set=decision_logs.console=true"
-      {# - "--bundle /opa_files/functions" #}
+      - "/opa_files/orchestration_default_policies.rego"
     networks:
      - stackl_bridge
