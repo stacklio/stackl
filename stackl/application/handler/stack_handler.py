@@ -39,7 +39,8 @@ class StackHandler(Handler):
             stack_infrastructure_template=item[
                 'stack_infrastructure_template'],
             stack_application_template=item['stack_application_template'])
-
+        stack_instance_doc.instance_params = item['params']
+        stack_instance_doc.instance_secrets = item['secrets']
         services = {}
         for svc, targets in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
@@ -83,6 +84,14 @@ class StackHandler(Handler):
             stack_instance.stack_infrastructure_template)
         stack_infrastructure_template = self._update_infr_capabilities(
             stack_infr_template, "yes")
+        stack_instance.instance_params = {
+            **stack_instance.instance_params,
+            **item['params']
+        }
+        stack_instance.instance_secrets = {
+            **stack_instance.instance_secrets,
+            **item['secrets']
+        }
         for svc, service_definition in stack_instance.services.items():
             svc_doc = self.document_manager.get_service(svc)
             service_definition_status = []
@@ -105,9 +114,12 @@ class StackHandler(Handler):
                 merged_secrets = {**merged_secrets, **fr_doc.secrets}
             service_definition.provisioning_parameters = {
                 **merged_capabilities,
-                **item['params']
+                **stack_instance.instance_params
             }
-            service_definition.secrets = {**merged_secrets, **item['secrets']}
+            service_definition.secrets = {
+                **merged_secrets,
+                **stack_instance.instance_secrets
+            }
             service_definition.status = service_definition_status
             stack_instance.services[svc] = service_definition
         return stack_instance
