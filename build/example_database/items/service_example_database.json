@@ -1,14 +1,11 @@
 {
-    "name": "database",
+    "name": "example_database",
     "type": "service",
     "category": "items",
-    "functional_requirements": ["postgresql"],
+    "functional_requirements": ["redis"],
     "resource_requirements": {
         "cpu_cores": "1",
         "memory": "2GB",
         "disk": "20GB"
-    },
-    "params": {
-        "webserver": "CouchDB"
     }
 }

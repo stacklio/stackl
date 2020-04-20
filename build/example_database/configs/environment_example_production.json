@@ -1,0 +1,12 @@
+{
+    "category": "configs",
+    "description": "example production environment",
+    "name": "example_production",
+    "params": {
+        "datastore": "TODO",
+        "hostname": "TODO",
+        "password": "TODO",
+        "username": "TODO"
+    },
+    "type": "environment"
+}

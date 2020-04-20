@@ -4,7 +4,7 @@
     "name": "test_vm",
     "services": {
         "webserver": {
-            "infrastructure_target": "production.brussels.cluster1",
+            "infrastructure_target": "production.brussel.cluster1",
             "provisioning_parameters": {
                 "CPU": "4GHz",
                 "RAM": "4GB",
@@ -16,12 +16,12 @@
                 ],
                 "datacenter": "DC01",
                 "datastore": "vsanDatastore",
-                "folder": "fred_10.10.3.0",
-                "hostname": "p00vca01.nubera.local",
-                "network": "ls3-Fred",
-                "password": "Nubera1!",
+                "folder": "SNIP",
+                "hostname": "SNIP",
+                "network": "SNIP",
+                "password": "SNIP",
                 "replicas": "1",
-                "username": "administrator@vsphere.local",
+                "username": "SNIP",
                 "vm_name": "test-vm-logging",
                 "vmw_image": "stackl-centos-template",
                 "webserver": "nginx"
@@ -35,5 +35,6 @@
             ]
         }
     },
-    "type": "stack_instance"
+    "type": "stack_instance",
+    "description": "Old stack instance example, temporarily left here for illustration purposes and cleaned"
 }

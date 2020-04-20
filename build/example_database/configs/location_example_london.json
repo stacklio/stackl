@@ -1,0 +1,9 @@
+{
+    "description": "Example London DC",
+    "type": "location",
+    "name": "example_london",
+    "category": "configs",
+    "params": {
+        "datacenter": "TODO"
+    }
+}

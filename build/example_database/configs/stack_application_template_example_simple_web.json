@@ -1,0 +1,11 @@
+{
+    "name": "example_simple_web",
+    "description": "An example simple web application consisting of a webserver and a database",
+    "type": "stack_application_template",
+    "category": "configs",
+    "services": [
+        "example_webserver",
+        "example_database"
+    ],
+    "policies": {} 
+}

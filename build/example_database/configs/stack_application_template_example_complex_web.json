@@ -1,0 +1,15 @@
+{
+    "name": "example_complex_web",
+    "description": "An example complex web application consisting of a webserver that should be replicated for redundancy in a different zone and a database which should be on the same target as the primary webserver",
+    "type": "stack_application_template",
+    "category": "configs",
+    "services": [
+        "example_web",
+        "example_database"
+    ],
+    "policies": {
+        "policy_orchestration_replicas": ["example_web", 2],
+        "policy_orchestration_same_location": [["example_web_1", "example_database"]],
+        "policy_orchestration_separate_target":[["example_web_1", "example_web_2"]]
+    } 
+}

@@ -1,0 +1,11 @@
+{
+    "name": "example_web",
+    "type": "service",
+    "category": "items",
+    "functional_requirements": ["linux","flask"],
+    "resource_requirements": {
+        "cpu_cores": "2",
+        "memory": "2GB",
+        "disk":"1GB"
+    }
+}

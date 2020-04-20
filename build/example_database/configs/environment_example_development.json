@@ -1,0 +1,12 @@
+{
+    "category": "configs",
+    "description": "example development environment",
+    "name": "example_development",
+    "params": {
+        "datastore": "TODO",
+        "hostname": "TODO",
+        "password": "TODO",
+        "username": "TODO"
+    },
+    "type": "environment"
+}
