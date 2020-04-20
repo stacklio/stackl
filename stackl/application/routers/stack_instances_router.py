@@ -25,8 +25,8 @@ task_broker = task_broker_factory.get_task_broker()
 class StackInstanceInvocation(BaseModel):
     params: Dict[str, Any] = {}
     tags: Dict[str, str] = {}
-    stack_infrastructure_template: str = "stackl"
-    stack_application_template: str = "web"
+    stack_infrastructure_template: str = "example_simple_web_host"
+    stack_application_template: str = "example_simple_web"
     stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
 
@@ -35,8 +35,8 @@ class StackInstanceInvocation(BaseModel):
             "example": {
                 "params": {},
                 "secrets": {},
-                "stack_infrastructure_template": "stackl",
-                "stack_application_template": "web",
+                "stack_infrastructure_template": "example_simple_web_host",
+                "stack_application_template": "example_simple_web",
                 "stack_instance_name": "default_test_instance"
             }
         }
