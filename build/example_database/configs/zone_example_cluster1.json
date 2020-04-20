@@ -1,0 +1,18 @@
+{
+  "description": "Example cluster 1",
+  "type": "zone",
+  "name": "example_cluster_1",
+  "category": "configs",
+  "params": {
+    "cluster": "TODO",
+    "cpu_cores": "20",
+    "memory": "20GB",
+    "disk":"1000GB",
+    "packages": [
+      "redis",
+      "linux",
+      "flask"
+    ],
+    "network": "TODO"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "category": "configs",
+    "description": "type functional_requirement with name example flask",
+    "invocation": {
+        "description": "Deploys a flask webserver",
+        "image": "TODO",
+        "tool": "TODO"
+    },
+    "name": "example_flask",
+    "params": {},
+    "type": "functional_requirement"
+}

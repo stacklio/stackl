@@ -1,0 +1,16 @@
+{
+  "description": "Example cluster 3",
+  "type": "zone",
+  "name": "example_cluster_3",
+  "category": "configs",
+  "params": {
+    "cluster": "TODO",
+    "cpu_cores": "1",
+    "memory": "1GB",
+    "disk": "1GB",
+    "packages": [
+      "windows"
+    ],
+    "network": "TODO"
+  }
+}

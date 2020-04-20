@@ -1,0 +1,12 @@
+{
+    "category": "configs",
+    "description": "type functional_requirement with name example redis",
+    "invocation": {
+        "description": "Deploys a redis database",
+        "image": "TODO",
+        "tool": "TODO"
+    },
+    "name": "example_redis",
+    "params": {},
+    "type": "functional_requirement"
+}

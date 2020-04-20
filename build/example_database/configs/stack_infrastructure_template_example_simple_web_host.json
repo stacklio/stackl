@@ -1,0 +1,34 @@
+{
+    "category": "configs",
+    "description": "An example SIT that can support the example simple web SAT",
+    "infrastructure_capabilities": {
+        "production.example_brussel.example_cluster1": {
+            "resources": {
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
+            },
+            "packages": [
+                "redis",
+                "linux",
+                "flask"
+            ],
+            "cluster": "TODO",
+            "datacenter": "TODO",
+            "datastore": "TODO",
+            "hostname": "TODO",
+            "network": "TODO",
+            "password": "TODO",
+            "username": "TODO"
+        }
+    },
+    "infrastructure_targets": [
+        {
+            "environment": "production",
+            "location": "example_brussel",
+            "zone": "example_cluster1"
+        }
+    ],
+    "name": "example_simple_web_host",
+    "type": "stack_infrastructure_template"
+}

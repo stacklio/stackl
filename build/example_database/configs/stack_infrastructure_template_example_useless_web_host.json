@@ -1,0 +1,32 @@
+{
+    "category": "configs",
+    "description": "An example SIT that can support no web SAT",
+    "infrastructure_capabilities": {
+        "production.example_london.example_cluster3": {
+            "resources": {
+                "cpu_cores": "1",
+                "memory": "1GB",
+                "disk": "1GB"
+            },
+            "packages": [
+                "windows"
+            ],
+            "cluster": "TODO",
+            "datacenter": "TODO",
+            "datastore": "TODO",
+            "hostname": "TODO",
+            "network": "TODO",
+            "password": "TODO",
+            "username": "TODO"
+        }
+    },
+    "infrastructure_targets": [
+        {
+            "environment": "production",
+            "location": "example_london",
+            "zone": "example_cluster3"
+        }
+    ],
+    "name": "example_useless_web_host",
+    "type": "stack_infrastructure_template"
+}
