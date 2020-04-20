@@ -1,7 +1,6 @@
-###
-### This package contains all the default policies for application orchestration on provided input data
-###
 package orchestration
+
+### This policy is the default policy for orchestration and contains the basic requirements any workload placemenet should adhere to
 
 advanced_application_placement_solutions = solutions {
     unfiltered_application_placement_solutions = basic_application_placement_solution_sets
