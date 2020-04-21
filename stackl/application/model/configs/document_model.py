@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from pydantic import BaseModel
 
@@ -12,8 +12,8 @@ class BaseDocument(BaseModel):
     secrets: dict = {}
 
 
-class GetAllDocuments(BaseModel):
+class CollectionDocument(BaseModel):
     name: str
-    description = "GetAllDocuments"
+    description = "CollectionDocument"
     type: str
-    documents: Any
+    documents: List[Any]

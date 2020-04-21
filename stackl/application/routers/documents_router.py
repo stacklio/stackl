@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
-from model.configs.document_model import GetAllDocuments
+from model.configs.document_model import CollectionDocument
 from model.configs.infrastructure_base_document import InfrastructureBaseDocument
 from stackl_globals import types
 from task_broker.task_broker_factory import TaskBrokerFactory
@@ -22,20 +22,23 @@ def get_types():
     return types
 
 
-@router.get('/{type_name}', response_model=GetAllDocuments)
-def get_documents_by_type(type_name: str):
-    """Returns all documents with a specific type"""
+@router.get('/{type_name}', response_model=CollectionDocument)
+def get_all_documents_by_type(type_name: str):
+    """Returns a collection of all the documents with the specific type"""
     logger.info(
-        f"[DocumentsByType GET] Receiver GET request with data: {type_name}")
+        f"[CollectionDocumentByType GET] Receiver GET request with data: {type_name}"
+    )
     try:
         documents = document_manager.get_document(type=type_name)
 
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
-    logger.debug(f"[DocumentsByType GET] document(s): {documents}")
-    document = {
-        "name": "All {type_name} Documents",
+    logger.debug(f"[CollectionDocumentByType GET] document(s): {documents}")
+    document: CollectionDocument = {
+        "name": "CollectionDocumentByType_" + type_name,
+        "description":
+        "Document that contains all the documents by type " + type_name,
         "type": type_name,
         "documents": documents
     }
