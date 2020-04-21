@@ -8,8 +8,8 @@
         "example_database"
     ],
     "policies": {
-        "policy_orchestration_replicas": ["example_web", 2],
-        "policy_orchestration_same_location": [["example_web_1", "example_database"]],
-        "policy_orchestration_separate_target":[["example_web_1", "example_web_2"]]
+        "replicas": ["example_web", 2],
+        "same_location": [["example_web_1", "example_database"]],
+        "separate_target":[["example_web_1", "example_web_2"]]
     } 
 }

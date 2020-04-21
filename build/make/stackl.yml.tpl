@@ -18,4 +18,4 @@ agent_broker:
 
 opa:
   # Change this to the absolute path where your OPA files are located ##TODO: make this a fixed spot somewhere
-  opa_files_location: /build/example_policies
+  opa_files_location: /build/policies

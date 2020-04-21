@@ -6,9 +6,10 @@ package orchestration
 #	services - a list of services that should not be on the same target
 # Note: TODO This is untested
 
-same_zone(application_placement_solutions){
+separate_target(application_placement_solutions){
 	some i, j
 	service1 = input.policy_input.services[i]
-	service2 = input.policy_input.service[j]
+	service2 = input.policy_input.services[j]
+	solution = application_placement_solutions[_]
 	solution[service1] == solution[service2]
 } 

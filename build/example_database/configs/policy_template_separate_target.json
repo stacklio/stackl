@@ -1,0 +1,10 @@
+{
+    "name": "separate_target",
+    "description": "Policy to ensure the given services are on separate targets",
+    "category": "configs",
+    "type": "policy",
+    "policy": "separate_target(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tsolution[service1] == solution[service2]\n}",
+    "inputs": [
+        "services"
+    ]
+}

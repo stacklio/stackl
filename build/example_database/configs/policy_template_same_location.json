@@ -1,0 +1,10 @@
+{
+    "name": "same_location",
+    "description": "Policy to ensure the given services are at the same location",
+    "category": "configs",
+    "type": "policy",
+    "policy": "same_location(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tlocation_service1 = split(solution[service1],\".\")[1]\n\tlocation_service2 = split(solution[service2],\".\")[1]\n\tlocation_service1 == location_service2\n}",
+    "inputs": [
+        "services"
+    ]
+}
