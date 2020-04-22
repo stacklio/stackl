@@ -8,7 +8,11 @@ expirydate: 2030-01-01 00:00:00 +0000
 draft: false
 tags: []
 ---
-This document helps you get STACKL up and running in different deployment environments. You should read this document if you are planning to deploy STACKL.
+
+STACKL can be quickly deployed in different IT environments through either Docker or Kubernetes.
+This page describes how to set it up simply and also how to view the logs of the various deployed components.
+A Docker deployment is easy and quick with the only requirement being a working docker installation, which is available for every common operating system. This is further described in [Docker](#docker).
+A Kubernetes deployment requires a working kubernetes cluster. Since this is not always trivial, we provide a Vagrant Development box which only needs VirtualBox and Vagrant. This is further described in [Kubernetes](#kubernetes).
 
 In order to get you properly started, make sure to clone the STACKL repository to the system you're using:
 
@@ -26,13 +30,12 @@ STACKL releases are available as images on Docker Hub.
 
 * [stacklio/stackl](https://hub.docker.com/orgs/stacklio/repositories)
 
-
 ### Prerequisites
 
 You will need to check if docker and docker-compose is installed before installing STACKL.
 
-* Docker environment: https://docs.docker.com/engine/installation/
-* Docker-compose: https://docs.docker.com/compose/install/
+* Docker environment: <https://docs.docker.com/engine/installation/>
+* Docker-compose: <https://docs.docker.com/compose/install/>
 
 ### Running with Docker
 
@@ -49,7 +52,6 @@ Simply execute the following commands to set up your environment. We assume that
 
 _**Note**_
 _We copied the example database to the `tmp` directory, don't skip this step since this path is required in the Docker Compose file. You should also create a Docker network named `stackl_bridge` which is used for the STACKL deployment._
-
 
 ```sh
 cp -R build/example_database /tmp/example_database
@@ -182,7 +184,6 @@ The Helm charts make use of the default storage class to create a persistent vol
 #### Helm advanced configuration
 
 For more configuration make sure to check the [configuration page](../configuration).
-
 
 ### Logging with Kubernetes
 
