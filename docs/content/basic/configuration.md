@@ -11,7 +11,7 @@ tags: []
 
 ## Docker Configuration table
 
-Following parameters can be modified in order to change the STACKL Docker compose deployment in [docker-compose.yml](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
+The following parameters control the STACKL Docker compose deployment in [docker-compose.yml](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
 
 | Parameter | Description | Default |
 |------------|------|------|
@@ -28,7 +28,7 @@ Following parameters can be modified in order to change the STACKL Docker compos
 
 ## Helm Configuration table
 
-Following parameters can be modified in order to change the STACKL Helm deployment in [values.yaml](https://github.com/stacklio/stackl/tree/master/build/helm/values.yaml).
+The following parameters control the STACKL Helm deployment in [values.yaml](https://github.com/stacklio/stackl/tree/master/build/helm/values.yaml).
 
 | Parameter | Description | Default |
 |------------|------|------|
