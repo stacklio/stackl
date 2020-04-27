@@ -1,5 +1,5 @@
 ---
-title: Stack Templates
+title: Stacks
 kind: advanced
 weight: 3
 date: 2020-02-10 01:00:00 +0100
@@ -10,38 +10,39 @@ tags: []
 ---
 
 A Stack is a declarative description of an application and the IT infrastructure it may run on.
-Stacks consist out of two concerns which are separated into a **Stack Application Template (SAT)** and a **Stack Infrastructure Template (SIT)**.
-STACKL creates a Stack Template (ST) by constraint solving the SAT and SIT of the Stack, thus creating a valid deployment mapping of an application to the IT infrastructure at that point in time.
-An instantiation of this ST on the infrastructure is called a Stack Instance (SI).
-Stacks are a concept.
-SATs, SITs, STs and SIs are stored documents which are given, processed, tracked, and maintained in the datastore.
+A Stack is instantiated as a **Stack Instance (SI)** which comes from a **Stack Template (ST)** which itself is the result of  a **Stack Application Template (SAT)** and a **Stack Infrastructure Template (SIT)**.
+STACKL creates a ST by constraint solving the requirements of the SAT and the capabilities of the SIT to a deployment mapping of the described application to the modelled IT infrastructure at that point in time.
+The result is a set of possible placement solutions, if any.
+An instantiation of a solution of the ST on the infrastructure is called a Stack Instance (SI).
+Stacks are thus a conceptual element that describes the desired orchestration of an application in the IT environment.
+SATs, SITs, STs and SIs are stored documents which are given, processed, tracked, and maintained in the datastore and represent the parts and stages of a Stack.
 
-Users separately specify their application as a set of modular microservices in SATs and the available infrastructure in SITs.
+Users separately specify their infrastructure, modelling in a SIT what is available and how, from their applications, described as a collection of services in a microservice architecture.
 Separate specification decouples applications from the infrastructure, allowing different SATs to be matched to different SITs, promoting flexibility, adaptability, and re-use.
 Operators can submit a Stack to STACKL as a combination of a SAT and SIT.
-If the stack is instantiable, STACKLs returns the set of possible instantiations in a ST which can become a SI, or running application.
+If the stack is instantiable, STACKL returns the set of possible instantiations in a ST which can become a SI, or the actual running application.
 
 ## Stack Application Template
 
-A SAT describes the application as a set of constituent services (actual software entities) that have functional and resource requirements (FR and RR) and additional service policies (POL) which describes extra-functional requirements or properties such as count.
-The SAT aggregates the FRs, RRs, and POLs and can specify application-level RRs and POLs as well.
-The resulting set of these requirements and policies are the constraints of the application to be able to run as desired on given infrastructure.
+A SAT describes the application as a collection of services (software entities) that have functional and resource requirements (FR and RR) and policies which describes extra-functional requirements such as replication.
+The SAT contains the services with their FRs and RRs and specifies additional policies to determine application behavior and runtime.
+The resulting set of these requirements and policies are the constraints of the application to be able to run as desired on a given infrastructure.
 
 Services are either stored in separate documents or specified in the SAT itself.
-FRs are what the service is supposed to do.
-These map to configuration packets for the software host so that it can perform certain functions.
-FRs can inherit from other FRs.
+FRs are what the service is supposed to do and with what or how.
+These map to configuration packages for the software host so that it can perform certain functions, such as supporting a Linux environment or a network configuration.
+(TODO) FRs can inherit from other FRs.
 K/V pairs of an FR override those of the preceding FR.
 FRs are stored in separate documents.
-FRs have RRs that, in turn, determine the minimum RRs of the service and the service can specify additional RRs.
-FRs also specify the invocation process that is needed to instantiate the FR.
+FRs can specify RRs that help determine the minimum RRs of the service which itself can specify RRs.
+FRs also state the invocation process that is needed to instantiate the FR.
 
 RRs are what resources the service needs to functions
 These map the resource requirements of the hosting infrastructure.
 These are the minimum set of the requirements of the FRs, if specified, and the specified ones by the service.
 
 Policies are additional specifications for how the service or applications functions.
-These map to behavioural constraints on and across services, such as high availability of a service through redundancy or a low latency requirement between two services.
+These map to behavioral constraints on and across services, such as high availability of a service through redundancy or a low latency requirement between two services.
 They can be both derived from the set of FRs or explicitly specified for the application.
 
 A default policy that is always present is that the RR of the SAT can be satisfied.
@@ -49,296 +50,306 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 ### Example: Simple SAT
 
 ```json
- #stack_application_template_simple.json
+ #stack_application_template_example_simple_web.json
 {
-   "name": "sat_simple",
-   "type": "stack_application_template",
-   "services": {
-        "single_calculator": "Single Calculator"
-   },
-   "policies": {}
+    "name": "example_simple_web",
+    "description": "An example simple web application consisting of a webserver and a database",
+    "type": "stack_application_template",
+    "category": "configs",
+    "services": [
+        "example_webserver",
+        "example_database"
+    ],
+    "policies": {}
 }
 ```
 
 ```json
-#service_single_calculator.json
+#service_example_web.json
 {
-   "name": "single_calculator",
-   "type": "processing server",
-   "functional_requirements": ["linux"],
-   "resource_requirements": {
-           "CPU": "2Ghz",
-           "memory": "4GB RAM"
-   },
-   "policies": {}
+    "name": "example_web",
+    "type": "service",
+    "category": "items",
+    "functional_requirements": ["linux","flask"],
+    "resource_requirements": {
+        "cpu_cores": "2",
+        "memory": "2GB",
+        "disk":"1GB"
+    }
+}
+#service_example_database.json
+{
+    "name": "example_database",
+    "type": "service",
+    "category": "items",
+    "functional_requirements": ["redis"],
+    "resource_requirements": {
+        "cpu_cores": "1",
+        "memory": "2GB",
+        "disk": "20GB"
+    }
 }
 ```
 
 ```json
 #functional_requirement_linux.json
 {
-   "name" : "linux",
-   "type" : "operating system",
-   "disk_config": [
-       {
-         "size_gb": "16",
-         "name": "disk1",
-         "thin_provisioned": "false",
-         "drive_letter": "c",
-         "datastore": "vsanDatastore",
-         "unit_number": "0"
-       }
-   ],
-   "invocation": {
-         "handler":"terraform",
-         "version":"0.12",
-         "target":"centos",
-         "Description":"installs centos"
-   }
+    "category": "configs",
+    "description": "type functional_requirement with name example linux",
+    "invocation": {
+        "description": "Deploys a Linux VM",
+        "image": "TODO",
+        "tool": "TODO"
+    },
+    "name": "example_linux",
+    "params": {},
+    "type": "functional_requirement"
+}
+#functional_requirement_flask.json
+{
+    "category": "configs",
+    "description": "type functional_requirement with name example flask",
+    "invocation": {
+        "description": "Deploys a flask webserver",
+        "image": "TODO",
+        "tool": "TODO"
+    },
+    "name": "example_flask",
+    "params": {},
+    "type": "functional_requirement"
+}
+#functional_requirement_redis.json
+{
+    "category": "configs",
+    "description": "type functional_requirement with name example redis",
+    "invocation": {
+        "description": "Deploys a redis database",
+        "image": "TODO",
+        "tool": "TODO"
+    },
+    "name": "example_redis",
+    "params": {},
+    "type": "functional_requirement"
 }
 ```
 
-### Example: Complex SAT
+### Example: SAT with additional policies
 
 ```json
-#stack_application_template_complex.json
+#stack_application_template_example_complex_web.json
 {
-   "name": "sat_complex",
-   "type": "stack_application_template",
-   "services": {
-        "web_app": "Web App",
-        "database": "Database"
-   },
-   "policies": ["same_zone"]
-   }
-}
-```
-
-```json
-#service_web_app.json
-{
-   "name" : "web_app",
-   "type" : "Web application",
-   "functional_requirements": ["WebConfig", "DNSConfig"],
-   "resource_requirements": {
-           "CPU": "3Ghz",
-           "memory": "6GB RAM"
-   },
-   "policies": []
-}
-```
-
-```json
-#service_database.json
-{
-   "name" : "database",
-   "type" : "database",
-   "functional_requirements": ["DatabaseConfig"],
-   "resource_requirements": {
-           "hard_disk": "100GB"
-   },
-   "policies": ["db_redundancy"]
+    "name": "example_complex_web",
+    "description": "An example complex web application consisting of a webserver that should be replicated for redundancy in a different zone and a database which should be on the same target as the primary webserver",
+    "type": "stack_application_template",
+    "category": "configs",
+    "services": [
+        "example_web",
+        "example_database"
+    ],
+    "policies": {
+        "replicas": ["example_web", 2],
+        "same_location": [["example_web_1", "example_database"]],
+        "separate_target":[["example_web_1", "example_web_2"]]
+    }
 }
 ```
 
 ```json
-#functional_requirement_webconfig.json
+#policy_template_replicas.json
 {
-   "name" : "WebConfig",
-   "inherits": "ubuntu",
-   "git_token": "random_token",
-   "git_user": "web_user",
-   "description": "",
-   "invocation": {
-         "handler":"terraform",
-         "version":"0.12",
-         "target":"centos.yml",
-         "Description":"installs centos"
-   }
+    "name": "replicas",
+    "description": "Policy to ensure the service has at least the given amount of replicas",
+    "category": "configs",
+    "type": "policy",
+    "policy": "\nreplicas = x {\n\tservice = input.policy_input.service\n\tamount = input.policy_input.amount\n\tcount(input.services[service]) >= amount\n\tx = {service: array.slice(input.services[service], 0, amount)}\n} else = x {\n   x = {input.policy_input.service: []}\n}",
+    "inputs": [
+        "service",
+        "amount"
+    ]
 }
-```
-
-```json
-#functional_requirement_dnsconfig.json
+#policy_template_same_location.json
 {
-   "name" : "DNSConfig",
-   "inherits": "ubuntu",
-   "git_token": "random_token",
-   "git_user": "dns_user",
-   "description": "",
-   "invocation": {
-         "handler":"terraform",
-         "version":"0.12",
-         "target":"centos.yml",
-         "description":"installs centos"
-   }
+    "name": "same_location",
+    "description": "Policy to ensure the given services are at the same location",
+    "category": "configs",
+    "type": "policy",
+    "policy": "same_location(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tlocation_service1 = split(solution[service1],\".\")[1]\n\tlocation_service2 = split(solution[service2],\".\")[1]\n\tlocation_service1 == location_service2\n}",
+    "inputs": [
+        "services"
+    ]
 }
-#policy_db_redundancy.json
+#policy_template_separate_target.json
 {
-   "name" : "Database Redundancy Policy",
-   "description": "Database policy to ensure that at least 2 databases exist but not more than 3",
-   "min_nodes": 2,
-   "max_nodes": 3
+    "name": "separate_target",
+    "description": "Policy to ensure the given services are on separate targets",
+    "category": "configs",
+    "type": "policy",
+    "policy": "separate_target(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tsolution[service1] == solution[service2]\n}",
+    "inputs": [
+        "services"
+    ]
 }
-#policy_same_zone.json
-{
-   "name" : "Same Zone",
-   "description": "Same Zone policy to ensure that the services are deployed in the same zone",
-}
-
-
 ```
 
 ## Stack Infrastructure Template
 
 A SIT models the available infrastructure.
 It describes the infrastructure in terms of the environment, location, and zones and explicitly specifies their relationship in a set of infrastructure targets.
-Environment, location, and zones are separate documents.
+Environment, location, and zones are separate documents which provide the data needed to access them as well as infrastructure-specific policies.
 An infrastructure target is the result of merging these documents where the K/V pairs of the zone override the location which override the environment.
 Each infrastructure target has capabilities.
 These can vary over time due to dynamic factors (e.g., load on a server, power outages, ...).
-As such, each SIT has an update policy which specifies when the capabilities of the infrastructure targets should be determined.
+(TODO) As such, each SIT has an update policy which specifies when the capabilities of the infrastructure targets should be determined.
 
-### Example: Stack Infrastructure Template
+### Example: Simple Stack Infrastructure Template
 
 ```json
-# stack_infrastructure_template.json
+# stack_infrastructure_template_simple_complex_web_host.json
 {
-   "name": "Example IT Infrastructure",
-   "type": "sit_example",
-   "environment": ["Production", "Development"],
-   "location": ["VMW", "AWS"],
-   "zone": ["V1", "V2", "S1", "S2"],
-   "infrastructure_targets": ["P.VMW.V1", "P.VMW.V2", "D.AWS.S1", "D.AWS.S2"],
-   "infrastructure_capabilities": {
-       "P.VMW.V1": {
-           "type": "",
-           "properties": {
-               "CPU": <<CPU>>,
-               "memory": <<memory>>
-           },
-       "P.VMW.V2": {
-           "type": "",
-           "properties": {
-               "CPU": <<CPU>>,
-               "memory": <<memory>>
-           },
-       "D.AWS.S1": {
-           "type": "",
-           "properties": {
-               "CPU": <<CPU>>,
-               "memory": <<memory>>
-           },
-       "D.AWS.S2": {
-           "type": "",
-           "properties": {
-               "CPU": <<CPU>>,
-               "memory": <<memory>>
-           }
-     },
-    "update_policy" : "always",
-    "timestamp_last_update" : "None"
+    "category": "configs",
+    "description": "An example SIT that can support the example simple web SAT",
+    "infrastructure_capabilities": {
+        "production.example_brussel.example_cluster1": {
+            "resources": {
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
+            },
+            "packages": [
+                "redis",
+                "linux",
+                "flask"
+            ],
+            "cluster": "TODO",
+            "datacenter": "TODO",
+            "datastore": "TODO",
+            "hostname": "TODO",
+            "network": "TODO",
+            "password": "TODO",
+            "username": "TODO"
+        }
+    },
+    "infrastructure_targets": [
+        {
+            "environment": "production",
+            "location": "example_brussel",
+            "zone": "example_cluster1"
+        }
+    ],
+    "name": "example_simple_web_host",
+    "type": "stack_infrastructure_template"
+}
+```
+
+### Example: Complex Stack Infrastructure Template
+
+```json
+# stack_infrastructure_template_example_complex_web_host.json
+{
+    "category": "configs",
+    "description": "An example SIT that can support the example complex web SAT",
+    "infrastructure_capabilities": {
+        "production.example_brussel.example_cluster1": {
+            "resources": {
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
+            },
+            "packages": [
+                "redis",
+                "linux",
+                "flask"
+            ],
+            "cluster": "TODO",
+            "datacenter": "TODO",
+            "datastore": "TODO",
+            "hostname": "TODO",
+            "network": "TODO",
+            "password": "TODO",
+            "username": "TODO"
+        },
+        "production.example_brussel.example_cluster2": {
+            "resources": {
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
+            },
+            "packages": [
+                "redis",
+                "linux",
+                "flask"
+            ],
+            "cluster": "TODO",
+            "datacenter": "TODO",
+            "datastore": "TODO",
+            "hostname": "TODO",
+            "network": "TODO",
+            "password": "TODO!",
+            "username": "TODO"
+        },
+        "production.example_paris.example_cluster1": {
+            "resources": {
+                "cpu_cores": "20",
+                "memory": "20GB",
+                "disk": "1000GB"
+            },
+            "packages": [
+                "redis",
+                "linux",
+                "flask"
+            ],
+            "cluster": "TODO",
+            "datacenter": "TODO",
+            "datastore": "TODO",
+            "hostname": "TODO",
+            "network": "TODO",
+            "password": "TODO!",
+            "username": "TODO"
+        }
+    },
+    "infrastructure_targets": [
+        {
+            "environment": "production",
+            "location": "example_brussel",
+            "zone": "example_cluster1"
+        },
+        {
+            "environment": "production",
+            "location": "example_brussel",
+            "zone": "example_cluster2"
+        },
+        {
+            "environment": "production",
+            "location": "example_paris",
+            "zone": "example_cluster1"
+        }
+    ],
+    "name": "example_complex_web_host",
+    "type": "stack_infrastructure_template"
 }
 ```
 
 ## Stack Template and Instance
 
-A ST is the result of processing a submitted Stack, as a SAT and SIT, into a set of viable solutions where services are mapped to the infrastructure that is capable of running it.
+A ST is the result of resolving a SAT and a SIT into a set of viable placement solutions where services are mapped to the infrastructure that is capable of running it.
 Each solution can be instantiated as an SI.
-The processing consists of a policy-based SIT update, a two part constraint solver and an actionable result.
-The SIT is updated, if needed, by retrieving the current capabilities of each infrastructure target.
+The processing consists of three stages: (1) optionally, updating the capabilities of the targets in the SIT, (2) matching the requirements, policies, and capabilities of the SIT and SAT, and  (3) storing the results in a document as a set of actionable solutions.
+The SIT is optionally updated by retrieving the current capabilities of each infrastructure target.
 After, the SIT is written back as an updated document with the up-to-date capabilities included.
-The first part of constraint solving considers each service in turn.
-The FRs and RRs of each service are contrasted to the capabilities of each infrastructure target.
-The result is a set of targets the service can run on.
-The second part of constraint solving considers the policies of the SAT and further filters suitable targets for services.
-For instance, if a same-zone requirement for service_a and service_b cannot be satisfied if service_a is deployed on a target in a zone where service_b cannot be deployed, this target is deleted from the list of suitable targets of service_a.
-The end result is a document that contains the mapping of services to infrastructure and which can be stored and acted upon.
-If any service has no suitable targets, no ST is made since the application is uninstantiable.
-If all services have suitable targets, an ST is made that drops the requirements of the services and capabilities of the targets, since it has been determined that these are satisfied, and keeps the RRs since these may provide necessary information during stack instantiation, for instance,  picking targets in the same zone
+The SIT and SAT are matched through a policy agent which considers the requirements and policies of the SAT with the requirements, policies, and capabilities of the SIT and produces valid mappings.
+The end result is the ST as a document that contains the set of mappings of services to the infrastructure.
 
-For instantiation, the targets need to be chosen.
-This first needs to take into account the RRs so that only viable combinations of targets are selected.
-If multiple solutions remain, one is chosen according to a policy, e.g., cheapest target first
+A SI is the result of picking a solution from the ST and providing it to an orchestration tool for actually creating the application in the IT environment.
+The picking of this solution itself can be driven by a policy - such as choosing the solution with the most replica's or lowest latency.
 
 ### Example: Stack Template Simple
 
 ```json
-#supposing that all infrastructure targets support Linux and the hardware requirements
-#st_simple.json
-{
-   "name": "st_simple",
-   "type": "stack_template",
-   "services": {
-      "single_vm": {
-         "type" : "processing_server",
-         "infrastructure_targets" : ["P.VMW.V1", "P.VMW.V2", "D.AWS.S1", "D.AWS.S2"]
-   },
-   "policies": {}
-}
+TODO
 ```
 
 There are 4 possible SI, one for each target.
 
 ```json
-#si_simple1.json
-{
-   "name": "si_simple1",
-   "type": "stack_instance",
-   "services": {
-      "single_vm": {
-         "type" : "processing_server",
-         "infrastructure_target" : "P.VMW.V1"
-   }
-}
-```
-
-### Example: Stack Template Complex
-
-```json
-#supposing that only VMW supports the DNSConfig and the hardware requirements
- #st_complex.json
-{
-   "name": "st_complex",
-   "type": "stack_template",
-   "services": {
-      "web_app": {
-         "type" : "Web Application",
-         "infrastructure_targets" : ["P.VMW.V1", "P.VMW.V2"]
-
-      },
-      "database": {
-         "type" : "Database",
-         "infrastructure_targets" : ["P.VMW.V1", "P.VMW.V2",  "D.AWS.S1", "D.AWS.S2"]
-      },
-   },
-   "policies": {
-        "redundancy" : [ { "database" : 2 } ]
-        "same_zone" : [ [ "web_app", "database" ] ]
-   }
-}
-```
-
-There are two possible SI taking into account the same_zone policy.
-
-```json
-#si_complex1.json
-{
-   "name": "si_complex1"
-   "type": "stack_template",
-   "services": {
-      "web_app": {
-         "type" : "Web Application",
-         "infrastructure_target" : "P.VMW.V1"
-      },
-      "database1": {
-         "type" : "Database",
-         "infrastructure_target" : "P.VMW.V1"
-      },
-      "database2": {
-         "type" : "Database",
-         "infrastructure_target" : "P.VMW.V1"
-      }
-   }
-}
+TODO
 ```
