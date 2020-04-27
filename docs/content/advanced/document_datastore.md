@@ -28,7 +28,7 @@ The pluggable module is accessed transparently through a general wrapper/interfa
 Each plugged technology, whether custom or third-party, provides an implementation of this interface so that documents are always interacted with in the same way, independent from the backend, and only the performance characteristics change.
 
 The datastore is interacted with by workers during their handling of a task.
-The documents are versioned in the datastore through git, independently of any versioning the underlying module might offer (WIP).
+The documents are versioned in the datastore through git, independently of any versioning the underlying module might offer (TODO).
 Any backend data storage system can be used so long as an interface is made.
 The interface needs to provide two things: (1) ensure that the data is converted to a JSON-format for STACKL to work with and store and (2) that STACKL can uniformly access the data, translating its data access to the real data access in the underlying system.
 Currently, STACKL implements a local file system and Redis as datastores.
