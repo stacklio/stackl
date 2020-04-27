@@ -78,5 +78,12 @@
         }
     ],
     "name": "example_complex_web_host",
-    "type": "stack_infrastructure_template"
+    "type": "stack_infrastructure_template",
+    "policies": {
+        "exclusivity": [
+            "production",
+            "example_brussel",
+            "example_cluster2"
+        ]
+    }
 }

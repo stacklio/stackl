@@ -1,0 +1,12 @@
+{
+    "name": "exclusivity",
+    "description": "Policy to ensure that the specified environment, location, and zone will only host one service exclusively",
+    "category": "configs",
+    "type": "policy",
+    "policy": "exclusivity(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tenvironment_service1 = split(solution[service1],\".\")[0]\n\tlocation_service1 = split(solution[service1],\".\")[1]\n\tzone_service1 = split(solution[service1],\".\")[2]\n\tenvironment_service2 = split(solution[service2],\".\")[0]\n\tlocation_service2 = split(solution[service2],\".\")[1]\n\tzone_service2 = split(solution[service2],\".\")[2]\n\tenvironment != environment_service1; environment_service1 != environment_service2\n\tlocation != location_service1; location_service1 != location_service2\n\tzone != zone_service1; zone_service1 != zone_service2\n} ",
+    "inputs": [
+        "environment",
+        "location",
+        "zone"
+    ]
+}
