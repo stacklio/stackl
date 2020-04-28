@@ -8,6 +8,8 @@ draft: false
 tags: []
 ---
 
+(TODO - this needs a clean rework since it has heavily changed)
+
 Agents are pluggable modules, chosen during the deployment of STACKL, that can operate through different mechanisms as long as they fulfill the above described responsibilities.
 Each agent module needs to provide an implementation of the agent interface through which workers in STACKL can give tasks and receive or retrieve information.
 Currently, there is a working implementation of an agent as a websocket client and as a GRPC client.
