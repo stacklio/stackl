@@ -9,6 +9,7 @@ draft: false
 tags: []
 ---
 
+(TODO in May Objective)
 STACKL can be given work through its API.
 Work is internally converted to a **Task**, an atomic unit of work with a result.
 Task are submitted for management to a **Task Broker**  which delegates them to distributed workers through the message channel.
@@ -27,7 +28,7 @@ The choice of module determines the performance characteristics of STACKL task p
 Tasks are atomic units of work constructed by STACKL when receiving an API call.
 These can be: creating or modifying documents, creating or instantiating stack templates, complex queries, and so on.
 The lifetime of a task is based on the principle of eventual consistency: either all actions in a task are performed correctly, including at the user and in the datastore, or it fails, due to a timeout or failure result, and all made changes are rolled back to the previous state.
-Once the desired state is achieved or rollbacked and this is correctly represented in STACKL and is consistent, the task is removed.
+Once the desired state is achieved or rolled back and this is correctly represented in STACKL and is consistent, the task is removed.
 
 Tasks have the following properties:
 
