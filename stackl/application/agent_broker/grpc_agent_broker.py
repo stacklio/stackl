@@ -49,10 +49,6 @@ class GrpcAgentBroker(AgentBroker):
             status=status,
             error_message=sts.error_message)
         stack_instance.services[sts.service].status.append(fr_status)
-        if len(sts.hosts) > 0:
-            stack_instance.services[sts.service].hosts = []
-            for h in sts.hosts:
-                stack_instance.services[sts.service].hosts.append(h)
         document_manager.write_stack_instance(stack_instance)
 
     def create_job_for_agent(self, stack_instance, action, document_manager):
