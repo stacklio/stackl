@@ -21,7 +21,7 @@ As such, it has no redundancy, no advanced querying or caching capabilities and 
 However, it can be flexibly extended and use regular Linux tools for data and querying access.
 In this sense, it is the most customizable system.
 
-### Redis Datastore
+### Redis datastore
 
 The Redis datastore is an in-memory, open-source data store that voids seek time delays and can access data in microseconds.
 supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes with radius queries and streams. Redis has built-in replication, Lua scripting, LRU eviction, transactions and different levels of on-disk persistence, and provides high availability via Redis Sentinel and automatic partitioning with Redis Cluster.
