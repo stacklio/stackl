@@ -48,13 +48,6 @@ class TerraformHandler(ConfiguratorHandler):
             subprocess.check_output(command,
                                     shell=True,
                                     stderr=subprocess.STDOUT)
-            return 0, "", self._get_hosts(invocation.stack_instance)
+            return 0, ""
         except subprocess.CalledProcessError as e:
-            return 1, e.output.decode(), None
-
-    def _get_hosts(self, stack_instance):
-        # Get the statefile
-        r = requests.get('http://' + os.environ['STACKL_HOST'] +
-                         '/terraform/' + stack_instance)
-        statefile = r.json()
-        return statefile["outputs"]["hosts"]["value"]
+            return 1, e.output.decode()
