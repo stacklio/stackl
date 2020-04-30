@@ -133,10 +133,7 @@ Here, the special replica policy is applied first, if specified, so that service
     },
 ...(and so on)
 ]
-<<<<<<< HEAD
 }
-=======
->>>>>>> 3beee40ec60913ad718e2f943730a099cb2d7cb5
 ```
 
 This is a set of basic solutions for stack orchestration without considering any additional policies (excepting the replica policy).
