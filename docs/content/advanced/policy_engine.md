@@ -112,8 +112,9 @@ To illustrate with an example that includes the replication of a serivice, the f
 This map only tells which targets could potentially host the basic requirements of a service.
 Now, this map is processed to a real solution where each service has a single target.
 Here, the special replica policy is applied first, if specified, so that services can be replicated and resulting in, for instance, :
-```json
 
+```json
+{
     "basic_application_placement_solution_sets": [
     {
         "windows_2019_vmw_vsphere_1": "vsphere.brussels.vmw-vcenter-01",
@@ -132,6 +133,7 @@ Here, the special replica policy is applied first, if specified, so that service
     },
 ...(and so on)
 ]
+}
 ```
 
 This is a set of basic solutions for stack orchestration without considering any additional policies (excepting the replica policy).
