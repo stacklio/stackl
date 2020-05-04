@@ -68,8 +68,7 @@ class VaultSecretHandler(SecretHandler):
             self._volumes.append({
                 "name": "terraform-backend-secrets",
                 "type": "empty_dir",
-                "mount_path": "/opt/terraform/plan",
-                "sub_path": "backend.tf.json"
+                "mount_path": "/tmp/backend"
             })
         self._init_containers = [{
             "name":
@@ -104,7 +103,7 @@ class VaultSecretHandler(SecretHandler):
                                           self._destination, content_string)
         if self.terraform_backend_enabled:
             content_string = """{{ with secret "%s" }}{{ .Data.data | toJSON }}{{ end }}""" % backend_secret_path
-            va_config += extra_template % (
-                "/opt/terraform/plan/backend.tf.json", content_string)
+            va_config += extra_template % ("/tmp/backend/backend.tf.json",
+                                           content_string)
 
         return va_config

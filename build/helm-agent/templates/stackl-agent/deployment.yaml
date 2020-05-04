@@ -29,14 +29,9 @@ spec:
             requests:
               memory: 64Mi
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - name: stackl-agent-config
-              mountPath: /etc/stackl-agent
           env:
             - name: "STACKL_HOST"
-              value: "{{ template "stackl.rest" . }}:8080"
-            - name: "STACKL_GRPC_HOST"
-              value: "{{ template "stackl.rest" . }}"
+              value: "{{ .Values.stacklAgent.stacklHost }}"
             - name: STACKL_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -48,11 +43,11 @@ spec:
             - name: "AGENT_ID"
               value: "{{ .Values.stacklAgent.agentName }}"
             - name: "AGENT_HOST"
-              value: "{{ template "stackl.agent" . }}"
+              value: "{{ .Values.stacklAgent.host }}"
             - name: "AGENT_PORT"
               value: "50051"
             - name: "AGENT_SELECTOR"
-              value: "{{ .Values.stacklAgent.selector }}"
+              value: "{{ .Values.stacklAgent.tags }}"
             {{- with .Values.stacklAgent.vaultAddr }}
             - name: "VAULT_ADDR"
               value: "{{ . }}"
@@ -61,7 +56,3 @@ spec:
             - name: "VAULT_ROLE"
               value: "{{ . }}"
             {{- end }}
-      volumes:
-        - name: stackl-agent-config
-          configMap:
-            name: stackl-agent-config

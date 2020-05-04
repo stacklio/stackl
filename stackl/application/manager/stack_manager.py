@@ -1,6 +1,7 @@
 import logging
-import protos.agent_pb2
-from agent_broker.agent_broker_factory import AgentBrokerFactory
+
+import stackl_globals
+from agent_broker.agent_task_broker import AgentTaskBroker
 from enums.cast_type import CastType
 from enums.stackl_codes import StatusCode
 from handler.stack_handler import StackHandler
@@ -19,8 +20,7 @@ class StackManager(Manager):
 
         self.document_manager = manager_factory.get_document_manager()
 
-        self.agent_broker_factory = AgentBrokerFactory()
-        self.agent_broker = self.agent_broker_factory.get_agent_broker()
+        self.agent_task_broker = AgentTaskBroker(stackl_globals.redis_cache)
 
         self.task_broker_factory = TaskBrokerFactory()
         self.task_broker = self.task_broker_factory.get_task_broker()
@@ -39,7 +39,7 @@ class StackManager(Manager):
                 if subtask == "CREATE":
                     (stack_instance, status_code) = self.process_stack_request(
                         task["json_data"], "create")
-                    job = self.agent_broker.create_job_for_agent(
+                    self.agent_task_broker.create_job_for_agent(
                         stack_instance, "create", self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "UPDATE":
@@ -47,7 +47,7 @@ class StackManager(Manager):
                         task["json_data"], "update")
                     # Lets not create the job object when we don't want an invocation
                     if not task["json_data"]["disable_invocation"]:
-                        job = self.agent_broker.create_job_for_agent(
+                        self.agent_task_broker.create_job_for_agent(
                             stack_instance, "update", self.document_manager)
                     else:
                         job = []
@@ -55,39 +55,12 @@ class StackManager(Manager):
                 elif subtask == "DELETE":
                     (stack_instance, status_code) = self.process_stack_request(
                         task["json_data"], "delete")
-                    job = self.agent_broker.create_job_for_agent(
+                    self.agent_task_broker.create_job_for_agent(
                         stack_instance, "delete", self.document_manager)
                     stack_instance.deleted = True
                     self.document_manager.write_stack_instance(stack_instance)
                 else:
                     status_code = StatusCode.BAD_REQUEST
-                if status_code in [
-                        StatusCode.OK, StatusCode.CREATED, StatusCode.ACCEPTED
-                ]:
-                    agent_connect_info = task["send_channel"]
-                    logger.debug(
-                        "[StackManager] Processing subtask succeeded. Sending to agent with connect_info '{0}' the stack_instance '{1}'"
-                        .format(agent_connect_info, job))
-                    for am in job:
-                        result = self.agent_broker.send_job_to_agent(
-                            agent_connect_info, am)
-                        stack_instance = self.document_manager.get_stack_instance(
-                            stack_instance.name)
-                        self.agent_broker.process_job_result(
-                            stack_instance, result, self.document_manager)
-                        if result.automation_result.status == protos.agent_pb2.AutomationResponse.Status.FAILED:
-                            logger.error(
-                                f'Job failed for {am.invocation.stack_instance} {am.invocation.functional_requirement}'
-                            )
-                            break
-                        logger.debug(
-                            "[StackManager] Sent to agent. Result '{0}'".
-                            format(result))
-                else:
-                    raise Exception(
-                        "[StackManager] Processing subtask failed. Status_code '{0}'"
-                        .format(status_code))
-
             logger.debug(
                 "[StackManager] Succesfully handled task_attr. Notifying task broker."
             )

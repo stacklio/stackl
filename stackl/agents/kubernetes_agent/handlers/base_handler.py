@@ -290,17 +290,19 @@ class Handler(ABC):
             try:
                 for cm in cms:
                     self._api_instance_core.delete_namespaced_config_map(
-                        self.stackl_namespace, cm)
-                self._api_instance.delete_namespaced_job(self.stackl_namespace,
-                                                         body,
+                        cm.metadata.name, self.stackl_namespace)
+                self._api_instance.delete_namespaced_job(body.metadata.name,
+                                                         self.stackl_namespace,
                                                          pretty=True)
+
             except ApiException as e:
                 logging.error(
                     f"Exception when calling BatchV1Api->delete_namespaced_job: {e}\n"
                 )
-            return 0, "", None
+            return 0, ""
         else:
-            return 1, "Still need proper output", None
+            # TODO give proper output here
+            return 1, "Still need proper output"
 
     @property
     def env_list(self) -> dict:

@@ -1,0 +1,30 @@
+image:
+  pullPolicy: Always
+
+mode: prod # dev
+
+
+stacklAgent:
+  image: stacklio/stackl-kubernetes-agent:dev
+  name: stackl-agent
+  stacklHost: "stackl-host"
+  replicas: 3
+  secretHandler: base64
+  agentName: aws
+  selector: "aws.*.*"
+  # secretHandler: vault
+  # vaultAddr: http://10.11.12.7:8200
+  # vaultRole: stackl
+
+# example imagePullSecrets: [name: pull-secret-name]
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+log_level: debug
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

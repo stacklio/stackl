@@ -5,12 +5,16 @@ import sys
 import threading
 import time
 
-# Needed for globals
 sys.path.append('/opt/stackl')
+
+# Needed for globals
+import stackl_globals
+
+# initialize stackl globals
+stackl_globals.initialize()
 
 from utils.general_utils import get_hostname  # pylint: disable=import-error
 from task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
-from agent_broker.agent_broker_factory import AgentBrokerFactory  # pylint: disable=import-error
 from manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 import logging.config
 
@@ -33,15 +37,12 @@ class Worker:
         self.document_manager = self.manager_factory.get_document_manager()
         self.user_manager = self.manager_factory.get_user_manager()
 
-        self.agent_broker_factory = AgentBrokerFactory()
-        self.agent_broker = self.agent_broker_factory.get_agent_broker()
         self.thread_task_dict = {}
 
         self.hostname = get_hostname()
 
         self.task_broker_factory = TaskBrokerFactory()
         self.task_broker = self.task_broker_factory.get_task_broker()
-        self.task_broker.agent_broker = self.agent_broker
 
         signal_list = [
             signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT
@@ -68,7 +69,7 @@ class Worker:
                 time.sleep(10)
             logger.info(
                 "[Worker] task_pop_thread was found dead. Killing Worker.")
-        except Exception as e:  #TODO TBD during task rework
+        except Exception as e:  # TODO TBD during task rework
             logger.error(f"[Worker] Exception occured in Worker: {e}")
 
     def start_task_popping(self):

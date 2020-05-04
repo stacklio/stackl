@@ -51,6 +51,7 @@ def upload_files(directory, stackl_context):
             # ignore dotfiles
             if path.name.startswith('.'):
                 continue
+            click.echo(f"Reading document: { str(path) }")
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
             if 'name' in stackl_doc:
                 click.echo(

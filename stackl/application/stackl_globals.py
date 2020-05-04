@@ -23,7 +23,6 @@ types_items = [
 types = types_configs + types_items
 
 redis_cache = None
-registered_agents_global = []
 alive_count_global = 0
 task_queue_global = []
 
@@ -36,20 +35,8 @@ def initialize():
                                         port=6379)
     except Exception:  #TODO TBD Fix during Task rework
         redis_cache = redis.StrictRedis(host="localhost", port=6379)
-    set_registered_agents(registered_agents_global)
     set_task_queue(task_queue_global)
     set_alive_count(alive_count_global)
-
-
-def set_registered_agents(registered_agents):
-    json_registered_agents = json.dumps(registered_agents)
-    redis_cache.set("registered_agents", json_registered_agents)
-
-
-def get_registered_agents():
-    json_registered_agents = redis_cache.get("registered_agents")
-    registered_agents = json.loads(json_registered_agents)
-    return registered_agents
 
 
 def set_task_queue(task_queue):
