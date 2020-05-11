@@ -259,10 +259,7 @@ class DocumentManager(Manager):
         store_response = self.store.get(**keys)
         prev_document = store_response.content
 
-        if store_response.status_code == StatusCode.NOT_FOUND:
-            logger.debug(
-                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
-            )
+        if document["type"] == "stack_instance":
             store_response = self.store.put(document)
             return store_response.status_code
         else:
