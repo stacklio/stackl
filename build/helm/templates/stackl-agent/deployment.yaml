@@ -36,7 +36,7 @@ spec:
             - name: "STACKL_HOST"
               value: "{{ template "stackl.rest" . }}:8080"
             - name: "STACKL_GRPC_HOST"
-              value: "{{ template "stackl.rest" . }}"
+              value: "{{ template "stackl.rest" . }}:50051"
             - name: STACKL_NAMESPACE
               valueFrom:
                 fieldRef:

@@ -1,16 +1,18 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "{{ template "stackl.rest" . }}"
+  name: "{{ template "stackl.rest" . }}-grpc"
+  annotations:
+    ingress.kubernetes.io/protocol: h2c
   labels:
     {{ include "stackl.labels" . | nindent 4 }}
     component: rest
 spec:
   rules:
-    - host: {{ .Values.stacklRest.hostname }}
+    - host: {{ .Values.stacklRest.grpcHostname }}
       http:
         paths:
           - path: /
             backend:
               serviceName: "{{ template "stackl.rest" . }}"
-              servicePort: 8080
+              servicePort: 50051

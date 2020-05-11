@@ -33,8 +33,10 @@ class JobHandler:
 
 
 if __name__ == '__main__':
-    print(f'starting {os.environ["AGENT_NAME"]} agent')
-    channel = grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}:50051")
+    print(
+        f'starting {os.environ["AGENT_NAME"]} agent to {os.environ["STACKL_GRPC_HOST"]}'
+    )
+    channel = grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}")
     stub = StacklAgentStub(channel)
     agent_metadata = AgentMetadata()
     agent_metadata.name = os.environ["AGENT_ID"]

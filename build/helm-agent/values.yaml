@@ -7,14 +7,15 @@ mode: prod # dev
 stacklAgent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
-  stacklHost: "stackl-host"
-  replicas: 3
-  secretHandler: base64
-  agentName: aws
-  selector: "aws.*.*"
-  # secretHandler: vault
-  # vaultAddr: http://10.11.12.7:8200
-  # vaultRole: stackl
+  stacklHost: https://stackl.dome.dev
+  grpcHost: https://stackl-grpc.dome.dev
+  replicas: 1
+#  secretHandler: base64
+  agentName: vsphere
+  selector: "vsphere.*.*"
+  secretHandler: vault
+  vaultAddr: https://secrets.d.dome.dev
+  vaultRole: stackl
 
 # example imagePullSecrets: [name: pull-secret-name]
 imagePullSecrets: []

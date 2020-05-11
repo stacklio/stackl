@@ -20,8 +20,9 @@ agentBroker:
 stacklRest:
   image: stacklio/stackl-rest:dev
   name: stackl-rest
-  serviceType: LoadBalancer
+  serviceType: ClusterIP
   hostname: stackl.dome.dev
+  grpcHostname: stackl-grpc.dome.dev
   replicaCount: 1
 
 stacklWorker:
