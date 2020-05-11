@@ -129,6 +129,7 @@ class LocalFileSystemStore(DataStore):
         return response
 
     def delete(self, **keys):
+        
         if keys.get("type") in keys.get("document_name"):
             document_key = self.datastore_url + keys.get(
                 "category") + '/' + keys.get("document_name") + ".json"

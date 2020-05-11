@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 from abc import ABC, abstractmethod
 
 from enums.cast_type import CastType
@@ -9,11 +10,11 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 
 class Task(ABC):
-    default_wait_time_s = 30
+    default_timeout_s = 30
 
     @property
     @abstractmethod
-    def valid_subtasks(self):
+    def valid_subtypes(self):
         pass
 
     def __init__(self, task_data):
@@ -37,10 +38,11 @@ class Task(ABC):
         self.channel = json_obj.get('channel', 'all')
         self.id = generate_random_string()
         self._set_source(json_obj)
+        self.args = json_obj.get('args', None)
 
         self.return_channel = json_obj.get('return_channel', None)
-        self.wait_time = json_obj.get('wait_time', self.default_wait_time_s)
-        self.subtasks = json_obj.get("subtasks", [None])
+        self.timeout = json_obj.get('timeout', self.default_timeout_s)
+        self.subtype = json_obj.get("subtype", [None])
 
     def _set_source(self, json_obj):
         source = json_obj.get('source', None)

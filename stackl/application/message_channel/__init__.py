@@ -23,7 +23,7 @@ class MessageChannel(ABC):
         pass
 
     @abstractmethod
-    def listen(self, channel, wait_time=5):
+    def listen(self, channel, timeout=5):
         pass
 
     @abstractmethod
