@@ -33,12 +33,9 @@ class TaskHandler(Handler):
                                  task.get_attribute('attribute'))
         elif task.topic == 'result':
             logger.info(
-                f"[TaskHandler] Received result (as json_string): {task.as_json_string()}"
+                f"[TaskHandler] Received result: {task.as_json_string()}. Processing."
             )
-            logger.info(
-                f"[TaskHandler] asking broker '{self.task_broker}' to remove it from queue"
-            )
-            self.task_broker.remove_task_from_queue(task)
+            self.task_broker.process_result_task(task)
         else:
             logger.info(
                 "[TaskHandler] Unknown task with type '{task.topic}'! Ignoring."

@@ -23,9 +23,8 @@ level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
-formatter = logging.Formatter(
-    "{'time':'%(asctime)s', 'level': '%(levelname)s', 'message': '%(message)s'}"
-)
+formatter = logging.Formatter('[[[%(asctime)s|%(message)s',
+                              "%d.%m.%y|%H:%M:%S")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
@@ -87,7 +86,7 @@ class Worker:
 
             if task_attr["topic"] == "document_task":
                 logger.info(
-                    f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'"
+                    f"[Worker] Document_Task with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(
                     target=self.document_manager.handle_task, args=[task_attr])
@@ -95,7 +94,7 @@ class Worker:
                 continue
             elif task_attr["topic"] == "agent_task":
                 logger.info(
-                    f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'"
+                    f"[Worker] Document_Task with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(target=self.agent_broker.handle_task,
                                           args=[task_attr])
@@ -103,7 +102,7 @@ class Worker:
                 continue
             elif task_attr["topic"] == "stack_task":
                 logger.info(
-                    f"[Worker] Document_Task with subtasks \'{task_attr['subtasks']}\'"
+                    f"[Worker] Document_Task with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(
                     target=self.stack_manager.handle_task, args=[task_attr])

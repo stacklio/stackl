@@ -4,11 +4,10 @@ from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
-from model.configs.document_model import CollectionDocument
-from model.configs.infrastructure_base_document import InfrastructureBaseDocument
+from model.configs.document_model import BaseDocument, CollectionDocument
 from stackl_globals import types
 from task_broker.task_broker_factory import TaskBrokerFactory
-from utils.stackl_exceptions import InvalidDocTypeError
+from task.document_task import DocumentTask
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
@@ -23,79 +22,114 @@ def get_types():
 
 
 @router.get('/{type_name}', response_model=CollectionDocument)
-def get_all_documents_by_type(type_name: str):
+async def collect_documents_by_type(type_name: str):
     """Returns a collection of all the documents with the specific type"""
     logger.info(
-        f"[CollectionDocumentByType GET] Receiver GET request with data: {type_name}"
+        f"[CollectionDocumentByType GET] API COLLECT request with type_name '{type_name}'"
     )
-    try:
-        documents = document_manager.get_document(type=type_name)
+    task = DocumentTask({
+        'channel': 'worker',
+        'args': type_name,
+        'subtype': "COLLECT_DOCUMENT"
+    })
 
-    except InvalidDocTypeError as e:
-        raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
-
-    logger.debug(f"[CollectionDocumentByType GET] document(s): {documents}")
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
     document: CollectionDocument = {
         "name": "CollectionDocumentByType_" + type_name,
         "description":
         "Document that contains all the documents by type " + type_name,
         "type": type_name,
-        "documents": documents
+        "documents": result
     }
     return document
 
 
-@router.get('/{type_name}/{document_name}',
-            response_model=InfrastructureBaseDocument)
-def get_document_by_type_and_name(type_name: str, document_name: str):
+@router.get('/{type_name}/{document_name}', response_model=BaseDocument)
+async def get_document_by_type_and_name(type_name: str, document_name: str):
     """Returns a specific document with a type and name"""
     logger.info(
-        "[DocumentByTypeAndName GET] Receiver GET request with data: " +
-        type_name + " - " + document_name)
-    try:
-        document = document_manager.get_document(type=type_name,
-                                                 document_name=document_name)
-    except InvalidDocTypeError as e:
-        raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
+        f"[DocumentByTypeAndName GET] API GET request for type '{type_name}' and document '{document_name}'"
+    )
+    task = DocumentTask({
+        'channel': 'worker',
+        'args': (type_name, document_name),
+        'subtype': "GET_DOCUMENT"
+    })
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
+    if result == {}:
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
+                            detail="NOT OK!")
+    return result
 
-    if document == {}:
-        raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail="No document with name " + document_name)
-    logger.debug(f"[DocumentsByType GET] document(s): {document}")
-    return document
 
-
-@router.post('', response_model=InfrastructureBaseDocument)
-def post_document(document: InfrastructureBaseDocument):
+@router.post('')
+async def post_document(document: BaseDocument):
     """Create the document with a specific type and an optional name given in the payload"""
-    # check if doc already exists
-    try:
-        existing_document = document_manager.get_document(
-            type=document.type, document_name=document.name)
-    except InvalidDocTypeError as e:
-        return {
-            'return_code': StatusCode.BAD_REQUEST,
-            'message': e.msg
-        }, StatusCode.BAD_REQUEST
+    logger.info(
+        f"[PostDocument] Receiver POST request with data: {BaseDocument}")
 
-    if existing_document:
-        raise HTTPException(
-            status_code=StatusCode.CONFLICT,
-            detail="A document with this name for POST already exists")
+    task = DocumentTask({
+        'channel': 'worker',
+        'document': document.dict(),
+        'subtype': "POST_DOCUMENT"
+    })
 
-    document = document_manager.write_base_document(document)
-    return document
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
+
+    if result == {}:
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
+                            detail="NOT OK!")
+    return result
+    # try:
+
+    #     existing_document = document_manager.get_document(
+    #         type=document.type, document_name=document.name)
+    # except InvalidDocTypeError as e:
+    #     return {
+    #         'return_code': StatusCode.BAD_REQUEST,
+    #         'message': e.msg
+    #     }, StatusCode.BAD_REQUEST
+
+    # if existing_document:
+    #     raise HTTPException(
+    #         status_code=StatusCode.CONFLICT,
+    #         detail="A document with this name for POST already exists")
+
+    # document = document_manager.write_base_document(document)
+    # return document
 
 
-@router.put('', response_model=InfrastructureBaseDocument)
-def put_document(document: InfrastructureBaseDocument):
-    """UPDATES the document with a specific type and an optional name given in the payload"""
-    document = document_manager.write_base_document(document)
-    return document
+@router.put('')
+async def put_document(document: BaseDocument):
+    """Update (or create) the document with a specific type and an optional name given in the payload"""
+    logger.info(f"[PutDocument] API PUT request with data: {BaseDocument}")
+
+    task = DocumentTask({
+        'channel': 'worker',
+        'document': document.dict(),
+        'subtype': "PUT_DOCUMENT"
+    })
+
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
+    return result
 
 
-@router.delete('/{type_name}/{document_name}', status_code=202)
-def delete_document(type_name: str, document_name: str):
-    document_manager.remove_document(type=type_name,
-                                     document_name=document_name)
-    return {"message": "Deleted document"}
+@router.delete('/{type_name}/{document_name}')
+async def delete_document(type_name: str, document_name: str):
+    """Delete a specific document with a type and name"""
+    logger.info(
+        f"[DeleteDocument] API Delete request for type '{type_name}' and document '{document_name}'"
+    )
+    task = DocumentTask({
+        'channel': 'worker',
+        'args': (type_name, document_name),
+        'subtype': "DELETE_DOCUMENT"
+    })
+
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
+    return result

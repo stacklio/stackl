@@ -52,7 +52,7 @@ class RedisQueue(MessageChannel):
 
     def publish(self, task):
         return_channel = task.get_attribute('return_channel')
-        wait_time = task.get_attribute('wait_time')
+        timeout = task.get_attribute('timeout')
         channel = task.get_channel()
         message_str = task.as_json_string()
         logger.info(
@@ -60,7 +60,7 @@ class RedisQueue(MessageChannel):
         )
         self.queue.publish(channel, message_str)
         if return_channel is not None:
-            return self.listen(return_channel, wait_time=wait_time)
+            return self.listen(return_channel, timeout=timeout)
         return {}
 
     def listen_permanent(self, channels):
@@ -91,12 +91,12 @@ class RedisQueue(MessageChannel):
             self.pubsub = self.queue.pubsub()
             self.listen_permanent(channels)
 
-    def listen(self, channel, wait_time=5):
+    def listen(self, channel, timeout=5):
         logger.info(f"[RedisQueue] Listening temporary to channel {channel}")
         pubsub = self.queue.pubsub()
         self._pubsub_channels(pubsub, [channel], action='subscribe')
         return_array = []
-        t_end = time.time() + wait_time
+        t_end = time.time() + timeout
         while time.time() < t_end:
             message = pubsub.get_message()
             logger.info(f"[RedisQueue] Broker got message listen: {message}")
