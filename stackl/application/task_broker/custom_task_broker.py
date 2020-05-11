@@ -11,6 +11,7 @@ logger = logging.getLogger("STACKL_LOGGER")
 ##TODO WIP for during the Task Rework
 class CustomTaskBroker(TaskBroker):
     def __init__(self):
+        super().__init__()
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
@@ -40,22 +41,23 @@ class CustomTaskBroker(TaskBroker):
                 if getattr(task_obj, "return_channel", None) is None:
                     task_obj.return_channel = get_hostname()
                     logger.debug(
-                        "[CustomTaskBroker] give_task. Adding return_channel: '{0}'"
-                        .format(task_obj.return_channel))
-                if getattr(task_obj, "send_channel", None) is "agent":
+                        f"[CustomTaskBroker] give_task. Adding return_channel: '{task_obj.return_channel}'"
+                    )
+                if getattr(task_obj, "send_channel", None) == "agent":
                     task_obj.send_channel = self.agent_broker.get_agent_for_task(
                         task_obj)
                     logger.debug(
-                        "[CustomTaskBroker] give_task. Adding send_channel: '{0}'"
-                        .format(task_obj.send_channel))
+                        f"[CustomTaskBroker] give_task. Adding send_channel: '{task_obj.send_channel}'"
+                    )
 
                 logger.debug(
-                    "[CustomTaskBroker] give_task. Task to push: '{0}'".format(
-                        task_obj))
+                    f"[CustomTaskBroker] give_task. Task to push: '{task_obj}'"
+                )
                 self.message_channel.push("task_" + "common" + ':process',
                                           task_obj.as_json_string())
             else:
                 self.message_channel.publish(task_obj)
+            return
         except Exception as e:
             logger.error(
                 f"[CustomTaskBroker] Invalid task received. Error message '{e}'"
@@ -64,5 +66,6 @@ class CustomTaskBroker(TaskBroker):
     def get_task(self, tag):
         task = self.message_channel.pop("task_" + tag + ':process')[1]
         logger.debug(
-            "[CustomTaskBroker] get_task. returning task: '{0}'".format(task))
+            f"[CustomTaskBroker] get_task. returning task: '{task}'"
+        )
         return task

@@ -3,9 +3,10 @@ from task import Task
 
 class ResultTask(Task):
     @property
-    def valid_subtasks(self):
-        return ["RESULT"  # PUT: Create or Update (Overwrite) the document
-                ]
+    def valid_subtypes(self):
+        return [
+            "RESULT"  # PUT: Create or Update (Overwrite) the document
+        ]
 
     def __init__(self, task_data):
         self.source_task = None
@@ -15,6 +16,7 @@ class ResultTask(Task):
         super()._load_json_object(json_obj)
         self.topic = 'result'
         self.result = json_obj.get('result', None)
+        self.subtype = "RESULT"
         self._parse_source_task(json_obj)
 
     def _parse_source_task(self, json_obj):

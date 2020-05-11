@@ -18,6 +18,7 @@ from stackl_globals import types, types_configs, types_items
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
+from message_channel.message_channel_factory import MessageChannelFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -26,49 +27,44 @@ class DocumentManager(Manager):
     def __init__(self, manager_factory):
         super(DocumentManager, self).__init__(manager_factory)
 
-        self.task_broker_factory = TaskBrokerFactory()
-        self.task_broker = self.task_broker_factory.get_task_broker()
+        task_broker_factory = TaskBrokerFactory()
+        self.task_broker = task_broker_factory.get_task_broker()
+        message_channel_factory = MessageChannelFactory()
+        self.message_channel = message_channel_factory.get_message_channel()
 
     def handle_task(self, document_task):
         logger.debug(
-            f"[DocumentManager] handling subtasks of task_obj {document_task}")
+            f"[DocumentManager] handling task_obj {document_task}")
         try:
-            for subtask in document_task["subtasks"]:
-                logger.debug(f"[DocumentManager] handling subtask '{subtask}'")
-                if subtask == "POST_DOCUMENT":
-                    document = document_task["document"]
-                    status_code = self.write_document(
-                        document_name=document['name'],
-                        type=document['type'],
-                        file=document['payload'],
-                        description=document['description'])
-                elif subtask == "PUT_DOCUMENT":
-                    document = document_task["document"]
-                    status_code = self.write_document(
-                        document_name=document['name'],
-                        type=document['type'],
-                        file=document['payload'],
-                        description=document['description'])
-                elif subtask == "DELETE_DOCUMENT":
-                    document = document_task["document"]
-                    status_code = self.remove_document(
-                        document_name=document['name'], type=document['type'])
-
-                if status_code not in {StatusCode.OK, StatusCode.CREATED}:
-                    raise Exception(
-                        f"[DocumentManager] Processing subtask failed. Status_code '{status_code}'"
-                    )
+            if document_task["subtype"] == "GET_DOCUMENT":
+                (type_name, document_name) = document_task["args"]
+                result = self.get_document(type=type_name, document_name=document_name)
+            elif document_task["subtype"] == "COLLECT_DOCUMENT":
+                type_name = document_task["args"]
+                result = self.get_document(type=type_name)
+            elif document_task["subtype"] == "POST_DOCUMENT":
+                document = document_task["document"]
+                result = self.write_document(document)
+            elif document_task["subtype"] == "PUT_DOCUMENT":
+                document = document_task["document"]
+                result = self.write_document(document)
+            elif document_task["subtype"] == "DELETE_DOCUMENT":
+                (type_name, document_name) = document_task["args"]
+                result = self.remove_document(type=type_name,
+                                              document_name=document_name)
             logger.debug(
-                "[DocumentManager] Succesfully handled document task. Creating ResultTask."
+                f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
             )
-            self.task_broker.give_task(
-                ResultTask({
-                    'channel': document_task['return_channel'],
-                    'result': "success",
-                    'cast_type': CastType.BROADCAST.value,
-                    'source_task': document_task
-                })
-            )  # this way the STACKL broker is notified of the result and wheter he should remove the task from the task queue
+            resultTask = ResultTask({
+                'channel': document_task['return_channel'],
+                'result_msg': f"Document with type '{document_task['subtype']}' was succesfully done",
+                'result': result,
+                'cast_type': CastType.BROADCAST.value,
+                'source_task': document_task
+            })
+
+            self.message_channel.publish(resultTask)
+            # )  # this way the STACKL broker is notified of the result and wheter he should remove the task from the task queue
         except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
             logger.error(
                 f"[DocumentManager] Error with processing task. Error: '{e}'")
@@ -226,51 +222,56 @@ class DocumentManager(Manager):
         store_response = self.store.delete_configurator_file(statefile_name)
         return store_response.content
 
-    def write_document(self, **keys):
-        logger.debug(f"[DocumentManager] write_document.  Keys '{keys}'")
-        keys = self._process_document_keys(keys)
+    def write_document(self, document):
+        logger.debug(
+            f"[DocumentManager] write_document.  Document: '{document}'")
 
-        document = keys.get("file")
-        document['category'] = keys.get("category")
-        document['type'] = keys.get("type")
-        document['name'] = keys.get("document_name")
-        document['description'] = keys.get("description")
-
-        logger.debug("[DocumentManager] Checking if document already exists ")
-        store_response = self.store.get(**keys)
-        prev_document = store_response.content
-
-        if store_response.status_code == StatusCode.NOT_FOUND:
-            logger.debug(
-                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
-            )
+        if document["type"] == "stack_instance":
             store_response = self.store.put(document)
+        return store_response.status_code
+        # keys = self._process_document_keys(keys)
 
-            return store_response.status_code
-        else:
-            prev_document_string = json.dumps(prev_document)
-            logger.debug(
-                f"[DocumentManager] Updating document with original contents: {prev_document_string}"
-            )
-            doc_new_string = json.dumps(document)
-            logger.debug(
-                f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
-            )
-            if prev_document_string == doc_new_string:
-                logger.debug(
-                    "[DocumentManager] Original document and new document are the same! NOT updating"
-                )
-            else:
-                store_response = self.store.put(document)
-                return store_response.status_code
+        # document = keys.get("file")
+        # document['category'] = keys.get("category")
+        # document['type'] = keys.get("type")
+        # document['name'] = keys.get("document_name")
+        # document['description'] = keys.get("description")
+
+        # logger.debug("[DocumentManager] Checking if document already exists ")
+        # store_response = self.store.get(**keys)
+        # prev_document = store_response.content
+
+        # if store_response.status_code == StatusCode.NOT_FOUND:
+        #     logger.debug(
+        #         f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
+        #     )
+        #     store_response = self.store.put(document)
+
+        #     return store_response.status_code
+        # else:
+        #     prev_document_string = json.dumps(prev_document)
+        #     logger.debug(
+        #         f"[DocumentManager] Updating document with original contents: {prev_document_string}"
+        #     )
+        #     doc_new_string = json.dumps(document)
+        #     logger.debug(
+        #         f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
+        #     )
+        #     if prev_document_string == doc_new_string:
+        #         logger.debug(
+        #             "[DocumentManager] Original document and new document are the same! NOT updating"
+        #         )
+        #     else:
+        #         store_response = self.store.put(document)
+        #         return store_response.status_code
 
     def remove_document(self, **keys):
         logger.debug(f"[DocumentManager] Remove_document. Keys '{keys}'")
         keys = self._process_document_keys(keys)
 
-        logger.debug("[DocumentManager] Checking if document already exists")
+        logger.debug("[DocumentManager] Checking if document actually exists")
         doc_obj = self.get_document(**keys)
-        if doc_obj is None:
+        if doc_obj == {}:
             logger.debug(
                 "[DocumentManager] No document found or already deleted. Nothing to do."
             )
