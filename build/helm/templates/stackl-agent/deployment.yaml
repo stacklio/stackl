@@ -61,6 +61,10 @@ spec:
             - name: "VAULT_ROLE"
               value: "{{ . }}"
             {{- end }}
+            {{- with .Values.stacklAgent.vaultMountPoint }}
+            - name: "VAULT_MOUNT_POINT"
+              value: "{{ . }}"
+            {{- end }}
       volumes:
         - name: stackl-agent-config
           configMap:
