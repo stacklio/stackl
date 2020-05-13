@@ -51,5 +51,5 @@ if __name__ == '__main__':
         try:
             job_handler.invoke_automation(job)
             print("Waiting for new job")
-        except Exception:
-            print("Catching everything cause we dont want this to crash")
+        except Exception as e:
+            print(f"Catching everything cause we dont want this to crash: {e}")

@@ -20,9 +20,8 @@ agentBroker:
 stacklRest:
   image: stacklio/stackl-rest:dev
   name: stackl-rest
-  serviceType: ClusterIP
+  serviceType: NodePort
   hostname: stackl.dome.dev
-  grpcHostname: stackl-grpc.dome.dev
   replicaCount: 1
 
 stacklWorker:
@@ -39,12 +38,12 @@ stacklAgent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
   replicaCount: 1
-#  secretHandler: base64
   agentName: main-agent
   selector: "aws.*.*"
   secretHandler: vault
   vaultAddr: https://secrets.d.dome.dev
-  vaultRole: stackl
+  vaultRole: stackl-aws
+  vaultMountPoint: auth/k8s-aws
 
 stacklOpa:
   image: openpolicyagent/opa:latest

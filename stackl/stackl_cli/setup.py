@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='stackl-cli',
-    version='0.0.1-alpha9',
+    version='0.0.1-alpha10',
     py_modules=['stackl', 'commands', 'context'],
     packages=find_packages(),
     install_requires=[
