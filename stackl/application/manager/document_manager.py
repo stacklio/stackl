@@ -259,7 +259,19 @@ class DocumentManager(Manager):
         store_response = self.store.get(**keys)
         prev_document = store_response.content
 
-        if document["type"] == "stack_instance":
+        document['category'] = keys.get("category")
+        document['type'] = keys.get("type")
+        document['name'] = keys.get("name")
+        document['description'] = keys.get("description")
+
+        logger.debug("[DocumentManager] Checking if document already exists ")
+        store_response = self.store.get(**keys)
+        prev_document = store_response.content
+
+        if store_response.status_code == StatusCode.NOT_FOUND:
+            logger.debug(
+                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
+            )
             store_response = self.store.put(document)
             return store_response.status_code
         else:
