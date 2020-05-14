@@ -36,20 +36,22 @@ if __name__ == '__main__':
     print(
         f'starting {os.environ["AGENT_NAME"]} agent to {os.environ["STACKL_GRPC_HOST"]}'
     )
-    channel = grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}")
-    stub = StacklAgentStub(channel)
-    agent_metadata = AgentMetadata()
-    agent_metadata.name = os.environ["AGENT_ID"]
-    agent_metadata.selector = os.environ["AGENT_SELECTOR"]
-    response = stub.RegisterAgent(agent_metadata)
-    job_handler = JobHandler(stub)
-    if not response.success:
-        exit(0)
-    print("Connected")
-    for job in stub.GetJob(agent_metadata):
-        print("job")
-        try:
-            job_handler.invoke_automation(job)
-            print("Waiting for new job")
-        except Exception as e:
-            print(f"Catching everything cause we dont want this to crash: {e}")
+    with grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}") as channel:
+        stub = StacklAgentStub(channel)
+        agent_metadata = AgentMetadata()
+        agent_metadata.name = os.environ["AGENT_ID"]
+        agent_metadata.selector = os.environ["AGENT_SELECTOR"]
+        response = stub.RegisterAgent(agent_metadata)
+        job_handler = JobHandler(stub)
+        if not response.success:
+            exit(0)
+        print("Connected")
+        for job in stub.GetJob(agent_metadata):
+            print("job")
+            try:
+                job_handler.invoke_automation(job)
+                print("Waiting for new job")
+            except Exception as e:
+                print(
+                    f"Catching everything cause we dont want this to crash: {e}"
+                )

@@ -28,7 +28,8 @@ def apply(stackl_context, directory, config_file, params, tags, instance_name):
                              instance_name)
 
 
-def apply_stack_instance(config_file, params, tags, stackl_context, instance_name):
+def apply_stack_instance(config_file, params, tags, stackl_context,
+                         instance_name):
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     params = {**config_doc['params'], **json.loads(params)}
     invocation = stackl_client.StackInstanceInvocation(
