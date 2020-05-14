@@ -18,52 +18,59 @@ class LocalFileSystemStore(DataStore):
         return self.file_system_root + os.sep
 
     def get(self, **keys):
-        get_all = False
-        if keys.get("document_name"):
-            if keys.get("type") in keys.get("document_name"):
+        if keys.get("name"):
+            if keys.get("type") in keys.get("name"):
                 document_key = self.datastore_url + keys.get(
-                    "category") + '/' + keys.get("document_name") + ".json"
+                    "category") + '/' + keys.get("name") + ".json"
             else:
                 document_key = self.datastore_url + keys.get(
                     "category") + '/' + keys.get("type") + '_' + keys.get(
-                        "document_name") + ".json"
+                        "name") + ".json"
             if not os.path.exists(document_key):
                 return self._create_store_response(
                     status_code=StatusCode.NOT_FOUND,
                     content="File is not found")
-        else:  # This means we need to get all the documents of the type
-            get_all = True
-            document_key = self.datastore_url + keys.get("category") + '/'
         logger.debug(f"[LocalFileSystemStore] get on key '{document_key}'")
 
         content = []
         try:
-            if get_all:
-                for dirpath, _, filenames in os.walk(document_key):
-                    for file in filenames:
-                        logger.debug(
-                            f"[LocalFileSystemStore] get_all. Looking at file '{file}' for type {keys.get('type')}"
-                        )
-                        if file.startswith(
-                                keys.get("type")) and file.endswith(".json"):
-                            with open(dirpath + file) as file_to_get:
-                                content.append(json.load(file_to_get))
-                            logger.debug(
-                                f"[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{len(content)}'"
-                            )
-                response = self._create_store_response(
-                    status_code=StatusCode.OK, content=content)
-            else:
-                with open(document_key) as file_to_get:
-                    content = json.load(file_to_get)
-                response = self._create_store_response(
-                    status_code=StatusCode.OK, content=content)
+            with open(document_key) as file_to_get:
+                content = json.load(file_to_get)
+            response = self._create_store_response(
+                status_code=StatusCode.OK, content=content)
         except Exception as e:  # pylint: disable=broad-except
             response = self._create_store_response(
                 status_code=StatusCode.INTERNAL_ERROR,
                 content=f"Error getting file. Error '{e}'")
         logger.debug(
             f"[LocalFileSystemStore] StoreResponse for get: {response}")
+        return response
+
+    def get_all(self, category, type_name, name):
+        document_key = self.datastore_url + category + '/'
+        logger.debug(f"[LocalFileSystemStore] get_all in '{document_key}' for type '{type_name}' and name '{name}'")
+
+        content = []
+        try:
+            for dirpath, _, filenames in os.walk(document_key):
+                for file in filenames:
+                    logger.debug(
+                        f"[LocalFileSystemStore] get_all. Looking at files '{file}' that have type '{type_name}' and name '{name}'"
+                    )
+                    if type_name in file and name + "_" in file and file.endswith(".json"):
+                        with open(dirpath + file) as file_to_get:
+                            content.append( (dirpath + file, json.load(file_to_get)))
+                        logger.debug(
+                            f"[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{len(content)}'"
+                        )
+            response = self._create_store_response(
+                status_code=StatusCode.OK, content=content)
+        except Exception as e:  # pylint: disable=broad-except
+            response = self._create_store_response(
+                status_code=StatusCode.INTERNAL_ERROR,
+                content=f"Error getting file. Error '{e}'")
+        logger.debug(
+            f"[LocalFileSystemStore] StoreResponse for get_all: {response}")
         return response
 
     def get_configurator_file(self, configurator_file):
@@ -129,14 +136,14 @@ class LocalFileSystemStore(DataStore):
         return response
 
     def delete(self, **keys):
-        
-        if keys.get("type") in keys.get("document_name"):
+
+        if keys.get("type") in keys.get("name"):
             document_key = self.datastore_url + keys.get(
-                "category") + '/' + keys.get("document_name") + ".json"
+                "category") + '/' + keys.get("name") + ".json"
         else:
             document_key = self.datastore_url + keys.get(
                 "category") + '/' + keys.get("type") + '_' + keys.get(
-                    "document_name") + ".json"
+                    "name") + ".json"
         logger.debug(f"[LocalFileSystemStore] delete on '{document_key}'")
 
         if os.path.isfile(document_key):

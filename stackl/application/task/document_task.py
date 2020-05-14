@@ -20,6 +20,5 @@ class DocumentTask(Task):
             self.subtype = subtype
         else:
             logger.info(
-                "[DocumentTask] The given DocumentTask has invalid subtype"
-            )
-            raise Exception("The given DocumentTasks has invalid subtype")
+                "[DocumentTask] The given DocumentTask has an invalid subtype")
+            raise Exception("The given DocumentTask has an invalid subtype")

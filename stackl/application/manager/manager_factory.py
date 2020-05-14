@@ -1,6 +1,7 @@
 import logging
 
 from manager.document_manager import DocumentManager
+from manager.snapshot_manager import SnapshotManager
 from manager.stack_manager import StackManager
 from manager.user_manager import UserManager
 from utils.stackl_singleton import Singleton
@@ -15,9 +16,12 @@ class ManagerFactory(metaclass=Singleton):
         # The managers need acccess to the manager factory to get access to the other managers.
         # This makes the order in which the managers are initialized important where the document manager needs to be first
         self.document_manager = DocumentManager(self)
+        self.snapshot_manager = SnapshotManager(self)
         self.stack_manager = StackManager(self)
         self.user_manager = UserManager(self)
 
+    def get_snapshot_manager(self):
+        return self.snapshot_manager
     def get_document_manager(self):
         return self.document_manager
 

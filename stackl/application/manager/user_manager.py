@@ -18,8 +18,8 @@ class UserManager(Manager):
         logger.info(
             "[UserManager] get_user_for_cert. Getting user for certificate '{0}'"
             .format(user_certificate))
-        user_data = self.document_manager.get_document(
-            type='authentication', document_name=str(serial))
+        user_data = self.document_manager.get_document(type='authentication',
+                                                       name=str(serial))
         if user_data:
             return user_data['user']
         else:
@@ -30,8 +30,8 @@ class UserManager(Manager):
         logger.info(
             "[UserManager] get_user_for_serial. Getting user for serial '{0}'".
             format(serial))
-        user_data = self.document_manager.get_document(
-            type='authentication', document_name=str(serial))
+        user_data = self.document_manager.get_document(type='authentication',
+                                                       name=str(serial))
         if user_data:
             return user_data
         else:
@@ -47,7 +47,7 @@ class UserManager(Manager):
             user_data['name'] = user_data['type'] + "_" + serial
 
             user_doc = self.document_manager.get_document(
-                type='authentication', document_name=str(serial))
+                type='authentication', name=str(serial))
             if user_doc:
                 raise Exception(
                     "[UserManager] The requested user already exists, not creating"
@@ -58,7 +58,7 @@ class UserManager(Manager):
 
             self.document_manager.write_document(
                 type="authentication",
-                document_name=user_data['serial'],
+                name=user_data['serial'],
                 file=user_data,
                 description=user_data['description'])
         else:
@@ -66,13 +66,13 @@ class UserManager(Manager):
                 "[UserManager] The requested user does not contain valid data")
 
     def delete_user(self, serial):
-        user_doc = self.document_manager.get_document(
-            type='authentication', document_name=str(serial))
+        user_doc = self.document_manager.get_document(type='authentication',
+                                                      name=str(serial))
         if user_doc:
             logger.info(
                 "[UserManager] delete_user. Removing user from authourised callers..."
             )
-            self.document_manager.remove_document(document_name=serial,
+            self.document_manager.remove_document(name=serial,
                                                   type='authentication')
         else:
             raise Exception(
