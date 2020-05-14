@@ -34,6 +34,7 @@ class Worker:
         self.manager_factory = ManagerFactory()
         self.stack_manager = self.manager_factory.get_stack_manager()
         self.document_manager = self.manager_factory.get_document_manager()
+        self.snapshot_manager = self.manager_factory.get_snapshot_manager()
         self.user_manager = self.manager_factory.get_user_manager()
 
         self.thread_task_dict = {}
@@ -86,15 +87,23 @@ class Worker:
 
             if task_attr["topic"] == "document_task":
                 logger.info(
-                    f"[Worker] Document_Task with subtype \'{task_attr['subtype']}\'"
+                    f"[Worker] DocumentTask with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(
                     target=self.document_manager.handle_task, args=[task_attr])
                 thread.start()
                 continue
+            elif task_attr["topic"] == "snapshot_task":
+                logger.info(
+                    f"[Worker] SnapshotTask with subtype \'{task_attr['subtype']}\'"
+                )
+                thread = threading.Thread(target=self.snapshot_manager.handle_task,
+                                          args=[task_attr])
+                thread.start()
+                continue
             elif task_attr["topic"] == "agent_task":
                 logger.info(
-                    f"[Worker] Document_Task with subtype \'{task_attr['subtype']}\'"
+                    f"[Worker] AgentTask with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(target=self.agent_broker.handle_task,
                                           args=[task_attr])
@@ -102,7 +111,7 @@ class Worker:
                 continue
             elif task_attr["topic"] == "stack_task":
                 logger.info(
-                    f"[Worker] Document_Task with subtype \'{task_attr['subtype']}\'"
+                    f"[Worker] StackTask with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(
                     target=self.stack_manager.handle_task, args=[task_attr])

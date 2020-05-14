@@ -65,8 +65,8 @@ def get_stack_instance(stack_instance_name: str):
     logger.info(
         f"[StackInstancesName GET] Getting document for stack instance {stack_instance_name} using manager"
     )
-    stack_instance = document_manager.get_document(
-        type="stack_instance", document_name=stack_instance_name)
+    stack_instance = document_manager.get_document(type="stack_instance",
+                                                   name=stack_instance_name)
     if not stack_instance:
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
                             detail='Stack instance ' +
@@ -92,7 +92,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     # check if SIT exists
     infr_template_exists = document_manager.get_document(
         type="stack_infrastructure_template",
-        document_name=stack_instance_invocation.stack_infrastructure_template)
+        name=stack_instance_invocation.stack_infrastructure_template)
     logger.info(
         f"[StackInstances POST] infr_template_exists (should be the case): {infr_template_exists}"
     )
@@ -104,7 +104,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     # check if SAT exists
     stack_application_template = document_manager.get_document(
         type='stack_application_template',
-        document_name=stack_instance_invocation.stack_application_template)
+        name=stack_instance_invocation.stack_application_template)
     logger.info(
         f"[StackInstances POST] application_template_name exists (should be the case): {stack_application_template}"
     )
@@ -116,7 +116,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     # check if stack_instance already exists. Should not be the case
     stack_instance_exists = document_manager.get_document(
         type="stack_instance",
-        document_name=stack_instance_invocation.stack_instance_name)
+        name=stack_instance_invocation.stack_instance_name)
     logger.info(
         f"[StackInstances POST] stack_instance_exists (should not be case): {stack_instance_exists}"
     )
@@ -156,8 +156,7 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
 
     # check if stack_instance already exists. Should be the case
     stack_instance_exists = document_manager.get_document(
-        type="stack_instance",
-        document_name=stack_instance_update.stack_instance_name)
+        type="stack_instance", name=stack_instance_update.stack_instance_name)
     logger.info(
         f"[StackInstances POST] stack_instance_exists (should not be case): {stack_instance_exists}"
     )
@@ -197,7 +196,7 @@ def delete_stack_instance(stack_instance_name: str):
         f"[StackInstances DELETE] Received DELETE request for {stack_instance_name}"
     )
     stack_instance_exists = document_manager.get_document(
-        type="stack_instance", document_name=stack_instance_name)
+        type="stack_instance", name=stack_instance_name)
     if not stack_instance_exists:
         return {
             'return_code': StatusCode.NOT_FOUND,

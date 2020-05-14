@@ -27,17 +27,17 @@ def get_services():
     return documents
 
 
-@router.get('/{document_name}', response_model=Service)
-def get_service_by_name(document_name: str):
+@router.get('/{name}', response_model=Service)
+def get_service_by_name(name: str):
     """Returns a functional requirement"""
     try:
-        document = document_manager.get_service(document_name)
+        document = document_manager.get_service(name)
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
     if document == {}:
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail="No document with name " + document_name)
+                            detail="No document with name " + name)
     logger.debug(f"[DocumentsByType GET] document(s): {document}")
     return document
 
@@ -47,8 +47,8 @@ def post_service(document: Service):
     """Create the document with a specific type and an optional name given in the payload"""
     # check if doc already exists
     try:
-        existing_document = document_manager.get_document(
-            type=document.type, document_name=document.name)
+        existing_document = document_manager.get_document(type=document.type,
+                                                          name=document.name)
     except InvalidDocTypeError as e:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=e.msg)
 
@@ -69,8 +69,7 @@ def put_service(document: Service):
     return document
 
 
-@router.delete('/{document_name}', status_code=202)
-def delete_service(type_name: str, document_name: str):
-    document_manager.remove_document(type=type_name,
-                                     document_name=document_name)
+@router.delete('/{name}', status_code=202)
+def delete_service(type_name: str, name: str):
+    document_manager.remove_document(type=type_name, name=name)
     return {"message": "Deleted document"}

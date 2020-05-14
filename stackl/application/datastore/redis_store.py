@@ -19,9 +19,9 @@ class RedisStore(DataStore):
 
     def get(self, **keys):
         get_all = False
-        if keys.get("document_name"):
+        if keys.get("name"):
             document_key = keys.get("category") + '/' + keys.get(
-                "type") + '/' + keys.get("document_name")
+                "type") + '/' + keys.get("name")
         else:  # This means we need to get all the documents of the type
             get_all = True
             document_key = keys.get("category") + '/' + keys.get("type") + '/*'
@@ -86,7 +86,7 @@ class RedisStore(DataStore):
 
     def delete(self, **keys):
         document_key = keys.get("category") + '/' + keys.get(
-            "type") + '/' + keys.get("document_name")
+            "type") + '/' + keys.get("name")
         self.redis.delete(document_key)
         response = self._create_store_response(status_code=200, content={})
         logger.debug(f"[RedisStore] StoreResponse for delete: {response}")
