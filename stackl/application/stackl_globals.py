@@ -11,7 +11,7 @@ import redis
 
 from utils.general_utils import get_config_key
 
-types_categories = ["configs", "items"]
+types_categories = ["configs", "items", "history"]
 types_configs = [
     "environment", "location", "zone", "stack_application_template",
     "stack_infrastructure_template", "functional_requirement",
@@ -20,7 +20,10 @@ types_configs = [
 types_items = [
     "stack_instance", "stack_template", "infrastructure_target", "service"
 ]
-types = types_configs + types_items
+types_history = [
+    "snapshot", "log"
+]
+types = types_configs + types_items + types_history
 
 redis_cache = None
 registered_agents_global = []

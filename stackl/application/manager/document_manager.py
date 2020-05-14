@@ -14,10 +14,11 @@ from model.configs.stack_infrastructure_template_model import StackInfrastructur
 from model.configs.zone_model import Zone
 from model.items.service_model import Service
 from model.items.stack_instance_model import StackInstance
-from stackl_globals import types, types_configs, types_items
+from stackl_globals import types, types_configs, types_items, types_history
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
+from utils.general_utils import get_timestamp
 from message_channel.message_channel_factory import MessageChannelFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
@@ -34,30 +35,30 @@ class DocumentManager(Manager):
 
     def handle_task(self, document_task):
         logger.debug(
-            f"[DocumentManager] handling task_obj {document_task}")
+            f"[DocumentManager] handling document_task {document_task}")
         try:
             if document_task["subtype"] == "GET_DOCUMENT":
-                (type_name, document_name) = document_task["args"]
-                result = self.get_document(type=type_name, document_name=document_name)
+                (type_name, name) = document_task["args"]
+                result = self.get_document(type=type_name, name=name)
             elif document_task["subtype"] == "COLLECT_DOCUMENT":
-                type_name = document_task["args"]
-                result = self.get_document(type=type_name)
+                (type_name, name) = document_task["args"]
+                result = self.collect_documents(type_name=type_name, name=name)
             elif document_task["subtype"] == "POST_DOCUMENT":
                 document = document_task["document"]
                 result = self.write_document(document)
             elif document_task["subtype"] == "PUT_DOCUMENT":
                 document = document_task["document"]
-                result = self.write_document(document)
+                result = self.write_document(document, True)
             elif document_task["subtype"] == "DELETE_DOCUMENT":
-                (type_name, document_name) = document_task["args"]
-                result = self.remove_document(type=type_name,
-                                              document_name=document_name)
+                (type_name, name) = document_task["args"]
+                result = self.remove_document(type=type_name, name=name)
             logger.debug(
                 f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
             )
             resultTask = ResultTask({
                 'channel': document_task['return_channel'],
-                'result_msg': f"Document with type '{document_task['subtype']}' was succesfully done",
+                'result_msg':
+                f"Document with type '{document_task['subtype']}' was handled",
                 'result': result,
                 'cast_type': CastType.BROADCAST.value,
                 'source_task': document_task
@@ -86,6 +87,28 @@ class DocumentManager(Manager):
             )
             return None
 
+    def collect_documents(self, type_name, name):
+        logger.debug(
+            f"[DocumentManager] collect_documents. Collect all documents of type '{type_name}' and optional name '{name}'"
+        )
+        try:
+            if type_name in types_configs:
+                category = "configs"
+            elif type_name in types_items:
+                category = "items"
+            elif type_name in types_history:
+                category = "history"
+            store_response = self.store.get_all(category, type_name, name)
+            if store_response.status_code == StatusCode.NOT_FOUND:
+                return {}
+            else:
+                return store_response.content
+        except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
+            logger.error(
+                f"[DocumentManager] Exception occured in collect_documents: {e}. Returning empty object"
+            )
+            return None
+
     def write_base_document(self, base_document: BaseDocument):
         store_response = self.store.put(base_document.dict())
         return store_response.content
@@ -93,7 +116,7 @@ class DocumentManager(Manager):
     def get_policy(self, policy_name):
         """gets a Policy from the store"""
         store_response = self.store.get(type="policy",
-                                        document_name=policy_name,
+                                        name=policy_name,
                                         category="configs")
         policy = Policy.parse_obj(store_response.content)
         return policy
@@ -107,7 +130,7 @@ class DocumentManager(Manager):
     def get_stack_instance(self, stack_instance_name):
         """gets a StackInstance Object from the store"""
         store_response = self.store.get(type="stack_instance",
-                                        document_name=stack_instance_name,
+                                        name=stack_instance_name,
                                         category="items")
         stack_instance = StackInstance.parse_obj(store_response.content)
         return stack_instance
@@ -123,7 +146,7 @@ class DocumentManager(Manager):
         """gets a StackInfrastructureTemplate Object from the store"""
         store_response = self.store.get(
             type="stack_infrastructure_template",
-            document_name=stack_infrastructure_template_name,
+            name=stack_infrastructure_template_name,
             category="configs")
         stack_infrastructure_template = StackInfrastructureTemplate.parse_obj(
             store_response.content)
@@ -139,10 +162,9 @@ class DocumentManager(Manager):
     def get_stack_application_template(
             self, stack_application_template_name) -> StackApplicationTemplate:
         """gets a StackApplicationTemplate Object from the store"""
-        store_response = self.store.get(
-            type="stack_application_template",
-            document_name=stack_application_template_name,
-            category="configs")
+        store_response = self.store.get(type="stack_application_template",
+                                        name=stack_application_template_name,
+                                        category="configs")
         stack_application_template = StackApplicationTemplate.parse_obj(
             store_response.content)
         return stack_application_template
@@ -157,7 +179,7 @@ class DocumentManager(Manager):
     def get_environment(self, environment_name):
         """gets a Environment Object from the store"""
         store_response = self.store.get(type="environment",
-                                        document_name=environment_name,
+                                        name=environment_name,
                                         category="configs")
         environment = Environment.parse_obj(store_response.content)
         return environment
@@ -165,7 +187,7 @@ class DocumentManager(Manager):
     def get_location(self, location_name):
         """gets a Location Object from the store"""
         store_response = self.store.get(type="location",
-                                        document_name=location_name,
+                                        name=location_name,
                                         category="configs")
         location = Location.parse_obj(store_response.content)
         return location
@@ -173,7 +195,7 @@ class DocumentManager(Manager):
     def get_zone(self, zone_name):
         """gets a Zone Object from the store"""
         store_response = self.store.get(type="zone",
-                                        document_name=zone_name,
+                                        name=zone_name,
                                         category="configs")
         zone = Zone.parse_obj(store_response.content)
         return zone
@@ -181,7 +203,7 @@ class DocumentManager(Manager):
     def get_service(self, service_name):
         """gets a Service Object from the store"""
         store_response = self.store.get(type="service",
-                                        document_name=service_name,
+                                        name=service_name,
                                         category="items")
         service = Service.parse_obj(store_response.content)
         return service
@@ -194,10 +216,9 @@ class DocumentManager(Manager):
 
     def get_functional_requirement(self, functional_requirement_name):
         """gets a FunctionalRequirement Object from the store"""
-        store_response = self.store.get(
-            type="functional_requirement",
-            document_name=functional_requirement_name,
-            category="configs")
+        store_response = self.store.get(type="functional_requirement",
+                                        name=functional_requirement_name,
+                                        category="configs")
         fr = FunctionalRequirement.parse_obj(store_response.content)
         return fr
 
@@ -222,48 +243,48 @@ class DocumentManager(Manager):
         store_response = self.store.delete_configurator_file(statefile_name)
         return store_response.content
 
-    def write_document(self, document):
+    def write_document(self, document, overwrite=False):
         logger.debug(
             f"[DocumentManager] write_document.  Document: '{document}'")
+        keys = self._process_document_keys(document)
 
-        if document["type"] == "stack_instance":
+        document['category'] = keys.get("category")
+        document['type'] = keys.get("type")
+        document['name'] = keys.get("name")
+        document['description'] = keys.get("description")
+
+        logger.debug("[DocumentManager] Checking if document already exists ")
+        store_response = self.store.get(**keys)
+        prev_document = store_response.content
+
+        if store_response.status_code == StatusCode.NOT_FOUND:
+            logger.debug(
+                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
+            )
             store_response = self.store.put(document)
-        return store_response.status_code
-        # keys = self._process_document_keys(keys)
-
-        # document = keys.get("file")
-        # document['category'] = keys.get("category")
-        # document['type'] = keys.get("type")
-        # document['name'] = keys.get("document_name")
-        # document['description'] = keys.get("description")
-
-        # logger.debug("[DocumentManager] Checking if document already exists ")
-        # store_response = self.store.get(**keys)
-        # prev_document = store_response.content
-
-        # if store_response.status_code == StatusCode.NOT_FOUND:
-        #     logger.debug(
-        #         f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
-        #     )
-        #     store_response = self.store.put(document)
-
-        #     return store_response.status_code
-        # else:
-        #     prev_document_string = json.dumps(prev_document)
-        #     logger.debug(
-        #         f"[DocumentManager] Updating document with original contents: {prev_document_string}"
-        #     )
-        #     doc_new_string = json.dumps(document)
-        #     logger.debug(
-        #         f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
-        #     )
-        #     if prev_document_string == doc_new_string:
-        #         logger.debug(
-        #             "[DocumentManager] Original document and new document are the same! NOT updating"
-        #         )
-        #     else:
-        #         store_response = self.store.put(document)
-        #         return store_response.status_code
+            return store_response.status_code
+        else:
+            if overwrite:
+                prev_document_string = json.dumps(prev_document)
+                logger.debug(
+                    f"[DocumentManager] Updating document with original contents: {prev_document_string}"
+                )
+                doc_new_string = json.dumps(document)
+                logger.debug(
+                    f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
+                )
+                if prev_document_string == doc_new_string:
+                    logger.debug(
+                        f"[DocumentManager] Original document and new document are the same! NOT updating"
+                    )
+                else:
+                    store_response = self.store.put(document)
+                    return store_response.status_code
+            else:
+                logger.debug(
+                    f"[DocumentManager] Document already exists and overwrite is false. Returning."
+                )
+                return StatusCode.BAD_REQUEST
 
     def remove_document(self, **keys):
         logger.debug(f"[DocumentManager] Remove_document. Keys '{keys}'")
@@ -307,19 +328,21 @@ class DocumentManager(Manager):
                 keys["category"] = "configs"
             elif type_name in types_items:
                 keys["category"] = "items"
+            elif type_name in types_history:
+                keys["category"] = "history"
             else:
                 raise InvalidDocTypeError(type_name)
         if not keys.get("type", None):
-            document_name = keys.get("document_name", "none")
+            name = keys.get("name", "none")
             derived_type_from_name_list = [
-                poss_type for poss_type in types if poss_type in document_name
+                poss_type for poss_type in types if poss_type in name
             ]
             if len(derived_type_from_name_list) == 1:
                 keys["type"] = derived_type_from_name_list[0]
             else:
-                raise InvalidDocNameError(document_name)
+                raise InvalidDocNameError(name)
 
         logger.debug(
-            f"[DocumentManager] _process_document_keys. Post Process Keys '{keys}'"
+            f"[DocumentManager] _process_document_keys. After _process_document_keys '{keys}'"
         )
         return keys
