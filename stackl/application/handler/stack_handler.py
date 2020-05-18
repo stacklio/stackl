@@ -14,9 +14,9 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 
 class StackHandler(Handler):
-    def __init__(self, manager_factory, opa_broker):
-        super(StackHandler, self).__init__(manager_factory)
-        self.document_manager = manager_factory.get_document_manager()
+    def __init__(self, document_manager, opa_broker):
+        super(StackHandler, self).__init__()
+        self.document_manager = document_manager
         self.opa_broker = opa_broker
         self.opa_broker.document_manager = self.document_manager
 

@@ -6,10 +6,10 @@ from manager import Manager
 
 ##TODO TBD: Rework entirely to integrate with OPA, part of the authorisation/authentication rework
 class UserManager(Manager):
-    def __init__(self, manager_factory):
-        super(UserManager, self).__init__(manager_factory)
+    def __init__(self):
+        super(UserManager, self).__init__()
 
-        self.document_manager = manager_factory.get_document_manager()
+        self.document_manager = None  #To be given after initalisation by manager_factory
 
     def get_user_for_cert(self, user_certificate):
         serial = user_certificate['user_serial']

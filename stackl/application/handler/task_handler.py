@@ -11,7 +11,7 @@ logger = logging.getLogger("STACKL_LOGGER")
 # TODO at the moment this class is sparse but it will be necessary for rollback and failure mechanisms
 class TaskHandler(Handler):
     def __init__(self, stackl_type, call_object):
-        super(TaskHandler, self).__init__(None)
+        super(TaskHandler, self).__init__()
 
         self.call_object = call_object
         self.stackl_type = stackl_type

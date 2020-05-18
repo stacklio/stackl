@@ -130,7 +130,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
         task = StackTask({
             'channel': 'worker',
             'json_data': stack_instance_invocation.dict(),
-            'subtasks': ["CREATE"],
+            'subtype': "CREATE_STACK",
         })
         logger.info(
             f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
@@ -171,7 +171,7 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
         task = StackTask({
             'channel': 'worker',
             'json_data': stack_instance_update.dict(),
-            'subtasks': ["UPDATE"]
+            'subtype': "UPDATE_STACK",
         })
         logger.info(
             f"[StackInstances PUT] Giving StackTask '{task}' to task_broker")
@@ -209,7 +209,7 @@ def delete_stack_instance(stack_instance_name: str):
         task = StackTask({
             'channel': 'worker',
             'json_data': json_data,
-            'subtasks': ["DELETE"],
+            'subtype': "DELETE_STACK",
         })
         logger.info(
             f"[StackInstances DELETE] Giving StackTask '{task.__dict__}' to task_broker"
