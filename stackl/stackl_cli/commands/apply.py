@@ -17,17 +17,19 @@ def cli():
 @click.option('-d', '--directory', type=click.Path(exists=True))
 @click.option('-c', '--config-file', type=click.File())
 @click.option('-p', '--params', default="{}")
+@click.option('-t', '--tags', default="{}")
 @click.argument('instance-name', required=False)
 @pass_stackl_context
-def apply(stackl_context, directory, config_file, params, instance_name):
+def apply(stackl_context, directory, config_file, params, tags, instance_name):
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:
-        apply_stack_instance(config_file, params, stackl_context,
+        apply_stack_instance(config_file, params, tags, stackl_context,
                              instance_name)
 
 
-def apply_stack_instance(config_file, params, stackl_context, instance_name):
+def apply_stack_instance(config_file, params, tags, stackl_context,
+                         instance_name):
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     params = {**config_doc['params'], **json.loads(params)}
     invocation = stackl_client.StackInstanceInvocation(
@@ -35,7 +37,8 @@ def apply_stack_instance(config_file, params, stackl_context, instance_name):
         stack_infrastructure_template=config_doc[
             "stack_infrastructure_template"],
         stack_application_template=config_doc["stack_application_template"],
-        params=params)
+        params=params,
+        tags=json.loads(tags))
     try:
         stackl_context.stack_instances_api.get_stack_instance(instance_name)
         res = stackl_context.stack_instances_api.put_stack_instance(invocation)
@@ -51,6 +54,7 @@ def upload_files(directory, stackl_context):
             # ignore dotfiles
             if path.name.startswith('.'):
                 continue
+            click.echo(f"Reading document: { str(path) }")
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
             if 'name' in stackl_doc:
                 click.echo(

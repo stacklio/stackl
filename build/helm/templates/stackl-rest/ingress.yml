@@ -10,6 +10,7 @@ spec:
     - host: {{ .Values.stacklRest.hostname }}
       http:
         paths:
-          - backend:
+          - path: /
+            backend:
               serviceName: "{{ template "stackl.rest" . }}"
               servicePort: 8080

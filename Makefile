@@ -6,7 +6,6 @@ CONTAINER_ENGINE = $(shell command -v podman 2> /dev/null || command -v docker 2
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
 DOCKER_IMAGE_REST=stacklio/stackl-rest
 DOCKER_IMAGE_WORKER=stacklio/stackl-worker
-DOCKER_IMAGE_WEBSOCKET_AGENT=stacklio/stackl-websocket-agent
 DOCKER_IMAGE_KUBERNETES_AGENT=stacklio/stackl-kubernetes-agent
 DOCKER_IMAGE_DOCKER_AGENT=stacklio/stackl-docker-agent
 
@@ -38,11 +37,6 @@ build_rest:
 build_worker:
 	@echo "Building stackl worker"
 	cd stackl/application; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_WORKER):$(VERSIONTAG) -f Dockerfile_worker .
-
-.PHONY: build_websocket_agent
-build_websocket_agent:
-	@echo "Building stackl websocket agent"
-	cd stackl/agents/websocket_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_WEBSOCKET_AGENT):$(VERSIONTAG) .
 
 .PHONY: build_kubernetes_agent
 build_kubernetes_agent:
@@ -140,7 +134,7 @@ skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 	kubectl port-forward service/registry -n container-registry 5000:5000 &
 	skaffold dev --force=false --port-forward --no-prune=true --no-prune-children=true
 
-build: build_prepare build_rest build_worker build_websocket_agent build_grpc_base build_kubernetes_agent build_docker_agent
+build: build_prepare build_rest build_worker build_grpc_base build_kubernetes_agent build_docker_agent
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start
 dev: kaniko-warmer skaffold

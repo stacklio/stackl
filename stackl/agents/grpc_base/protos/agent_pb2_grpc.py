@@ -5,60 +5,76 @@ import protos.agent_pb2 as agent__pb2
 
 
 class StacklAgentStub(object):
-    """Missing associated documentation comment in .proto file"""
-    def __init__(self, channel):
-        """Constructor.
+  # missing associated documentation comment in .proto file
+  pass
 
-        Args:
-            channel: A grpc.Channel.
-        """
-        self.InvokeAutomation = channel.unary_unary(
-            '/StacklAgent/InvokeAutomation',
-            request_serializer=agent__pb2.AutomationMessage.SerializeToString,
-            response_deserializer=agent__pb2.AutomationResponse.FromString,
+  def __init__(self, channel):
+    """Constructor.
+
+    Args:
+      channel: A grpc.Channel.
+    """
+    self.RegisterAgent = channel.unary_unary(
+        '/StacklAgent/RegisterAgent',
+        request_serializer=agent__pb2.AgentMetadata.SerializeToString,
+        response_deserializer=agent__pb2.ConnectionResult.FromString,
+        )
+    self.GetJob = channel.unary_stream(
+        '/StacklAgent/GetJob',
+        request_serializer=agent__pb2.AgentMetadata.SerializeToString,
+        response_deserializer=agent__pb2.Invocation.FromString,
+        )
+    self.ReportResult = channel.unary_unary(
+        '/StacklAgent/ReportResult',
+        request_serializer=agent__pb2.AutomationResult.SerializeToString,
+        response_deserializer=agent__pb2.ConnectionResult.FromString,
         )
 
 
 class StacklAgentServicer(object):
-    """Missing associated documentation comment in .proto file"""
-    def InvokeAutomation(self, request, context):
-        """Missing associated documentation comment in .proto file"""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+  # missing associated documentation comment in .proto file
+  pass
+
+  def RegisterAgent(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetJob(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ReportResult(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
 
 
 def add_StacklAgentServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'InvokeAutomation':
-        grpc.unary_unary_rpc_method_handler(
-            servicer.InvokeAutomation,
-            request_deserializer=agent__pb2.AutomationMessage.FromString,
-            response_serializer=agent__pb2.AutomationResponse.
-            SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'StacklAgent', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler, ))
-
-
-# This class is part of an EXPERIMENTAL API.
-class StacklAgent(object):
-    """Missing associated documentation comment in .proto file"""
-    @staticmethod
-    def InvokeAutomation(request,
-                         target,
-                         options=(),
-                         channel_credentials=None,
-                         call_credentials=None,
-                         compression=None,
-                         wait_for_ready=None,
-                         timeout=None,
-                         metadata=None):
-        return grpc.experimental.unary_unary(
-            request, target, '/StacklAgent/InvokeAutomation',
-            agent__pb2.AutomationMessage.SerializeToString,
-            agent__pb2.AutomationResponse.FromString, options,
-            channel_credentials, call_credentials, compression, wait_for_ready,
-            timeout, metadata)
+  rpc_method_handlers = {
+      'RegisterAgent': grpc.unary_unary_rpc_method_handler(
+          servicer.RegisterAgent,
+          request_deserializer=agent__pb2.AgentMetadata.FromString,
+          response_serializer=agent__pb2.ConnectionResult.SerializeToString,
+      ),
+      'GetJob': grpc.unary_stream_rpc_method_handler(
+          servicer.GetJob,
+          request_deserializer=agent__pb2.AgentMetadata.FromString,
+          response_serializer=agent__pb2.Invocation.SerializeToString,
+      ),
+      'ReportResult': grpc.unary_unary_rpc_method_handler(
+          servicer.ReportResult,
+          request_deserializer=agent__pb2.AutomationResult.FromString,
+          response_serializer=agent__pb2.ConnectionResult.SerializeToString,
+      ),
+  }
+  generic_handler = grpc.method_handlers_generic_handler(
+      'StacklAgent', rpc_method_handlers)
+  server.add_generic_rpc_handlers((generic_handler,))

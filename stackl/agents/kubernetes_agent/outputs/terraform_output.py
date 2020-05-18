@@ -1,5 +1,3 @@
-import os
-from json import dumps
 from outputs.output import Output
 
 

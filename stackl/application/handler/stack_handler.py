@@ -62,7 +62,7 @@ class StackHandler(Handler):
             for fr in svc_doc.functional_requirements:
                 fr_status = FunctionalRequirementStatus(
                     functional_requirement=fr,
-                    status=Status.in_progress,
+                    status=Status.PROGRESS,
                     error_message="")
                 service_definition_status.append(fr_status)
                 fr_doc = self.document_manager.get_functional_requirement(fr)
@@ -106,7 +106,7 @@ class StackHandler(Handler):
                 if not item["disable_invocation"]:
                     fr_status = FunctionalRequirementStatus(
                         functional_requirement=fr,
-                        status=Status.in_progress,
+                        status=Status.PROGRESS,
                         error_message="")
                     service_definition_status.append(fr_status)
                 fr_doc = self.document_manager.get_functional_requirement(fr)

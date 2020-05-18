@@ -11,6 +11,10 @@ spec:
       targetPort: 80
       protocol: TCP
       name: http
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+      name: grpc
   selector:
     {{ include "stackl.selectorLabels" . | nindent 4 }}
     component: rest
