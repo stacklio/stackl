@@ -25,17 +25,19 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 
 class DocumentManager(Manager):
-    def __init__(self, manager_factory):
-        super(DocumentManager, self).__init__(manager_factory)
+    def __init__(self):
+        super(DocumentManager, self).__init__()
 
         task_broker_factory = TaskBrokerFactory()
         self.task_broker = task_broker_factory.get_task_broker()
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
+        self.snapshot_manager = None  #To be given after initalisation by manager_factory
+
     def handle_task(self, document_task):
         logger.debug(
-            f"[DocumentManager] handling document_task {document_task}")
+            f"[DocumentManager] handling document_task '{document_task}'")
         try:
             if document_task["subtype"] == "GET_DOCUMENT":
                 (type_name, name) = document_task["args"]
@@ -58,7 +60,7 @@ class DocumentManager(Manager):
             resultTask = ResultTask({
                 'channel': document_task['return_channel'],
                 'result_msg':
-                f"Document with type '{document_task['subtype']}' was handled",
+                f"DocumentTask with type '{document_task['subtype']}' was handled",
                 'result': result,
                 'cast_type': CastType.BROADCAST.value,
                 'source_task': document_task
@@ -278,6 +280,9 @@ class DocumentManager(Manager):
                         f"[DocumentManager] Original document and new document are the same! NOT updating"
                     )
                 else:
+                    #Since are overwriting, take a snapshot first
+                    self.snapshot_manager.create_snapshot(
+                        document["type"], document["name"])
                     store_response = self.store.put(document)
                     return store_response.status_code
             else:

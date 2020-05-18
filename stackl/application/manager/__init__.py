@@ -4,6 +4,5 @@ from datastore.datastore_factory import DataStoreFactory
 
 
 class Manager(ABC):
-    def __init__(self, manager_factory):
+    def __init__(self):
         self.store = DataStoreFactory().get_store()
-        self.manager_factory = manager_factory
