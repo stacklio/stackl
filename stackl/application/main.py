@@ -2,13 +2,17 @@
 import logging
 import os
 import threading
+from concurrent import futures
 
+import grpc
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
+import protos
 import stackl_globals
-from agent_broker.agent_broker_factory import AgentBrokerFactory
+from agent_broker.automation_job_dispenser import AutomationJobDispenser
 from manager.manager_factory import ManagerFactory
+from message_channel.message_channel_factory import MessageChannelFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
     stack_application_templates_router, \
@@ -31,36 +35,38 @@ logger.addHandler(ch)
 # Start initialisation of Application Logic
 stackl_globals.initialize()
 
+message_channel_factory = MessageChannelFactory()
+message_channel = message_channel_factory.get_message_channel()
+
 manager_factory = ManagerFactory()
 task_broker_factory = TaskBrokerFactory()
-agent_broker_factory = AgentBrokerFactory()
 opa_broker_factory = OPABrokerFactory()
+document_manager = ManagerFactory().get_document_manager()
 
-agent_broker = agent_broker_factory.agent_broker
 task_broker = task_broker_factory.get_task_broker()
 opa_broker = opa_broker_factory.get_opa_broker()
 
-agent_broker_thread = threading.Thread(name="Agent Broker Thread",
-                                       target=agent_broker.start,
-                                       args=[])
-agent_broker_thread.daemon = True
-agent_broker_thread.start()
-
-task_broker_thread = threading.Thread(name="Task Broker Thread",
-                                      target=task_broker.start_stackl,
-                                      kwargs={
-                                          "subscribe_channels":
-                                          ['all',
-                                           get_hostname(), 'rest'],
-                                          "agent_broker":
-                                          agent_broker
-                                      })
+task_broker_thread = threading.Thread(
+    name="Task Broker Thread",
+    target=task_broker.start_stackl,
+    kwargs={"subscribe_channels": ['all', get_hostname(), 'rest']})
 task_broker_thread.daemon = True
 task_broker_thread.start()
 
 opa_broker.start(manager_factory)
 
-logger.info("___________________ STARTING STACKL_API ____________________")
+logger.info(
+    "___________________ STARTING STACKL GRPC SERVER ____________________")
+
+server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+protos.agent_pb2_grpc.add_StacklAgentServicer_to_server(
+    AutomationJobDispenser(stackl_globals.redis_cache, document_manager),
+    server)
+server.add_insecure_port('[::]:50051')
+server.start()
+
+logger.info(
+    "___________________ STARTING STACKL API SERVER ____________________")
 
 # Add routes
 app = FastAPI(

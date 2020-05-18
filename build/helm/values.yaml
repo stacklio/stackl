@@ -20,7 +20,7 @@ agentBroker:
 stacklRest:
   image: stacklio/stackl-rest:dev
   name: stackl-rest
-  serviceType: LoadBalancer
+  serviceType: NodePort
   hostname: stackl.dome.dev
   replicaCount: 1
 
@@ -38,10 +38,12 @@ stacklAgent:
   image: stacklio/stackl-kubernetes-agent:dev
   name: stackl-agent
   replicaCount: 1
-  secretHandler: base64
-  # secretHandler: vault
-  # vaultAddr: http://10.11.12.7:8200
-  # vaultRole: stackl
+  agentName: main-agent
+  selector: "aws.*.*"
+  secretHandler: vault
+  vaultAddr: https://secrets.d.dome.dev
+  vaultRole: stackl-aws
+  vaultMountPoint: auth/k8s-aws
 
 stacklOpa:
   image: openpolicyagent/opa:latest

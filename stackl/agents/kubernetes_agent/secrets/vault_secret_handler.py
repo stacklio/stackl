@@ -5,7 +5,7 @@ exit_after_auth = false
 pid_file = "%s"
 auto_auth {
     method "kubernetes" {
-        mount_path = "auth/kubernetes"
+        mount_path = "%s"
         config = {
             role = "%s"
         }
@@ -38,9 +38,10 @@ EOH
 
 class VaultSecretHandler(SecretHandler):
     def __init__(self, invoc, stack_instance, vault_addr: str,
-                 secret_format: str, vault_role: str):
+                 secret_format: str, vault_role: str, vault_mount_point: str):
         self._vault_role = vault_role
         self._vault_addr = vault_addr
+        self._vault_mount_point = vault_mount_point
         self.terraform_backend_enabled = False
         self._invoc = invoc
         self._secret_format = secret_format.lower()
@@ -68,8 +69,7 @@ class VaultSecretHandler(SecretHandler):
             self._volumes.append({
                 "name": "terraform-backend-secrets",
                 "type": "empty_dir",
-                "mount_path": "/opt/terraform/plan",
-                "sub_path": "backend.tf.json"
+                "mount_path": "/tmp/backend"
             })
         self._init_containers = [{
             "name":
@@ -99,12 +99,12 @@ class VaultSecretHandler(SecretHandler):
             content_string += '{{ scratch.Get "secrets" | toYAML }}'
         elif self._secret_format == "toml":
             content_string += '{{ scratch.Get "secrets" | toTOML }}'
-        va_config = vault_agent_config % (self._pid_file, self._vault_role,
-                                          self._vault_token_path,
-                                          self._destination, content_string)
+        va_config = vault_agent_config % (
+            self._pid_file, self._vault_mount_point, self._vault_role,
+            self._vault_token_path, self._destination, content_string)
         if self.terraform_backend_enabled:
             content_string = """{{ with secret "%s" }}{{ .Data.data | toJSON }}{{ end }}""" % backend_secret_path
-            va_config += extra_template % (
-                "/opt/terraform/plan/backend.tf.json", content_string)
+            va_config += extra_template % ("/tmp/backend/backend.tf.json",
+                                           content_string)
 
         return va_config

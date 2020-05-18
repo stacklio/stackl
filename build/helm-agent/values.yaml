@@ -1,0 +1,31 @@
+image:
+  pullPolicy: Always
+
+mode: prod # dev
+
+
+stacklAgent:
+  image: stacklio/stackl-kubernetes-agent:dev
+  name: stackl-agent
+  stacklHost: https://stackl.dome.dev
+  grpcHost: https://stackl-grpc.dome.dev
+  replicas: 1
+#  secretHandler: base64
+  agentName: vsphere
+  selector: "vsphere.*.*"
+  secretHandler: vault
+  vaultAddr: https://secrets.d.dome.dev
+  vaultRole: stackl
+
+# example imagePullSecrets: [name: pull-secret-name]
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+log_level: debug
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
