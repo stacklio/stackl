@@ -30,6 +30,7 @@ class ManagerFactory(metaclass=Singleton):
 
     def get_snapshot_manager(self):
         return self.snapshot_manager
+
     def get_document_manager(self):
         return self.document_manager
 
