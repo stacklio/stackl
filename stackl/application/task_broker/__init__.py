@@ -85,7 +85,7 @@ class TaskBroker(ABC):
     def process_result_task(self, result_task):
         source_task_id = ast.literal_eval(result_task.source_task)["id"]
         logger.debug(
-            f"[TaskBroker] add_result_task_to_queue. Removing source task '{source_task_id}' and returning result '{result_task.result}'"
+            f"[TaskBroker] process_result_task. Removing source task '{source_task_id}' and returning result '{result_task.result}'"
         )
         self.remove_task_from_queue(source_task_id)
         self.result_dict["result_for_task_id"] = source_task_id

@@ -72,5 +72,5 @@ def put_stack_infrastructure_template(document: StackInfrastructureTemplate):
 
 @router.delete('/{name}', status_code=202)
 def delete_stack_infrastructure_template(type_name: str, name: str):
-    document_manager.remove_document(type=type_name, name=name)
+    document_manager.delete_document(type=type_name, name=name)
     return {"message": "Deleted document"}
