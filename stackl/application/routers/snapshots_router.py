@@ -76,7 +76,7 @@ async def create_snapshot(type_name: str, name: str):
 
 @router.post('/restore/{name}')
 async def restore_snapshot(name: str, snapshot_nb: int = 1):
-    """Restore latest or optionally the given number most recent snapshot of the doc with the given name """
+    """Restore the latest or optionally the given number most recent snapshot of the doc with the given name """
     logger.info(
         f"[RestoreSnapshot POST] API POST request for document '{name}' and snapshot_nb '{snapshot_nb}'"
     )
@@ -93,16 +93,16 @@ async def restore_snapshot(name: str, snapshot_nb: int = 1):
     return result
 
 
-@router.delete('/{name}', response_model=BaseDocument)
+@router.delete('/{name}')
 async def delete_snapshot(name: str, snapshot_nb: int = 1):
-    """Delete latest or optionally the given number most recent snapshot of the doc with the given name """
+    """Delete the latest or optionally the given number most recent snapshot of the doc with the given name """
     logger.info(
         f"[DeleteSnapshot DEL] API DEL request for snapshot '{name}''and snapshot_nb '{snapshot_nb}'"
     )
     task = SnapshotTask({
         'channel': 'worker',
         'args': (name, snapshot_nb),
-        'subtype': "RESTORE_SNAPSHOT"
+        'subtype': "DELETE_SNAPSHOT"
     })
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
