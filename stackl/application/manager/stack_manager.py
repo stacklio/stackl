@@ -15,10 +15,8 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 ##TODO this class and its terminology need to be updated significantly.
 class StackManager(Manager):
-    def __init__(self, manager_factory):
-        super(StackManager, self).__init__(manager_factory)
-
-        self.document_manager = manager_factory.get_document_manager()
+    def __init__(self):
+        super(StackManager, self).__init__()
 
         self.agent_task_broker = AgentTaskBroker(stackl_globals.redis_cache)
 
@@ -28,48 +26,49 @@ class StackManager(Manager):
         self.opa_broker_factory = OPABrokerFactory()
         self.opa_broker = self.opa_broker_factory.get_opa_broker()
 
-    def handle_task(self, task):
-        logger.debug(
-            "[StackManager] handling subtasks in task {0}".format(task))
+        self.document_manager = None  #To be given after initalisation by manager_factory
+
+    def handle_task(self, stack_task):
+        logger.debug(f"[StackManager] handling stack_task '{stack_task}'")
         try:
             stack_instance = None
-            for subtask in task["subtasks"]:
-                logger.debug(
-                    "[StackManager] handling subtask '{0}'".format(subtask))
-                if subtask == "CREATE":
-                    (stack_instance, status_code) = self.process_stack_request(
-                        task["json_data"], "create")
+            if stack_task["subtype"] == "CREATE_STACK":
+                (stack_instance, status_code) = self.process_stack_request(
+                    stack_task["json_data"], "create")
+                self.agent_task_broker.create_job_for_agent(
+                    stack_instance, "create", self.document_manager)
+                self.document_manager.write_stack_instance(stack_instance)
+            elif stack_task["subtype"] == "UPDATE_STACK":
+                (stack_instance, status_code) = self.process_stack_request(
+                    stack_task["json_data"], "update")
+                # Lets not create the job object when we don't want an invocation
+                if not stack_task["json_data"]["disable_invocation"]:
                     self.agent_task_broker.create_job_for_agent(
-                        stack_instance, "create", self.document_manager)
-                    self.document_manager.write_stack_instance(stack_instance)
-                elif subtask == "UPDATE":
-                    (stack_instance, status_code) = self.process_stack_request(
-                        task["json_data"], "update")
-                    # Lets not create the job object when we don't want an invocation
-                    if not task["json_data"]["disable_invocation"]:
-                        self.agent_task_broker.create_job_for_agent(
-                            stack_instance, "update", self.document_manager)
-                    else:
-                        job = []
-                    self.document_manager.write_stack_instance(stack_instance)
-                elif subtask == "DELETE":
-                    (stack_instance, status_code) = self.process_stack_request(
-                        task["json_data"], "delete")
-                    self.agent_task_broker.create_job_for_agent(
-                        stack_instance, "delete", self.document_manager)
-                    stack_instance.deleted = True
-                    self.document_manager.write_stack_instance(stack_instance)
+                        stack_instance, "update", self.document_manager)
                 else:
-                    status_code = StatusCode.BAD_REQUEST
+                    job = []
+                self.document_manager.write_stack_instance(stack_instance)
+            elif stack_task["subtype"] == "DELETE_STACK":
+                (stack_instance, status_code) = self.process_stack_request(
+                    stack_task["json_data"], "delete")
+                self.agent_task_broker.create_job_for_agent(
+                    stack_instance, "delete", self.document_manager)
+                stack_instance.deleted = True
+                self.document_manager.write_stack_instance(stack_instance)
+            else:
+                status_code = StatusCode.BAD_REQUEST
             logger.debug(
                 "[StackManager] Succesfully handled task_attr. Notifying task broker."
             )
             self.task_broker.give_task(
                 ResultTask({
-                    'channel': task.get('return_channel'),
+                    'channel': stack_task.get('return_channel'),
                     'cast_type': CastType.BROADCAST.value,
-                    'result': "success",
-                    'source_task': task
+                    'result_msg':
+                    f"StackTask with type '{stack_task['subtype']}' was handled",
+                    'result': stack_instance,
+                    'cast_type': CastType.BROADCAST.value,
+                    'source_task': stack_task
                 })
             )  # this way the broker is notified of the result and whether he should remove the task from the task queue
         except Exception as e:
@@ -86,7 +85,7 @@ class StackManager(Manager):
         job['action'] = stack_action
         job['document'] = instance_data
         job['type'] = 'stack_instance'
-        handler = StackHandler(self.manager_factory, self.opa_broker)
+        handler = StackHandler(self.document_manager, self.opa_broker)
         merged_sat_sit_obj, status_code = handler.handle(job)
         logger.debug(
             "[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' "

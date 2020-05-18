@@ -3,11 +3,11 @@ from task import Task, logger
 
 class StackTask(Task):
     @property
-    def valid_subtasks(self):
+    def valid_subtypes(self):
         return [
-            "CREATE",
-            "UPDATE",
-            "DELETE",
+            "CREATE_STACK",
+            "UPDATE_STACK",
+            "DELETE_STACK",
         ]
 
     def _load_json_object(self, json_obj):
@@ -16,11 +16,10 @@ class StackTask(Task):
         self.requester_auth = json_obj.get('requester_auth', None)
         self.json_data = json_obj.get('json_data', None)
         self.send_channel = "agent"
-        given_subtasks_list = json_obj.get('subtasks', [None])
-        if all(subtasks in self.valid_subtasks
-               for subtasks in given_subtasks_list):
-            self.subtasks = given_subtasks_list
+        subtype = json_obj.get('subtype', [None])
+        if subtype in self.valid_subtypes:
+            self.subtype = subtype
         else:
             logger.info(
-                "[StackTask] The given StackTask contains invalid tasks")
-            raise Exception("The given StackTask contains invalid tasks")
+                "[StackTask] The given StackTask has an invalid subtype")
+            raise Exception("The given StackTask has an invalid subtype")

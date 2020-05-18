@@ -15,13 +15,19 @@ class ManagerFactory(metaclass=Singleton):
 
         # The managers need acccess to the manager factory to get access to the other managers.
         # This makes the order in which the managers are initialized important where the document manager needs to be first
-        self.document_manager = DocumentManager(self)
-        self.snapshot_manager = SnapshotManager(self)
-        self.stack_manager = StackManager(self)
-        self.user_manager = UserManager(self)
+        self.document_manager = DocumentManager()
+        self.snapshot_manager = SnapshotManager()
+        self.stack_manager = StackManager()
+        self.user_manager = UserManager()
+
+        self.document_manager.snapshot_manager = self.snapshot_manager
+        self.snapshot_manager.document_manager = self.document_manager
+        self.stack_manager.document_manager = self.document_manager
+        self.user_manager.document_manager = self.document_manager
 
     def get_snapshot_manager(self):
         return self.snapshot_manager
+
     def get_document_manager(self):
         return self.document_manager
 

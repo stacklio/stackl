@@ -6,4 +6,5 @@ class Snapshot(BaseModel):
     name: str
     type = "snapshot"
     category = "history"
+    description = "This is a snapshot of a document as given in the K/V snapshot"
     snapshot: BaseModel

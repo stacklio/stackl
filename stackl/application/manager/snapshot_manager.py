@@ -12,15 +12,15 @@ from task.snapshot_task import SnapshotTask
 
 
 class SnapshotManager(Manager):
-    def __init__(self, manager_factory):
-        super(SnapshotManager, self).__init__(manager_factory)
-
-        self.document_manager = manager_factory.get_document_manager()
+    def __init__(self):
+        super(SnapshotManager, self).__init__()
 
         task_broker_factory = TaskBrokerFactory()
         self.task_broker = task_broker_factory.get_task_broker()
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
+
+        self.document_manager = None  #To be given after initalisation by manager_factory
 
     def handle_task(self, snapshot_task):
         logger.debug(
