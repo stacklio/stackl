@@ -53,7 +53,7 @@ class DocumentManager(Manager):
                 result = self.write_document(document, True)
             elif document_task["subtype"] == "DELETE_DOCUMENT":
                 (type_name, name) = document_task["args"]
-                result = self.remove_document(type=type_name, name=name)
+                result = self.delete_document(type=type_name, name=name)
             logger.debug(
                 f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
             )
@@ -291,8 +291,8 @@ class DocumentManager(Manager):
                 )
                 return StatusCode.BAD_REQUEST
 
-    def remove_document(self, **keys):
-        logger.debug(f"[DocumentManager] Remove_document. Keys '{keys}'")
+    def delete_document(self, **keys):
+        logger.debug(f"[DocumentManager] delete_document. Keys '{keys}'")
         keys = self._process_document_keys(keys)
 
         logger.debug("[DocumentManager] Checking if document actually exists")
@@ -312,9 +312,9 @@ class DocumentManager(Manager):
                 f"[DocumentManager] status: {store_response.status_code}. Reason: {store_response.reason}"
             )
             if store_response.status_code == 200:
-                logger.debug("[DocumentManager] Document REMOVED.")
+                logger.debug("[DocumentManager] Document deleted.")
             else:
-                logger.debug("[DocumentManager] Document was NOT removed.")
+                logger.debug("[DocumentManager] Document was not deleted.")
         return store_response.status_code
 
     # Method processes and checks document keys.

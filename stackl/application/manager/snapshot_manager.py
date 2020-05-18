@@ -39,8 +39,8 @@ class SnapshotManager(Manager):
                 (document_name, snapshot_nb) = snapshot_task["args"]
                 result = self.restore_snapshot(document_name, snapshot_nb)
             elif snapshot_task["subtype"] == "DELETE_SNAPSHOT":
-                document = snapshot_task["document"]
-                result = self.create_snapshot(document)
+                (document_name, snapshot_nb) = snapshot_task["args"]
+                result = self.delete_snapshot(document_name, snapshot_nb)
             logger.debug(
                 f"[SnapshotManager] Succesfully handled snapshot task. Creating ResultTask."
             )
@@ -66,9 +66,9 @@ class SnapshotManager(Manager):
         results = self.list_snapshots(document_name)
         # sorted(results, key=lambda filename: filename[0])
         logger.debug(
-            f"[SnapshotManager] get_snapshot.  Selecting {snapshot_nb} -1 from the retrieved list of snapshots: '{results}'"
+            f"[SnapshotManager] get_snapshot.  Selecting nb '{snapshot_nb}' from the retrieved list of snapshots: '{results}'"
         )
-        return results[snapshot_nb - 1]
+        return results[snapshot_nb - 1][1]
 
     def list_snapshots(self, document_name):
         logger.debug(
@@ -110,4 +110,17 @@ class SnapshotManager(Manager):
 
         result = self.document_manager.write_document(
             snapshot_document[1]["snapshot"], overwrite=True)
+        return result
+
+    def delete_snapshot(self, snapshot_to_delete, snapshot_nb):
+        logger.debug(
+            f"[SnapshotManager] snapshot_to_delete.  Snapshot to delete: '{snapshot_to_delete}'. Number most recent snapshot to delete: '{snapshot_nb}'"
+        )
+        snapshot_document = self.get_snapshot(snapshot_to_delete, snapshot_nb)
+        logger.debug(
+            f"[SnapshotManager] snapshot_to_delete.  Snapshot to delete: '{snapshot_document}'"
+        )
+
+        result = self.document_manager.delete_document(
+            type=snapshot_document['type'], name=snapshot_document['name'])
         return result

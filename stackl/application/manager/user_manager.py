@@ -72,7 +72,7 @@ class UserManager(Manager):
             logger.info(
                 "[UserManager] delete_user. Removing user from authourised callers..."
             )
-            self.document_manager.remove_document(name=serial,
+            self.document_manager.delete_document(name=serial,
                                                   type='authentication')
         else:
             raise Exception(
