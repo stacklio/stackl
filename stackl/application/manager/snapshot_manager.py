@@ -109,7 +109,7 @@ class SnapshotManager(Manager):
         )
 
         result = self.document_manager.write_document(
-            snapshot_document[1]["snapshot"], overwrite=True)
+            snapshot_document["snapshot"], overwrite=True, make_snapshot=False)
         return result
 
     def delete_snapshot(self, snapshot_to_delete, snapshot_nb):

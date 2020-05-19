@@ -245,7 +245,7 @@ class DocumentManager(Manager):
         store_response = self.store.delete_configurator_file(statefile_name)
         return store_response.content
 
-    def write_document(self, document, overwrite=False):
+    def write_document(self, document, overwrite=False, make_snapshot=True):
         logger.debug(
             f"[DocumentManager] write_document.  Document: '{document}'")
         keys = self._process_document_keys(document)
@@ -290,8 +290,8 @@ class DocumentManager(Manager):
                     )
                 else:
                     #Since are overwriting, take a snapshot first
-                    self.snapshot_manager.create_snapshot(
-                        document["type"], document["name"])
+                    if make_snapshot:
+                        self.snapshot_manager.create_snapshot(document["type"], document["name"])
                     store_response = self.store.put(document)
                     return store_response.status_code
             else:
