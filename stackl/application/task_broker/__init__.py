@@ -37,7 +37,7 @@ class TaskBroker(ABC):
         self.task_monitor_thread = threading.Thread(
             name="Task Monitor Thread",
             target=self.task_queue_monitor,
-            args=[self.task_signal])
+            args=[])
         self.task_monitor_thread.start()
 
     @abstractmethod
@@ -78,7 +78,7 @@ class TaskBroker(ABC):
         })
         stackl_globals.set_task_queue(task_queue)
         logger.debug(
-            f"[TaskBroker] Added task to queue. Task is '{task_obj}'. Updated queue: '{stackl_globals.get_task_queue()}'"
+            f"[TaskBroker] Added task to queue. Task_id '{task_obj.id}'. Updated queue: '{stackl_globals.get_task_queue()}'"
         )
         self.task_signal.set()
 
@@ -110,10 +110,10 @@ class TaskBroker(ABC):
                 await self.asyncio_task_completed.wait()
 
     # Run in thread
-    def task_queue_monitor(self, task_signal):
+    def task_queue_monitor(self):
         try:
             while True:
-                earliest_task_timer = self._determine_earliest_timeout()
+                earliest_task_timer = self._get_earliest_timeout_task()
                 task_queue = stackl_globals.get_task_queue()
                 logger.debug(
                     f"[TaskBroker] Monitor_threads. len task_queue is '{len(task_queue)}'. Waiting until task added or earliest_task_timer '{earliest_task_timer['timeout']}'"
@@ -124,22 +124,23 @@ class TaskBroker(ABC):
                 logger.debug(
                     f"[TaskBroker] Either a timeout '{not self.task_signal.is_set()}' or new task added '{self.task_signal.is_set()}'"
                 )
-                earliest_task_timer = self._determine_earliest_timeout()
-                if earliest_task_timer["timeout"] < 0:
-                    logger.debug(
-                        f"[TaskBroker] Timeout. Checking if the waiting task is still in queue"
-                    )
-                    if earliest_task_timer["task_id"] in [
-                            task["id"] for task in task_queue
-                    ]:
-                        self.remove_task_from_queue(
-                            earliest_task_timer["task_id"])
-                        self.result_dict[
-                            "result_for_task_id"] = earliest_task_timer[
-                                "task_id"]
-                        self.result_dict[
-                            "result"] = "Timeout expired. Rolling back."
-                        self.asyncio_task_completed.set()
+                new_earliest_task_timer = self._get_earliest_timeout_task()
+                if new_earliest_task_timer["timeout"] is not None:
+                    if new_earliest_task_timer["timeout"] < 0:
+                        logger.debug(
+                            f"[TaskBroker] Timeout. Checking if the waiting task is still in queue"
+                        )
+                        if new_earliest_task_timer["task_id"] in [
+                                task["id"] for task in task_queue
+                        ]:
+                            self.remove_task_from_queue(
+                                new_earliest_task_timer["task_id"])
+                            self.result_dict[
+                                "result_for_task_id"] = new_earliest_task_timer[
+                                    "task_id"]
+                            self.result_dict[
+                                "result"] = "Timeout expired. Rolling back."
+                            self.asyncio_task_completed.set()
                 self.task_signal.clear()
         except Exception as e:
             logger.error(
@@ -147,27 +148,24 @@ class TaskBroker(ABC):
             )
 
     # Run in thread
-    def _determine_earliest_timeout(self):
+    def _get_earliest_timeout_task(self):
         task_queue = stackl_globals.get_task_queue()
-        if len(task_queue) == 0:
-            earliest_task_timer = {
-                "task_id": "None",
-                "timeout": None
-            }  # block indefinitely
-        else:
-            list_task_timeouts = [
-                (task["id"], task["timeout"] -
-                 (get_absolute_time_seconds() - task["start_time"]))
-                for task in task_queue
-            ]
-            logger.debug(
-                f"[TaskBroker] list_of_task_timeouts: '{list_task_timeouts}'")
+        list_task_timeouts = [
+            (task["id"], task["timeout"] -
+                (get_absolute_time_seconds() - task["start_time"]))
+            for task in task_queue
+        ]
+        # logger.debug(
+        #     f"[TaskBroker] list_of_task_timeouts: '{list_task_timeouts}'")
+        if list_task_timeouts:
             earliest_task_tuple = min(list_task_timeouts, key=lambda n: n[1])
             earliest_task_timer = {
                 "task_id": earliest_task_tuple[0],
                 "timeout": earliest_task_tuple[1]
             }
-        logger.debug(
-            f"[TaskBroker] _determine_earliest_timeout. Earliest_task_timer: '{earliest_task_timer}'"
-        )
-        return earliest_task_timer
+            # logger.debug(
+            #     f"[TaskBroker] _determine_earliest_timeout. Earliest_task_timer: '{earliest_task_timer}'"
+            # )
+            return earliest_task_timer
+        else:
+            return {"id": "None", "timeout": None}
