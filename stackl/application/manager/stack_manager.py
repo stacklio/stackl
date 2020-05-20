@@ -76,7 +76,7 @@ class StackManager(Manager):
                     "[StackManager] Processing subtask failed. Status_code '{0}'"
                     .format(status_code))
             logger.debug(
-                "[StackManager] Succesfully handled task_attr. Notifying task broker."
+                f"[StackManager] Succesfully handled StackTask with type '{stack_task['subtype']}'. Stack_instance: '{stack_instance}'."
             )
             self.task_broker.give_task(
                 ResultTask({
