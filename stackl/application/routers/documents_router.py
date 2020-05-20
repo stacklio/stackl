@@ -107,7 +107,6 @@ async def put_document(document: BaseDocument, request: Request):
     logger.info(f"[PutDocument] API PUT request with data: {document}")
     json_body = await request.json()
     logger.info(f"[PutDocument] API PUT request with request: {json_body}")
-
     task = DocumentTask({
         'channel': 'worker',
         'document': json_body,
@@ -116,6 +115,7 @@ async def put_document(document: BaseDocument, request: Request):
 
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
+    logger.info(f"[PutDocument] API PUT request with result: '{result}'")
     return result
 
 

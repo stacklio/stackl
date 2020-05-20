@@ -140,8 +140,7 @@ class DocumentManager(Manager):
     def write_stack_instance(self, stack_instance):
         """writes a StackInstance object to the store
         """
-        store_response = self.store.put(stack_instance.dict())
-        return store_response.status_code
+        self.write_document(stack_instance.dict())
 
     def get_stack_infrastructure_template(self,
                                           stack_infrastructure_template_name):
@@ -282,9 +281,10 @@ class DocumentManager(Manager):
                 else:
                     #Since are overwriting, take a snapshot first
                     if make_snapshot:
-                        self.snapshot_manager.create_snapshot(document["type"], document["name"])
+                        self.snapshot_manager.create_snapshot(
+                            document["type"], document["name"])
                     store_response = self.store.put(document)
-                    return store_response.status_code
+                    return store_response
             else:
                 logger.debug(
                     f"[DocumentManager] Document already exists and overwrite is false. Returning."

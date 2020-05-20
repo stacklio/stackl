@@ -58,7 +58,7 @@ class StackManager(Manager):
             else:
                 status_code = StatusCode.BAD_REQUEST
             logger.debug(
-                "[StackManager] Succesfully handled task_attr. Notifying task broker."
+                f"[StackManager] Succesfully handled StackTask with type '{stack_task['subtype']}'. Stack_instance: '{stack_instance}'."
             )
             self.task_broker.give_task(
                 ResultTask({
@@ -66,7 +66,7 @@ class StackManager(Manager):
                     'cast_type': CastType.BROADCAST.value,
                     'result_msg':
                     f"StackTask with type '{stack_task['subtype']}' was handled",
-                    'result': stack_instance,
+                    'result': str(stack_instance),
                     'cast_type': CastType.BROADCAST.value,
                     'source_task': stack_task
                 })

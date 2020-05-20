@@ -35,7 +35,7 @@ class AgentTaskBroker:
             service_name = service
             logger.debug(f"[AgentTaskBroker] service name: '{service_name}")
             service_doc = document_manager.get_document(
-                type="service", document_name=service_name)
+                type="service", name=service_name)
             logger.debug(f"[AgentTaskBroker] service doc: '{service_doc}")
 
             # infrastructure target and agent are the same for each service, make sure we use the same agent for
@@ -45,7 +45,7 @@ class AgentTaskBroker:
             agent = self.get_agent_for_job(infrastructure_target)
             for fr in service_doc["functional_requirements"]:
                 fr_doc = document_manager.get_document(
-                    type="functional_requirement", document_name=fr)
+                    type="functional_requirement", name=fr)
                 logger.debug(
                     f"[AgentTaskBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
                 )
