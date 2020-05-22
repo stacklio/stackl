@@ -77,6 +77,9 @@ def upload_files(directory, stackl_context):
                 if stackl_doc["type"] == "stack_infrastructure_template":
                     stackl_context.sit_api.put_stack_infrastructure_template(
                         stackl_doc)
+                if stackl_doc["type"] == "policy_template":
+                    stackl_context.policy_templates_api.put_policy_template(
+                        stackl_doc)
                 click.echo(
                     f"Succesfully applied {stackl_doc['name']} with type {stackl_doc['type']}"
                 )

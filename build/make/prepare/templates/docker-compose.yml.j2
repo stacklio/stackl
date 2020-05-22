@@ -106,14 +106,14 @@ services:
     # deploying OPA in an insecure environment, be sure to configure
     # authentication and authorization on the daemon. See the Security page for
     # details: https://www.openpolicyagent.org/docs/security.html.
-    volumes:
-      - {{opa_files_location}}:/opa_files
+#    volumes:
+#      - {{opa_files_location}}:/opa_files
     command:
       - "run"
       - "--server"
       - "--log-format=json-pretty"
       - "--log-level=debug"
       - "--set=decision_logs.console=true"
-      - "/opa_files/orchestration_default_policies.rego"
+#      - "/opa_files/orchestration_default_policies.rego"
     networks:
      - stackl_bridge

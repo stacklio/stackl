@@ -158,7 +158,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 #policy_template_replicas.json
 {
     "name": "replicas",
-    "description": "Policy to ensure the service has at least the given amount of replicas",
+    "description": "PolicyTemplate to ensure the service has at least the given amount of replicas",
     "category": "configs",
     "type": "policy",
     "policy": "\nreplicas = x {\n\tservice = input.policy_input.service\n\tamount = input.policy_input.amount\n\tcount(input.services[service]) >= amount\n\tx = {service: array.slice(input.services[service], 0, amount)}\n} else = x {\n   x = {input.policy_input.service: []}\n}",
@@ -170,7 +170,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 #policy_template_same_location.json
 {
     "name": "same_location",
-    "description": "Policy to ensure the given services are at the same location",
+    "description": "PolicyTemplate to ensure the given services are at the same location",
     "category": "configs",
     "type": "policy",
     "policy": "same_location(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tlocation_service1 = split(solution[service1],\".\")[1]\n\tlocation_service2 = split(solution[service2],\".\")[1]\n\tlocation_service1 == location_service2\n}",
@@ -181,7 +181,7 @@ A default policy that is always present is that the RR of the SAT can be satisfi
 #policy_template_separate_target.json
 {
     "name": "separate_target",
-    "description": "Policy to ensure the given services are on separate targets",
+    "description": "PolicyTemplate to ensure the given services are on separate targets",
     "category": "configs",
     "type": "policy",
     "policy": "separate_target(application_placement_solutions){\n\tsome i, j\n\tservice1 = input.policy_input.services[i]\n\tservice2 = input.policy_input.services[j]\n\tsolution = application_placement_solutions[_]\n\tsolution[service1] == solution[service2]\n}",

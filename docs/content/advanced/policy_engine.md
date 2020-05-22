@@ -79,7 +79,7 @@ A simple example for a SAT and a policy is given here:
 
 { #policy_template_replicas.json
     "name": "replicas",
-    "description": "Policy to ensure the service has at least the given amount of replicas",
+    "description": "PolicyTemplate to ensure the service has at least the given amount of replicas",
     "category" : "configs",
     "type": "policy",
     "policy": "\nreplicas = x {\n\tservice = input.policy_input.service\n\tamount = input.policy_input.amount\n\tcount(input.services[service]) >= amount\n\tx = {service: array.slice(input.services[service], 0, amount)}\n} else = x {\n    x = {input.policy_input.service: []}\n}\n",

@@ -23,7 +23,7 @@ class StacklContext(object):
             api_client=self.api_client)
         self.stack_instances_api = stackl_client.StackInstancesApi(
             api_client=self.api_client)
-        self.policies_api = stackl_client.PoliciesApi(
+        self.policy_templates_api = stackl_client.PolicyTemplatesApi(
             api_client=self.api_client)
 
 

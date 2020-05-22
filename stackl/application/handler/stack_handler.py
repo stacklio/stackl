@@ -17,6 +17,7 @@ class StackHandler(Handler):
         super(StackHandler, self).__init__(manager_factory)
         self.document_manager = manager_factory.get_document_manager()
         self.opa_broker = opa_broker
+        self.opa_broker.document_manager = self.document_manager
 
     def handle(self, item):
         action = item['action']
@@ -154,32 +155,66 @@ class StackHandler(Handler):
             .format(opa_data))
 
         opa_result = self.opa_broker.ask_opa_policy_decision(
-            "orchestration", "basic_application_placement_solution_sets",
-            opa_data)
+            "orchestration", "solutions", opa_data)
         logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
             opa_result['result']))
 
+        opa_solution = opa_result['result']
+
+        if not opa_solution['fulfilled']:
+            logger.debug(
+                f"[StackHandler]: Opa result message: {opa_solution['msg']}")
+            return None, StatusCode.FORBIDDEN
+
+        # Service targets is in the format:
+        # {
+        #     "nginx": [
+        #         "vsphere.brussels.vmw-vcenter-01",
+        #         "aws.brussels.vmw-vcenter-01"
+        #     ],
+        #     "ubuntu": [
+        #         "aws.brussels.vmw-vcenter-01"
+        #     ]
+        # }
+        service_targets = opa_solution['services']
+
         for policy_name, attributes in stack_app_template.policies.items():
             policy_input = {}
-            previous = {}
-            policy = self.document_manager.get_policy(policy_name)
-            policy_input["policy_input"] = {}
-            policy_input["policy_input"]["service"] = attributes["service"]
-            for i in policy.inputs:
-                policy_input["policy_input"][i] = attributes[i]
-            previous["services"] = opa_result['result']
-            opa_data = {**previous, **policy_input}
+            policy = self.document_manager.get_policy_template(policy_name)
+            policy_input["parameters"] = attributes
+
+            opa_data_with_inputs = {**opa_data, **policy_input}
 
             # Make sure the policy is in OPA
             self.opa_broker.add_policy(policy.name, policy.policy)
 
             # And verify it
-            new_result = self.opa_broker.ask_opa_policy_decision(
-                "orchestration", policy_name, opa_data)
-            opa_result = {**opa_result, **new_result}
+            new_solution = self.opa_broker.ask_opa_policy_decision(
+                policy.name, "solutions", opa_data_with_inputs)
+
+            logger.debug(
+                f"[StackHandler] _handle_create. opa_result for policy {policy.name}: {new_solution['result']}"
+            )
+
+            new_result = new_solution['result']
+
+            if not new_result['fulfilled']:
+                logger.debug(
+                    f"[StackHandler]: Opa result message: {new_result['msg']}")
+                return None, StatusCode.FORBIDDEN
+
+            # Process service_targets with these new results
+            service = attributes['service']
+            st = service_targets[service]
+            new_targets = []
+            for t in st:
+                if t in new_result['targets']:
+                    new_targets.append(t)
+
+            service_targets[service] = new_targets
 
         try:
-            return self._create_stack_instance(item, opa_result['result'],
+            return self._create_stack_instance(item, service_targets,
                                                stack_infr), 200
         except NoOpaResultException:
             return None, StatusCode.FORBIDDEN
