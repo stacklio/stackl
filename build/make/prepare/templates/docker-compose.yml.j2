@@ -16,7 +16,7 @@ services:
 {% endif %}
     ports:
       - {{http_port}}:80
-      - 8888:8888
+      - 50051:50051
     environment:  
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
@@ -88,15 +88,14 @@ services:
 {% endif %}
     networks:
       - stackl_bridge
-    ports:
-      - 8889:8889
-      - 50051:50051
     environment:
       - STACKL_HOST=stackl-rest:80
       - HOST_MACHINE=stackl-agent
+      - AGENT_SELECTOR="*.*.*"
+      - STACKL_GRPC_HOST=stackl-rest:50051
+      - AGENT_ID=docker-agent
       - TAGS=['common']
       - TENANT={{ tenant_name }}
-
   stackl-opa-server:
     restart: always
     image: openpolicyagent/opa:latest

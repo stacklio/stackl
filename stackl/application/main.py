@@ -101,6 +101,9 @@ app.include_router(stack_infrastructure_templates_router.router,
 app.include_router(configurator_router.router,
                    prefix="/configurator",
                    tags=["configurator"])
+app.include_router(configurator_router.router,
+                   prefix="/agents",
+                   tags=["agents"])
 app.include_router(about_router.router, prefix="/about", tags=["about"])
 
 

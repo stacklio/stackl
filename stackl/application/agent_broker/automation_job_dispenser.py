@@ -1,5 +1,6 @@
 import json
 import logging
+import threading
 
 from redis import StrictRedis
 
@@ -16,20 +17,28 @@ class AutomationJobDispenser(StacklAgentServicer):
     def __init__(self, redis: StrictRedis, document_manager: DocumentManager):
         self.redis = redis
         self.document_manager = document_manager
+        self.agent = None
 
     def RegisterAgent(self, agent_metadata: AgentMetadata, context):
         self.redis.set(f'agents/{agent_metadata.name}',
                        agent_metadata.selector)
+        self.agent = agent_metadata.name
         connection_result = ConnectionResult()
         connection_result.success = True
         return connection_result
+
+    def unregister_agent(self):
+        logger.debug(f"Unregister agent")
+        self.redis.delete(self.agent)
+        threading.Event().set()
 
     def GetJob(self, agent_metadata: AgentMetadata, context):
         logger.debug(f"Request for job received")
         agent_p = self.redis.pubsub()
         agent_p.subscribe(agent_metadata.name)
+        context.add_callback(self.unregister_agent)
         for message in agent_p.listen():
-            logger.debug(f"Recieved message: {message}")
+            logger.debug(f"Received message: {message}")
             invocation = Invocation()
             try:
                 invoc_message = json.loads(message["data"])
@@ -47,6 +56,8 @@ class AutomationJobDispenser(StacklAgentServicer):
             logger.debug(f"invocation {invocation}")
             yield invocation
         # TODO Lets check if listen fails if the connection drops, then this place would be perfect to deregister the agent
+        logger.debug(
+            f"Connection dropped, deregister agent #{agent_metadata.name}")
 
     def ReportResult(self, automation_result: AutomationResult, context):
         logger.info(

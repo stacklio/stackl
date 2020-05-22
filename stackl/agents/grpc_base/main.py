@@ -46,7 +46,7 @@ if __name__ == '__main__':
         if not response.success:
             exit(0)
         print("Connected")
-        for job in stub.GetJob(agent_metadata):
+        for job in stub.GetJob(agent_metadata, wait_for_ready=True):
             print("job")
             try:
                 job_handler.invoke_automation(job)
