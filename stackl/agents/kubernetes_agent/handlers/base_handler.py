@@ -208,6 +208,7 @@ class Handler(ABC):
             config.load_incluster_config()
         else:
             config.load_kube_config()
+        logging.getLogger().setLevel(os.environ.get("LOGLEVEL", "INFO"))
         self._configuration = client.Configuration()
         self._api_instance = client.BatchV1Api(
             client.ApiClient(self._configuration))

@@ -27,6 +27,7 @@ class JobHandler:
         else:
             automation_result.status = Status.FAILED
             automation_result.error_message = error_message
+
         print("Handle done")
         response = self.stackl_agent_stub.ReportResult(automation_result)
         print(response)
@@ -45,13 +46,13 @@ if __name__ == '__main__':
         job_handler = JobHandler(stub)
         if not response.success:
             exit(0)
-        print("Connected")
+        print(f'Connected to STACKL with gRPC at {os.environ["STACKL_GRPC_HOST"]}')
         for job in stub.GetJob(agent_metadata, wait_for_ready=True):
-            print("job")
+            print("Job received from STACKL through gRPC stream")
             try:
                 job_handler.invoke_automation(job)
                 print("Waiting for new job")
             except Exception as e:
                 print(
-                    f"Catching everything cause we dont want this to crash: {e}"
+                    f"Exception during automation: {e}"
                 )

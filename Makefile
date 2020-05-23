@@ -16,7 +16,7 @@ VERSIONTAG=dev
 # Documentation targets
 #
 ######################################################
-
+.DEFAULT_GOAL := all
 # The docs-% pattern target will shim to the
 # makefile in ./docs
 .PHONY: docs-%
@@ -138,3 +138,5 @@ build: build_prepare build_rest build_worker build_grpc_base build_kubernetes_ag
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start
 dev: kaniko-warmer skaffold
+kubernetes: build_kubernetes_agent push_kubernetes_agent
+all: build push
