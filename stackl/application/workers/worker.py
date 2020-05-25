@@ -84,21 +84,20 @@ class Worker:
                 f"[Worker] Popped item. Type '{type(task)}'. Item: '{task}'")
 
             task_attr = json.loads(task)
-
             if task_attr["topic"] == "document_task":
                 logger.info(
                     f"[Worker] DocumentTask with subtype \'{task_attr['subtype']}\'"
                 )
-                thread = threading.Thread(
-                    target=self.document_manager.handle_task, args=[task_attr])
-                thread.start()
-                continue
+                # thread = threading.Thread(
+                #     target=self.document_manager.handle_task, args=[task_attr])
+                # thread.start()
+                # continue
             elif task_attr["topic"] == "snapshot_task":
                 logger.info(
                     f"[Worker] SnapshotTask with subtype \'{task_attr['subtype']}\'"
                 )
-                thread = threading.Thread(target=self.snapshot_manager.handle_task,
-                                          args=[task_attr])
+                thread = threading.Thread(
+                    target=self.snapshot_manager.handle_task, args=[task_attr])
                 thread.start()
                 continue
             elif task_attr["topic"] == "agent_task":

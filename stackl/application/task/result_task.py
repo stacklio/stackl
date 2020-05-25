@@ -15,7 +15,9 @@ class ResultTask(Task):
     def _load_json_object(self, json_obj):
         super()._load_json_object(json_obj)
         self.topic = 'result'
-        self.result = json_obj.get('result', None)
+        self.result_msg = json_obj.get('result_msg', None)
+        self.return_result = json_obj.get('return_result', None)
+        self.result_code = json_obj.get('result_code', None)
         self.subtype = "RESULT"
         self._parse_source_task(json_obj)
 

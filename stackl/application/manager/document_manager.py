@@ -18,7 +18,6 @@ from stackl_globals import types, types_configs, types_items, types_history
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
-from utils.general_utils import get_timestamp
 from message_channel.message_channel_factory import MessageChannelFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
@@ -39,21 +38,24 @@ class DocumentManager(Manager):
         logger.debug(
             f"[DocumentManager] handling document_task '{document_task}'")
         try:
+            (return_result, result_code) = ("Not Applicable",
+                                            StatusCode.ACCEPTED)
             if document_task["subtype"] == "GET_DOCUMENT":
                 (type_name, name) = document_task["args"]
-                result = self.get_document(type=type_name, name=name)
+                (return_result, result_code) = self.get_document(type=type_name,
+                                                      name=name)
             elif document_task["subtype"] == "COLLECT_DOCUMENT":
                 (type_name, name) = document_task["args"]
-                result = self.collect_documents(type_name=type_name, name=name)
+                (return_result, result_code)  = self.collect_documents(type_name=type_name, name=name)
             elif document_task["subtype"] == "POST_DOCUMENT":
                 document = document_task["document"]
-                result = self.write_document(document)
+                result_code = self.write_document(document)
             elif document_task["subtype"] == "PUT_DOCUMENT":
                 document = document_task["document"]
-                result = self.write_document(document, True)
+                result_code = self.write_document(document, True)
             elif document_task["subtype"] == "DELETE_DOCUMENT":
                 (type_name, name) = document_task["args"]
-                result = self.delete_document(type=type_name, name=name)
+                result_code = self.delete_document(type=type_name, name=name)
             logger.debug(
                 f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
             )
@@ -61,7 +63,8 @@ class DocumentManager(Manager):
                 'channel': document_task['return_channel'],
                 'result_msg':
                 f"DocumentTask with type '{document_task['subtype']}' was handled",
-                'result': result,
+                'return_result': return_result,
+                'result_code': result_code,
                 'cast_type': CastType.BROADCAST.value,
                 'source_task': document_task
             })
@@ -72,6 +75,37 @@ class DocumentManager(Manager):
             logger.error(
                 f"[DocumentManager] Error with processing task. Error: '{e}'")
 
+    def rollback_task(self, document_task):
+        logger.debug(
+            f"[DocumentManager] rolling back document_task '{document_task}'")
+        if document_task["subtype"] == "GET_DOCUMENT":
+            logger.debug(
+                f"[DocumentManager] rollback_task GET_DOCUMENT. Safe Task. Nothing to do.")
+        elif document_task["subtype"] == "COLLECT_DOCUMENT":
+            logger.debug(
+                f"[DocumentManager] rollback_task COLLECT_DOCUMENT. Safe Task. Nothing to do."
+            )
+        elif document_task["subtype"] == "POST_DOCUMENT":
+            document = document_task["document"]
+            result = self.delete_document(type=document["type"],
+                                          name=document["name"])
+            logger.debug(
+                f"[DocumentManager] rollback_task POST_DOCUMENT. Removed if it was created. Result '{result}'"
+            )
+        elif document_task["subtype"] == "PUT_DOCUMENT":
+            document = document_task["document"]
+            result = self.snapshot_manager.restore_snapshot(
+                document["type"], document["name"])
+            logger.debug(
+                f"[DocumentManager] rollback_task PUT_DOCUMENT. Restored latest snapshot if it was present. Result '{result}'"
+            )
+        elif document_task["subtype"] == "DELETE_DOCUMENT":
+            (type_name, name) = document_task["args"]
+            result = self.snapshot_manager.restore_snapshot(type_name, name)
+            logger.debug(
+                f"[DocumentManager] rollback_task DELETE_DOCUMENT. Restored latest snapshot if it was present. Result '{result}'"
+            )
+
     def get_document(self, **keys):
         logger.debug(f"[DocumentManager] get_document. Keys '{keys}'")
         keys = self._process_document_keys(keys)
@@ -80,14 +114,14 @@ class DocumentManager(Manager):
         try:
             store_response = self.store.get(**keys)
             if store_response.status_code == StatusCode.NOT_FOUND:
-                return {}
+                return ({}, store_response.status_code)
             else:
-                return store_response.content
+                return (store_response.content, store_response.status_code)
         except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
             logger.error(
                 f"[DocumentManager] Exception occured in get_document: {e}. Returning empty object"
             )
-            return None
+            return ({}, StatusCode.INTERNAL_ERROR)
 
     def collect_documents(self, type_name, name):
         logger.debug(
@@ -102,14 +136,14 @@ class DocumentManager(Manager):
                 category = "history"
             store_response = self.store.get_all(category, type_name, name)
             if store_response.status_code == StatusCode.NOT_FOUND:
-                return {}
+                return ({}, store_response.status_code)
             else:
-                return store_response.content
+                return (store_response.content, store_response.status_code)
         except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
             logger.error(
                 f"[DocumentManager] Exception occured in collect_documents: {e}. Returning empty object"
             )
-            return None
+            return ({}, StatusCode.INTERNAL_ERROR)
 
     def write_base_document(self, base_document: BaseDocument):
         store_response = self.store.put(base_document.dict())
@@ -140,7 +174,7 @@ class DocumentManager(Manager):
     def write_stack_instance(self, stack_instance):
         """writes a StackInstance object to the store
         """
-        self.write_document(stack_instance.dict())
+        self.write_document(stack_instance.dict(), overwrite=True, make_snapshot=True)
 
     def get_stack_infrastructure_template(self,
                                           stack_infrastructure_template_name):
@@ -284,7 +318,7 @@ class DocumentManager(Manager):
                         self.snapshot_manager.create_snapshot(
                             document["type"], document["name"])
                     store_response = self.store.put(document)
-                    return store_response
+                    return store_response.status_code
             else:
                 logger.debug(
                     f"[DocumentManager] Document already exists and overwrite is false. Returning."

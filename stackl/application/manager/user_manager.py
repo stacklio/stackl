@@ -11,6 +11,12 @@ class UserManager(Manager):
 
         self.document_manager = None  #To be given after initalisation by manager_factory
 
+    def handle_task(self, task):
+        pass
+
+    def rollback_task(self, task):
+        pass
+
     def get_user_for_cert(self, user_certificate):
         serial = user_certificate['user_serial']
         if serial is None:

@@ -35,7 +35,7 @@ class TaskHandler(Handler):
             logger.info(
                 f"[TaskHandler] Received result: {task.as_json_string()}. Processing."
             )
-            self.task_broker.process_result_task(task)
+            self.task_broker.handle_result_task(task)
         else:
             logger.info(
                 "[TaskHandler] Unknown task with type '{task.topic}'! Ignoring."

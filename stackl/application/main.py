@@ -46,10 +46,15 @@ document_manager = ManagerFactory().get_document_manager()
 task_broker = task_broker_factory.get_task_broker()
 opa_broker = opa_broker_factory.get_opa_broker()
 
-task_broker_thread = threading.Thread(
-    name="Task Broker Thread",
-    target=task_broker.start_stackl,
-    kwargs={"subscribe_channels": ['all', get_hostname(), 'rest']})
+task_broker_thread = threading.Thread(name="Task Broker Thread",
+                                      target=task_broker.start_stackl,
+                                      kwargs={
+                                          "manager_factory":
+                                          manager_factory,
+                                          "subscribe_channels":
+                                          ['all',
+                                           get_hostname(), 'rest']
+                                      })
 task_broker_thread.daemon = True
 task_broker_thread.start()
 

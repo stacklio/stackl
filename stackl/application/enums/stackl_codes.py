@@ -4,6 +4,8 @@ from enum import IntEnum, unique
 # Modeled after HTTP Status Codes
 @unique
 class StatusCode(IntEnum):
+
+
     CONTINUE = 100  # Informational response: request was received and understood
 
     OK = 200  # Success Response: request was a success and the response depends on it. This will return an entity describing or containing the result of the action.
