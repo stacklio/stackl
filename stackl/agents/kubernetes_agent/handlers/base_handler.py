@@ -8,6 +8,8 @@ from typing import Dict, List
 import stackl_client
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from stackl_client import StackInstance
+
 from outputs.output import Output
 
 
@@ -231,9 +233,16 @@ class Handler(ABC):
         self._env_list = {}
         self._volumes = []
         self._init_containers = []
-        self.provisioning_parameters = self._stack_instance.services[
-            self._service].provisioning_parameters
+        self.provisioning_parameters = self.get_provisioning_parameters(
+            self._stack_instance, self._service,
+            self._invoc.infrastructure_target)
         self.stackl_namespace = os.environ['STACKL_NAMESPACE']
+
+    def get_provisioning_parameters(self, stack_instance: StackInstance,
+                                    service, infrastructure_target):
+        for service_definition in stack_instance.services[service]:
+            if service_definition.name == infrastructure_target:
+                return service_definition.provisioning_parameters
 
     def wait_for_job(self, job_name: str, namespace: str):
         ready = False

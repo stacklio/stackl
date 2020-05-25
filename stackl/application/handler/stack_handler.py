@@ -45,37 +45,48 @@ class StackHandler(Handler):
         services = {}
         for svc, targets in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
-            if len(targets) == 0:
-                raise NoOpaResultException
             svc_doc = self.document_manager.get_service(svc)
-            service_definition = StackInstanceService()
-            # TODO take first target in list if multiple, maybe we should let opa always only return one?
-            infra_target = targets[0]
-            service_definition.infrastructure_target = infra_target
 
-            service_definition_status = []
-            capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                infra_target]["provisioning_parameters"]
-            secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                infra_target]["secrets"]
-            merged_capabilities = {**capabilities_of_target, **svc_doc.params}
-            merged_secrets = {**secrets_of_target, **svc_doc.secrets}
-            for fr in svc_doc.functional_requirements:
-                fr_status = FunctionalRequirementStatus(
-                    functional_requirement=fr,
-                    status=Status.PROGRESS,
-                    error_message="")
-                service_definition_status.append(fr_status)
-                fr_doc = self.document_manager.get_functional_requirement(fr)
-                merged_capabilities = {**merged_capabilities, **fr_doc.params}
-                merged_secrets = {**merged_secrets, **fr_doc.secrets}
-            service_definition.provisioning_parameters = {
-                **merged_capabilities,
-                **item['params']
-            }
-            service_definition.secrets = {**merged_secrets, **item['secrets']}
-            service_definition.status = service_definition_status
-            services[svc] = service_definition
+            # TODO take first target in list if multiple, maybe we should let opa always only return one?
+            service_definitions = []
+            for infra_target in targets:
+                service_definition = StackInstanceService()
+                service_definition.infrastructure_target = infra_target
+
+                service_definition_status = []
+                capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                    infra_target]["provisioning_parameters"]
+                secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                    infra_target]["secrets"]
+                merged_capabilities = {
+                    **capabilities_of_target,
+                    **svc_doc.params
+                }
+                merged_secrets = {**secrets_of_target, **svc_doc.secrets}
+                for fr in svc_doc.functional_requirements:
+                    fr_status = FunctionalRequirementStatus(
+                        functional_requirement=fr,
+                        status=Status.PROGRESS,
+                        error_message="")
+                    service_definition_status.append(fr_status)
+                    fr_doc = self.document_manager.get_functional_requirement(
+                        fr)
+                    merged_capabilities = {
+                        **merged_capabilities,
+                        **fr_doc.params
+                    }
+                    merged_secrets = {**merged_secrets, **fr_doc.secrets}
+                service_definition.provisioning_parameters = {
+                    **merged_capabilities,
+                    **item['params']
+                }
+                service_definition.secrets = {
+                    **merged_secrets,
+                    **item['secrets']
+                }
+                service_definition.status = service_definition_status
+                service_definitions.append(service_definition)
+            services[svc] = service_definitions
         stack_instance_doc.services = services
         return stack_instance_doc
 
@@ -93,36 +104,45 @@ class StackHandler(Handler):
             **stack_instance.instance_secrets,
             **item['secrets']
         }
-        for svc, service_definition in stack_instance.services.items():
-            svc_doc = self.document_manager.get_service(svc)
-            service_definition_status = []
-            capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                service_definition.
-                infrastructure_target]["provisioning_parameters"]
-            secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                service_definition.infrastructure_target]["secrets"]
-            merged_capabilities = {**capabilities_of_target, **svc_doc.params}
-            merged_secrets = {**secrets_of_target, **svc_doc.secrets}
-            for fr in svc_doc.functional_requirements:
-                if not item["disable_invocation"]:
-                    fr_status = FunctionalRequirementStatus(
-                        functional_requirement=fr,
-                        status=Status.PROGRESS,
-                        error_message="")
-                    service_definition_status.append(fr_status)
-                fr_doc = self.document_manager.get_functional_requirement(fr)
-                merged_capabilities = {**merged_capabilities, **fr_doc.params}
-                merged_secrets = {**merged_secrets, **fr_doc.secrets}
-            service_definition.provisioning_parameters = {
-                **merged_capabilities,
-                **stack_instance.instance_params
-            }
-            service_definition.secrets = {
-                **merged_secrets,
-                **stack_instance.instance_secrets
-            }
-            service_definition.status = service_definition_status
-            stack_instance.services[svc] = service_definition
+
+        for svc, service_definitions in stack_instance.services.items():
+            for count, service_definition in enumerate(service_definitions):
+                svc_doc = self.document_manager.get_service(svc)
+                service_definition_status = []
+                capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                    service_definition.
+                    infrastructure_target]["provisioning_parameters"]
+                secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
+                    service_definition.infrastructure_target]["secrets"]
+                merged_capabilities = {
+                    **capabilities_of_target,
+                    **svc_doc.params
+                }
+                merged_secrets = {**secrets_of_target, **svc_doc.secrets}
+                for fr in svc_doc.functional_requirements:
+                    if not item["disable_invocation"]:
+                        fr_status = FunctionalRequirementStatus(
+                            functional_requirement=fr,
+                            status=Status.PROGRESS,
+                            error_message="")
+                        service_definition_status.append(fr_status)
+                    fr_doc = self.document_manager.get_functional_requirement(
+                        fr)
+                    merged_capabilities = {
+                        **merged_capabilities,
+                        **fr_doc.params
+                    }
+                    merged_secrets = {**merged_secrets, **fr_doc.secrets}
+                service_definition.provisioning_parameters = {
+                    **merged_capabilities,
+                    **stack_instance.instance_params
+                }
+                service_definition.secrets = {
+                    **merged_secrets,
+                    **stack_instance.instance_secrets
+                }
+                service_definition.status = service_definition_status
+                stack_instance.services[svc][count] = service_definition
         return stack_instance
 
     ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
