@@ -8,8 +8,7 @@ class BaseDocument(BaseModel):
     category: str
     description = "Base Document"
     type: str
-    params: dict = {
-    }  #TODO This should not be a part of a base document but atm the system relies on it
+    params: dict = {}  #TODO This should not be a part of a base document but atm the system relies on it
     secrets: dict = {} #TODO This should not be a part of a base document but atm the system relies on it
     class Config:
         schema_extra = {

@@ -95,6 +95,9 @@ class StackManager(Manager):
                 format(e),
                 exc_info=True)
 
+    def rollback_task(self, task):
+        pass
+
     def process_stack_request(self, instance_data, stack_action):
         # create new object with the action and document in it
         logger.debug(

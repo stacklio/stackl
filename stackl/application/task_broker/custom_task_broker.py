@@ -15,8 +15,11 @@ class CustomTaskBroker(TaskBroker):
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
-    def start_stackl(self, subscribe_channels=[], agent_broker=None):
-        super().start_stackl(subscribe_channels, agent_broker)
+    def start_stackl(self,
+                     manager_factory=None,
+                     subscribe_channels=[],
+                     agent_broker=None):
+        super().start_stackl(manager_factory, subscribe_channels, agent_broker)
         logger.debug(
             "[CustomTaskBroker] Starting CustomTaskBroker for STACKL.")
         self.message_channel.start(self.get_task_handler(), subscribe_channels)

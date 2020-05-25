@@ -59,6 +59,9 @@ class SnapshotManager(Manager):
             logger.error(
                 f"[SnapshotManager] Error with processing task. Error: '{e}'")
 
+    def rollback_task(self, task):
+        pass
+
     def get_snapshot(self, document_name, snapshot_nb):
         logger.debug(
             f"[SnapshotManager] get_snapshot.  Get the {snapshot_nb} most recent snapshot for '{document_name}'"

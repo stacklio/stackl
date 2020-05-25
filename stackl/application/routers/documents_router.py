@@ -42,7 +42,7 @@ async def collect_documents_by_type(type_name: str, name: str = ""):
         "type": type_name,
         "documents": result
     }
-    return document
+    return result[0]
 
 
 @router.get('/{type_name}/{name}', response_model=BaseDocument)
@@ -61,7 +61,7 @@ async def get_document_by_type_and_name(type_name: str, name: str):
     if result == {}:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
-    return result
+    return result[0]
 
 
 @router.post('')
@@ -78,10 +78,10 @@ async def post_document(document: BaseDocument):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if result == StatusCode.BAD_REQUEST:
+    if result[1] == StatusCode.BAD_REQUEST:
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="BAD_REQUEST. Document already exists")
-    return result
+    return result[1]
     # try:
 
     #     existing_document = document_manager.get_document(
@@ -116,7 +116,7 @@ async def put_document(document: BaseDocument, request: Request):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
     logger.info(f"[PutDocument] API PUT request with result: '{result}'")
-    return result
+    return result[1]
 
 
 @router.delete('/{type_name}/{name}')
@@ -133,4 +133,4 @@ async def delete_document(type_name: str, name: str):
 
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
-    return result
+    return result[1]
