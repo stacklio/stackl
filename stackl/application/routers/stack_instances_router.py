@@ -29,6 +29,7 @@ class StackInstanceInvocation(BaseModel):
     stack_application_template: str = "web"
     stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
+    replicas: Dict[str, int] = {}
 
     class Config:
         schema_extra = {
@@ -108,9 +109,9 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
         f"[StackInstances POST] application_template_name exists (should be the case): {stack_application_template}"
     )
     if not stack_application_template:
-        raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail='SAT with name ' +
-                            str(infr_template_exists) + ' does not exist')
+        raise HTTPException(
+            status_code=StatusCode.NOT_FOUND,
+            detail=f'SAT with name {str(infr_template_exists)} does not exist')
 
     # check if stack_instance already exists. Should not be the case
     stack_instance_exists = document_manager.get_document(

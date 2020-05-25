@@ -16,14 +16,17 @@ def create():
 @click.option('--stack-application-template')
 @click.option('-p', '--params', default="{}")
 @click.option('-t', '--tags', default="{}")
+@click.option('-r', '--replicas', default="{}")
 @click.argument('instance-name')
 @pass_stackl_context
 def instance(stackl_context: StacklContext, stack_infrastructure_template,
-             stack_application_template, params, tags, instance_name):
+             stack_application_template, params, tags, replicas,
+             instance_name):
     invocation = stackl_client.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=stack_infrastructure_template,
         stack_application_template=stack_application_template,
+        replicas=json.loads(replicas),
         params=json.loads(params),
         tags=json.loads(tags))
     res = stackl_context.stack_instances_api.post_stack_instance(invocation)

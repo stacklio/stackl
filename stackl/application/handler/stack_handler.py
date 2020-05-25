@@ -213,9 +213,42 @@ class StackHandler(Handler):
 
             service_targets[service] = new_targets
 
+        # Lastly evaluate the replica policy
+        policy = self.document_manager.get_policy_template("replicas")
+
+        # Make sure the policy is in OPA
+        self.opa_broker.add_policy(policy.name, policy.policy)
+
+        parameters = {}
+        services_just_one = {}
+        for svc in service_targets:
+            services_just_one[svc] = 1
+        if hasattr(item, 'replicas'):
+            replicas = item['replicas']
+            parameters["parameters"] = {}
+            parameters["parameters"]["services"] = {
+                **services_just_one,
+                **replicas
+            }
+        else:
+            parameters["parameters"] = {}
+            parameters["parameters"]["services"] = services_just_one
+
+        services = {}
+        services["services"] = service_targets
+        replica_input = {**parameters, **services}
+
+        # And verify it
+        service_targets = self.opa_broker.ask_opa_policy_decision(
+            policy.name, "solutions", replica_input)
+
+        logger.debug(
+            f"[StackHandler] _handle_create. opa_result for policy {policy.name}: {service_targets['result']}"
+        )
+
         try:
-            return self._create_stack_instance(item, service_targets,
-                                               stack_infr), 200
+            return self._create_stack_instance(
+                item, service_targets['result']['services'], stack_infr), 200
         except NoOpaResultException:
             return None, StatusCode.FORBIDDEN
 

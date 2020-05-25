@@ -8,6 +8,8 @@ services:
     restart: always
     image: stacklio/stackl-rest:dev
     container_name: stackl_app
+    depends_on:
+      - stackl-redis
     networks:
       - stackl_bridge
 {% if datastore_type == 'LFS' %}

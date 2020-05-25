@@ -32,7 +32,6 @@ class StackManager(Manager):
         logger.debug(
             "[StackManager] handling subtasks in task {0}".format(task))
         try:
-            stack_instance = None
             for subtask in task["subtasks"]:
                 logger.debug(
                     "[StackManager] handling subtask '{0}'".format(subtask))
@@ -49,8 +48,6 @@ class StackManager(Manager):
                     if not task["json_data"]["disable_invocation"]:
                         self.agent_task_broker.create_job_for_agent(
                             stack_instance, "update", self.document_manager)
-                    else:
-                        job = []
                     self.document_manager.write_stack_instance(stack_instance)
                 elif subtask == "DELETE":
                     (stack_instance, status_code) = self.process_stack_request(
