@@ -101,14 +101,13 @@ class TaskBroker(ABC):
             f"[TaskBroker] handle_result_task. Removing source task '{source_task_id}' and returning result '{result_task.return_result}'"
         )
         self.result_dict["task_id_of_result"] = source_task_id
-        self.result_dict["result"] = (result_task.return_result,
-                                      result_task.result_code)
+        self.result_dict["result"] = result_task.return_result
 
-        if result_task.result_code not in [100, 200, 201, 202]:
+        if not StatusCode.isSuccessful(result_task.result_code):
             logger.debug(
                 f"[TaskBroker] handle_result_task. Result was a failure. Rolling back.'"
             )
-            self.rollback_task(source_task_id)
+            self.initiate_rollback_task(source_task_id)
 
         self.remove_task_from_queue(source_task_id)
         self.asyncio_task_completed.set()
@@ -153,14 +152,15 @@ class TaskBroker(ABC):
                         if new_earliest_task_timer["task_id"] in [
                                 task["id"] for task in task_queue
                         ]:
+                            self.initiate_rollback_task(
+                                new_earliest_task_timer["task_id"])
+                            self.remove_task_from_queue(
+                                new_earliest_task_timer["task_id"])
+
                             self.result_dict[
                                 "task_id_of_result"] = new_earliest_task_timer[
                                     "task_id"]
-                            self.result_dict["result"] = (
-                                "Timeout expired. Rolling back.",
-                                StatusCode.INTERNAL_ERROR)
-                            self.rollback_task(
-                                new_earliest_task_timer["task_id"])
+                            self.result_dict["result"] = StatusCode.ROLLBACKED
                             self.asyncio_task_completed.set()
                 self.task_signal.clear()
         except Exception as e:
@@ -191,21 +191,24 @@ class TaskBroker(ABC):
         else:
             return {"id": "None", "timeout": None}
 
-    def rollback_task(self, id_task_to_rollback):
+    def initiate_rollback_task(self, id_task_to_rollback):
         logger.debug(
             f"[TaskBroker] rollback_task. Task with id '{id_task_to_rollback}' did not compleet succesfully. Initiating rollback and removing from queue."
         )
         task_queue = stackl_globals.get_task_queue()
         for i in range(len(task_queue)):
             if task_queue[i]["id"] == id_task_to_rollback:
-                task_to_rollback = task_queue.pop(i)
+                task_to_rollback = json.loads(task_queue[i]["task"])
+                logger.debug(
+                    f"[TaskBroker] rollback_task. task_to_rollback: '{task_to_rollback}'."
+                )
 
                 if task_to_rollback["topic"] == "document_task":
                     logger.info(
                         f"[TaskBroker] Rollback DocumentTask with subtype \'{task_to_rollback['subtype']}\'"
                     )
                     thread = threading.Thread(
-                        target=self.document_manager.rollback_task(),
+                        target=self.document_manager.rollback_task,
                         args=[task_to_rollback])
                     thread.start()
                     continue
@@ -236,6 +239,4 @@ class TaskBroker(ABC):
                         args=[task_to_rollback])
                     thread.start()
                     continue
-
-                stackl_globals.set_task_queue(task_queue)
             return

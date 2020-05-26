@@ -10,7 +10,7 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 
 class Task(ABC):
-    default_timeout_s = 7
+    default_timeout_s = 5
 
     @property
     @abstractmethod
