@@ -16,6 +16,8 @@ services:
     volumes:
       - {{ datastore_lfs_volume }}:/lfs_store/
 {% endif %}
+    depends_on:
+      - stackl-redis
     ports:
       - {{http_port}}:80
       - 50051:50051
