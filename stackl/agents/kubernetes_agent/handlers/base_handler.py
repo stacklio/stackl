@@ -233,16 +233,8 @@ class Handler(ABC):
         self._env_list = {}
         self._volumes = []
         self._init_containers = []
-        self.provisioning_parameters = self.get_provisioning_parameters(
-            self._stack_instance, self._service,
-            self._invoc.infrastructure_target)
         self.stackl_namespace = os.environ['STACKL_NAMESPACE']
-
-    def get_provisioning_parameters(self, stack_instance: StackInstance,
-                                    service, infrastructure_target):
-        for service_definition in stack_instance.services[service]:
-            if service_definition.name == infrastructure_target:
-                return service_definition.provisioning_parameters
+        self.service_account = os.environ['SERVICE_ACCOUNT']
 
     def wait_for_job(self, job_name: str, namespace: str):
         ready = False
@@ -279,6 +271,7 @@ class Handler(ABC):
                                       image_pull_secrets=image_pull_secrets,
                                       init_containers=self.init_containers,
                                       namespace=self.stackl_namespace,
+                                      service_account=self.service_account,
                                       output=self._output,
                                       labels=labels)
         try:
@@ -312,6 +305,12 @@ class Handler(ABC):
         else:
             # TODO give proper output here
             return 1, "Still need proper output"
+
+    @property
+    def provisioning_parameters(self):
+        for service_definition in self._stack_instance.services[self._service]:
+            if service_definition.infrastructure_target == self._invoc.infrastructure_target:
+                return service_definition.provisioning_parameters
 
     @property
     def env_list(self) -> dict:

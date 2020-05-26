@@ -48,10 +48,10 @@ if __name__ == '__main__':
         print("Connected")
         for job in stub.GetJob(agent_metadata, wait_for_ready=True):
             print("job")
-            try:
-                job_handler.invoke_automation(job)
-                print("Waiting for new job")
-            except Exception as e:
-                print(
-                    f"Catching everything cause we dont want this to crash: {e}"
-                )
+            # try:
+            job_handler.invoke_automation(job)
+            print("Waiting for new job")
+            # except Exception as e:
+            #     print(
+            #         f"Catching everything cause we dont want this to crash: {e}"
+            #     )

@@ -53,14 +53,6 @@ class Invocation():
             }
         }
 
-    @property
-    def provisioning_parameters(self):
-        return self._provisioning_parameters
-
-    @provisioning_parameters.setter
-    def provisioning_parameters(self, provisioning_parameters: dict):
-        self._provisioning_parameters = provisioning_parameters
-
     def provisioning_parameters_json_string(self) -> str:
         """Returns provisioning_parameters which is a json dict to a flat string
 
