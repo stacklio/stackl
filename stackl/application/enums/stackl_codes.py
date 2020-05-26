@@ -5,7 +5,6 @@ from enum import IntEnum, unique
 @unique
 class StatusCode(IntEnum):
 
-
     CONTINUE = 100  # Informational response: request was received and understood
 
     OK = 200  # Success Response: request was a success and the response depends on it. This will return an entity describing or containing the result of the action.
@@ -17,4 +16,12 @@ class StatusCode(IntEnum):
     FORBIDDEN = 403  # Client Error: Client is not authorized to do the request
     NOT_FOUND = 404  # Client Error: The request is not found
     CONFLICT = 409  # Client Error: The request conflicts with the state of the server
+    ROLLBACKED = 410  # Client Error: The request conflicts with the state of the server
     INTERNAL_ERROR = 500  # Server Error: STACKL has encountered an error it does not know how to handle.
+
+    @classmethod
+    def isSuccessful(cls, code):
+        if isinstance(code, StatusCode):
+            return 200 <= code.value < 400
+        else:
+            return 200 <= code < 400

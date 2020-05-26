@@ -88,10 +88,10 @@ class Worker:
                 logger.info(
                     f"[Worker] DocumentTask with subtype \'{task_attr['subtype']}\'"
                 )
-                # thread = threading.Thread(
-                #     target=self.document_manager.handle_task, args=[task_attr])
-                # thread.start()
-                # continue
+                thread = threading.Thread(
+                    target=self.document_manager.handle_task, args=[task_attr])
+                thread.start()
+                continue
             elif task_attr["topic"] == "snapshot_task":
                 logger.info(
                     f"[Worker] SnapshotTask with subtype \'{task_attr['subtype']}\'"

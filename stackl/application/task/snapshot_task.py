@@ -12,7 +12,8 @@ class SnapshotTask(Task):
     def _load_json_object(self, json_obj):
         super()._load_json_object(json_obj)
         self.topic = 'snapshot_task'
-        self.document = json_obj.get('document', None)
+        self.snapshot_doc_type = json_obj.get('snapshot_doc_type', None)
+        self.snapshot_doc_name = json_obj.get('snapshot_doc_name', None)
         subtype = json_obj.get('subtype', [None])
         if subtype in self.valid_subtypes:
             self.subtype = subtype

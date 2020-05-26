@@ -37,50 +37,43 @@ class DocumentManager(Manager):
     def handle_task(self, document_task):
         logger.debug(
             f"[DocumentManager] handling document_task '{document_task}'")
-        try:
-            (return_result, result_code) = ("Not Applicable",
-                                            StatusCode.ACCEPTED)
-            if document_task["subtype"] == "GET_DOCUMENT":
-                (type_name, name) = document_task["args"]
-                (return_result, result_code) = self.get_document(type=type_name,
-                                                      name=name)
-            elif document_task["subtype"] == "COLLECT_DOCUMENT":
-                (type_name, name) = document_task["args"]
-                (return_result, result_code)  = self.collect_documents(type_name=type_name, name=name)
-            elif document_task["subtype"] == "POST_DOCUMENT":
-                document = document_task["document"]
-                result_code = self.write_document(document)
-            elif document_task["subtype"] == "PUT_DOCUMENT":
-                document = document_task["document"]
-                result_code = self.write_document(document, True)
-            elif document_task["subtype"] == "DELETE_DOCUMENT":
-                (type_name, name) = document_task["args"]
-                result_code = self.delete_document(type=type_name, name=name)
-            logger.debug(
-                f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
-            )
-            resultTask = ResultTask({
-                'channel': document_task['return_channel'],
-                'result_msg':
-                f"DocumentTask with type '{document_task['subtype']}' was handled",
-                'return_result': return_result,
-                'result_code': result_code,
-                'cast_type': CastType.BROADCAST.value,
-                'source_task': document_task
-            })
-
-            self.message_channel.publish(resultTask)
-            # )  # this way the STACKL broker is notified of the result and wheter he should remove the task from the task queue
-        except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
-            logger.error(
-                f"[DocumentManager] Error with processing task. Error: '{e}'")
+        if document_task["subtype"] == "GET_DOCUMENT":
+            (type_name, name) = document_task["args"]
+            return_result = self.get_document(type=type_name, name=name)
+        elif document_task["subtype"] == "COLLECT_DOCUMENT":
+            (type_name, name) = document_task["args"]
+            return_result = self.collect_documents(type_name=type_name,
+                                                name=name)
+        elif document_task["subtype"] == "POST_DOCUMENT":
+            document = document_task["document"]
+            return_result = self.write_document(document)
+        elif document_task["subtype"] == "PUT_DOCUMENT":
+            document = document_task["document"]
+            return_result = self.write_document(document, overwrite=True)
+        elif document_task["subtype"] == "DELETE_DOCUMENT":
+            (type_name, name) = document_task["args"]
+            return_result = self.delete_document(type=type_name, name=name)
+        logger.debug(
+            f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
+        )
+        resultTask = ResultTask({
+            'channel': document_task['return_channel'],
+            'result_msg':
+            f"DocumentTask with type '{document_task['subtype']}' was handled",
+            'return_result': return_result,
+            'result_code': StatusCode.OK,
+            'cast_type': CastType.BROADCAST.value,
+            'source_task': document_task
+        })
+        self.message_channel.publish(resultTask)
 
     def rollback_task(self, document_task):
         logger.debug(
             f"[DocumentManager] rolling back document_task '{document_task}'")
         if document_task["subtype"] == "GET_DOCUMENT":
             logger.debug(
-                f"[DocumentManager] rollback_task GET_DOCUMENT. Safe Task. Nothing to do.")
+                f"[DocumentManager] rollback_task GET_DOCUMENT. Safe Task. Nothing to do."
+            )
         elif document_task["subtype"] == "COLLECT_DOCUMENT":
             logger.debug(
                 f"[DocumentManager] rollback_task COLLECT_DOCUMENT. Safe Task. Nothing to do."
@@ -105,45 +98,110 @@ class DocumentManager(Manager):
             logger.debug(
                 f"[DocumentManager] rollback_task DELETE_DOCUMENT. Restored latest snapshot if it was present. Result '{result}'"
             )
+        return result
 
     def get_document(self, **keys):
         logger.debug(f"[DocumentManager] get_document. Keys '{keys}'")
         keys = self._process_document_keys(keys)
         logger.debug(
             f"[DocumentManager] get_document. Post Process Keys '{keys}'")
-        try:
-            store_response = self.store.get(**keys)
-            if store_response.status_code == StatusCode.NOT_FOUND:
-                return ({}, store_response.status_code)
-            else:
-                return (store_response.content, store_response.status_code)
-        except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
-            logger.error(
-                f"[DocumentManager] Exception occured in get_document: {e}. Returning empty object"
-            )
-            return ({}, StatusCode.INTERNAL_ERROR)
+        store_response = self.store.get(**keys)
+        if store_response.status_code == StatusCode.NOT_FOUND:
+            return {}
+        else:
+            return store_response.content
 
     def collect_documents(self, type_name, name):
         logger.debug(
             f"[DocumentManager] collect_documents. Collect all documents of type '{type_name}' and optional name '{name}'"
         )
-        try:
-            if type_name in types_configs:
-                category = "configs"
-            elif type_name in types_items:
-                category = "items"
-            elif type_name in types_history:
-                category = "history"
-            store_response = self.store.get_all(category, type_name, name)
-            if store_response.status_code == StatusCode.NOT_FOUND:
-                return ({}, store_response.status_code)
-            else:
-                return (store_response.content, store_response.status_code)
-        except Exception as e:  #TODO improve the Exception system in STACKL. TBD as part of Task rework
-            logger.error(
-                f"[DocumentManager] Exception occured in collect_documents: {e}. Returning empty object"
+        if type_name in types_configs:
+            category = "configs"
+        elif type_name in types_items:
+            category = "items"
+        elif type_name in types_history or type_name.startswith("snapshot_"):
+            category = "history"
+        store_response = self.store.get_all(category, type_name, name)
+        if store_response.status_code == StatusCode.NOT_FOUND:
+            return {}
+        else:
+            return store_response.content
+
+    def write_document(self, document, overwrite=False, make_snapshot=True):
+        logger.debug(
+            f"[DocumentManager] write_document.  Document: '{document}'")
+        keys = self._process_document_keys(document)
+
+        document['category'] = keys.get("category")
+        document['type'] = keys.get("type")
+        document['name'] = keys.get("name")
+        document['description'] = keys.get("description")
+
+        logger.debug("[DocumentManager] Checking if document already exists ")
+        store_response = self.store.get(**keys)
+        prev_document = store_response.content
+
+        if store_response.status_code == StatusCode.NOT_FOUND:
+            logger.debug(
+                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
             )
-            return ({}, StatusCode.INTERNAL_ERROR)
+            store_response = self.store.put(document)
+            return store_response.status_code
+        else:
+            if overwrite:
+                prev_document_string = json.dumps(prev_document)
+                logger.debug(
+                    f"[DocumentManager] Updating document with original contents: {prev_document_string}"
+                )
+                doc_new_string = json.dumps(document)
+                logger.debug(
+                    f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
+                )
+                if sorted(prev_document_string) == sorted(
+                        doc_new_string
+                ):  #Sorted since the doc might've changed the ordering
+                    logger.debug(
+                        f"[DocumentManager] Original document and new document are the same! NOT updating"
+                    )
+                    return StatusCode.OK
+                else:
+                    #Since we are overwriting, take a snapshot first
+                    if make_snapshot:
+                        self.snapshot_manager.create_snapshot(
+                            document["type"], document["name"])
+                    store_response = self.store.put(document)
+                    return store_response.status_code
+            else:
+                logger.debug(
+                    f"[DocumentManager] Document already exists and overwrite is false. Returning."
+                )
+                return StatusCode.BAD_REQUEST
+
+    def delete_document(self, **keys):
+        logger.debug(f"[DocumentManager] delete_document. Keys '{keys}'")
+        keys = self._process_document_keys(keys)
+
+        logger.debug("[DocumentManager] Checking if document actually exists")
+        doc_obj = self.get_document(**keys)
+        if doc_obj == {}:
+            logger.debug(
+                "[DocumentManager] No document found or already deleted. Nothing to do."
+            )
+        else:
+            doc_org_string = json.dumps(doc_obj)
+            logger.debug(
+                f"[DocumentManager] Removing document with concent '{doc_org_string}'"
+            )
+            keys['file'] = doc_obj
+            store_response = self.store.delete(**keys)
+            logger.debug(
+                f"[DocumentManager] status: {store_response.status_code}. Reason: {store_response.reason}"
+            )
+            if store_response.status_code == 200:
+                logger.debug("[DocumentManager] Document deleted.")
+            else:
+                logger.debug("[DocumentManager] Document was not deleted.")
+        return store_response.status_code
 
     def write_base_document(self, base_document: BaseDocument):
         store_response = self.store.put(base_document.dict())
@@ -174,7 +232,9 @@ class DocumentManager(Manager):
     def write_stack_instance(self, stack_instance):
         """writes a StackInstance object to the store
         """
-        self.write_document(stack_instance.dict(), overwrite=True, make_snapshot=True)
+        self.write_document(stack_instance.dict(),
+                            overwrite=True,
+                            make_snapshot=True)
 
     def get_stack_infrastructure_template(self,
                                           stack_infrastructure_template_name):
@@ -277,79 +337,6 @@ class DocumentManager(Manager):
     def delete_configurator_file(self, statefile_name):
         store_response = self.store.delete_configurator_file(statefile_name)
         return store_response.content
-
-    def write_document(self, document, overwrite=False, make_snapshot=True):
-        logger.debug(
-            f"[DocumentManager] write_document.  Document: '{document}'")
-        keys = self._process_document_keys(document)
-
-        document['category'] = keys.get("category")
-        document['type'] = keys.get("type")
-        document['name'] = keys.get("name")
-        document['description'] = keys.get("description")
-
-        logger.debug("[DocumentManager] Checking if document already exists ")
-        store_response = self.store.get(**keys)
-        prev_document = store_response.content
-
-        if store_response.status_code == StatusCode.NOT_FOUND:
-            logger.debug(
-                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
-            )
-            store_response = self.store.put(document)
-            return store_response.status_code
-        else:
-            if overwrite:
-                prev_document_string = json.dumps(prev_document)
-                logger.debug(
-                    f"[DocumentManager] Updating document with original contents: {prev_document_string}"
-                )
-                doc_new_string = json.dumps(document)
-                logger.debug(
-                    f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
-                )
-                if prev_document_string == doc_new_string:
-                    logger.debug(
-                        f"[DocumentManager] Original document and new document are the same! NOT updating"
-                    )
-                else:
-                    #Since are overwriting, take a snapshot first
-                    if make_snapshot:
-                        self.snapshot_manager.create_snapshot(
-                            document["type"], document["name"])
-                    store_response = self.store.put(document)
-                    return store_response.status_code
-            else:
-                logger.debug(
-                    f"[DocumentManager] Document already exists and overwrite is false. Returning."
-                )
-                return StatusCode.BAD_REQUEST
-
-    def delete_document(self, **keys):
-        logger.debug(f"[DocumentManager] delete_document. Keys '{keys}'")
-        keys = self._process_document_keys(keys)
-
-        logger.debug("[DocumentManager] Checking if document actually exists")
-        doc_obj = self.get_document(**keys)
-        if doc_obj == {}:
-            logger.debug(
-                "[DocumentManager] No document found or already deleted. Nothing to do."
-            )
-        else:
-            doc_org_string = json.dumps(doc_obj)
-            logger.debug(
-                f"[DocumentManager] Removing document with concent '{doc_org_string}'"
-            )
-            keys['file'] = doc_obj
-            store_response = self.store.delete(**keys)
-            logger.debug(
-                f"[DocumentManager] status: {store_response.status_code}. Reason: {store_response.reason}"
-            )
-            if store_response.status_code == 200:
-                logger.debug("[DocumentManager] Document deleted.")
-            else:
-                logger.debug("[DocumentManager] Document was not deleted.")
-        return store_response.status_code
 
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys
