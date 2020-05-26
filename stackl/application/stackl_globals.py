@@ -20,9 +20,7 @@ types_configs = [
 types_items = [
     "stack_instance", "stack_template", "infrastructure_target", "service"
 ]
-types_history = [
-    "snapshot", "log"
-]
+types_history = ["snapshot", "log"]
 types = types_configs + types_items + types_history
 
 redis_cache = None
@@ -33,7 +31,6 @@ task_queue_global = []
 def initialize():
     global redis_cache
     try:
-        time.sleep(5)
         redis_cache = redis.StrictRedis(host=get_config_key("REDIS_HOST"),
                                         port=6379)
     except Exception:  #TODO TBD Fix during Task rework
