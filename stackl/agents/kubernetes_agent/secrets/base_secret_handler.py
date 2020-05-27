@@ -16,7 +16,6 @@ class SecretHandler(ABC):
 
     @property
     def secrets(self):
-        print(f"den service {self._stack_instance.services[self._service]}")
         for service_definition in self._stack_instance.services[self._service]:
             if service_definition.infrastructure_target == self._invoc.infrastructure_target:
                 return service_definition.secrets

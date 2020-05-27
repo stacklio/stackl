@@ -6,6 +6,7 @@ from model.configs.stack_infrastructure_template_model import StackInfrastructur
 from model.items.functional_requirement_status_model import FunctionalRequirementStatus, Status
 from model.items.stack_instance_model import StackInstance
 from model.items.stack_instance_service_model import StackInstanceService
+from model.items.stack_instance_status_model import StackInstanceStatus
 from utils.general_utils import get_timestamp
 from utils.stackl_exceptions import NoOpaResultException
 
@@ -43,6 +44,7 @@ class StackHandler(Handler):
         stack_instance_doc.instance_params = item['params']
         stack_instance_doc.instance_secrets = item['secrets']
         services = {}
+        stack_instance_statuses = []
         for svc, targets in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
             svc_doc = self.document_manager.get_service(svc)
@@ -64,11 +66,13 @@ class StackHandler(Handler):
                 }
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
-                    fr_status = FunctionalRequirementStatus(
+                    stack_instance_status = StackInstanceStatus(
                         functional_requirement=fr,
+                        service=svc,
+                        infrastructure_target=infra_target,
                         status=Status.PROGRESS,
                         error_message="")
-                    service_definition_status.append(fr_status)
+                    stack_instance_statuses.append(stack_instance_status)
                     fr_doc = self.document_manager.get_functional_requirement(
                         fr)
                     merged_capabilities = {
@@ -84,10 +88,10 @@ class StackHandler(Handler):
                     **merged_secrets,
                     **item['secrets']
                 }
-                service_definition.status = service_definition_status
                 service_definitions.append(service_definition)
             services[svc] = service_definitions
         stack_instance_doc.services = services
+        stack_instance_doc.status = stack_instance_statuses
         return stack_instance_doc
 
     def _update_stack_instance(self, stack_instance: StackInstance, item):
@@ -105,6 +109,7 @@ class StackHandler(Handler):
             **item['secrets']
         }
 
+        stack_instance_statuses = []
         for svc, service_definitions in stack_instance.services.items():
             for count, service_definition in enumerate(service_definitions):
                 svc_doc = self.document_manager.get_service(svc)
@@ -121,11 +126,14 @@ class StackHandler(Handler):
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
                     if not item["disable_invocation"]:
-                        fr_status = FunctionalRequirementStatus(
+                        stack_instance_status = StackInstanceStatus(
                             functional_requirement=fr,
+                            service=svc,
+                            infrastructure_target=service_definition.
+                            infrastructure_target,
                             status=Status.PROGRESS,
                             error_message="")
-                        service_definition_status.append(fr_status)
+                        stack_instance_statuses.append(stack_instance_status)
                     fr_doc = self.document_manager.get_functional_requirement(
                         fr)
                     merged_capabilities = {
@@ -141,11 +149,10 @@ class StackHandler(Handler):
                     **merged_secrets,
                     **stack_instance.instance_secrets
                 }
-                service_definition.status = service_definition_status
                 stack_instance.services[svc][count] = service_definition
+        stack_instance.status = stack_instance_statuses
         return stack_instance
 
-    ##TODO so this code needs to be rescoped in terms of the OPA. We don't do the constrint solving ourselves anymore
     def _handle_create(self, item):
         logger.debug(
             "[StackHandler] _handle_create received with item: {0}".format(

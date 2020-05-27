@@ -3,6 +3,7 @@ from typing import Dict, Any, List
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylin
 
 from model.items.stack_instance_service_model import StackInstanceService
+from model.items.stack_instance_status_model import StackInstanceStatus
 
 
 class StackInstance(BaseModel):
@@ -15,3 +16,4 @@ class StackInstance(BaseModel):
     stack_infrastructure_template: str
     stack_application_template: str
     category = "items"
+    status: List[StackInstanceStatus] = None

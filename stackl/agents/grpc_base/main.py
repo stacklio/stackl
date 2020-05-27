@@ -26,6 +26,7 @@ class JobHandler:
         automation_result.stack_instance = invoc.stack_instance
         automation_result.service = invoc.service
         automation_result.functional_requirement = invoc.functional_requirement
+        automation_result.infrastructure_target = invoc.infrastructure_target
         if result == 0:
             automation_result.status = Status.READY
         else:
@@ -79,7 +80,8 @@ if __name__ == '__main__':
                     except Exception as e:
                         print(f"Exception during automation: {e}")
 
-        except grpc._channel._Rendezvous as e:
+        except (grpc._channel._Rendezvous,
+                grpc._channel._InactiveRpcError) as e:
             print(f"Caught Rendezvous exception: {e}. Retry: {retries}")
             if retries > 10:
                 raise RetriesExceeded(e)

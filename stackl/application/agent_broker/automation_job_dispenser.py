@@ -7,6 +7,7 @@ from redis import StrictRedis
 import model
 from manager.document_manager import DocumentManager
 from model.items.functional_requirement_status_model import FunctionalRequirementStatus
+from model.items.stack_instance_status_model import StackInstanceStatus
 from protos.agent_pb2 import AgentMetadata, Invocation, ConnectionResult, AutomationResult, Status
 from protos.agent_pb2_grpc import StacklAgentServicer
 
@@ -64,7 +65,11 @@ class AutomationJobDispenser(StacklAgentServicer):
             f"[AutomationJobDispenser] processing result {automation_result}")
         stack_instance = self.document_manager.get_stack_instance(
             automation_result.stack_instance)
-        stack_instance.services[automation_result.service].status = []
+
+        stack_instance_status = StackInstanceStatus()
+        stack_instance_status.service = automation_result.service
+        stack_instance_status.functional_requirement = automation_result.functional_requirement
+        stack_instance_status.infrastructure_target = automation_result.infrastructure_target
 
         if hasattr(automation_result, 'error_message'):
             error_message = automation_result.error_message
@@ -72,19 +77,15 @@ class AutomationJobDispenser(StacklAgentServicer):
             error_message = ""
 
         if hasattr(automation_result, 'status'):
-            status = model.items.functional_requirement_status_model.Status(
+            status = model.items.stack_instance_status_model.Status(
                 automation_result.status)
         else:
-            status = model.items.functional_requirement_status_model.Status.READY
+            status = model.items.stack_instance_status_model.Status.READY
 
-        fr_status = FunctionalRequirementStatus(
-            functional_requirement=automation_result.functional_requirement,
-            status=status,
-            error_message=error_message)
-        stack_instance.services[automation_result.service].status.append(
-            fr_status)
+        stack_instance_status.status = status
+        stack_instance_status.error_message = error_message
+        stack_instance.status.append(stack_instance_status)
         logger.info(f"[AutomationJobDispenser] done processing")
         self.document_manager.write_stack_instance(stack_instance)
-        connection_result = ConnectionResult()
-        connection_result.success = True
+        connection_result = ConnectionResult(success=True)
         return connection_result
