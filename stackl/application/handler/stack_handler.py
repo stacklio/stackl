@@ -198,6 +198,7 @@ class StackHandler(Handler):
         # }
         service_targets = opa_solution['services']
 
+        # Verify the SAT policies
         for policy_name, attributes in stack_app_template.policies.items():
             policy_input = {}
             policy = self.document_manager.get_policy_template(policy_name)
@@ -263,8 +264,37 @@ class StackHandler(Handler):
             policy.name, "solutions", replica_input)
 
         logger.debug(
-            f"[StackHandler] _handle_create. opa_result for policy {policy.name}: {service_targets['result']}"
+            f"[StackHandler] _handle_create. opa_result for replicas policy {policy.name}: {service_targets['result']}"
         )
+
+        # Verify that each of the SIT policies doesn't violate
+
+        infringment_messages = []
+        for service, targets in service_targets['result']['services'].items():
+            for t in targets:
+                policies = stack_infr.infrastructure_capabilities[t][
+                    'policies']
+
+                for policy_name, policy_attributes in policies.items():
+                    policy = self.document_manager.get_policy_template(
+                        policy_name)
+
+                    # Make sure the policy is in OPA
+                    self.opa_broker.add_policy(policy.name, policy.policy)
+
+                    policy_input = {"parameters": policy_attributes}
+
+                    opa_data_with_inputs = {**opa_data, **policy_input}
+                    #evaluate
+                    opa_result = self.opa_broker.ask_opa_policy_decision(
+                        policy.name, "infringement", opa_data_with_inputs)
+                    infringment_messages.extend(opa_result['result'])
+
+        if infringment_messages:
+            logger.debug(
+                f"[StackHandler] _handle_create. sit policies not satisfied {infringment_messages}"
+            )
+            return None, StatusCode.FORBIDDEN
 
         try:
             return self._create_stack_instance(
@@ -348,6 +378,11 @@ class StackHandler(Handler):
                 **location.secrets,
                 **zone.secrets
             }
+            infr_target_policies = {
+                **environment.policies,
+                **location.policies,
+                **zone.policies
+            }
             infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
@@ -362,6 +397,8 @@ class StackHandler(Handler):
                 "resources"] = infr_target_resources
             infr_targets_capabilities[infr_target_key][
                 "secrets"] = infr_target_secrets
+            infr_targets_capabilities[infr_target_key][
+                "policies"] = infr_target_policies
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())

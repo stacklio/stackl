@@ -12,5 +12,6 @@ class InfrastructureBaseDocument(BaseModel):
     secrets: dict = {}
     outputs: dict = {}
     resources: dict = {}
+    policies: dict = {}
     packages: List[str] = []
     tags: dict = {}
