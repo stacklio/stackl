@@ -57,7 +57,6 @@ opa_broker.start(manager_factory)
 
 logger.info(
     "___________________ STARTING STACKL GRPC SERVER ____________________")
-
 server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 protos.agent_pb2_grpc.add_StacklAgentServicer_to_server(
     AutomationJobDispenser(stackl_globals.redis_cache, document_manager),

@@ -1,11 +1,8 @@
 import os
-
 import grpc
-
 from protos.agent_pb2 import AgentMetadata, AutomationResult, Status
 from protos.agent_pb2_grpc import StacklAgentStub
 from tool_factory import ToolFactory
-
 
 class JobHandler:
     def __init__(self, stackl_agent_stub):
@@ -27,17 +24,32 @@ class JobHandler:
         else:
             automation_result.status = Status.FAILED
             automation_result.error_message = error_message
+
         print("Handle done")
         response = self.stackl_agent_stub.ReportResult(automation_result)
         print(response)
-
 
 if __name__ == '__main__':
     print(
         f'starting {os.environ["AGENT_NAME"]} agent to {os.environ["STACKL_GRPC_HOST"]}'
     )
-    with grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}") as channel:
-        stub = StacklAgentStub(channel)
+    channel_opts = [
+        (
+            # Interval at which grpc will send keepalive pings
+            'grpc.keepalive_time_ms',
+            1000
+        ),
+        (
+            # Amount of time grpc waits for a keepalive ping to be 
+            # acknowledged before deeming the connection unhealthy and closing
+            # this also sets TCP_USER_TIMEOUT for the underlying socket to this value
+            'grpc.keepalive_timeout_ms',
+            500
+        )
+    ]
+    
+    with grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}", options=channel_opts) as channel:
+        stub = StacklAgentStub(grpc.intercept_channel(channel))
         agent_metadata = AgentMetadata()
         agent_metadata.name = os.environ["AGENT_ID"]
         agent_metadata.selector = os.environ["AGENT_SELECTOR"]
@@ -45,13 +57,13 @@ if __name__ == '__main__':
         job_handler = JobHandler(stub)
         if not response.success:
             exit(0)
-        print("Connected")
+        print(f'Connected to STACKL with gRPC at {os.environ["STACKL_GRPC_HOST"]}')
         for job in stub.GetJob(agent_metadata, wait_for_ready=True):
-            print("job")
-            # try:
-            job_handler.invoke_automation(job)
-            print("Waiting for new job")
-            # except Exception as e:
-            #     print(
-            #         f"Catching everything cause we dont want this to crash: {e}"
-            #     )
+            print("Job received from STACKL through gRPC stream")
+            try:
+                job_handler.invoke_automation(job)
+                print("Waiting for new job")
+            except Exception as e:
+                print(
+                    f"Exception during automation: {e}"
+                )
