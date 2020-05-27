@@ -49,6 +49,54 @@ These are general rules that check for each potential infrastructure target thre
 2. Do the target package capabilities satisfy the service's functional requirements?
 3. Does the target have the required tags for the application?
 
+## SAT policy template
+
+SAT policy templates are in the following format:
+
+```yaml
+category: configs
+description: hasparams policy
+name: hasparams
+type: policy_template
+inputs: [params]
+policy: |
+  package hasparams
+  solutions = {"fulfilled": true, "targets": targets} {
+    params := input.parameters.params
+    targets := [it |
+      infra_target_params := input.infrastructure_targets[it].params
+      params_set := {x | x := params[_]}
+      infra_target_keys := {x | infra_target_params[x] }
+      union :=  params_set & infra_target_keys
+      count(union) >= count(params)
+    ]
+    count(targets) > 0
+  } else =  {"fulfilled": false, "msg": msg} {
+    msg := "No target has all the required params"
+  }
+```
+
+In this example the policy uses params as input. If possible targets are found they are returned in the `targets` field and `fulfilled` is set to `true`. If no possible targets are found, `fulfilled` is `false` and a message describing the reason are returned.
+
+To use this policy in a SAT, add it like this:
+
+```yaml
+category: configs
+description: ''
+name: sat_example
+policies:
+  hasparams:
+    - params: ["dns_servers"]
+      service: service_example
+    - params: ["dns_servers"]
+      service: service_example2
+services:
+- service_example
+type: stack_application_template
+```
+
+Each of these policies
+
 ## SIT and SAT policies
 
 To maintain a general solution, independent from OPA, and keep infrastructure and application modelling as pure K/V documents, SITs and SATs use policy template documents.

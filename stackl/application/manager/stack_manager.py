@@ -38,7 +38,7 @@ class StackManager(Manager):
                 # if subtask == "CREATE":
                 (stack_instance, status_code) = self.process_stack_request(
                     task["json_data"], subtask.lower())
-                if status_code is StatusCode.OK:
+                if status_code == 200:
                     self.agent_task_broker.create_job_for_agent(
                         stack_instance, subtask.lower(), self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)

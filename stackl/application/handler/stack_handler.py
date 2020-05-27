@@ -172,16 +172,18 @@ class StackHandler(Handler):
 
         # Verify the SAT policies
         for policy_name, attributes in stack_app_template.policies.items():
-            new_result = self.evaluate_sat_policy(attributes, opa_data,
-                                                  policy_name)
+            for policy_params in attributes:
+                new_result = self.evaluate_sat_policy(policy_params, opa_data,
+                                                      policy_name)
 
-            if not new_result['fulfilled']:
-                logger.error(
-                    f"[StackHandler]: Opa result message: {new_result['msg']}")
-                return None, StatusCode.BAD_REQUEST
+                if not new_result['fulfilled']:
+                    logger.error(
+                        f"[StackHandler]: Opa result message: {new_result['msg']}"
+                    )
+                    return None, StatusCode.BAD_REQUEST
 
-            self.process_service_targets(attributes, new_result,
-                                         service_targets)
+                self.process_service_targets(policy_params, new_result,
+                                             service_targets)
 
         service_targets = self.evaluate_replica_policy(item, service_targets)
 

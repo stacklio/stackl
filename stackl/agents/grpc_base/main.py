@@ -1,8 +1,15 @@
 import os
 import grpc
+import time
 from protos.agent_pb2 import AgentMetadata, AutomationResult, Status
 from protos.agent_pb2_grpc import StacklAgentStub
 from tool_factory import ToolFactory
+
+
+class RetriesExceeded(Exception):
+    """docstring for RetriesExceeded"""
+    pass
+
 
 class JobHandler:
     def __init__(self, stackl_agent_stub):
@@ -29,6 +36,7 @@ class JobHandler:
         response = self.stackl_agent_stub.ReportResult(automation_result)
         print(response)
 
+
 if __name__ == '__main__':
     print(
         f'starting {os.environ["AGENT_NAME"]} agent to {os.environ["STACKL_GRPC_HOST"]}'
@@ -37,33 +45,43 @@ if __name__ == '__main__':
         (
             # Interval at which grpc will send keepalive pings
             'grpc.keepalive_time_ms',
-            1000
-        ),
+            1000),
         (
-            # Amount of time grpc waits for a keepalive ping to be 
+            # Amount of time grpc waits for a keepalive ping to be
             # acknowledged before deeming the connection unhealthy and closing
             # this also sets TCP_USER_TIMEOUT for the underlying socket to this value
             'grpc.keepalive_timeout_ms',
-            500
-        )
+            500)
     ]
-    
-    with grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}", options=channel_opts) as channel:
-        stub = StacklAgentStub(grpc.intercept_channel(channel))
-        agent_metadata = AgentMetadata()
-        agent_metadata.name = os.environ["AGENT_ID"]
-        agent_metadata.selector = os.environ["AGENT_SELECTOR"]
-        response = stub.RegisterAgent(agent_metadata)
-        job_handler = JobHandler(stub)
-        if not response.success:
-            exit(0)
-        print(f'Connected to STACKL with gRPC at {os.environ["STACKL_GRPC_HOST"]}')
-        for job in stub.GetJob(agent_metadata, wait_for_ready=True):
-            print("Job received from STACKL through gRPC stream")
-            try:
-                job_handler.invoke_automation(job)
-                print("Waiting for new job")
-            except Exception as e:
+
+    retries = 0
+    while True:
+        try:
+            with grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}",
+                                       options=channel_opts) as channel:
+                retries = 0
+                stub = StacklAgentStub(grpc.intercept_channel(channel))
+                agent_metadata = AgentMetadata()
+                agent_metadata.name = os.environ["AGENT_ID"]
+                agent_metadata.selector = os.environ["AGENT_SELECTOR"]
+                response = stub.RegisterAgent(agent_metadata)
+                job_handler = JobHandler(stub)
+                if not response.success:
+                    exit(0)
                 print(
-                    f"Exception during automation: {e}"
+                    f'Connected to STACKL with gRPC at {os.environ["STACKL_GRPC_HOST"]}'
                 )
+                for job in stub.GetJob(agent_metadata, wait_for_ready=True):
+                    print("Job received from STACKL through gRPC stream")
+                    try:
+                        job_handler.invoke_automation(job)
+                        print("Waiting for new job")
+                    except Exception as e:
+                        print(f"Exception during automation: {e}")
+
+        except grpc._channel._Rendezvous as e:
+            print(f"Caught Rendezvous exception: {e}. Retry: {retries}")
+            if retries > 10:
+                raise RetriesExceeded(e)
+            retries += 1
+            time.sleep(5 * retries)
