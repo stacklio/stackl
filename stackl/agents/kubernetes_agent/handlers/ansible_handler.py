@@ -115,28 +115,23 @@ class InventoryModule(BaseInventoryPlugin):
 
             for service, si_service in stack_instance.services.items():
                 self.inventory.add_group(service)
-                self.inventory.set_variable(service, "infrastructure_target",
-                                            si_service.infrastructure_target)
-                for key, value in si_service.provisioning_parameters.items():
-                    self.inventory.set_variable(service, key, value)
-                if si_service.provisioning_parameters.get('hosts'):
-                    for host in si_service.provisioning_parameters['hosts']:
-                        self.inventory.add_host(host=host, group=service)
-                        self.inventory.set_variable(host, "ansible_host", host)
-
-                else:
-                    self.inventory.add_host(host="kubernetes-" + service,
+                for index, service_definition in enumerate(si_service):
+                    self.inventory.add_host(host=service + "_" + str(index),
                                             group=service)
-
-                if hasattr(si_service, "secrets"):
-                    if self.get_option("secret_handler") == "vault":
-                        secrets = get_vault_secrets(
-                            si_service, self.get_option("vault_addr"),
-                            self.get_option("vault_token_path"))
-                    elif self.get_option("secret_handler") == "base64":
-                        secrets = get_base64_secrets(si_service)
-                    for key, value in secrets.items():
+                    self.inventory.set_variable(service, "infrastructure_target",
+                                                service_definition.infrastructure_target)
+                    for key, value in service_definition.provisioning_parameters.items():
                         self.inventory.set_variable(service, key, value)
+
+                    if hasattr(si_service, "secrets"):
+                        if self.get_option("secret_handler") == "vault":
+                            secrets = get_vault_secrets(
+                                si_service, self.get_option("vault_addr"),
+                                self.get_option("vault_token_path"))
+                        elif self.get_option("secret_handler") == "base64":
+                            secrets = get_base64_secrets(si_service)
+                        for key, value in secrets.items():
+                            self.inventory.set_variable(service, key, value)
 
         except Exception as e:
             raise AnsibleParserError(
@@ -218,7 +213,6 @@ class Invocation():
                 "stack_instance": self._invoc.stack_instance,
                 "secret_handler": "none"
             }
-
         """ Volumes is an array containing dicts that define Kubernetes volumes
         volume = {
             name: affix for volume name, str
@@ -270,17 +264,18 @@ class Invocation():
         :return: A list with strings containing shell commands
         :rtype: List[str]
         """
+        pattern = self._service + "_" + str(self.index)
         self._command_args = [
             'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
         ]
         self._command_args[
-            0] += f' && ansible {self._service} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
-        self._command_args[
-            0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
-        self._command_args[
-            0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
-        self._command_args[
-            0] += f'-e ansible_role={self._functional_requirement} '
+            0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
+        # self._command_args[
+        #     0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
+        # self._command_args[
+        #     0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
+        # self._command_args[
+        #     0] += f'-e ansible_role={self._functional_requirement} '
         if self._output:
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '

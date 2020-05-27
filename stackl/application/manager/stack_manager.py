@@ -35,29 +35,16 @@ class StackManager(Manager):
             for subtask in task["subtasks"]:
                 logger.debug(
                     "[StackManager] handling subtask '{0}'".format(subtask))
-                if subtask == "CREATE":
-                    (stack_instance, status_code) = self.process_stack_request(
-                        task["json_data"], "create")
+                # if subtask == "CREATE":
+                (stack_instance, status_code) = self.process_stack_request(
+                    task["json_data"], subtask.lower())
+                if status_code is StatusCode.OK:
                     self.agent_task_broker.create_job_for_agent(
-                        stack_instance, "create", self.document_manager)
-                    self.document_manager.write_stack_instance(stack_instance)
-                elif subtask == "UPDATE":
-                    (stack_instance, status_code) = self.process_stack_request(
-                        task["json_data"], "update")
-                    # Lets not create the job object when we don't want an invocation
-                    if not task["json_data"]["disable_invocation"]:
-                        self.agent_task_broker.create_job_for_agent(
-                            stack_instance, "update", self.document_manager)
-                    self.document_manager.write_stack_instance(stack_instance)
-                elif subtask == "DELETE":
-                    (stack_instance, status_code) = self.process_stack_request(
-                        task["json_data"], "delete")
-                    self.agent_task_broker.create_job_for_agent(
-                        stack_instance, "delete", self.document_manager)
-                    stack_instance.deleted = True
+                        stack_instance, subtask.lower(), self.document_manager)
                     self.document_manager.write_stack_instance(stack_instance)
                 else:
-                    status_code = StatusCode.BAD_REQUEST
+                    logger.error(
+                        f"Failed to create a job. Status code: {status_code}")
             logger.debug(
                 "[StackManager] Succesfully handled task_attr. Notifying task broker."
             )

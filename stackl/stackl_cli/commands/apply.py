@@ -19,22 +19,29 @@ def cli():
 @click.option('-p', '--params', default="{}")
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
+@click.option('-s', '--secrets', default="{}")
 @click.argument('instance-name', required=False)
 @pass_stackl_context
-def apply(stackl_context, directory, config_file, params, tags, replicas,
+def apply(stackl_context, directory, config_file, params, tags, secrets, replicas,
           instance_name):
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:
-        apply_stack_instance(config_file, params, tags, replicas,
+        apply_stack_instance(config_file, params, tags, secrets, replicas,
                              stackl_context, instance_name)
 
-
-def apply_stack_instance(config_file, params, tags, replicas, stackl_context,
+@pass_stackl_context
+def apply_stack_instance(config_file, params, tags, secrets, stackl_context,
                          instance_name):
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     params = {**config_doc['params'], **json.loads(params)}
+    tags = json.loads(tags)
     replicas = {**getattr(config_doc, 'replicas', {}), **json.loads(replicas)}
+    secrets = json.loads(secrets)
+    if hasattr(config_doc, 'secrets'):
+        secrets = {**config_doc['secrets'], **json.loads(secrets)}
+    if hasattr(config_doc, 'tags'):
+        tags = {**config_doc['tags'], **json.loads(tags)}
     invocation = stackl_client.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
@@ -42,6 +49,7 @@ def apply_stack_instance(config_file, params, tags, replicas, stackl_context,
         stack_application_template=config_doc["stack_application_template"],
         params=params,
         replicas=replicas,
+        secrets=secrets)
         tags=json.loads(tags))
     try:
         stackl_context.stack_instances_api.get_stack_instance(instance_name)

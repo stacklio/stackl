@@ -156,119 +156,53 @@ class StackHandler(Handler):
             item['stack_application_template'])
 
         stack_infr = self._update_infr_capabilities(stack_infr_template, "yes")
-        logger.debug("[StackHandler] _handle_create. stack_infr: {0}".format(
-            stack_infr))
 
         # Transform to OPA format
-        sit_as_opa_data = self.opa_broker.convert_sit_to_opa_data(stack_infr)
-        services = []
-        for s in stack_app_template.services:
-            services.append(self.document_manager.get_service(s))
-        sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(
-            stack_app_template, services)
-        required_tags = {}
-        required_tags["required_tags"] = item["tags"]
-        opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
+        opa_data = self.transform_opa_data(item, stack_app_template,
+                                           stack_infr)
 
-        logger.debug(
-            "[StackHandler] _handle_create. performing opa query with data: {0}"
-            .format(opa_data))
-
-        opa_result = self.opa_broker.ask_opa_policy_decision(
-            "orchestration", "solutions", opa_data)
-        logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
-            opa_result['result']))
-
-        opa_solution = opa_result['result']
+        opa_solution = self.evaluate_orchestration_policy(opa_data)
 
         if not opa_solution['fulfilled']:
-            logger.debug(
+            logger.error(
                 f"[StackHandler]: Opa result message: {opa_solution['msg']}")
-            return None, StatusCode.FORBIDDEN
+            return None, StatusCode.BAD_REQUEST
 
-        # Service targets is in the format:
-        # {
-        #     "nginx": [
-        #         "vsphere.brussels.vmw-vcenter-01",
-        #         "aws.brussels.vmw-vcenter-01"
-        #     ],
-        #     "ubuntu": [
-        #         "aws.brussels.vmw-vcenter-01"
-        #     ]
-        # }
         service_targets = opa_solution['services']
 
         # Verify the SAT policies
         for policy_name, attributes in stack_app_template.policies.items():
-            policy_input = {}
-            policy = self.document_manager.get_policy_template(policy_name)
-            policy_input["parameters"] = attributes
-
-            opa_data_with_inputs = {**opa_data, **policy_input}
-
-            # Make sure the policy is in OPA
-            self.opa_broker.add_policy(policy.name, policy.policy)
-
-            # And verify it
-            new_solution = self.opa_broker.ask_opa_policy_decision(
-                policy.name, "solutions", opa_data_with_inputs)
-
-            logger.debug(
-                f"[StackHandler] _handle_create. opa_result for policy {policy.name}: {new_solution['result']}"
-            )
-
-            new_result = new_solution['result']
+            new_result = self.evaluate_sat_policy(attributes, opa_data,
+                                                  policy_name)
 
             if not new_result['fulfilled']:
-                logger.debug(
+                logger.error(
                     f"[StackHandler]: Opa result message: {new_result['msg']}")
-                return None, StatusCode.FORBIDDEN
+                return None, StatusCode.BAD_REQUEST
 
-            # Process service_targets with these new results
-            service = attributes['service']
-            st = service_targets[service]
-            new_targets = []
-            for t in st:
-                if t in new_result['targets']:
-                    new_targets.append(t)
+            self.process_service_targets(attributes, new_result,
+                                         service_targets)
 
-            service_targets[service] = new_targets
-
-        # Lastly evaluate the replica policy
-        policy = self.document_manager.get_policy_template("replicas")
-
-        # Make sure the policy is in OPA
-        self.opa_broker.add_policy(policy.name, policy.policy)
-
-        parameters = {}
-        services_just_one = {}
-        for svc in service_targets:
-            services_just_one[svc] = 1
-        if hasattr(item, 'replicas'):
-            replicas = item['replicas']
-            parameters["parameters"] = {}
-            parameters["parameters"]["services"] = {
-                **services_just_one,
-                **replicas
-            }
-        else:
-            parameters["parameters"] = {}
-            parameters["parameters"]["services"] = services_just_one
-
-        services = {}
-        services["services"] = service_targets
-        replica_input = {**parameters, **services}
-
-        # And verify it
-        service_targets = self.opa_broker.ask_opa_policy_decision(
-            policy.name, "solutions", replica_input)
-
-        logger.debug(
-            f"[StackHandler] _handle_create. opa_result for replicas policy {policy.name}: {service_targets['result']}"
-        )
+        service_targets = self.evaluate_replica_policy(item, service_targets)
 
         # Verify that each of the SIT policies doesn't violate
 
+        infringment_messages = self.evaluate_sit_policies(
+            opa_data, service_targets, stack_infr)
+
+        if infringment_messages:
+            logger.error(
+                f"[StackHandler] _handle_create. sit policies not satisfied {infringment_messages}"
+            )
+            return None, StatusCode.BAD_REQUEST
+
+        try:
+            return self._create_stack_instance(
+                item, service_targets['result']['services'], stack_infr), 200
+        except NoOpaResultException:
+            return None, StatusCode.BAD_REQUEST
+
+    def evaluate_sit_policies(self, opa_data, service_targets, stack_infr):
         infringment_messages = []
         for service, targets in service_targets['result']['services'].items():
             for t in targets:
@@ -285,22 +219,90 @@ class StackHandler(Handler):
                     policy_input = {"parameters": policy_attributes}
 
                     opa_data_with_inputs = {**opa_data, **policy_input}
-                    #evaluate
+                    # evaluate
                     opa_result = self.opa_broker.ask_opa_policy_decision(
                         policy.name, "infringement", opa_data_with_inputs)
                     infringment_messages.extend(opa_result['result'])
+        return infringment_messages
 
-        if infringment_messages:
-            logger.debug(
-                f"[StackHandler] _handle_create. sit policies not satisfied {infringment_messages}"
-            )
-            return None, StatusCode.FORBIDDEN
+    def evaluate_replica_policy(self, item, service_targets):
+        # evaluate the replica policy
+        policy = self.document_manager.get_policy_template("replicas")
+        # Make sure the policy is in OPA
+        self.opa_broker.add_policy(policy.name, policy.policy)
+        parameters = {}
+        services_just_one = {}
+        for svc in service_targets:
+            services_just_one[svc] = 1
+        if hasattr(item, 'replicas'):
+            replicas = item['replicas']
+            parameters["parameters"] = {}
+            parameters["parameters"]["services"] = {
+                **services_just_one,
+                **replicas
+            }
+        else:
+            parameters["parameters"] = {}
+            parameters["parameters"]["services"] = services_just_one
+        services = {}
+        services["services"] = service_targets
+        replica_input = {**parameters, **services}
+        # And verify it
+        service_targets = self.opa_broker.ask_opa_policy_decision(
+            policy.name, "solutions", replica_input)
+        logger.debug(
+            f"[StackHandler] _handle_create. opa_result for replicas policy {policy.name}: {service_targets['result']}"
+        )
+        return service_targets
 
-        try:
-            return self._create_stack_instance(
-                item, service_targets['result']['services'], stack_infr), 200
-        except NoOpaResultException:
-            return None, StatusCode.FORBIDDEN
+    def process_service_targets(self, attributes, new_result, service_targets):
+        service = attributes['service']
+        st = service_targets[service]
+        new_targets = []
+        for t in st:
+            if t in new_result['targets']:
+                new_targets.append(t)
+        service_targets[service] = new_targets
+
+    def evaluate_sat_policy(self, attributes, opa_data, policy_name):
+        policy_input = {}
+        policy = self.document_manager.get_policy_template(policy_name)
+        policy_input["parameters"] = attributes
+        opa_data_with_inputs = {**opa_data, **policy_input}
+        # Make sure the policy is in OPA
+        self.opa_broker.add_policy(policy.name, policy.policy)
+        # And verify it
+        new_solution = self.opa_broker.ask_opa_policy_decision(
+            policy.name, "solutions", opa_data_with_inputs)
+        logger.debug(
+            f"[StackHandler] _handle_create. opa_result for policy {policy.name}: {new_solution['result']}"
+        )
+        new_result = new_solution['result']
+        return new_result
+
+    def evaluate_orchestration_policy(self, opa_data):
+        logger.debug(
+            "[StackHandler] _handle_create. performing opa query with data: {0}"
+            .format(opa_data))
+
+        opa_result = self.opa_broker.ask_opa_policy_decision(
+            "orchestration", "solutions", opa_data)
+        logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
+            opa_result['result']))
+        opa_solution = opa_result['result']
+        return opa_solution
+
+    def transform_opa_data(self, item, stack_app_template, stack_infr):
+        sit_as_opa_data = self.opa_broker.convert_sit_to_opa_data(stack_infr)
+        services = []
+        for s in stack_app_template.services:
+            services.append(self.document_manager.get_service(s))
+        sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(
+            stack_app_template, services)
+        required_tags = {}
+        required_tags["required_tags"] = item["tags"]
+        opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
+        return opa_data
 
     ##TODO Deprecate in the future once OPA is up
     def _filter_zones_req_application(self, matching_zones_app_req, app_infr):
@@ -421,4 +423,5 @@ class StackHandler(Handler):
                 item))
         stack_instance = self.document_manager.get_stack_instance(
             item['stack_instance_name'])
+        stack_instance.deleted = True
         return stack_instance, 200

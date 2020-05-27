@@ -307,6 +307,14 @@ class Handler(ABC):
             return 1, "Still need proper output"
 
     @property
+    def index(self):
+        index = 0
+        for service_definition in self._stack_instance.services[self._service]:
+            if service_definition.infrastructure_target == self._invoc.infrastructure_target:
+                return index
+            index += 1
+
+    @property
     def provisioning_parameters(self):
         for service_definition in self._stack_instance.services[self._service]:
             if service_definition.infrastructure_target == self._invoc.infrastructure_target:
