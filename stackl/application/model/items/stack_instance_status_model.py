@@ -7,5 +7,5 @@ class StackInstanceStatus(BaseModel):
     functional_requirement: str = ""
     infrastructure_target: str = ""
     service: str = ""
-    status: Status = None
+    status: Status = []
     error_message: str = None

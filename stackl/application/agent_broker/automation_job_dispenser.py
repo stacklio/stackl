@@ -84,7 +84,17 @@ class AutomationJobDispenser(StacklAgentServicer):
 
         stack_instance_status.status = status
         stack_instance_status.error_message = error_message
-        stack_instance.status.append(stack_instance_status)
+
+        changed = False
+        for i, status in enumerate(stack_instance.status):
+            if status.functional_requirement == automation_result.functional_requirement and status.infrastructure_target == automation_result.infrastructure_target and status.service == automation_result.service:
+                stack_instance.status[i] = stack_instance_status
+                changed = True
+                break
+
+        if not changed:
+            stack_instance.status.append(stack_instance_status)
+
         logger.info(f"[AutomationJobDispenser] done processing")
         self.document_manager.write_stack_instance(stack_instance)
         connection_result = ConnectionResult(success=True)

@@ -95,99 +95,176 @@ services:
 type: stack_application_template
 ```
 
-Each of these policies
+Each of these policies will determine which infrastructure targets are suitable for the service.
 
-## SIT and SAT policies
+## Replica policy
 
-To maintain a general solution, independent from OPA, and keep infrastructure and application modelling as pure K/V documents, SITs and SATs use policy template documents.
-Each SIT and SAT can specify in a K/V pair the name of the policy template and the value of its parameters.
-The policy template itself is a config K/V document that describes its inputs (parameters) and includes the policy code as a string.
-This policy can be present as well in its native language (in OPA's case, Rego) for reference and explicit testing.
+After all the SAT policies are evaluated, the replica policy will choose on how many targets the service will be deployed. Replicas can be added when creating a stack instance:
 
-The policy name thus refers to the config document.
-Parameters are specific to the policy used.
-There are two types of parameters: **target parameters**, the services and targets the the policy applies to and are mandatory, and **value parameters**, parameters that allow to fine-tune the policy.
-To use the policy as configured in the SIT or SAT, STACKL retrieves it from its database, reads in the string and fills in the values.
+```bash
+stackl create instance --stack-application-template <sat-example> --stack-infrastructure-template <sit-example> --replicas '{"service-name": 2}' <instance-name>
+```
 
-A simple example for a SAT and a policy is given here:
+OPA evaluates if enough targets are available after evaluating all other policies first.
 
-```json
-{ #sat_example.json
-    "name": "web",
-    "type": "stack_application_template",
-    "category": "configs",
-    "services": [
-        "webserver",
-        "database"
-    ],
-    "policies": {
-        "replicas" : ["webserver", 2]
-    }
-}
+## SIT policy template
 
-{ #policy_template_replicas.json
-    "name": "replicas",
-    "description": "PolicyTemplate to ensure the service has at least the given amount of replicas",
-    "category" : "configs",
-    "type": "policy",
-    "policy": "\nreplicas = x {\n\tservice = input.policy_input.service\n\tamount = input.policy_input.amount\n\tcount(input.services[service]) >= amount\n\tx = {service: array.slice(input.services[service], 0, amount)}\n} else = x {\n    x = {input.policy_input.service: []}\n}\n",
-    "inputs": ["service","amount"]
+A SIT policy is a policy that defines extra constraints before applying a stack instance to an infrastructure target.
+
+An example of a SIT policy:
+
+```yaml
+category: configs
+description: allowedrepositories policy
+name: allowedrepositories
+type: policy_template
+inputs: [repositories]
+policy: |
+  package allowedrepositories
+  infringement[{"msg": msg}] {
+    invocation := input.services[_].functional_requirements[fr]
+    satisfied := [good |
+      repo = input.parameters.repositories[_]
+      good = startswith(invocation.image, repo)
+    ]
+    not any(satisfied)
+    msg := sprintf("functional_requirement {%v} has an invalid image repository {%v}, must be one of {%v}", [fr, invocation.image, input.parameters.repositories])
+  }
+```
+
+This policy forces a target to only use invocation images from allowed repositories.
+
+SIT policies can be used within infrastructure documents (location, zone and enivornment).
+
+An example of an environment using this policy:
+
+```yaml
+category: configs
+description: development environment
+name: development
+params:
+  foo: bar
+resources: {}
+packages:
+  - example-fr
+tags:
+  environment: development
+type: environment
+policies:
+  allowedrepositories:
+    repositories: ["repo.example.com", "repo2.example.com"]
+```
+
+## Create a policy template
+
+The policy name and package name must be the same for a policy.
+
+ There are a few rules for the Rego constraint source code:
+
+   1. Everything is contained in one package
+   1. Limited external data access
+      - No imports
+   1. Specific rule signature schema (described below)
+
+### Signature
+
+While template authors are free to include whatever rules and functions they wish
+to support their constraint, the main entry point called by the framework has a
+specific signature.
+
+#### SAT policy
+
+```rego
+solutions = {"fulfilled": true, "targets": targets} {
+  # rule body
+} else = {"fulfilled": false, "msg": msg} {
+  msg := "Reason for failure"
 }
 ```
 
-## Querying OPA for stack orchestration
+`targets` is a list of infrastructure targets where the specific service can be deployed.
 
-STACKL queries OPA for a stack orchestration result through iterative policy evaluation, either directly in a single generated policy file that contains all rules consecutively or through querying for policy decisions for each policy successively.
-In both cases, the process proceeds roughly the same: first, an initial set of service to targets map is made, second, the special replica policy is applied in case a service needs to be replicated, expanding the solution set, and finally, any additional policies are applied and a final set of placement solutions is returned.
-
-To illustrate with an example that includes the replication of a serivice, the first initial result for a given SIT with three targets and a SAT with two services might be:
+Example input:
 
 ```json
 {
-  "initial_service_to_targets_map": {
-    "windows_2019_vmw_vsphere": [
-      "vsphere.brussels.vmw-vcenter-01",
-      "vsphere.houston.vmw-vcenter-03",
-      "vsphere.shanghai.vmw-vcenter-02"
-    ],
-    "windows_2019_vmw_vsphere_heavy": [
-      "vsphere.brussels.vmw-vcenter-01"
+  "parameters": {
+    "params": [
+      "foo"
     ]
+  },
+  "services": {
+    "postgres": {
+      "functional_requirements": {
+        "postgres": {
+          "image": "repo.example.com/postgres:latest",
+          "tool": "terraform"
+        }
+      },
+      "resource_requirements": {},
+      "params": {
+        "foo": "bar"
+      }
+    }
+  },
+  "infrastructure_targets": {
+    "vsphere.brussels.vmw-vcenter-01": {
+      "resources": {},
+      "packages": [
+        "postgres"
+      ],
+      "tags": {
+        "environment": "dev"
+      },
+      "params": {
+        "foo": "bar"
+      }
+    }
   }
 }
 ```
 
-This map only tells which targets could potentially host the basic requirements of a service.
-Now, this map is processed to a real solution where each service has a single target.
-Here, the special replica policy is applied first, if specified, so that services can be replicated and resulting in, for instance, :
+This example checks if a SAT has a certain parameter.
+
+Example output if the service could be deployed on `vsphere.brussels.vmw-vcenter-01`:
 
 ```json
 {
-    "basic_application_placement_solution_sets": [
-    {
-        "windows_2019_vmw_vsphere_1": "vsphere.brussels.vmw-vcenter-01",
-        "windows_2019_vmw_vsphere_2": "vsphere.brussels.vmw-vcenter-01",
-        "windows_2019_vmw_vsphere_heavy": "vsphere.brussels.vmw-vcenter-01"
-    },
-    {
-        "windows_2019_vmw_vsphere_1": "vsphere.brussels.vmw-vcenter-01",
-        "windows_2019_vmw_vsphere_2": "vsphere.brussels.vmw-vcenter-02",
-        "windows_2019_vmw_vsphere_heavy": "vsphere.brussels.vmw-vcenter-01"
-    },
-    {
-        "windows_2019_vmw_vsphere_1": "vsphere.brussels.vmw-vcenter-02",
-        "windows_2019_vmw_vsphere_2": "vsphere.brussels.vmw-vcenter-02",
-        "windows_2019_vmw_vsphere_heavy": "vsphere.brussels.vmw-vcenter-01"
-    },
-...(and so on)
-]
+  "fulfilled": true,
+  "targets": [
+    "vsphere.brussels.vmw-vcenter-01"
+  ]
 }
 ```
 
-This is a set of basic solutions for stack orchestration without considering any additional policies (excepting the replica policy).
-This set then is filtered further, where, for instance, a policy for unique service hosting would discard the first and third solution set above (as the replicated service share a host there).
-The end result is a set of solutions where each solution contains a mapping of a service to a target and the mapping satisfies the requirements of both the initial SIT and SAT.
-This result is then stored in a ST and can be initiated to become a SI by selecting one of these solutions, thus completing the stack orchestration process.
+Example output if the service could not be deployed:
+
+```json
+{
+  "fulfilled": false,
+  "msg": "No target has all the required params"
+}
+```
+
+#### SIT policy
+
+```rego
+infringement[{"msg": msg}] {
+  # return message if policy failed
+}
+```
+
+Example output for a SIT policy that failed:
+
+```json
+[
+  {
+    "msg": "functional_requirement {postgres} has an invalid image repository {repository.example.com}, must be one of {[\"repo.example.com\"]}"
+  }
+]
+```
+
+If the policy succeeds no message is returned.
 
 # Infrastructure management
 

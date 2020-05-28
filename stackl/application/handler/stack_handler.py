@@ -113,7 +113,6 @@ class StackHandler(Handler):
         for svc, service_definitions in stack_instance.services.items():
             for count, service_definition in enumerate(service_definitions):
                 svc_doc = self.document_manager.get_service(svc)
-                service_definition_status = []
                 capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.
                     infrastructure_target]["provisioning_parameters"]
@@ -193,6 +192,11 @@ class StackHandler(Handler):
                                              service_targets)
 
         service_targets = self.evaluate_replica_policy(item, service_targets)
+        if not service_targets['result']['fulfilled']:
+            logger.error(
+                f"[StackHandler] _handle_create. replica_policy not satisfied: {service_targets['result']['msg']}"
+            )
+            return None, StatusCode.BAD_REQUEST
 
         # Verify that each of the SIT policies doesn't violate
 
@@ -235,15 +239,13 @@ class StackHandler(Handler):
         return infringment_messages
 
     def evaluate_replica_policy(self, item, service_targets):
-        # evaluate the replica policy
-        policy = self.document_manager.get_policy_template("replicas")
-        # Make sure the policy is in OPA
-        self.opa_broker.add_policy(policy.name, policy.policy)
         parameters = {}
         services_just_one = {}
         for svc in service_targets:
             services_just_one[svc] = 1
-        if hasattr(item, 'replicas'):
+        if 'replicas' in item:
+            #TODO verwijder dit
+            logger.debug("hij steekt erin")
             replicas = item['replicas']
             parameters["parameters"] = {}
             parameters["parameters"]["services"] = {
@@ -253,14 +255,13 @@ class StackHandler(Handler):
         else:
             parameters["parameters"] = {}
             parameters["parameters"]["services"] = services_just_one
-        services = {}
-        services["services"] = service_targets
+        services = {"services": service_targets}
         replica_input = {**parameters, **services}
         # And verify it
         service_targets = self.opa_broker.ask_opa_policy_decision(
-            policy.name, "solutions", replica_input)
+            "replicas", "solutions", replica_input)
         logger.debug(
-            f"[StackHandler] _handle_create. opa_result for replicas policy {policy.name}: {service_targets['result']}"
+            f"[StackHandler] _handle_create. opa_result for replicas policy: {service_targets['result']}"
         )
         return service_targets
 
