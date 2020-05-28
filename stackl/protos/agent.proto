@@ -36,4 +36,5 @@ message AutomationResult {
     string functional_requirement = 3;
     Status status = 4;
     string error_message = 5;
+    string infrastructure_target = 6;
 }

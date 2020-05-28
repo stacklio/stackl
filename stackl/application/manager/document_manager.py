@@ -8,7 +8,7 @@ from model.configs.document_model import BaseDocument
 from model.configs.environment_model import Environment
 from model.configs.functional_requirement_model import FunctionalRequirement
 from model.configs.location_model import Location
-from model.configs.policy_model import Policy
+from model.configs.policy_template_model import PolicyTemplate
 from model.configs.stack_application_template_model import StackApplicationTemplate
 from model.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from model.configs.zone_model import Zone
@@ -94,16 +94,16 @@ class DocumentManager(Manager):
         store_response = self.store.put(base_document.dict())
         return store_response.content
 
-    def get_policy(self, policy_name):
-        """gets a Policy from the store"""
-        store_response = self.store.get(type="policy",
+    def get_policy_template(self, policy_name):
+        """gets a PolicyTemplate from the store"""
+        store_response = self.store.get(type="policy_template",
                                         document_name=policy_name,
                                         category="configs")
-        policy = Policy.parse_obj(store_response.content)
+        policy = PolicyTemplate.parse_obj(store_response.content)
         return policy
 
-    def write_policy(self, policy):
-        """writes a Policy to the store
+    def write_policy_template(self, policy):
+        """writes a PolicyTemplate to the store
         """
         store_response = self.store.put(policy.dict())
         return store_response.status_code

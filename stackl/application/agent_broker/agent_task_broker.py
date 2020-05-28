@@ -40,25 +40,25 @@ class AgentTaskBroker:
 
             # infrastructure target and agent are the same for each service, make sure we use the same agent for
             # each invocation of a service
-            infrastructure_target = stack_instance.services[
-                service_name].infrastructure_target
-            agent = self.get_agent_for_job(infrastructure_target)
-            for fr in service_doc["functional_requirements"]:
-                fr_doc = document_manager.get_document(
-                    type="functional_requirement", document_name=fr)
-                logger.debug(
-                    f"[AgentTaskBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
-                )
-                invoc = {}
-                invoc['action'] = action
-                invoc['functional_requirement'] = fr
-                invoc['image'] = fr_doc['invocation']['image']
-                invoc['infrastructure_target'] = infrastructure_target
-                invoc['stack_instance'] = stack_instance.name
-                invoc['tool'] = fr_doc['invocation']['tool']
-                invoc['service'] = service_name
+            for service_definition in stack_instance.services[service_name]:
+                infrastructure_target = service_definition.infrastructure_target
+                agent = self.get_agent_for_job(infrastructure_target)
+                for fr in service_doc["functional_requirements"]:
+                    fr_doc = document_manager.get_document(
+                        type="functional_requirement", document_name=fr)
+                    logger.debug(
+                        f"[AgentTaskBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
+                    )
+                    invoc = {}
+                    invoc['action'] = action
+                    invoc['functional_requirement'] = fr
+                    invoc['image'] = fr_doc['invocation']['image']
+                    invoc['infrastructure_target'] = infrastructure_target
+                    invoc['stack_instance'] = stack_instance.name
+                    invoc['tool'] = fr_doc['invocation']['tool']
+                    invoc['service'] = service_name
 
-                self.redis.publish(agent, json.dumps(invoc))
+                    self.redis.publish(agent, json.dumps(invoc))
 
     def _get_agents(self):
         agents = {}
