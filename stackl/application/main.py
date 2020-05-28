@@ -17,7 +17,7 @@ from opa_broker.opa_broker_factory import OPABrokerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
     stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router, configurator_router, \
-    policy_agent_router, policies_router
+    policy_agent_router, policy_templates_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
@@ -57,7 +57,6 @@ opa_broker.start(manager_factory)
 
 logger.info(
     "___________________ STARTING STACKL GRPC SERVER ____________________")
-
 server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 protos.agent_pb2_grpc.add_StacklAgentServicer_to_server(
     AutomationJobDispenser(stackl_globals.redis_cache, document_manager),
@@ -77,9 +76,9 @@ app = FastAPI(
 app.include_router(documents_router.router,
                    prefix="/documents",
                    tags=["documents"])
-app.include_router(policies_router.router,
-                   prefix="/policies",
-                   tags=["policies"])
+app.include_router(policy_templates_router.router,
+                   prefix="/policy_templates",
+                   tags=["policy_templates"])
 app.include_router(policy_agent_router.router,
                    prefix="/policy_agent",
                    tags=["policy_agent"])

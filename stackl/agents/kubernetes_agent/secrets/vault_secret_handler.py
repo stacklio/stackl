@@ -39,6 +39,7 @@ EOH
 class VaultSecretHandler(SecretHandler):
     def __init__(self, invoc, stack_instance, vault_addr: str,
                  secret_format: str, vault_role: str, vault_mount_point: str):
+        super().__init__(invoc, stack_instance, secret_format)
         self._vault_role = vault_role
         self._vault_addr = vault_addr
         self._vault_mount_point = vault_mount_point
@@ -85,13 +86,10 @@ class VaultSecretHandler(SecretHandler):
 
     def _format_template(self):
         content_string = ""
-        if "backend_secret_path" in self._stack_instance.services[
-                self._invoc.service].secrets:
+        if "backend_secret_path" in self.secrets:
             self.terraform_backend_enabled = True
-            backend_secret_path = self._stack_instance.services[
-                self._invoc.service].secrets['backend_secret_path']
-        for index, (key, value) in enumerate(self._stack_instance.services[
-                self._invoc.service].secrets.items()):
+            backend_secret_path = self.secrets['backend_secret_path']
+        for index, (key, value) in enumerate(self.secrets.items()):
             content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}{{ scratch.MapSet "secrets" $key $value }}{{ end }}{{ end }}""" % value
         if self._secret_format == "json":
             content_string += '{{ scratch.Get "secrets" | toJSON }}'

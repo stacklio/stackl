@@ -1,6 +1,7 @@
 import os
 from outputs.output import Output
 
+
 class AnsibleOutput(Output):
     def __init__(self, functional_requirement, stackl_instance_name):
         super().__init__(functional_requirement, stackl_instance_name)

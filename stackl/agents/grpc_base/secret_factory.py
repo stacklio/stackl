@@ -12,7 +12,8 @@ def get_secret_handler(invoc, stack_instance, secret_format):
             vault_addr = os.environ['VAULT_ADDR']
             vault_mount_point = os.environ['VAULT_MOUNT_POINT']
             return VaultSecretHandler(invoc, stack_instance, vault_addr,
-                                      secret_format, vault_role, vault_mount_point)
+                                      secret_format, vault_role,
+                                      vault_mount_point)
         elif secret_handler.lower() == "base64":
             return Base64SecretHandler(invoc, stack_instance, secret_format)
     else:

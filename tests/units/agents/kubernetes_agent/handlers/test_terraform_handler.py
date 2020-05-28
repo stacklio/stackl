@@ -9,9 +9,8 @@ markdown_example = """
     
 
 """
-invocation_example = dict(
+invocation_example = dict()
 
-)
 
 class Invocation():
     def __init__(self):
@@ -22,8 +21,9 @@ class Invocation():
         self.functional_requirement = "windows2019"
         self.tool = "terraform"
         self.action = "create"
-class TestTerraformHandler(unittest.TestCase):
 
+
+class TestTerraformHandler(unittest.TestCase):
     def test_method(self):
         self.assertFalse(False)
 
@@ -37,6 +37,7 @@ class TestTerraformHandler(unittest.TestCase):
         #                  MagicMock(return_value=mock)):
         terraformHandler = target.TerraformHandler(Invocation())
         self.assertEqual(type(terraformHandler), target.TerraformHandler)
+
     # def test_header_count(self):
     #     markdown_linter = self.mock_class_read_file(markdown_example,
     #                                                 target.MarkdownTable)
@@ -50,4 +51,3 @@ class TestTerraformHandler(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -3,7 +3,6 @@ import unittest
 
 
 class BaseTest(unittest.TestCase):
-
     def mock_class_read_file(self, file, mocked_class, **kwargs):
         mock_open = mock.mock_open(read_data=file)
         with mock.patch('builtins.open', mock_open):

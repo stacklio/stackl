@@ -1,5 +1,6 @@
 from outputs.output import Output
 
+
 class PackerOutput(Output):
     def __init__(self, functional_requirement, stackl_instance_name: str):
         super().__init__(functional_requirement, stackl_instance_name)

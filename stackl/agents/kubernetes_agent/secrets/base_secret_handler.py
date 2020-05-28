@@ -10,8 +10,15 @@ class SecretHandler(ABC):
         self._invoc = invoc
         self._secret_format = secret_format.lower()
         self._stack_instance = stack_instance
+        self._service = self._invoc.service
         self._env_list = {}
         self._init_containers = []
+
+    @property
+    def secrets(self):
+        for service_definition in self._stack_instance.services[self._service]:
+            if service_definition.infrastructure_target == self._invoc.infrastructure_target:
+                return service_definition.secrets
 
     @property
     def init_containers(self):
