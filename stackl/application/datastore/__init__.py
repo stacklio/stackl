@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from enums.stackl_codes import StatusCode
+
 
 class DataStore(ABC):
     @abstractmethod
@@ -27,7 +29,7 @@ class DataStore(ABC):
         pass
 
     def _create_store_response(self,
-                               status_code=400,
+                               status_code=StatusCode.OK,
                                reason=None,
                                content=None):
         response = self.StoreResponse()

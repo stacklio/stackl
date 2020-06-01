@@ -23,13 +23,13 @@ class StackHandler(Handler):
     def handle(self, item):
         action = item['action']
         if action == 'create':
-            logger.debug("[StackHandler] handle. received create task")
+            logger.debug("[StackHandler] handle. Received create task")
             return self._handle_create(item['document'])
         if action == 'update':
-            logger.debug("[StackHandler] handle. received update task")
+            logger.debug("[StackHandler] handle. Received update task")
             return self._handle_update(item['document'])
         if action == 'delete':
-            logger.debug("[StackHandler] handle. received delete task")
+            logger.debug("[StackHandler] handle. Received delete task")
             return self._handle_delete(item['document'])
         return StatusCode.BAD_REQUEST
 
@@ -420,18 +420,25 @@ class StackHandler(Handler):
 
     def _handle_update(self, item):
         logger.debug(
-            "[StackHandler] _handle_update received with item: {0}.".format(
-                item))
-        stack_instance = self.document_manager.get_stack_instance(
-            item['name'])
+            f"[StackHandler] _handle_update received with item: '{item}'")
+        if "name" in item:
+            stack_instance = self.document_manager.get_stack_instance(
+                item['name'])
+        else:
+            stack_instance = self.document_manager.get_stack_instance(
+                item['stack_instance_name'])
+
         stack_instance = self._update_stack_instance(stack_instance, item)
         return stack_instance, 200
 
     def _handle_delete(self, item):
         logger.debug(
-            "[StackHandler] _handle_delete received with item: {0}.".format(
-                item))
-        stack_instance = self.document_manager.get_stack_instance(
-            item['stack_instance_name'])
-        stack_instance.deleted = True
+            f"[StackHandler] _handle_delete received with item: '{item}'")
+        if "name" in item:
+            stack_instance = self.document_manager.get_stack_instance(
+                item['name'])
+        else:
+            stack_instance = self.document_manager.get_stack_instance(
+                item['stack_instance_name'])
+
         return stack_instance, 200

@@ -30,7 +30,7 @@ class StackInstanceInvocation(BaseModel):
     tags: Dict[str, str] = {}
     stack_infrastructure_template: str = "stackl"
     stack_application_template: str = "web"
-    name: str = "default_test_instance"
+    stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
     replicas: Dict[str, int] = {}
 
@@ -48,7 +48,7 @@ class StackInstanceInvocation(BaseModel):
 
 class StackInstanceUpdate(BaseModel):
     params: Dict[str, Any] = {}
-    name: str = "default_test_instance"
+    stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
     disable_invocation: bool = False
 
@@ -57,7 +57,7 @@ class StackInstanceUpdate(BaseModel):
             "example": {
                 "params": {},
                 "secrets": {},
-                "name": "default_test_instance"
+                "stack_instance_name": "default_test_instance"
             }
         }
 
@@ -109,8 +109,8 @@ async def get_stack_instances(name: str = ""):
     }
     if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail='Stack instances ' +
-                            str(name) + ' not found')
+                            detail='Stack instances ' + str(name) +
+                            ' not found')
     return document
 
 
@@ -140,65 +140,45 @@ async def post_stack_instance(
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return {
-            'return_code': result,
-            'message': 'Stack instance creating'
+        'return_code': result,
+        'message': 'Stack instance creating'
     }, result
-
 
 
 @router.put('')
 async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
-    logger.info("[StackInstances POST] Received POST request")
+    logger.info("[StackInstances PUT] Received PUT request")
 
-    # check if stack_instance already exists. Should be the case
-    stack_instance_exists = document_manager.get_document(
-        type="stack_instance", name=stack_instance_update.name)
+    task = StackTask({
+        'channel': 'worker',
+        'json_data': stack_instance_update.dict(),
+        'subtype': "UPDATE_STACK",
+    })
     logger.info(
-        f"[StackInstances POST] stack_instance_exists (should not be case): {stack_instance_exists}"
-    )
+        f"[StackInstances PUT] Giving StackTask '{task}' to task_broker")
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
 
-    if not stack_instance_exists:
-        raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail='SI with name ' +
-                            str(stack_instance_update.name) +
-                            ' does not exists')
+    if not StatusCode.isSuccessful(result):
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
+                            detail="NOT OK!")
 
-    try:
-        task = StackTask({
-            'channel': 'worker',
-            'json_data': stack_instance_update.dict(),
-            'subtype': "UPDATE_STACK",
-        })
-        logger.info(
-            f"[StackInstances PUT] Giving StackTask '{task}' to task_broker")
-        task_broker.give_task(task)
-
-        return {
-            'return_code': StatusCode.CREATED,
-            'message': 'Stack instance updating'
-        }, StatusCode.CREATED
-    except Exception as e:  # TODO TBD: When fixing robustness during Task Rework
-        logger.error(f"[StackInstances PUT] ERROR!!! rest api: {e}")
-        return {
-            'return_code': StatusCode.INTERNAL_ERROR,
-            'message': 'Internal server error: {}'.format(str(e))
-        }, StatusCode.INTERNAL_ERROR
-
+    return {
+        'return_code': StatusCode.ACCEPTED,
+        'message': 'Stack instance updating'
+    }, StatusCode.ACCEPTED
 
 @router.delete('/{name}')
 async def delete_stack_instance(name: str):
     """Delete a stack instance with a specific name"""
-    logger.info(
-        f"[StackInstances DELETE] Received DELETE request for {name}"
-    )
+    logger.info(f"[StackInstances DELETE] Received DELETE request for {name}")
     stack_instance_exists = document_manager.get_document(
         type="stack_instance", name=name)
     if not stack_instance_exists:
         return {
             'return_code': StatusCode.NOT_FOUND,
-            'message':
-            'Stack instance ' + str(name) + ' not found'
+            'message': 'Stack instance ' + str(name) + ' not found'
         }, StatusCode.NOT_FOUND
     json_data = {}
     json_data['name'] = name

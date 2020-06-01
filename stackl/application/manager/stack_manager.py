@@ -102,27 +102,61 @@ class StackManager(Manager):
             logger.debug(
                 f"[StackManager] rollback_task GET_ALL_STACKS. Safe Task. Nothing to do."
             )
-            self.task_broker.give_task(
-                ResultTask({
-                    'channel': stack_task.get('return_channel'),
-                    'cast_type': CastType.BROADCAST.value,
-                    'result_msg':
-                    f"StackTask with type '{stack_task['subtype']}' was handled",
-                    'result': result,
-                    'cast_type': CastType.BROADCAST.value,
-                    'source_task': stack_task
-                })
-            )  # this way the broker is notified of the result and whether he should remove the task from the task queue
-        except Exception as e:
-            logger.error(
-                "[StackManager] Error with processing task. Error: '{0}'".
-                format(e),
-                exc_info=True)
+        elif stack_task["subtype"] == "CREATE_STACK":
+            document = stack_task["document"]
+            (stack_instance, return_result) = self._process_stack_request(
+                stack_task["json_data"], "delete"
+            )  #TODO: Do we want to keep deleted stacks as documents?
+            if not return_result == StatusCode.BAD_REQUEST:
+                self.agent_task_broker.create_job_for_agent(
+                    stack_instance, "delete", self.document_manager)
+                stack_instance.deleted = True
+                self.document_manager.write_stack_instance(stack_instance)
+            logger.debug(
+                f"[StackManager] rollback_task CREATE_STACK. Undo stack if it did not yet exist and was created. Result '{return_result}'"
+            )
+        elif stack_task["subtype"] == "UPDATE_STACK":
+            #First, we get and restore the previous stack_instance document
+            previous_stack = self.snapshot_manager.get_snapshot(
+                "stack_instance",
+                stack_task["json_data"]["stack_instance_name"])["snapshot"]
+            self.snapshot_manager.restore_snapshot(
+                "stack_instance",
+                stack_task["json_data"]["stack_instance_name"])
+            #Second, we deploy this stack_instance
+            (stack_instance, return_result) = self._process_stack_request(
+                previous_stack, "update")
+            # Lets not create the job object when we don't want an invocation
+            if not return_result == StatusCode.BAD_REQUEST:
+                if not previous_stack["disable_invocation"]:
+                    self.agent_task_broker.create_job_for_agent(
+                        stack_instance, "update", self.document_manager)
+                else:
+                    job = []
+                self.document_manager.write_stack_instance(stack_instance)
+            logger.debug(
+                f"[StackManager] rollback_task UPDATE_STACK. Restored latest snapshot of stack_instance doc and deployed it. Result '{return_result}'"
+            )
+        elif stack_task["subtype"] == "DELETE_STACK":
+            #First, we restore the previous stack_instance document
+            previous_stack = self.snapshot_manager.restore_snapshot(
+                "stack_instance", stack_task["json_data"]["name"])
+            #Second, we deploy this stack_instance
+            (stack_instance, return_result) = self._process_stack_request(
+                previous_stack, "update")
+            # Lets not create the job object when we don't want an invocation
+            if not return_result == StatusCode.BAD_REQUEST:
+                if not previous_stack["disable_invocation"]:
+                    self.agent_task_broker.create_job_for_agent(
+                        stack_instance, "update", self.document_manager)
+                else:
+                    job = []
+                self.document_manager.write_stack_instance(stack_instance)
+            logger.debug(
+                f"[StackManager] rollback_task DELETE_STACK. Restored stack_instance doc to latest snapshot if it was present and deployed it. Result '{return_result}'"
+            )
 
-    def rollback_task(self, task):
-        pass
-
-    def process_stack_request(self, instance_data, stack_action):
+    def _process_stack_request(self, instance_data, stack_action):
         # create new object with the action and document in it
         logger.debug(
             f"[StackManager] _process_stack_request. Converting instance data '{instance_data}' to job wrapper object"
@@ -146,8 +180,13 @@ class StackManager(Manager):
 
     def _validate_stack_request(self, instance_data, stack_action):
         # check existence of stack_instance
+        if "name" in instance_data:
+            stack_name = instance_data["name"]
+        else:
+            stack_name = instance_data["stack_instance_name"]
+
         stack_instance_exists = self.document_manager.get_document(
-            type="stack_instance", name=instance_data["name"])
+            type="stack_instance", name=stack_name)
         logger.info(
             f"[StackManager] _validate_stack_request. stack_instance_exists: {not stack_instance_exists is {}}"
         )
