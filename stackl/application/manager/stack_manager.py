@@ -9,6 +9,7 @@ from manager import Manager
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from task.result_task import ResultTask
 from task_broker.task_broker_factory import TaskBrokerFactory
+from message_channel.message_channel_factory import MessageChannelFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -26,57 +27,80 @@ class StackManager(Manager):
         self.opa_broker_factory = OPABrokerFactory()
         self.opa_broker = self.opa_broker_factory.get_opa_broker()
 
+        message_channel_factory = MessageChannelFactory()
+        self.message_channel = message_channel_factory.get_message_channel()
+
         self.document_manager = None  #To be given after initalisation by manager_factory
+        self.snapshot_manager = None  #To be given after initalisation by manager_factory
 
     def handle_task(self, stack_task):
         logger.debug(f"[StackManager] handling stack_task '{stack_task}'")
-        try:
-            if stack_task["subtype"] == "CREATE_STACK":
-                (stack_instance, status_code) = self.process_stack_request(
-                    stack_task["json_data"], "create")
-                job = self.agent_broker.create_job_for_agent(
+        stack_instance = None
+
+        if stack_task["subtype"] == "GET_STACK":
+            (stack_instance_name) = stack_task["args"]
+            return_result = self.document_manager.get_document(
+                type="stack_instance", name=stack_instance_name)
+
+        elif stack_task["subtype"] == "GET_ALL_STACKS":
+            (stack_instance_name) = stack_task["args"]
+            return_result = self.document_manager.collect_documents(
+                type_name="stack_instance", name=stack_instance_name)
+
+        elif stack_task["subtype"] == "CREATE_STACK":
+            (stack_instance, return_result) = self._process_stack_request(
+                stack_task["json_data"], "create")
+            if not return_result == StatusCode.BAD_REQUEST:
+                self.agent_task_broker.create_job_for_agent(
                     stack_instance, "create", self.document_manager)
                 self.document_manager.write_stack_instance(stack_instance)
-            elif stack_task["subtype"] == "UPDATE_STACK":
-                (stack_instance, status_code) = self.process_stack_request(
-                    stack_task["json_data"], "update")
-                # Lets not create the job object when we don't want an invocation
+
+        elif stack_task["subtype"] == "UPDATE_STACK":
+            (stack_instance, return_result) = self._process_stack_request(
+                stack_task["json_data"], "update")
+            # Lets not create the job object when we don't want an invocation
+            if not return_result == StatusCode.BAD_REQUEST:
                 if not stack_task["json_data"]["disable_invocation"]:
                     job = self.agent_broker.create_job_for_agent(
                         stack_instance, "update", self.document_manager)
                 else:
                     job = []
                 self.document_manager.write_stack_instance(stack_instance)
-            elif stack_task["subtype"] == "DELETE_STACK":
-                (stack_instance, status_code) = self.process_stack_request(
-                    stack_task["json_data"], "delete")
-                job = self.agent_broker.create_job_for_agent(
+        elif stack_task[
+                "subtype"] == "DELETE_STACK":  #TODO: Do we want to keep deleted stacks as documents?
+            (stack_instance, return_result) = self._process_stack_request(
+                stack_task["json_data"], "delete")
+            if not return_result == StatusCode.BAD_REQUEST:
+                self.agent_task_broker.create_job_for_agent(
                     stack_instance, "delete", self.document_manager)
                 stack_instance.deleted = True
                 self.document_manager.write_stack_instance(stack_instance)
-            else:
-                status_code = StatusCode.BAD_REQUEST
-            if status_code in [
-                    StatusCode.OK, StatusCode.CREATED, StatusCode.ACCEPTED
-            ]:
-                agent_connect_info = stack_task["send_channel"]
-                logger.debug(
-                    "[StackManager] Processing subtask succeeded. Sending to agent with connect_info '{0}' the stack_instance '{1}'"
-                    .format(agent_connect_info, job))
-                for am in job:
-                    result = self.agent_broker.send_job_to_agent(
-                        agent_connect_info, am)
-                    self.agent_broker.process_job_result(
-                        stack_instance, result, self.document_manager)
-                    logger.debug(
-                        "[StackManager] Sent to agent. Result '{0}'".format(
-                            result))
-            else:
-                raise Exception(
-                    "[StackManager] Processing subtask failed. Status_code '{0}'"
-                    .format(status_code))
+        else:
+            return_result = StatusCode.BAD_REQUEST
+
+        logger.debug(f"[StackManager] Handled StackTask")
+        resultTask = ResultTask({
+            'channel': stack_task.get('return_channel'),
+            'cast_type': CastType.BROADCAST.value,
+            'result_msg':
+            f"StackTask with type '{stack_task['subtype']}' was handled",
+            'return_result': return_result,
+            'result_code': StatusCode.OK,
+            'cast_type': CastType.BROADCAST.value,
+            'source_task': stack_task
+        })
+        self.message_channel.publish(resultTask)
+
+    #TODO Rudimentary rollback system. It should take into account the reason for the failure. For instance, rollback create should behave differently if the failure was because the item already existed then when the problem occured during actual creation
+    def rollback_task(self, stack_task):
+        logger.debug(f"[StackManager] rolling back stack_task '{stack_task}'")
+        if stack_task["subtype"] == "GET_STACK":
             logger.debug(
-                f"[StackManager] Succesfully handled StackTask with type '{stack_task['subtype']}'. Stack_instance: '{stack_instance}'."
+                f"[StackManager] rollback_task GET_STACK. Safe Task. Nothing to do."
+            )
+        elif stack_task["subtype"] == "GET_ALL_STACKS":
+            logger.debug(
+                f"[StackManager] rollback_task GET_ALL_STACKS. Safe Task. Nothing to do."
             )
             self.task_broker.give_task(
                 ResultTask({
@@ -101,7 +125,14 @@ class StackManager(Manager):
     def process_stack_request(self, instance_data, stack_action):
         # create new object with the action and document in it
         logger.debug(
-            "[StackManager] converting instance data to change wrapper object")
+            f"[StackManager] _process_stack_request. Converting instance data '{instance_data}' to job wrapper object"
+        )
+        if not self._validate_stack_request(instance_data, stack_action):
+            logger.debug(
+                f"[StackManager ] _process_stack_request. Validation failed. Returning StatusCode.BAD_REQUEST"
+            )
+            return {}, StatusCode.BAD_REQUEST
+
         job = {}
         job['action'] = stack_action
         job['document'] = instance_data
@@ -109,6 +140,45 @@ class StackManager(Manager):
         handler = StackHandler(self.document_manager, self.opa_broker)
         merged_sat_sit_obj, status_code = handler.handle(job)
         logger.debug(
-            "[StackManager] Handle complete. status_code '{0}'. merged_sat_sit_obj '{1}' "
-            .format(status_code, merged_sat_sit_obj))
+            f"[StackManager ]_process_stack_request. Handle complete. status_code '{status_code}'. merged_sat_sit_obj '{merged_sat_sit_obj}'"
+        )
         return merged_sat_sit_obj, status_code
+
+    def _validate_stack_request(self, instance_data, stack_action):
+        # check existence of stack_instance
+        stack_instance_exists = self.document_manager.get_document(
+            type="stack_instance", name=instance_data["name"])
+        logger.info(
+            f"[StackManager] _validate_stack_request. stack_instance_exists: {not stack_instance_exists is {}}"
+        )
+        if stack_action == "create":
+            if stack_instance_exists:
+                return False
+            else:
+                # check if SIT exists
+                infr_template_exists = self.document_manager.get_document(
+                    type="stack_infrastructure_template",
+                    name=instance_data["stack_infrastructure_template"])
+                logger.info(
+                    f"[StackManager] _validate_stack_request. infr_template_exists (should be the case): {not infr_template_exists is {}}"
+                )
+                if not infr_template_exists:
+                    return False
+
+                # check if SAT exists
+                stack_application_template = self.document_manager.get_document(
+                    type='stack_application_template',
+                    name=instance_data["stack_application_template"])
+                logger.info(
+                    f"[StackManager] _validate_stack_request. application_template_name exists (should be the case): {not stack_application_template is {}}"
+                )
+                if not stack_application_template:
+                    return False
+                #Everything OK for create:
+                return True
+        elif stack_action == "update":
+            return stack_instance_exists  #For UPDATE, OK if it exists
+        elif stack_action == "delete":
+            return stack_instance_exists
+        else:
+            return False

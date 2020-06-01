@@ -60,7 +60,7 @@ class SnapshotManager(Manager):
     def rollback_task(self, task):
         pass
 
-    def get_snapshot(self, type_doc, name_doc, snapshot_nb):
+    def get_snapshot(self, type_doc, name_doc, snapshot_nb=1):
         logger.debug(
             f"[SnapshotManager] get_snapshot.  Get the {snapshot_nb} most recent snapshot for doc with type and name '{type_doc}' and '{name_doc}'"
         )

@@ -1,5 +1,5 @@
 import logging
-from collections.abc import Mapping
+from collections.abc import Collection
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -43,13 +43,13 @@ async def collect_documents_by_type(type_name: str, name: str = ""):
         "type": type_name,
         "documents": result
     }
-    if not isinstance(result, Mapping):
+    if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return document
 
 
-@router.get('/{type_name}/{name}', response_model=BaseDocument)
+@router.get('/{type_name}/{name}')
 async def get_document_by_type_and_name(type_name: str, name: str):
     """Returns a specific document with a type and name"""
     logger.info(
@@ -63,7 +63,7 @@ async def get_document_by_type_and_name(type_name: str, name: str):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not isinstance(result, Mapping):
+    if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result

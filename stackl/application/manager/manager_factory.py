@@ -23,6 +23,7 @@ class ManagerFactory(metaclass=Singleton):
         self.document_manager.snapshot_manager = self.snapshot_manager
         self.snapshot_manager.document_manager = self.document_manager
         self.stack_manager.document_manager = self.document_manager
+        self.stack_manager.snapshot_manager = self.snapshot_manager
         self.user_manager.document_manager = self.document_manager
 
     def get_snapshot_manager(self):

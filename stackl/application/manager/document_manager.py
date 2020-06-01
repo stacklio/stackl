@@ -54,7 +54,7 @@ class DocumentManager(Manager):
             (type_name, name) = document_task["args"]
             return_result = self.delete_document(type=type_name, name=name)
         logger.debug(
-            f"[DocumentManager] Succesfully handled document task. Creating ResultTask."
+            f"[DocumentManager] Handled document task. Creating ResultTask."
         )
         resultTask = ResultTask({
             'channel': document_task['return_channel'],
@@ -67,6 +67,7 @@ class DocumentManager(Manager):
         })
         self.message_channel.publish(resultTask)
 
+    #TODO Rudimentary rollback system. It should take into account the reason for the failure. For instance, rollback create should behave differently if the failure was because the item already existed then when the problem occured during actual creation
     def rollback_task(self, document_task):
         logger.debug(
             f"[DocumentManager] rolling back document_task '{document_task}'")
@@ -83,7 +84,7 @@ class DocumentManager(Manager):
             result = self.delete_document(type=document["type"],
                                           name=document["name"])
             logger.debug(
-                f"[DocumentManager] rollback_task POST_DOCUMENT. Removed if it was created. Result '{result}'"
+                f"[DocumentManager] rollback_task POST_DOCUMENT. Remove document if it did not yet exist and was created. Result '{result}'"
             )
         elif document_task["subtype"] == "PUT_DOCUMENT":
             document = document_task["document"]
@@ -221,10 +222,10 @@ class DocumentManager(Manager):
         store_response = self.store.put(policy.dict())
         return store_response.status_code
 
-    def get_stack_instance(self, stack_instance_name):
+    def get_stack_instance(self, name):
         """gets a StackInstance Object from the store"""
         store_response = self.store.get(type="stack_instance",
-                                        name=stack_instance_name,
+                                        name=name,
                                         category="items")
         stack_instance = StackInstance.parse_obj(store_response.content)
         return stack_instance

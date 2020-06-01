@@ -5,6 +5,8 @@ class StackTask(Task):
     @property
     def valid_subtypes(self):
         return [
+            "GET_STACK",
+            "GET_ALL_STACKS",
             "CREATE_STACK",
             "UPDATE_STACK",
             "DELETE_STACK",

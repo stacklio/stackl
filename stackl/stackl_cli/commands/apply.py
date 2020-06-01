@@ -44,7 +44,7 @@ def apply_stack_instance(config_file, params, tags, secrets, stackl_context,
     if hasattr(config_doc, 'tags'):
         tags = {**config_doc['tags'], **json.loads(tags)}
     invocation = stackl_client.StackInstanceInvocation(
-        stack_instance_name=instance_name,
+        name=instance_name,
         stack_infrastructure_template=config_doc[
             "stack_infrastructure_template"],
         stack_application_template=config_doc["stack_application_template"],

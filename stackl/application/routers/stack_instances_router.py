@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, List
+from collections.abc import Collection
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
@@ -7,6 +8,8 @@ from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
 from enums.stackl_codes import StatusCode
 from manager.manager_factory import ManagerFactory
 from model.items.stack_instance_model import StackInstance
+from model.configs.document_model import BaseDocument, CollectionDocument
+
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
@@ -27,7 +30,7 @@ class StackInstanceInvocation(BaseModel):
     tags: Dict[str, str] = {}
     stack_infrastructure_template: str = "stackl"
     stack_application_template: str = "web"
-    stack_instance_name: str = "default_test_instance"
+    name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
     replicas: Dict[str, int] = {}
 
@@ -38,14 +41,14 @@ class StackInstanceInvocation(BaseModel):
                 "secrets": {},
                 "stack_infrastructure_template": "stackl",
                 "stack_application_template": "web",
-                "stack_instance_name": "default_test_instance"
+                "name": "default_test_instance"
             }
         }
 
 
 class StackInstanceUpdate(BaseModel):
     params: Dict[str, Any] = {}
-    stack_instance_name: str = "default_test_instance"
+    name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
     disable_invocation: bool = False
 
@@ -54,109 +57,103 @@ class StackInstanceUpdate(BaseModel):
             "example": {
                 "params": {},
                 "secrets": {},
-                "stack_instance_name": "default_test_instance"
+                "name": "default_test_instance"
             }
         }
 
 
-@router.get('/{stack_instance_name}', response_model=StackInstance)
-def get_stack_instance(stack_instance_name: str):
+@router.get('/{name}')
+async def get_stack_instance(name: str):
     """Returns a stack instance with a specific name"""
     logger.info(
-        f"[StackInstancesName GET] Getting document for stack instance {stack_instance_name} using manager"
+        f"[StackInstancesName GET] Getting document for stack instance {name} using manager"
     )
-    stack_instance = document_manager.get_document(type="stack_instance",
-                                                   name=stack_instance_name)
-    if not stack_instance:
+    task = StackTask({
+        'channel': 'worker',
+        'subtype': "GET_STACK",
+        'args': (name)
+    })
+    logger.info(
+        f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
+    )
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
+
+    if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail='Stack instance ' +
-                            str(stack_instance_name) + ' not found')
-    return stack_instance
+                            detail='Stack instance ' + str(name) +
+                            ' not found')
+    return result
 
 
-@router.get('', response_model=List[StackInstance])
-def get_stack_instances():
-    """Returns all stack instances"""
-    logger.info("[StackInstancesAll GET] Returning all stack instances")
-    doc = document_manager.get_document(type="stack_instance")
-    if doc:
-        return doc
-    else:
-        return {}
+@router.get('/all/')
+async def get_stack_instances(name: str = ""):
+    """Returns all stack instances that contain optional name"""
+    logger.info(
+        f"[StackInstancesAll GET] Returning all stack instances that contain optional name '{name}'"
+    )
+    task = StackTask({
+        'channel': 'worker',
+        'subtype': "GET_ALL_STACKS",
+        'args': (name)
+    })
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
+
+    document: CollectionDocument = {
+        "name": "CollectionDocumentByType_" + "stack_instance",
+        "description":
+        "Document that contains all the documents by type " + "stack_instance",
+        "type": "stack_instance",
+        "documents": result
+    }
+    if not isinstance(result, Collection):
+        raise HTTPException(status_code=StatusCode.NOT_FOUND,
+                            detail='Stack instances ' +
+                            str(name) + ' not found')
+    return document
 
 
 @router.post('')
-def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
+async def post_stack_instance(
+    stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
-    # check if SIT exists
-    infr_template_exists = document_manager.get_document(
-        type="stack_infrastructure_template",
-        name=stack_instance_invocation.stack_infrastructure_template)
-    logger.info(
-        f"[StackInstances POST] infr_template_exists (should be the case): {infr_template_exists}"
-    )
-    if not infr_template_exists:
-        raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail='SIT with name ' +
-                            str(infr_template_exists) + ' does not exist')
 
-    # check if SAT exists
-    stack_application_template = document_manager.get_document(
-        type='stack_application_template',
-        name=stack_instance_invocation.stack_application_template)
+    task = StackTask({
+        'channel': 'worker',
+        'json_data': stack_instance_invocation.dict(),
+        'subtype': "CREATE_STACK",
+    })
     logger.info(
-        f"[StackInstances POST] application_template_name exists (should be the case): {stack_application_template}"
+        f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
     )
     if not stack_application_template:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND,
             detail=f'SAT with name {str(infr_template_exists)} does not exist')
 
-    # check if stack_instance already exists. Should not be the case
-    stack_instance_exists = document_manager.get_document(
-        type="stack_instance",
-        name=stack_instance_invocation.stack_instance_name)
-    logger.info(
-        f"[StackInstances POST] stack_instance_exists (should not be case): {stack_instance_exists}"
-    )
-    if stack_instance_exists:
-        raise HTTPException(
-            status_code=StatusCode.CONFLICT,
-            detail='SI with name ' +
-            str(stack_instance_invocation.stack_instance_name) +
-            ' already exists')
-    try:
-        task = StackTask({
-            'channel': 'worker',
-            'json_data': stack_instance_invocation.dict(),
-            'subtype': "CREATE_STACK",
-        })
-        logger.info(
-            f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
-        )
-        task_broker.give_task(task)
+    task_broker.give_task(task)
+    result = await task_broker.get_task_result(task.id)
 
-        return {
-            'return_code': StatusCode.CREATED,
+    if not StatusCode.isSuccessful(result):
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
+                            detail="NOT OK!")
+    return {
+            'return_code': result,
             'message': 'Stack instance creating'
-        }, StatusCode.CREATED
-    except Exception as e:  # TODO TBD: When fixing robustness during Task Rework
-        logger.error(f"[StackInstances POST] ERROR!!! rest api: {e}")
-        return {
-            'return_code': StatusCode.INTERNAL_ERROR,
-            'message': 'Internal server error: {}'.format(str(e))
-        }, StatusCode.INTERNAL_ERROR
+    }, result
+
 
 
 @router.put('')
-def put_stack_instance(stack_instance_update: StackInstanceUpdate):
+async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
     logger.info("[StackInstances POST] Received POST request")
 
     # check if stack_instance already exists. Should be the case
     stack_instance_exists = document_manager.get_document(
-        type="stack_instance", name=stack_instance_update.stack_instance_name)
+        type="stack_instance", name=stack_instance_update.name)
     logger.info(
         f"[StackInstances POST] stack_instance_exists (should not be case): {stack_instance_exists}"
     )
@@ -164,7 +161,7 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     if not stack_instance_exists:
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
                             detail='SI with name ' +
-                            str(stack_instance_update.stack_instance_name) +
+                            str(stack_instance_update.name) +
                             ' does not exists')
 
     try:
@@ -189,38 +186,34 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
         }, StatusCode.INTERNAL_ERROR
 
 
-@router.delete('/{stack_instance_name}')
-def delete_stack_instance(stack_instance_name: str):
+@router.delete('/{name}')
+async def delete_stack_instance(name: str):
     """Delete a stack instance with a specific name"""
     logger.info(
-        f"[StackInstances DELETE] Received DELETE request for {stack_instance_name}"
+        f"[StackInstances DELETE] Received DELETE request for {name}"
     )
     stack_instance_exists = document_manager.get_document(
-        type="stack_instance", name=stack_instance_name)
+        type="stack_instance", name=name)
     if not stack_instance_exists:
         return {
             'return_code': StatusCode.NOT_FOUND,
             'message':
-            'Stack instance ' + str(stack_instance_name) + ' not found'
+            'Stack instance ' + str(name) + ' not found'
         }, StatusCode.NOT_FOUND
-    try:
-        json_data = {}
-        json_data['stack_instance_name'] = stack_instance_name
-        task = StackTask({
-            'channel': 'worker',
-            'json_data': json_data,
-            'subtype': "DELETE_STACK",
-        })
-        logger.info(
-            f"[StackInstances DELETE] Giving StackTask '{task.__dict__}' to task_broker"
-        )
-        task_broker.give_task(task)
-        return {
-            'return_code': StatusCode.CREATED,
-            'message': 'Stack instance deleting'
-        }, StatusCode.CREATED
-    except Exception as e:  # TODO TBD: When fixing robustness during Task Rework
-        return {
-            'return_code': StatusCode.INTERNAL_ERROR,
-            'message': 'Internal server error: {}'.format(str(e))
-        }, StatusCode.INTERNAL_ERROR
+    json_data = {}
+    json_data['name'] = name
+    task = StackTask({
+        'channel': 'worker',
+        'json_data': json_data,
+        'subtype': "DELETE_STACK",
+    })
+    logger.info(
+        f"[StackInstances DELETE] Giving StackTask '{task.__dict__}' to task_broker"
+    )
+
+    result = await task_broker.give_task(task)
+
+    if not StatusCode.isSuccessful(result):
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
+                            detail="NOT OK!")
+    return result
