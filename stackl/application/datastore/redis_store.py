@@ -18,30 +18,32 @@ class RedisStore(DataStore):
                                  db=0)
 
     def get(self, **keys):
-        get_all = False
-        if keys.get("name"):
-            document_key = keys.get("category") + '/' + keys.get(
+        document_key = keys.get("category") + '/' + keys.get(
                 "type") + '/' + keys.get("name")
-        else:  # This means we need to get all the documents of the type
-            get_all = True
-            document_key = keys.get("category") + '/' + keys.get("type") + '/*'
         logger.debug(f"[RedisStore] get on key '{document_key}'")
 
         content = []
-        if get_all:
-            for key in self.redis.scan_iter(document_key):
-                content.append(json.loads(self.redis.get(key)))
-            response = self._create_store_response(status_code=StatusCode.OK,
-                                                   content=content)
+        redis_value = self.redis.get(document_key)
+        if redis_value is None:
+            response = self._create_store_response(
+                status_code=StatusCode.NOT_FOUND, content={})
         else:
-            redis_value = self.redis.get(document_key)
-            if redis_value is None:
-                response = self._create_store_response(
-                    status_code=StatusCode.NOT_FOUND, content={})
-            else:
-                content = json.loads(self.redis.get(document_key))
-                response = self._create_store_response(
-                    status_code=StatusCode.OK, content=content)
+            content = json.loads(self.redis.get(document_key))
+            response = self._create_store_response(
+                status_code=StatusCode.OK, content=content)
+        logger.debug(f"[RedisStore] StoreResponse for get: {response}")
+        return response
+
+    def get_all(self, category, type_name, name):
+        document_key = category + '/' + type_name + '/*'
+        logger.debug(
+            f"[RedisStore] get_all in '{document_key}' for type '{type_name}' and name '{name}'"
+        )
+        content = []
+        for key in self.redis.scan_iter(document_key):
+            content.append(json.loads(self.redis.get(key)))
+        response = self._create_store_response(status_code=StatusCode.OK,
+                                               content=content)
         logger.debug(f"[RedisStore] StoreResponse for get: {response}")
         return response
 
