@@ -1,5 +1,5 @@
 ---
-title: Tasks and Processing
+title: Task System
 kind: advanced
 weight: 3
 date: 2020-02-10 01:00:00 +0100
@@ -9,15 +9,46 @@ draft: false
 tags: []
 ---
 
-(TODO in May Objective)
-STACKL can be given work through its API.
-Work is internally converted to a **Task**, an atomic unit of work with a result.
-Task are submitted for management to a **Task Broker**  which delegates them to distributed workers through the message channel.
-Depending on the task, the worker may interact with the datastore and/or external agents.
-STACKL manages the full life cycle of the task, ensuring it happens completely or is rolled back, to report the result back to the user and to achieve eventual consistency between its representation of the user's IT environment (through documents) and the actual user's IT environment (i.e., instantiated applications and accessible infrastructure).
+STACKL is a task-based system that performs work for producers through wrapping their requests in atomic and distributable tasks in an asynchronous design. 
+Through this system, STACKL maintains consistency, failure resilience, scalability, and enforceable time constraints whatever happens in the IT environment so that users are never blocked or left with an unstable system.
+This is critical in todays highly variable IT enterprise infrastructure with different requirements and many possible configurations.
 
-{{< figure src="task_processing_overview.png" width="70" caption="Task processing overview" >}}
-{{< figure src="task_processing_flow.png" width="90" caption="Task processing flow" >}}
+The task system is therefore designed with the following core properties:
+
+* Task processing scalability and performance
+    * Tasks are distributable for processing to a scalable task processing module or to vertically scaling workers
+    * Tasks are non-blocking and specifically time-bound
+    * Producers are never left undeterminably waiting on a task but either directly notified within a certain timebound of the result or given the location of the eventual result report 
+* Data consistency
+    * All work done for producers is done through tasks
+    * Tasks acquire atomic locks on data they are working on (TODO WIP)
+    * Tasks are done completely or not at all, being rollbacked (atomic operation)
+* History
+    * Tasks are tracked in a queue in which their lifecycle is managed, from beginning until success or failure
+    * The result of tasks are stored (TODO WIP)
+    * The state of the elements that the task changes are stored as snapshots 
+* Failure resilience
+    * Rollbacks are done if a task is not succesfully completed, through the history and snapshots
+    * Tasks remain in the queue until they either produce a succesful, success or failure, or a time-out
+    * If a task fails or timeouts, a rollback task is executed, undoing all the changes the task made
+
+## Overview of Task System Design
+
+The task system is based on five decoupled elements: the API, tasks, task brokers, task processing through a pluggable module or workers, and a history datastore.
+How they work togheter is illustrated in the below figures.
+
+The **API** enables producers to make requests.
+The API does not contain any logic but wraps the request into a STACKL understandable **Task** and either starts an asynchronous time-bound wait on the task result or notifies the producer where the request result can be found.
+Critically, in this way, there is no logic in the API at all - all it does is task creation, submission, and reporting.
+The task is given to STACKL's **Task Broker** who starts tracking the task by putting it into a task queue and then distributes it, either through a **pluggable task processing module** or itself through a pluggable message channel to **workers**.
+The task broker tracks the task until it receives a result from the module or a worker or until the timeout of the task expires. 
+During the processing of the task, any changes made to STACKLs data require the data item to be first snapshot and stored in the **History Datastore** and then atomically locked during the processing. 
+Once either occurs, the result (success or failure) is is stored in the history datastore and also reported back if there is a asynchronously waiting API, depending on the task.
+If the result was a failure, either due to faulty processing or a timeout, it is rollbacked by STACKL using the files in the history database so that STACKL and the IT environment are restored back to their initial state.
+In this way, STACKL achieves eventual consistency between its representation of the user’s IT environment (through documents) and the actual user’s IT environment (i.e., instantiated applications and accessible infrastructure).
+
+{{< figure src="task_processing_overview.png" width="70" caption="DEPRECATED Task processing overview" >}}
+{{< figure src="task_processing_flow.png" width="90" caption="DEPRECATED Task processing flow" >}}
 
 STACKL uses pluggable modules for the task broker; which manages the tasks, for the message channel; for communicating tasks with workers, and for the workers, to allow for different types of logic engines.
 Modules allow the use of different task broker systems (e.g., custom implementations, Celery, Faust, ...), message channels, (e.g., Redis, RabbitMQ, Kafka, ...) and worker systems (e.g., custom containers, FaaS, ...) .
