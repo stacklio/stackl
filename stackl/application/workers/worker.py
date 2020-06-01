@@ -109,12 +109,12 @@ class Worker:
                 thread.start()
                 continue
             elif task_attr["topic"] == "stack_task":
-                logger.info(
-                    f"[Worker] StackTask with subtype \'{task_attr['subtype']}\'"
-                )
-                thread = threading.Thread(
-                    target=self.stack_manager.handle_task, args=[task_attr])
-                thread.start()
+                # logger.info(
+                #     f"[Worker] StackTask with subtype \'{task_attr['subtype']}\'"
+                # )
+                # thread = threading.Thread(
+                #     target=self.stack_manager.handle_task, args=[task_attr])
+                # thread.start()
                 continue
 
     def get_subscribe_channels(self):

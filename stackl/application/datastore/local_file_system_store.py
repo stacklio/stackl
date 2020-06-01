@@ -36,8 +36,8 @@ class LocalFileSystemStore(DataStore):
         try:
             with open(document_key) as file_to_get:
                 content = json.load(file_to_get)
-            response = self._create_store_response(
-                status_code=StatusCode.OK, content=content)
+            response = self._create_store_response(status_code=StatusCode.OK,
+                                                   content=content)
         except Exception as e:  # pylint: disable=broad-except
             response = self._create_store_response(
                 status_code=StatusCode.INTERNAL_ERROR,
@@ -48,7 +48,9 @@ class LocalFileSystemStore(DataStore):
 
     def get_all(self, category, type_name, name):
         document_key = self.datastore_url + category + '/'
-        logger.debug(f"[LocalFileSystemStore] get_all in '{document_key}' for type '{type_name}' and name '{name}'")
+        logger.debug(
+            f"[LocalFileSystemStore] get_all in '{document_key}' for type '{type_name}' and name '{name}'"
+        )
 
         content = []
         try:
@@ -57,14 +59,16 @@ class LocalFileSystemStore(DataStore):
                     logger.debug(
                         f"[LocalFileSystemStore] get_all. Looking at files '{file}' that have type '{type_name}' and name '{name}'"
                     )
-                    if type_name in file and name + "_" in file and file.endswith(".json"):
+                    if type_name in file and name in file and file.endswith(
+                            ".json"):
                         with open(dirpath + file) as file_to_get:
-                            content.append( (dirpath + file, json.load(file_to_get)))
+                            content.append(
+                                (dirpath + file, json.load(file_to_get)))
                         logger.debug(
                             f"[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{len(content)}'"
                         )
-            response = self._create_store_response(
-                status_code=StatusCode.OK, content=content)
+            response = self._create_store_response(status_code=StatusCode.OK,
+                                                   content=content)
         except Exception as e:  # pylint: disable=broad-except
             response = self._create_store_response(
                 status_code=StatusCode.INTERNAL_ERROR,

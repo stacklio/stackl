@@ -35,7 +35,7 @@ class StackHandler(Handler):
         self, item, opa_decision,
         stack_infrastructure_template: StackInfrastructureTemplate):
         stack_instance_doc = StackInstance(
-            name=item['stack_instance_name'],
+            name=item['name'],
             stack_infrastructure_template=item[
                 'stack_infrastructure_template'],
             stack_application_template=item['stack_application_template'])
@@ -286,7 +286,7 @@ class StackHandler(Handler):
             "[StackHandler] _handle_update received with item: {0}.".format(
                 item))
         stack_instance = self.document_manager.get_stack_instance(
-            item['stack_instance_name'])
+            item['name'])
         stack_instance = self._update_stack_instance(stack_instance, item)
         return stack_instance, 200
 
@@ -295,5 +295,5 @@ class StackHandler(Handler):
             "[StackHandler] _handle_delete received with item: {0}.".format(
                 item))
         stack_instance = self.document_manager.get_stack_instance(
-            item['stack_instance_name'])
+            item['name'])
         return stack_instance, 200
