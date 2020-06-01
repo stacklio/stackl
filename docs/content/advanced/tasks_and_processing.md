@@ -36,11 +36,12 @@ The task system is therefore designed with the following core properties:
 
 The task system is based on five decoupled elements: the API, tasks, task brokers, task processing through a pluggable module or workers, and a history datastore.
 How they work togheter is illustrated in the below figures.
+Each element is tackled in-depth in a separate section.
 
 The **API** enables producers to make requests.
 The API does not contain any logic but wraps the request into a STACKL understandable **Task** and either starts an asynchronous time-bound wait on the task result or notifies the producer where the request result can be found.
 Critically, in this way, there is no logic in the API at all - all it does is task creation, submission, and reporting.
-The task is given to STACKL's **Task Broker** who starts tracking the task by putting it into a task queue and then distributes it, either through a **pluggable task processing module** or itself through a pluggable message channel to **workers**.
+The task is given to STACKL's **Task Broker** who starts tracking the task by putting it into a task queue and then distributes it, either through a pluggable **Task Processing Module** or itself through a pluggable message channel to **workers**.
 The task broker tracks the task until it receives a result from the module or a worker or until the timeout of the task expires. 
 During the processing of the task, any changes made to STACKLs data require the data item to be first snapshot and stored in the **History Datastore** and then atomically locked during the processing. 
 Once either occurs, the result (success or failure) is is stored in the history datastore and also reported back if there is a asynchronously waiting API, depending on the task.
@@ -53,6 +54,22 @@ In this way, STACKL achieves eventual consistency between its representation of 
 STACKL uses pluggable modules for the task broker; which manages the tasks, for the message channel; for communicating tasks with workers, and for the workers, to allow for different types of logic engines.
 Modules allow the use of different task broker systems (e.g., custom implementations, Celery, Faust, ...), message channels, (e.g., Redis, RabbitMQ, Kafka, ...) and worker systems (e.g., custom containers, FaaS, ...) .
 The choice of module determines the performance characteristics of STACKL task processing, such as simplicity, scalability, reliability, cost, and so on.
+
+## The API and Tasks
+
+This section discusses how the API interacts with the task system.
+The API interface itself is discussed in [API Interface](api_interface.md).
+
+Each request made to STACKL's API is transformed into an atomic task object that contains all the necessary data contained in the request, including its type, subtype, and any arguments or other data.
+This task is then given to the task broker where it will be processed until either a mandatory timeout expires, it is processed succesfully, or has to be rollbacked.
+Depending on the request, the API will either starts asynchronously waiting on the result of the task, waiting until the timeout in the worst case, or is immediately given the future location where the result of the request may be reviewed.
+
+There is no logic in the API and it is completely asynchronous and decoupled from the task processing and will not block.
+If the task should normally be done relatively soon, it justs awaits the result of the task asynchronously, allowing other work to be done in the meantime by the program and ensure a bounded waiting time.
+Alternatively, if the task duration is long, it will not wait but simply allow the result of the task to be examined at a later point in time.
+There is still a mandatory timeout in this case which will stop and rollback the task if exceeded, to avoid tasks from returning results long after they are relevant.
+Accordingly, eventual consistency between the producer, his requests, the IT environemnt, tasks, and the internal datastore, is maintained and specificiable by a timeout.
+
 
 ## Tasks
 
@@ -92,7 +109,10 @@ Before delegating tasks for processing, it may add additional information such a
 
 See [Task Broker Interface]({{< ref "../modules/task_broker_interface.md" >}}) for information about the available modules and how to create your own.
 
-## Message Channel
+
+## Task Processing Module
+
+### Message Channel
 
 The message channel is the medium through which STACKL communicates with other parties during the processing of a task.
 It is a pluggable module that is chosen during the deployment of STACKL.
@@ -101,7 +121,7 @@ Each plugged technology, whether custom or third-party, provides an implementati
 
 See [Message Channel Interface]({{< ref "../modules/message_channel_interface.md" >}}) for information about the available modules and how to create your own.
 
-## Workers
+### Workers
 
 Workers are software entities that process the tasks and function as self-contained logic engines.
 Workers are stateless, able to communicate with STACKL and agents, and able to execute the actions described in a task.
@@ -116,7 +136,7 @@ For the processing of tasks, they have to be able to:
 * Communicate with agents
 * Access the database
 
-### Worker containers
+#### Worker containers
 
 Workers, when implemented as containers, use several parts of the codebase of STACKL to manage tasks.
 There is a hierarchical processing structure based on responsibilities which consists of the top-level Worker, mid-level Managers and bottom-level Handlers.
@@ -126,3 +146,5 @@ A Worker does the high-level task management and has two responsibilities: (1) r
 A Manager does the low-level task management and has three responsibilities: (1) handle the main persistent results of in the task, such as writing to the database and communicating with agents, (2) publish the result of the task (success/failure), and (3) delegating the processing elements of the tasks to suitable Handlers.
 
 Handlers do the computational parts of the tasks, for instance, constraint solving and potentially storing intermediary results of the task.
+
+## History Datastore
