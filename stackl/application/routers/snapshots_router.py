@@ -1,5 +1,5 @@
 import logging
-from collections.abc import Mapping
+from collections.abc import Collection
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -30,7 +30,7 @@ async def get_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     })
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
-    if not isinstance(result, Mapping):
+    if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result
@@ -50,7 +50,7 @@ async def list_snapshots(type_name: str, name: str):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not isinstance(result, Mapping):
+    if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
 
