@@ -19,9 +19,10 @@ def update():
 @pass_stackl_context
 def instance(stackl_context: StacklContext, params, secrets,
              disable_invocation, instance_name):
-    invocation = stackl_client.StackInstanceUpdate(name=instance_name,
-                                                   params=json.loads(params),
-                                                   secrets=json.loads(secrets))
+    invocation = stackl_client.StackInstanceUpdate(
+        stack_instance_name=instance_name,
+        params=json.loads(params),
+        secrets=json.loads(secrets))
     if disable_invocation:
         invocation.disable_invocation = True
     res = stackl_context.stack_instances_api.put_stack_instance(invocation)

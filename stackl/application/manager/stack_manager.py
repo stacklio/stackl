@@ -119,10 +119,10 @@ class StackManager(Manager):
             #First, we get and restore the previous stack_instance document
             previous_stack = self.snapshot_manager.get_snapshot(
                 "stack_instance",
-                stack_task["json_data"]["name"])["snapshot"]
+                stack_task["json_data"]["stack_instance_name"])["snapshot"]
             self.snapshot_manager.restore_snapshot(
                 "stack_instance",
-                stack_task["json_data"]["name"])
+                stack_task["json_data"]["stack_instance_name"])
             #Second, we deploy this stack_instance
             (stack_instance, return_result) = self._process_stack_request(
                 previous_stack, "update")
@@ -180,8 +180,13 @@ class StackManager(Manager):
 
     def _validate_stack_request(self, instance_data, stack_action):
         # check existence of stack_instance
+        if "name" in instance_data:
+            stack_name = instance_data["name"]
+        else:
+            stack_name = instance_data["stack_instance_name"]
+
         stack_instance_exists = self.document_manager.get_document(
-            type="stack_instance", name=instance_data["name"])
+            type="stack_instance", name=stack_name)
         logger.info(
             f"[StackManager] _validate_stack_request. stack_instance_exists: {not stack_instance_exists is {}}"
         )
