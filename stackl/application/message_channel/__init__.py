@@ -17,7 +17,6 @@ class MessageChannel(ABC):
     def publish(self, task):
         pass
 
-    # iterations -1 is infitinte loop
     @abstractmethod
     def listen_permanent(self, channels):
         pass

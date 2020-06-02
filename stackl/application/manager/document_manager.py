@@ -32,69 +32,70 @@ class DocumentManager(Manager):
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
-        self.snapshot_manager = None  #To be given after initalisation by manager_factory
+        self.snapshot_manager = None  #Given after initalisation by manager_factory
 
-    def handle_task(self, document_task):
-        logger.debug(
-            f"[DocumentManager] handling document_task '{document_task}'")
-        if document_task["subtype"] == "GET_DOCUMENT":
-            (type_name, name) = document_task["args"]
+    def handle_task(self, task):
+        logger.debug(f"[DocumentManager] handling document_task '{task}'")
+        if task["subtype"] == "GET_DOCUMENT":
+            (type_name, name) = task["args"]
             return_result = self.get_document(type=type_name, name=name)
-        elif document_task["subtype"] == "COLLECT_DOCUMENT":
-            (type_name, name) = document_task["args"]
+        elif task["subtype"] == "COLLECT_DOCUMENT":
+            (type_name, name) = task["args"]
             return_result = self.collect_documents(type_name=type_name,
-                                                name=name)
-        elif document_task["subtype"] == "POST_DOCUMENT":
-            document = document_task["document"]
+                                                   name=name)
+        elif task["subtype"] == "POST_DOCUMENT":
+            document = task["document"]
             return_result = self.write_document(document)
-        elif document_task["subtype"] == "PUT_DOCUMENT":
-            document = document_task["document"]
-            return_result = self.write_document(document, overwrite=True)
-        elif document_task["subtype"] == "DELETE_DOCUMENT":
-            (type_name, name) = document_task["args"]
+        elif task["subtype"] == "PUT_DOCUMENT":
+            document = task["document"]
+            return_result = self.write_document(
+                document,
+                overwrite=True,
+            )
+        elif task["subtype"] == "DELETE_DOCUMENT":
+            (type_name, name) = task["args"]
             return_result = self.delete_document(type=type_name, name=name)
         logger.debug(
-            f"[DocumentManager] Handled document task. Creating ResultTask."
-        )
+            f"[DocumentManager] Handled document task. Creating ResultTask.")
         resultTask = ResultTask({
-            'channel': document_task['return_channel'],
+            'channel': task['return_channel'],
             'result_msg':
-            f"DocumentTask with type '{document_task['subtype']}' was handled",
+            f"DocumentTask with type '{task['subtype']}' was handled",
             'return_result': return_result,
             'result_code': StatusCode.OK,
             'cast_type': CastType.BROADCAST.value,
-            'source_task': document_task
+            'source_task': task
         })
         self.message_channel.publish(resultTask)
 
-    #TODO Rudimentary rollback system. It should take into account the reason for the failure. For instance, rollback create should behave differently if the failure was because the item already existed then when the problem occured during actual creation
-    def rollback_task(self, document_task):
-        logger.debug(
-            f"[DocumentManager] rolling back document_task '{document_task}'")
-        if document_task["subtype"] == "GET_DOCUMENT":
+    # Rudimentary rollback system. It should also take into account the reason for the failure.
+    # For instance, rollback create should behave differently if the failure was because the item already existed then when the problem occured during actual creation
+    def rollback_task(self, task):
+        logger.debug(f"[DocumentManager] rolling back document_task '{task}'")
+        if task["subtype"] == "GET_DOCUMENT":
             logger.debug(
                 f"[DocumentManager] rollback_task GET_DOCUMENT. Safe Task. Nothing to do."
             )
-        elif document_task["subtype"] == "COLLECT_DOCUMENT":
+        elif task["subtype"] == "COLLECT_DOCUMENT":
             logger.debug(
                 f"[DocumentManager] rollback_task COLLECT_DOCUMENT. Safe Task. Nothing to do."
             )
-        elif document_task["subtype"] == "POST_DOCUMENT":
-            document = document_task["document"]
+        elif task["subtype"] == "POST_DOCUMENT":
+            document = task["document"]
             result = self.delete_document(type=document["type"],
                                           name=document["name"])
             logger.debug(
                 f"[DocumentManager] rollback_task POST_DOCUMENT. Remove document if it did not yet exist and was created. Result '{result}'"
             )
-        elif document_task["subtype"] == "PUT_DOCUMENT":
-            document = document_task["document"]
+        elif task["subtype"] == "PUT_DOCUMENT":
+            document = task["document"]
             result = self.snapshot_manager.restore_snapshot(
                 document["type"], document["name"])
             logger.debug(
                 f"[DocumentManager] rollback_task PUT_DOCUMENT. Restored latest snapshot if it was present. Result '{result}'"
             )
-        elif document_task["subtype"] == "DELETE_DOCUMENT":
-            (type_name, name) = document_task["args"]
+        elif task["subtype"] == "DELETE_DOCUMENT":
+            (type_name, name) = task["args"]
             result = self.snapshot_manager.restore_snapshot(type_name, name)
             logger.debug(
                 f"[DocumentManager] rollback_task DELETE_DOCUMENT. Restored latest snapshot if it was present. Result '{result}'"
@@ -103,14 +104,13 @@ class DocumentManager(Manager):
 
     def get_document(self, **keys):
         logger.debug(f"[DocumentManager] get_document. Keys '{keys}'")
-        keys = self._process_document_keys(keys)
+        keys = _process_document_keys(keys)
         logger.debug(
-            f"[DocumentManager] get_document. Post Process Keys '{keys}'")
+            f"[DocumentManager] get_document. Processed keys '{keys}'")
         store_response = self.store.get(**keys)
         if store_response.status_code == StatusCode.NOT_FOUND:
             return {}
-        else:
-            return store_response.content
+        return store_response.content
 
     def collect_documents(self, type_name, name):
         logger.debug(
@@ -125,13 +125,12 @@ class DocumentManager(Manager):
         store_response = self.store.get_all(category, type_name, name)
         if store_response.status_code == StatusCode.NOT_FOUND:
             return {}
-        else:
-            return store_response.content
+        return store_response.content
 
     def write_document(self, document, overwrite=False, make_snapshot=True):
         logger.debug(
             f"[DocumentManager] write_document.  Document: '{document}'")
-        keys = self._process_document_keys(document)
+        keys = _process_document_keys(document)
 
         document['category'] = keys.get("category")
         document['type'] = keys.get("type")
@@ -148,39 +147,38 @@ class DocumentManager(Manager):
             )
             store_response = self.store.put(document)
             return store_response.status_code
-        else:
-            if overwrite:
-                prev_document_string = json.dumps(prev_document)
+        if overwrite:
+            prev_document_string = json.dumps(prev_document)
+            logger.debug(
+                f"[DocumentManager] Updating document with original contents: {prev_document_string}"
+            )
+            doc_new_string = json.dumps(document)
+            logger.debug(
+                f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
+            )
+            if sorted(prev_document_string) == sorted(
+                    doc_new_string
+            ):  #Sorted since the doc might've changed the ordering
                 logger.debug(
-                    f"[DocumentManager] Updating document with original contents: {prev_document_string}"
+                    f"[DocumentManager] Original document and new document are the same! NOT updating"
                 )
-                doc_new_string = json.dumps(document)
-                logger.debug(
-                    f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
-                )
-                if sorted(prev_document_string) == sorted(
-                        doc_new_string
-                ):  #Sorted since the doc might've changed the ordering
-                    logger.debug(
-                        f"[DocumentManager] Original document and new document are the same! NOT updating"
-                    )
-                    return StatusCode.OK
-                else:
-                    #Since we are overwriting, take a snapshot first
-                    if make_snapshot:
-                        self.snapshot_manager.create_snapshot(
-                            document["type"], document["name"])
-                    store_response = self.store.put(document)
-                    return store_response.status_code
+                return StatusCode.OK
             else:
-                logger.debug(
-                    f"[DocumentManager] Document already exists and overwrite is false. Returning."
-                )
-                return StatusCode.BAD_REQUEST
+                #Since we are overwriting, take a snapshot first
+                if make_snapshot:
+                    self.snapshot_manager.create_snapshot(
+                        document["type"], document["name"])
+                store_response = self.store.put(document)
+                return store_response.status_code
+        else:
+            logger.debug(
+                f"[DocumentManager] Document already exists and overwrite is false. Returning."
+            )
+            return StatusCode.BAD_REQUEST
 
     def delete_document(self, **keys):
         logger.debug(f"[DocumentManager] delete_document. Keys '{keys}'")
-        keys = self._process_document_keys(keys)
+        keys = _process_document_keys(keys)
 
         logger.debug("[DocumentManager] Checking if document actually exists")
         doc_obj = self.get_document(**keys)
@@ -451,7 +449,7 @@ class DocumentManager(Manager):
             else:
                 raise InvalidDocNameError(name)
 
-        logger.debug(
-            f"[DocumentManager] _process_document_keys. After _process_document_keys '{keys}'"
-        )
-        return keys
+    logger.debug(
+        f"[DocumentManager] _process_document_keys. After _process_document_keys '{keys}'"
+    )
+    return keys
