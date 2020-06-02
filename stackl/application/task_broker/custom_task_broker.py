@@ -31,7 +31,7 @@ class CustomTaskBroker(TaskBroker):
         self.message_channel.start(self.get_task_handler(), subscribe_channels)
 
     def get_task_handler(self):
-        return TaskHandler('TaskHandler', self)
+        return TaskHandler()
 
     def give_task(self, task_obj):
         try:

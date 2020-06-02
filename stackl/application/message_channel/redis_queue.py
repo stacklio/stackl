@@ -1,7 +1,6 @@
 import logging
 import threading
 import time
-
 from redis import StrictRedis
 
 from message_channel import MessageChannel
@@ -39,7 +38,7 @@ class RedisQueue(MessageChannel):
     def start_pubsub(self, subscribe_channels):
         if len(subscribe_channels) > 0:
             logger.info(
-                f"[RedisQueue] starting listening to subscribed channels: {subscribe_channels}"
+                f"[RedisQueue] start listen to subscribed channels: {subscribe_channels}"
             )
             self.listen_management_thread = threading.Thread(
                 target=self.listen_permanent, args=[subscribe_channels])
@@ -47,7 +46,7 @@ class RedisQueue(MessageChannel):
             self.listen_management_thread.start()
         else:
             logger.info(
-                "[RedisQueue] postponing pubsub start due to empty channel list"
+                "[RedisQueue] postpone pubsub start due to empty channel list"
             )
 
     def publish(self, task):
@@ -80,12 +79,12 @@ class RedisQueue(MessageChannel):
                         time.sleep(0.5)
                         self.publish(result_task)
 
-            logger.debug("[RedisQueue] Error listen_permanent stopped!")
+            logger.debug("[RedisQueue] Error listen_permanent stopped")
             self._pubsub_channels(self.pubsub, channels, action='unsubscribe')
-            raise Exception("[RedisQueue] Error listen_permanent stopped!")
-        except Exception as e:  #TODO TBD as part of Task/Robustness rework
+            raise Exception("[RedisQueue] Error listen_permanent stopped")
+        except Exception as e:  #pylint: disable=broad-except
             logger.error(
-                f"[RedisQueue] ERROR!!! EXCEPTION OCCURED IN listen_permanent: {e}"
+                f"[RedisQueue] Exception occured in listen_permanent: {e}"
             )
             logger.error("[RedisQueue] Retrying to connect...")
             self.pubsub = self.queue.pubsub()
@@ -117,10 +116,10 @@ class RedisQueue(MessageChannel):
             f"[RedisQueue] Doing push(). Name {name} and values {values}")
         try:
             result = self.queue.lpush(name, *values)
-        except Exception as e:  #TODO TBD as part of Task/Robustness rework
+        except Exception as e:  #pylint: disable=broad-except
             logger.debug(f"[RedisQueue] Exception occured in push '{e}'")
             logger.debug(
-                "[RedisQueue] Trying one more time with wait of 5 seconds")
+                "[RedisQueue] Trying again with wait of 5 seconds")
             self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             time.sleep(5)
             result = self.queue.lpush(name, *values)
@@ -130,10 +129,10 @@ class RedisQueue(MessageChannel):
         logger.debug(f"[RedisQueue] Doing pop(). Name {name}")
         try:
             result = self.queue.brpop(name)
-        except Exception as e:  #TODO TBD as part of Task/Robustness rework
+        except Exception as e:  #pylint: disable=broad-except
             logger.debug(f"[RedisQueue] Exception occured in pop '{e}'")
             logger.debug(
-                "[RedisQueue] Trying one more time with wait of 5 seconds")
+                "[RedisQueue] Trying again with wait of 5 seconds")
             self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             time.sleep(5)
             result = self.queue.brpop(name)
