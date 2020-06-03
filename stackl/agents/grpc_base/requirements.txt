@@ -2,5 +2,5 @@ grpcio==1.29.0
 protobuf==3.11.3
 python-terraform==0.10.1
 kubernetes==10.0.1
-stackl-client==1.0.0.dev1
+stackl-client==0.1.0
 pyyaml

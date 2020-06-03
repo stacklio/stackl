@@ -1,21 +1,18 @@
 image:
   pullPolicy: Always
 
-mode: prod # dev
-
+mode: prod
 
 stacklAgent:
-  image: stacklio/stackl-kubernetes-agent:dev
+  image: stacklio/stackl-kubernetes-agent:0.1.0
   name: stackl-agent
-  stacklHost: https://stackl.dome.dev
-  grpcHost: https://stackl-grpc.dome.dev
-  replicas: 1
-#  secretHandler: base64
-  agentName: vsphere
-  selector: "vsphere.*.*"
+  replicaCount: 1
+  agentName: agent
+  selector: "example.*.*"
   secretHandler: vault
-  vaultAddr: https://secrets.d.dome.dev
+  vaultAddr: https://vault.example.com
   vaultRole: stackl
+  vaultMountPoint: auth/kubernetes
 
 # example imagePullSecrets: [name: pull-secret-name]
 imagePullSecrets: []

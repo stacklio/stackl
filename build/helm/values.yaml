@@ -18,14 +18,14 @@ agentBroker:
   type: grpc
 
 stacklRest:
-  image: stacklio/stackl-rest:dev
+  image: stacklio/stackl-rest:0.1.0
   name: stackl-rest
   serviceType: NodePort
   hostname: stackl.dome.dev
   replicaCount: 1
 
 stacklWorker:
-  image: stacklio/stackl-worker:dev
+  image: stacklio/stackl-worker:0.1.0
   name: stackl-worker
   replicaCount: 1
 
@@ -34,19 +34,8 @@ stacklRedis:
   name: stackl-redis
   replicaCount: 1
 
-stacklAgent:
-  image: stacklio/stackl-kubernetes-agent:dev
-  name: stackl-agent
-  replicaCount: 1
-  agentName: main-agent
-  selector: "aws.*.*"
-  secretHandler: vault
-  vaultAddr: https://secrets.d.dome.dev
-  vaultRole: stackl-aws
-  vaultMountPoint: auth/k8s-aws
-
 stacklOpa:
-  image: openpolicyagent/opa:latest
+  image: openpolicyagent/opa:0.20.5
   name: stackl-opa
   hostname: opa.dome.dev
   replicaCount: 1
