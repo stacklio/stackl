@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
 
 
 class BaseDocument(BaseModel):
@@ -22,13 +22,6 @@ class BaseDocument(BaseModel):
                 "type": "stack_instance"
             }
         }
-
-
-class ResultDocument(BaseModel):
-    name: str
-    description = "ResultDocument"
-    type: str
-    result_code: int
 
 
 class CollectionDocument(BaseModel):

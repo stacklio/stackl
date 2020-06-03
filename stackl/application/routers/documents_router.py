@@ -1,10 +1,8 @@
 import logging
 from collections.abc import Collection
-
 from fastapi import APIRouter, HTTPException, Request
 
 from enums.stackl_codes import StatusCode
-from manager.manager_factory import ManagerFactory
 from model.configs.document_model import BaseDocument, CollectionDocument
 from stackl_globals import types
 from task_broker.task_broker_factory import TaskBrokerFactory
@@ -13,12 +11,12 @@ from task.document_task import DocumentTask
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
-document_manager = ManagerFactory().get_document_manager()
 task_broker = TaskBrokerFactory().get_task_broker()
 
 
 @router.get('/types')
 def get_types():
+    """Returns a list of the valid document types"""
     return types
 
 
@@ -83,7 +81,7 @@ async def post_document(document: BaseDocument):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result
@@ -105,7 +103,7 @@ async def put_document(document: BaseDocument, request: Request):
     result = await task_broker.get_task_result(task.id)
     logger.info(f"[PutDocument] API PUT request with result: '{result}'")
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
 
@@ -127,7 +125,7 @@ async def delete_document(type_name: str, name: str):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result

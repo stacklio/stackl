@@ -23,12 +23,12 @@ class ResultTask(Task):
 
     def _parse_source_task(self, json_obj):
         source_task = json_obj.get('source_task', None)
-        if source_task == None:
+        if source_task is None:
             raise Exception(
                 'source_task must be set when creating a ResultTask')
-        if type(source_task) == str:
+        if isinstance(source_task, str):
             self.source_task = str(source_task)
-        elif type(source_task) == dict:
+        elif isinstance(source_task, dict):
             self.source_task = str(source_task)
         elif issubclass(type(source_task), Task):
             self.source_task = source_task.as_json_string()

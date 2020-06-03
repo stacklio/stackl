@@ -6,14 +6,13 @@ from enums.task_topic import TaskTopic
 class TaskFactory:
     @staticmethod
     def create_task(task_data):
-        if type(task_data) == bytes or type(task_data) == str:
+        if isinstance(task_data, bytes) or isinstance(task_data, str):
             task_data = json.loads(task_data)
-        elif type(task_data) != dict:
+        elif not isinstance(task_data, dict):
             raise Exception("[TaskFactory] task_data must be string or dict")
         task_topic = task_data.get('topic', 'unknown')
         try:
             task = TaskTopic[task_topic].value
             return task(task_data)
         except Exception:
-            raise Exception("[TaskFactory] Invalid task_topic: " +
-                            str(task_topic))
+            raise Exception(f"[TaskFactory] Invalid task_topic: {task_topic}")

@@ -5,8 +5,11 @@ class SnapshotTask(Task):
     @property
     def valid_subtypes(self):
         return [
-            "GET_SNAPSHOT", "LIST_SNAPSHOT", "CREATE_SNAPSHOT",
-            "RESTORE_SNAPSHOT", "DELETE_SNAPSHOT"
+            "GET_SNAPSHOT",
+            "LIST_SNAPSHOT",
+            "CREATE_SNAPSHOT",
+            "RESTORE_SNAPSHOT",
+            "DELETE_SNAPSHOT"
         ]
 
     def _load_json_object(self, json_obj):

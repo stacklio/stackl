@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylin
 

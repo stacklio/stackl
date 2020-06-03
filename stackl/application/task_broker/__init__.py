@@ -10,7 +10,6 @@ from enums.stackl_codes import StatusCode
 from utils.general_utils import get_absolute_time_seconds
 
 logger = logging.getLogger("STACKL_LOGGER")
-
 empty_result_dict = {"task_id_of_result": None, "result": None}
 
 
@@ -69,7 +68,7 @@ class TaskBroker(ABC):
 
     def remove_task_from_queue(self, id_task_to_remove):
         task_queue = stackl_globals.get_task_queue()
-        for i in range(len(task_queue)):
+        for i in enumerate(task_queue):
             if task_queue[i]["id"] == id_task_to_remove:
                 task_queue.pop(i)
                 logger.debug(
@@ -103,7 +102,7 @@ class TaskBroker(ABC):
         self.result_dict["task_id_of_result"] = source_task_id
         self.result_dict["result"] = result_task.return_result
 
-        if not StatusCode.isSuccessful(result_task.result_code):
+        if not StatusCode.is_successful(result_task.result_code):
             logger.debug(
                 f"[TaskBroker] handle_result_task. Result was a failure. Rolling back.'"
             )
@@ -123,10 +122,9 @@ class TaskBroker(ABC):
 
                 self.result_dict = empty_result_dict
                 return result
-            else:
-                logger.debug(
-                    f"[TaskBroker] get_task_result. No result yet, waiting.")
-                await self.asyncio_task_completed.wait()
+            logger.debug(
+                f"[TaskBroker] get_task_result. No result yet, waiting.")
+            await self.asyncio_task_completed.wait()
 
     # Run in thread
     def task_queue_monitor(self):
@@ -137,7 +135,6 @@ class TaskBroker(ABC):
                 logger.debug(
                     f"[TaskBroker] task_queue_monitor. len task_queue is '{len(task_queue)}'. Waiting until task added or earliest_task_timer '{earliest_task_timer['timeout']}'"
                 )
-
                 self.task_signal.wait(timeout=earliest_task_timer["timeout"])
 
                 new_earliest_task_timer = self._get_earliest_timeout_task()
@@ -158,12 +155,11 @@ class TaskBroker(ABC):
                                 new_earliest_task_timer["task_id"])
 
                             self.result_dict[
-                                "task_id_of_result"] = new_earliest_task_timer[
-                                    "task_id"]
+                                "task_id_of_result"] = new_earliest_task_timer["task_id"]
                             self.result_dict["result"] = StatusCode.ROLLBACKED
                             self.asyncio_task_completed.set()
                 self.task_signal.clear()
-        except Exception as e:
+        except Exception as e:  #pylint: disable=broad-except
             logger.error(
                 f"[TaskBroker] task_queue_monitor. Encountered an issue. Exception: '{e}'"
             )
@@ -196,7 +192,7 @@ class TaskBroker(ABC):
             f"[TaskBroker] rollback_task. Task with id '{id_task_to_rollback}' did not compleet succesfully. Initiating rollback and removing from queue."
         )
         task_queue = stackl_globals.get_task_queue()
-        for i in range(len(task_queue)):
+        for i in enumerate(task_queue):
             if task_queue[i]["id"] == id_task_to_rollback:
                 task_to_rollback = json.loads(task_queue[i]["task"])
                 logger.debug(
@@ -211,7 +207,6 @@ class TaskBroker(ABC):
                         target=self.document_manager.rollback_task,
                         args=[task_to_rollback])
                     thread.start()
-                    continue
                 elif task_to_rollback["topic"] == "snapshot_task":
                     logger.info(
                         f"[TaskBroker] Rollback SnapshotTask with subtype \'{task_to_rollback['subtype']}\'"
@@ -220,7 +215,6 @@ class TaskBroker(ABC):
                         target=self.snapshot_manager.rollback_task,
                         args=[task_to_rollback])
                     thread.start()
-                    continue
                 elif task_to_rollback["topic"] == "agent_task":
                     logger.info(
                         f"[TaskBroker] Rollback AgentTask with subtype \'{task_to_rollback['subtype']}\'"
@@ -229,7 +223,6 @@ class TaskBroker(ABC):
                         target=self.agent_broker.rollback_task,
                         args=[task_to_rollback])
                     thread.start()
-                    continue
                 elif task_to_rollback["topic"] == "stack_task":
                     logger.info(
                         f"[TaskBroker] Rollback StackTask with subtype \'{task_to_rollback['subtype']}\'"
@@ -238,5 +231,4 @@ class TaskBroker(ABC):
                         target=self.stack_manager.rollback_task,
                         args=[task_to_rollback])
                     thread.start()
-                    continue
             return

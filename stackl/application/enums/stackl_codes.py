@@ -17,11 +17,11 @@ class StatusCode(IntEnum):
     NOT_FOUND = 404  # Client Error: The request is not found
     CONFLICT = 409  # Client Error: The request conflicts with the state of the server
     ROLLBACKED = 410  # Client Error: The request conflicts with the state of the server
-    
+
     INTERNAL_ERROR = 500  # Server Error: STACKL has encountered an error it does not know how to handle.
 
     @classmethod
-    def isSuccessful(cls, code):
+    def is_successful(cls, code):
         if isinstance(code, StatusCode):
             return 200 <= code.value < 400
         else:
