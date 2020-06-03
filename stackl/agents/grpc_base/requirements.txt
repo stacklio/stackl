@@ -1,4 +1,4 @@
-# grpcio==1.29.0
+grpcio==1.29.0
 protobuf==3.11.3
 python-terraform==0.10.1
 kubernetes==10.0.1
