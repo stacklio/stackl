@@ -1,19 +1,17 @@
 import logging
 from collections.abc import Collection
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 
 from enums.stackl_codes import StatusCode
-from manager.manager_factory import ManagerFactory
-from model.configs.document_model import BaseDocument, CollectionDocument
+from model.configs.document_model import CollectionDocument
 from model.history.snapshot_model import Snapshot
 from task_broker.task_broker_factory import TaskBrokerFactory
 from task.snapshot_task import SnapshotTask
 
+
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
-
-document_manager = ManagerFactory().get_document_manager()
 task_broker = TaskBrokerFactory().get_task_broker()
 
 
@@ -76,7 +74,7 @@ async def create_snapshot(type_name: str, name: str):
     })
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result
@@ -95,7 +93,7 @@ async def restore_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     })
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result
@@ -115,7 +113,7 @@ async def delete_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result

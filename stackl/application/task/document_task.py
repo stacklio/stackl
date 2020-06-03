@@ -15,7 +15,7 @@ class DocumentTask(Task):
         super()._load_json_object(json_obj)
         self.topic = 'document_task'
         self.document = json_obj.get('document', None)
-        subtype = json_obj.get('subtype', [None])
+        subtype = json_obj.get('subtype', None)
         if subtype in self.valid_subtypes:
             self.subtype = subtype
         else:

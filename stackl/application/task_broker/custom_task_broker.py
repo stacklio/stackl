@@ -8,7 +8,6 @@ from utils.general_utils import get_hostname
 logger = logging.getLogger("STACKL_LOGGER")
 
 
-##TODO WIP for during the Task Rework
 class CustomTaskBroker(TaskBroker):
     def __init__(self):
         super().__init__()
@@ -17,14 +16,14 @@ class CustomTaskBroker(TaskBroker):
 
     def start_stackl(self,
                      manager_factory=None,
-                     subscribe_channels=[],
+                     subscribe_channels=None,
                      agent_broker=None):
         super().start_stackl(manager_factory, subscribe_channels, agent_broker)
         logger.debug(
             "[CustomTaskBroker] Starting CustomTaskBroker for STACKL.")
         self.message_channel.start(self.get_task_handler(), subscribe_channels)
 
-    def start_worker(self, subscribe_channels=[]):
+    def start_worker(self, subscribe_channels=None):
         logger.debug(
             "[CustomTaskBroker] Starting CustomTaskBroker for Worker.")
         super().start_worker(subscribe_channels)
@@ -44,8 +43,7 @@ class CustomTaskBroker(TaskBroker):
                 if getattr(task_obj, "return_channel", None) is None:
                     task_obj.return_channel = get_hostname()
                     logger.debug(
-                        "[CustomTaskBroker] give_task. Adding return_channel: '{0}'"
-                        .format(task_obj.return_channel))
+                        f"[CustomTaskBroker] give_task. Adding return_channel: '{task_obj.return_channel}'")
                 # if getattr(task_obj, "send_channel", None) is "agent":
                 #     task_obj.send_channel = self.agent_broker.get_agent_for_task(
                 #         task_obj)
@@ -61,7 +59,7 @@ class CustomTaskBroker(TaskBroker):
             else:
                 self.message_channel.publish(task_obj)
             return
-        except Exception as e:
+        except Exception as e:  #pylint: disable=broad-except
             logger.error(
                 f"[CustomTaskBroker] Invalid task received. Error message '{e}'"
             )

@@ -4,7 +4,7 @@ from task import Task
 
 class ReportTask(Task):
     @property
-    def valid_subtasks(self):
+    def valid_subtypes(self):
         return ["TBD"]
 
     def _load_json_object(self, json_obj):

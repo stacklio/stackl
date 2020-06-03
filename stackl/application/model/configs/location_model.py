@@ -3,3 +3,4 @@ from model.configs.infrastructure_base_document import InfrastructureBaseDocumen
 
 class Location(InfrastructureBaseDocument):
     type = "location"
+    

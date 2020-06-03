@@ -1,28 +1,17 @@
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any
 from collections.abc import Collection
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
 
 from enums.stackl_codes import StatusCode
-from manager.manager_factory import ManagerFactory
-from model.items.stack_instance_model import StackInstance
-from model.configs.document_model import BaseDocument, CollectionDocument
-
+from model.configs.document_model import CollectionDocument
 from task.stack_task import StackTask
 from task_broker.task_broker_factory import TaskBrokerFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
-
 router = APIRouter()
-
-manager_factory = ManagerFactory()
-document_manager = manager_factory.get_document_manager()
-user_manager = manager_factory.get_user_manager()
-stack_manager = manager_factory.get_stack_manager()
-task_broker_factory = TaskBrokerFactory()
-task_broker = task_broker_factory.get_task_broker()
+task_broker = TaskBrokerFactory().get_task_broker()
 
 
 class StackInstanceInvocation(BaseModel):
@@ -65,7 +54,7 @@ class StackInstanceUpdate(BaseModel):
 async def get_stack_instance(name: str):
     """Returns a stack instance with a specific name"""
     logger.info(
-        f"[StackInstancesName GET] Getting document for stack instance {name} using manager"
+        f"[StackInstancesName GET] Getting document for stack instance '{name}'"
     )
     task = StackTask({
         'channel': 'worker',
@@ -114,8 +103,7 @@ async def get_stack_instances(name: str = ""):
 
 
 @router.post('')
-async def post_stack_instance(
-    stack_instance_invocation: StackInstanceInvocation):
+async def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
 
@@ -131,7 +119,7 @@ async def post_stack_instance(
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return {
@@ -155,7 +143,7 @@ async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
 
@@ -164,17 +152,11 @@ async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
         'message': 'Stack instance updating'
     }, StatusCode.ACCEPTED
 
+
 @router.delete('/{name}')
 async def delete_stack_instance(name: str):
     """Delete a stack instance with a specific name"""
     logger.info(f"[StackInstances DELETE] Received DELETE request for {name}")
-    stack_instance_exists = document_manager.get_document(
-        type="stack_instance", name=name)
-    if not stack_instance_exists:
-        return {
-            'return_code': StatusCode.NOT_FOUND,
-            'message': 'Stack instance ' + str(name) + ' not found'
-        }, StatusCode.NOT_FOUND
     json_data = {}
     json_data['name'] = name
     task = StackTask({
@@ -188,7 +170,7 @@ async def delete_stack_instance(name: str):
 
     result = await task_broker.give_task(task)
 
-    if not StatusCode.isSuccessful(result):
+    if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
     return result
