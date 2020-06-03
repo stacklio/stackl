@@ -43,16 +43,18 @@ if __name__ == '__main__':
         f'starting {os.environ["AGENT_NAME"]} agent to {os.environ["STACKL_GRPC_HOST"]}'
     )
     channel_opts = [
-        (
-            # Interval at which grpc will send keepalive pings
-            'grpc.keepalive_time_ms',
-            1000),
-        (
-            # Amount of time grpc waits for a keepalive ping to be
-            # acknowledged before deeming the connection unhealthy and closing
-            # this also sets TCP_USER_TIMEOUT for the underlying socket to this value
-            'grpc.keepalive_timeout_ms',
-            500)
+        ('grpc.keepalive_time_ms', 10000),
+        # send keepalive ping every 10 second, default is 2 hours
+        ('grpc.keepalive_timeout_ms', 5000),
+        # keepalive ping time out after 5 seconds, default is 20 seoncds
+        ('grpc.keepalive_permit_without_calls', True),
+        # allow keepalive pings when there's no gRPC calls
+        ('grpc.http2.max_pings_without_data', 0),
+        # allow unlimited amount of keepalive pings without data
+        ('grpc.http2.min_time_between_pings_ms', 10000),
+        # allow grpc pings from client every 10 seconds
+        ('grpc.http2.min_ping_interval_without_data_ms',  5000),
+        # allow grpc pings from client without data every 5 seconds
     ]
 
     with grpc.insecure_channel(f"{os.environ['STACKL_GRPC_HOST']}",
