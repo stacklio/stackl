@@ -21,7 +21,7 @@ stacklRest:
   image: stacklio/stackl-rest:0.1.0
   name: stackl-rest
   serviceType: NodePort
-  hostname: stackl.dome.dev
+  hostname: stackl.example.com
   replicaCount: 1
 
 stacklWorker:
@@ -37,7 +37,7 @@ stacklRedis:
 stacklOpa:
   image: openpolicyagent/opa:0.20.5
   name: stackl-opa
-  hostname: opa.dome.dev
+  hostname: opa.example.com
   replicaCount: 1
 
 # example imagePullSecrets: [name: pull-secret-name]
