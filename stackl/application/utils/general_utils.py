@@ -20,6 +20,7 @@ def get_config_key(key):
         f"[General Utils] get_config_key. Key: '{key}'. Value: '{value}'")
     if value:
         return value
+    return {}
 
 
 def generate_random_string(length=10):

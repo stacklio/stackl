@@ -68,9 +68,9 @@ class TaskBroker(ABC):
 
     def remove_task_from_queue(self, id_task_to_remove):
         task_queue = stackl_globals.get_task_queue()
-        for i in enumerate(task_queue):
-            if task_queue[i]["id"] == id_task_to_remove:
-                task_queue.pop(i)
+        for (index, _) in enumerate(task_queue):
+            if task_queue[index]["id"] == id_task_to_remove:
+                task_queue.pop(index)
                 logger.debug(
                     f"[TaskBroker] Task with id '{id_task_to_remove}' succesfully removed !"
                 )
@@ -192,9 +192,9 @@ class TaskBroker(ABC):
             f"[TaskBroker] rollback_task. Task with id '{id_task_to_rollback}' did not compleet succesfully. Initiating rollback and removing from queue."
         )
         task_queue = stackl_globals.get_task_queue()
-        for i in enumerate(task_queue):
-            if task_queue[i]["id"] == id_task_to_rollback:
-                task_to_rollback = json.loads(task_queue[i]["task"])
+        for (index, _) in enumerate(task_queue):
+            if task_queue[index]["id"] == id_task_to_rollback:
+                task_to_rollback = json.loads(task_queue[index]["task"])
                 logger.debug(
                     f"[TaskBroker] rollback_task. task_to_rollback: '{task_to_rollback}'."
                 )
