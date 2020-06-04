@@ -34,8 +34,8 @@ class AgentTaskBroker:
         for service in stack_instance.services:
             service_name = service
             logger.debug(f"[AgentTaskBroker] service name: '{service_name}")
-            service_doc = document_manager.get_document(
-                type="service", name=service_name)
+            service_doc = document_manager.get_document(type="service",
+                                                        name=service_name)
             logger.debug(f"[AgentTaskBroker] service doc: '{service_doc}")
 
             # infrastructure target and agent are the same for each service, make sure we use the same agent for
