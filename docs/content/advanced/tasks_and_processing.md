@@ -64,7 +64,7 @@ Each request made to STACKL's API is transformed into an atomic task object that
 This task is then given to the task broker where it will be processed until either a mandatory timeout expires, it is processed succesfully, or has to be rollbacked.
 Depending on the request, the API will either starts asynchronously waiting on the result of the task, waiting until the timeout in the worst case, or is immediately given the future location where the result of the request may be reviewed.
 
-There is no logic in the API and it is completely asynchronous and decoupled from the task processing and will not block.
+There is no computational logic in the API and it is completely asynchronous and decoupled from the task processing and will not block.
 If the task should normally be done relatively soon, it justs awaits the result of the task asynchronously, allowing other work to be done in the meantime by the program and ensure a bounded waiting time.
 Alternatively, if the task duration is long, it will not wait but simply allow the result of the task to be examined at a later point in time.
 There is still a mandatory timeout in this case which will stop and rollback the task if exceeded, to avoid tasks from returning results long after they are relevant.
@@ -73,32 +73,35 @@ Accordingly, eventual consistency between the producer, his requests, the IT env
 
 ## Tasks
 
-Tasks are atomic units of work constructed by STACKL when receiving an API call.
-These can be: creating or modifying documents, creating or instantiating stack templates, complex queries, and so on.
-The lifetime of a task is based on the principle of eventual consistency: either all actions in a task are performed correctly, including at the user and in the datastore, or it fails, due to a timeout or failure result, and all made changes are rolled back to the previous state.
+Tasks are atomic units of work made by STACKL to correctly handle requests.
+They are the basis on which STACKL can model, describe, and automate a clients IT environment while maintaining scalability, consistency, and accurate result reports.
+The lifetime of a task is from the time of the request until a mandatory timeout or a result-based completion. 
+Critical for STACKL is the principle of eventual consistency: either all actions in tasks are performed correctly and completely, including in the IT environment and STACKL's datastore, or it fails, due to a timeout or failure result, and all made changes are rolled back to the previous state.
 Once the desired state is achieved or rolled back and this is correctly represented in STACKL and is consistent, the task is removed.
 
 Tasks have the following properties:
 
 * **Atomicity:** Done entirely or not-at-all
+* **Id:** A task has a unique identifier
+* **Timeout:** A task has timeout which is monitored from the moment it is available to be done
+* **Source:** A task has a source, the entity which made the initial request
 * **Topics:** What the task is about
-* **Status:** A report of the current state of the task, either Available, (In-Progress), Failed or Completed
-* **Self-contained:** A task contains all the info needed to execute it at processing time, to allow for workers to be stateless and simplifying rollback
-* **Subproperties:** Depending on the topic, there can be other necessary subproperties
+* **Subtype:** The subtype related to the topic, what the task needs to do within the topic domain
+* **Self-contained:** A task contains all the info needed to execute it at processing time, to allow for workers to be stateless and simplifying rollback. This can be in additional arguments or included documents
 
 ### Task Topics
 
-TODO
+<!-- TODO
 
 Stack Task
 
 Result Task
 
-Document Task
+Document Task -->
 
 ## Task Broker
 
-The Task broker manages tasks atomically: done completely or rolled-back.
+<!-- The Task broker manages tasks atomically: done completely or rolled-back.
 It is a pluggable module that is chosen during the deployment of STACKL.
 The pluggable module is accessed transparently through a general wrapper/interface, the  task broker interface.
 A pluggable task broker implements this interface so that tasks are always interacted with in the same way, independent from the backend, and only the performance characteristics change.
@@ -107,23 +110,23 @@ The task broker itself does not process tasks but only manages them.
 It accepts the tasks from producers and communicates them to workers.
 Before delegating tasks for processing, it may add additional information such as communication parameters so that the task is self-contained.
 
-See [Task Broker Interface]({{< ref "../modules/task_broker_interface.md" >}}) for information about the available modules and how to create your own.
+See [Task Broker Interface]({{< ref "../modules/task_broker_interface.md" >}}) for information about the available modules and how to create your own. -->
 
 
 ## Task Processing Module
 
 ### Message Channel
 
-The message channel is the medium through which STACKL communicates with other parties during the processing of a task.
+<!-- The message channel is the medium through which STACKL communicates with other parties during the processing of a task.
 It is a pluggable module that is chosen during the deployment of STACKL.
 The pluggable module is accessed transparently through an interface, the message channel interface.
 Each plugged technology, whether custom or third-party, provides an implementation of this interface so that from tasks are communicated in the same way, independent from the backend, and only the performance characteristics change.
 
-See [Message Channel Interface]({{< ref "../modules/message_channel_interface.md" >}}) for information about the available modules and how to create your own.
+See [Message Channel Interface]({{< ref "../modules/message_channel_interface.md" >}}) for information about the available modules and how to create your own. -->
 
 ### Workers
 
-Workers are software entities that process the tasks and function as self-contained logic engines.
+<!-- Workers are software entities that process the tasks and function as self-contained logic engines.
 Workers are stateless, able to communicate with STACKL and agents, and able to execute the actions described in a task.
 This allows horizontal scalability and to keep the concept of a worker general for extensibility.
 
@@ -134,17 +137,17 @@ For the processing of tasks, they have to be able to:
 * Do processing on key/value documents
 * Report back a result
 * Communicate with agents
-* Access the database
+* Access the database -->
 
 #### Worker containers
 
-Workers, when implemented as containers, use several parts of the codebase of STACKL to manage tasks.
+<!-- Workers, when implemented as containers, use several parts of the codebase of STACKL to manage tasks.
 There is a hierarchical processing structure based on responsibilities which consists of the top-level Worker, mid-level Managers and bottom-level Handlers.
 
 A Worker does the high-level task management and has two responsibilities: (1) retrieving/receiving the Task from the TB and (2) delegating the (parts of the) task to a suitable Manager.
 
 A Manager does the low-level task management and has three responsibilities: (1) handle the main persistent results of in the task, such as writing to the database and communicating with agents, (2) publish the result of the task (success/failure), and (3) delegating the processing elements of the tasks to suitable Handlers.
 
-Handlers do the computational parts of the tasks, for instance, constraint solving and potentially storing intermediary results of the task.
+Handlers do the computational parts of the tasks, for instance, constraint solving and potentially storing intermediary results of the task. -->
 
 ## History Datastore
