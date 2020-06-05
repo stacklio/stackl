@@ -42,7 +42,7 @@ The following parameters control the STACKL Helm deployment in [values.yaml](htt
 | `stacklrest.name` | Set the name of stackl-rest | stackl-rest |
 | `stacklrest.hostname` | Hostname of stackl-rest | stackl.local |
 | `stacklrest.replicaCount` | Replicas of stackl-rest | 1 |
-| `stacklworker.image` | Set the image to use for stackl-worker | stacklio/stackl-worker:dev |
+| `stacklworker.image` | Set the image to use for stackl-worker | stacklio/stackl-worker |
 | `stacklworker.name`| Set the name for stackl-worker | stackl-worker |
 | `stacklworker.replicaCount` | Replicas for stackl-worker | 1 |
 | `stacklredis.image` | Set the image for redis | redis:5.0.5 |

@@ -155,7 +155,7 @@ vagrant destroy -f
 
 This section shows how to quickly deploy STACKL on top of Kubernetes to try it out.
 
-#### Install Helm charts
+#### Install Stackl
 
 These steps assume Kubernetes is deployed with Microk8s. If you are using a different Kubernetes provider, the steps should be similar. You may need to use a different Service configuration at the end. You should have already cloned the Helm repository, if not you can clone the repository with: `git clone https://github.com/stacklio/stackl.git`.
 
@@ -178,6 +178,21 @@ watch kubectl get pods -n stackl
 ```
 
 At this point STACKL is up and running.
+
+#### Stackl agent
+
+The Stackl Helm chart will not install an agent, which is used to perform automation. For the stackl-agent a separate helm chart is used.
+The Stackl agent can be installed within the same namespace, another namespace or even another kubernetes cluster. As long as the stackl agent
+is able to establish a http/2 connection to stackl.
+
+Jobs can be limited to specified agents with the stacklAgent.selector value. This is in the format of <environment>.<location>.<zone> 
+using * instead of the name of an environment, location or zone will make it so the agent can be used for each of those.
+
+Install the stackl-agent:
+
+```sh
+helm install stackl/build/helm-agent -n stackl agent
+```
 
 #### Persistent storage
 
