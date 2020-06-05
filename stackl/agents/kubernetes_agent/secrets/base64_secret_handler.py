@@ -24,7 +24,7 @@ class Base64SecretHandler(SecretHandler):
         }]
 
     def _provisioning_secrets(self, format: str):
-        secrets = self._stack_instance.services[self._invoc.service].secrets
+        secrets = self.secrets
         decoded_secrets = {}
         for key, secret in secrets.items():
             try:
