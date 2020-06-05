@@ -4,11 +4,13 @@ image:
 mode: prod
 
 stacklAgent:
-  image: stacklio/stackl-kubernetes-agent:0.1.0
+  image: stacklio/stackl-kubernetes-agent:0.1.1
   name: stackl-agent
   replicaCount: 1
   agentName: agent
-  selector: "example.*.*"
+  grpcHost: stackl-rest:50051
+  stacklHost: stackl-rest:8080
+  selector: "*.*.*"
   secretHandler: vault
   vaultAddr: https://vault.example.com
   vaultRole: stackl

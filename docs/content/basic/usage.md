@@ -132,9 +132,12 @@ category: configs
 description: production environment
 name: production
 params: {}
+packages:
+- linux
+- nginx
 secrets:
-  aws_access_key: ZXhhbXBsZV9rZXk=
-  aws_secret_key: ZXhhbXBsZV9zZWNyZXRfa2V5
+  aws_access_key: YWNjZXNzX2tleQ==
+  aws_secret_key: c2VjcmV0X2tleQ==
 type: environment
 tags:
   environment: production
@@ -287,75 +290,97 @@ policies: {}
 Now that we have everything in place we can create our webserver, use the following command:
 
 ```json
-stackl create instance --stack-application-template ct_k8s_nexus --stack-infrastructure-template dome --tags '{"environment": "production"}' ansibal14
+stackl create instance --stack-application-template web --stack-infrastructure-template stackl -p '{"machine_name": "test", "instance_type": "t2.micro"}' demo_instance
 ```
 
-This will initiate the creation of our Stack Instance. Which is the result of combining a SAT (Stack Application Template) and a SIT (Stack Infrastructure Template). When we we want to create a Stack Instance, STACKL will first evaluate all the possible infrastructure targets where the application can be deployed. After finding a possible targets, all the params will be combined and added to the stack instance so they can be used in our automation code. Repeating keys will be overwritten in the following order:
+This will initiate the creation of our stack instance, which is the result of combining a SAT (Stack Application Template) and a SIT (Stack Infrastructure Template). When we we want to create a Stack Instance, STACKL will first evaluate all the possible infrastructure targets where the application can be deployed. After finding a possible target, all the params are combined and added to the stack instance so they can be used in our automation code.
+
+Here is the order of precedence for variables from least to greatest (the last listed variables winning prioritization):
 
 ```sh
 Environment -> Location -> Zone -> Service -> Functional Requirement -> Supplied Params
 ```
 
-Which means that if we define the same variable in Environment and in Service, the one from Service will be used.
-
-The connection credentials will be used to ssh onto our server.
-
 Stackl will now use these variables in its invocations to create our instance. After a while we can see the status of our stack instance by using the GET /stack_instance/demo_instance, we should see the following:
 
 ```json
 {
-    "category": "items",
-    "deleted": false,
-    "name": "demo_instance",
-    "services": {
-        "webserver": {
-            "connection_credentials": {
-                "password": "ubuntu",
-                "username": "ubuntu"
-            },
-            "hosts": [
-                "10.10.8.156"
-            ],
-            "infrastructure_target": "production.brussels.cluster1",
-            "provisioning_parameters": {
-                "CPU": "4GHz",
-                "RAM": "4GB",
-                "aws_ami": "ami-12345",
-                "cluster": "CL01",
-                "config": [
-                    "linux",
-                    "nginx"
-                ],
-                "datacenter": "DC01",
-                "datastore": "vsanDatastore",
-                "folder": "vsphere_folder",
-                "hostname": "vsphere.local",
-                "network": "VMXnetwork",
-                "password": "password",
-                "port": "8080",
-                "replicas": "1",
-                "username": "administrator@vsphere.local",
-                "vm_name": "example",
-                "vmw_image": "ubuntu1804_template_vmw",
-                "webserver": "nginx"
-            },
-            "status": [
-                {
-                    "error_message": "",
-                    "functional_requirement": "nginx",
-                    "status": 2
+  "name": "demo_instance",
+  "deleted": false,
+  "instance_params": {
+    "machine_name": "test",
+    "instance_type": "t2.micro"
+  },
+  "instance_secrets": {},
+  "services": {
+    "webserver": [
+      {
+        "infrastructure_target": "production.ireland.eu-west-1-a",
+        "provisioning_parameters": {
+          "aws_region": "eu-west-1",
+          "ami_name_value": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*",
+          "nginx_http_template_enable": true,
+          "nginx_http_template": {
+            "default": {
+              "template_file": "http/default.conf.j2",
+              "conf_file_name": "default.conf",
+              "conf_file_location": "/etc/nginx/conf.d/",
+              "servers": {
+                "server1": {
+                  "listen": {
+                    "listen_localhost": {
+                      "port": "8080"
+                    }
+                  },
+                  "server_name": "localhost",
+                  "error_page": "/usr/share/nginx/html",
+                  "autoindex": false,
+                  "web_server": {
+                    "locations": {
+                      "default": {
+                        "location": "/",
+                        "html_file_location": "/usr/share/nginx/html",
+                        "html_file_name": "index.html",
+                        "autoindex": false
+                      }
+                    },
+                    "http_demo_conf": false
+                  }
                 }
-            ]
+              }
+            }
+          },
+          "machine_name": "test",
+          "instance_type": "t2.micro"
+        },
+        "secrets": {
+          "aws_access_key": "YWNjZXNzX2tleQ==",
+          "aws_secret_key": "c2VjcmV0X2tleQ=="
         }
+      }
+    ]
+  },
+  "stack_infrastructure_template": "stackl",
+  "stack_application_template": "web",
+  "status": [
+    {
+      "functional_requirement": "linux",
+      "infrastructure_target": "production.ireland.eu-west-1-a",
+      "service": "webserver",
+      "status": 0,
+      "error_message": ""
     },
-    "type": "stack_instance"
+    {
+      "functional_requirement": "nginx",
+      "infrastructure_target": "production.ireland.eu-west-1-a",
+      "service": "webserver",
+      "status": 0,
+      "error_message": ""
+    }
+  ],
+  "type": "stack_instance",
+  "category": "items"
 }
 ```
 
-Our Stack Instance is now ready, we should now be able to go to
-
-```sh
-curl 10.10.8.156:8080
-```
-
-and see the default NGINX welcome message.
+Our Stack Instance is now ready, we should now be able to go to the VM and see the default NGINX welcome message.
