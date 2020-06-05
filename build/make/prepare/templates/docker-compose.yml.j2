@@ -6,7 +6,7 @@ networks:
 services:
   stackl-rest:
     restart: always
-    image: stacklio/stackl-rest:0.1.0
+    image: stacklio/stackl-rest:0.1.1
     container_name: stackl_app
     depends_on:
       - stackl-redis
@@ -39,7 +39,7 @@ services:
       - WEB_CONCURRENCY=1
   stackl-worker:
     restart: always
-    image: stacklio/stackl-worker:0.1.0
+    image: stacklio/stackl-worker:0.1.1
     networks:
       - stackl_bridge
     stdin_open: true
@@ -81,12 +81,12 @@ services:
   stackl-agent:
     restart: always
 {% if agent_broker_type == 'Local' %}
-    image: stacklio/stackl-docker-agent:0.1.0
+    image: stacklio/stackl-docker-agent:0.1.1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
 {% else %}
-    image: stacklio/stackl-kubernetes-agent:0.1.0
+    image: stacklio/stackl-kubernetes-agent:0.1.1
 {% endif %}
     networks:
       - stackl_bridge
