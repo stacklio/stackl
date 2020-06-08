@@ -116,10 +116,6 @@ async def post_stack_instance(stack_instance_invocation: StackInstanceInvocation
     logger.info(
         f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
     )
-    if not stack_application_template:
-        raise HTTPException(
-            status_code=StatusCode.NOT_FOUND,
-            detail=f'SAT with name {str(infr_template_exists)} does not exist')
 
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)

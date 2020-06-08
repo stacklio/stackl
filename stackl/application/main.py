@@ -17,7 +17,7 @@ from opa_broker.opa_broker_factory import OPABrokerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
     stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router, configurator_router, \
-    policy_agent_router, policy_templates_router
+    policy_agent_router, policy_templates_router, snapshots_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
 
@@ -97,6 +97,9 @@ app.include_router(documents_router.router,
 app.include_router(policy_templates_router.router,
                    prefix="/policy_templates",
                    tags=["policy_templates"])
+app.include_router(snapshots_router.router,
+                   prefix="/snapshots",
+                   tags=["snapshots"])
 app.include_router(policy_agent_router.router,
                    prefix="/policy_agent",
                    tags=["policy_agent"])
