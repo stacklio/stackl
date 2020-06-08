@@ -50,7 +50,7 @@ class DocumentManager(Manager):
             document = task["document"]
             return_result = self.write_document(
                 document,
-                overwrite=True,
+                overwrite=True
             )
         elif task["subtype"] == "DELETE_DOCUMENT":
             (type_name, name) = task["args"]
@@ -104,7 +104,7 @@ class DocumentManager(Manager):
 
     def get_document(self, **keys):
         logger.debug(f"[DocumentManager] get_document. Keys '{keys}'")
-        keys = _process_document_keys(keys)
+        keys = self._process_document_keys(keys)
         logger.debug(
             f"[DocumentManager] get_document. Processed keys '{keys}'")
         store_response = self.store.get(**keys)
@@ -130,7 +130,7 @@ class DocumentManager(Manager):
     def write_document(self, document, overwrite=False, make_snapshot=True):
         logger.debug(
             f"[DocumentManager] write_document.  Document: '{document}'")
-        keys = _process_document_keys(document)
+        keys = self._process_document_keys(document)
 
         document['category'] = keys.get("category")
         document['type'] = keys.get("type")
@@ -178,7 +178,7 @@ class DocumentManager(Manager):
 
     def delete_document(self, **keys):
         logger.debug(f"[DocumentManager] delete_document. Keys '{keys}'")
-        keys = _process_document_keys(keys)
+        keys = self._process_document_keys(keys)
 
         logger.debug("[DocumentManager] Checking if document actually exists")
         doc_obj = self.get_document(**keys)
@@ -209,7 +209,7 @@ class DocumentManager(Manager):
     def get_policy_template(self, policy_name):
         """gets a PolicyTemplate from the store"""
         store_response = self.store.get(type="policy_template",
-                                        document_name=policy_name,
+                                        name=policy_name,
                                         category="configs")
         policy = PolicyTemplate.parse_obj(store_response.content)
         return policy
@@ -220,10 +220,10 @@ class DocumentManager(Manager):
         store_response = self.store.put(policy.dict())
         return store_response.status_code
 
-    def get_stack_instance(self, name):
+    def get_stack_instance(self, stack_instance_name):
         """gets a StackInstance Object from the store"""
         store_response = self.store.get(type="stack_instance",
-                                        name=name,
+                                        name=stack_instance_name,
                                         category="items")
         stack_instance = StackInstance.parse_obj(store_response.content)
         return stack_instance
@@ -231,9 +231,8 @@ class DocumentManager(Manager):
     def write_stack_instance(self, stack_instance):
         """writes a StackInstance object to the store
         """
-        self.write_document(stack_instance.dict(),
-                            overwrite=True,
-                            make_snapshot=True)
+        store_response = self.store.put(stack_instance.dict())
+        return store_response.status_code
 
     def get_stack_infrastructure_template(self,
                                           stack_infrastructure_template_name):
@@ -337,88 +336,6 @@ class DocumentManager(Manager):
         store_response = self.store.delete_configurator_file(statefile_name)
         return store_response.content
 
-    def write_document(self, document, overwrite=False, make_snapshot=True):
-        logger.debug(
-            f"[DocumentManager] write_document.  Document: '{document}'")
-        keys = self._process_document_keys(document)
-
-        document['category'] = keys.get("category")
-        document['type'] = keys.get("type")
-        document['name'] = keys.get("name")
-        document['description'] = keys.get("description")
-
-        logger.debug("[DocumentManager] Checking if document already exists ")
-        store_response = self.store.get(**keys)
-        prev_document = store_response.content
-
-        document['category'] = keys.get("category")
-        document['type'] = keys.get("type")
-        document['name'] = keys.get("name")
-        document['description'] = keys.get("description")
-
-        logger.debug("[DocumentManager] Checking if document already exists ")
-        store_response = self.store.get(**keys)
-        prev_document = store_response.content
-
-        if store_response.status_code == StatusCode.NOT_FOUND:
-            logger.debug(
-                f"[DocumentManager] No document found yet. Creating document with data: {json.dumps(document)}"
-            )
-            store_response = self.store.put(document)
-            return store_response.status_code
-        else:
-            if overwrite:
-                prev_document_string = json.dumps(prev_document)
-                logger.debug(
-                    f"[DocumentManager] Updating document with original contents: {prev_document_string}"
-                )
-                doc_new_string = json.dumps(document)
-                logger.debug(
-                    f"[DocumentManager] Updating document with modified contents: {doc_new_string}"
-                )
-                if prev_document_string == doc_new_string:
-                    logger.debug(
-                        f"[DocumentManager] Original document and new document are the same! NOT updating"
-                    )
-                else:
-                    #Since are overwriting, take a snapshot first
-                    if make_snapshot:
-                        self.snapshot_manager.create_snapshot(
-                            document["type"], document["name"])
-                    store_response = self.store.put(document)
-                    return store_response.status_code
-            else:
-                logger.debug(
-                    f"[DocumentManager] Document already exists and overwrite is false. Returning."
-                )
-                return StatusCode.BAD_REQUEST
-
-    def delete_document(self, **keys):
-        logger.debug(f"[DocumentManager] delete_document. Keys '{keys}'")
-        keys = self._process_document_keys(keys)
-
-        logger.debug("[DocumentManager] Checking if document actually exists")
-        doc_obj = self.get_document(**keys)
-        if doc_obj == {}:
-            logger.debug(
-                "[DocumentManager] No document found or already deleted. Nothing to do."
-            )
-        else:
-            doc_org_string = json.dumps(doc_obj)
-            logger.debug(
-                f"[DocumentManager] Removing document with concent '{doc_org_string}'"
-            )
-            keys['file'] = doc_obj
-            store_response = self.store.delete(**keys)
-            logger.debug(
-                f"[DocumentManager] status: {store_response.status_code}. Reason: {store_response.reason}"
-            )
-            if store_response.status_code == 200:
-                logger.debug("[DocumentManager] Document deleted.")
-            else:
-                logger.debug("[DocumentManager] Document was not deleted.")
-        return store_response.status_code
-
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys
     def _process_document_keys(self, keys):
@@ -448,8 +365,7 @@ class DocumentManager(Manager):
                 keys["type"] = derived_type_from_name_list[0]
             else:
                 raise InvalidDocNameError(name)
-
-    logger.debug(
-        f"[DocumentManager] _process_document_keys. After _process_document_keys '{keys}'"
-    )
-    return keys
+        logger.debug(
+            f"[DocumentManager] _process_document_keys. After _process_document_keys '{keys}'"
+        )
+        return keys

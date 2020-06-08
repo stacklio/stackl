@@ -23,7 +23,7 @@ def instance(stackl_context: StacklContext, stack_infrastructure_template,
              stack_application_template, params, tags, replicas,
              instance_name):
     invocation = stackl_client.StackInstanceInvocation(
-        name=instance_name,
+        stack_instance_name=instance_name,
         stack_infrastructure_template=stack_infrastructure_template,
         stack_application_template=stack_application_template,
         replicas=json.loads(replicas),

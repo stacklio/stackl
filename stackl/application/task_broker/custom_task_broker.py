@@ -1,4 +1,4 @@
-gitimport logging
+import logging
 
 from handler.task_handler import TaskHandler
 from message_channel.message_channel_factory import MessageChannelFactory
