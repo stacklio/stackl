@@ -3,6 +3,15 @@ image:
 
 mode: prod # dev
 
+storage:
+  pvc:
+    size: 1Gi
+    # storageClassName:
+  # nfs:
+  #   server:
+  #   path:
+  #   subPath:
+
 datastore:
   type: Redis
 #  type: LFS
