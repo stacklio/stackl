@@ -78,7 +78,8 @@ def upload_files(directory, stackl_context):
                     f"Error in stackl document, no 'name' found: { path }")
             try:
                 if stackl_doc["type"] in ["environment", "location", "zone"]:
-                    stackl_context.documents_api.put_document(stackl_doc)
+                    stackl_context.infrastructure_base_api.put_infrastructure_base_api(
+                        stackl_doc)
                 if stackl_doc["type"] == "functional_requirement":
                     stackl_context.functional_requirements_api.put_functional_requirement(
                         stackl_doc)

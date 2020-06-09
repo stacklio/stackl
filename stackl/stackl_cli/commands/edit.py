@@ -18,7 +18,8 @@ def edit():
 @click.argument('name')
 @pass_stackl_context
 def zone(stackl_context: StacklContext, name):
-    zone = stackl_context.documents_api.get_document_by_type_and_name("zone", name)
+    zone = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type_and_name(
+        "zone", name)
     new_zone = click.edit(yaml.dump(zone.to_dict(), Dumper=Dumper))
     if new_zone is not None:
         new_zone = yaml.load(new_zone, Loader=yaml.FullLoader)
@@ -32,7 +33,8 @@ def zone(stackl_context: StacklContext, name):
 @click.argument('name')
 @pass_stackl_context
 def location(stackl_context: StacklContext, name):
-    location = stackl_context.documents_api.get_document_by_type_and_name("location", name)
+    location = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type_and_name(
+        "location", name)
     new_location = click.edit(yaml.dump(location.to_dict(), Dumper=Dumper))
     if new_location is not None:
         new_location = yaml.load(new_location, Loader=yaml.FullLoader)
@@ -46,7 +48,8 @@ def location(stackl_context: StacklContext, name):
 @click.argument('name')
 @pass_stackl_context
 def environment(stackl_context: StacklContext, name):
-    environment = stackl_context.documents_api.get_document_by_type_and_name("environment", name)
+    environment = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type_and_name(
+        "environment", name)
     new_environment = click.edit(yaml.dump(environment.to_dict(), Dumper=Dumper))
     if new_environment is not None:
         new_environment = yaml.load(new_environment, Loader=yaml.FullLoader)

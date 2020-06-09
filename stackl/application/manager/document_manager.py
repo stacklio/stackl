@@ -48,10 +48,7 @@ class DocumentManager(Manager):
             return_result = self.write_document(document)
         elif task["subtype"] == "PUT_DOCUMENT":
             document = task["document"]
-            return_result = self.write_document(
-                document,
-                overwrite=True
-            )
+            return_result = self.write_document(document, overwrite=True)
         elif task["subtype"] == "DELETE_DOCUMENT":
             (type_name, name) = task["args"]
             return_result = self.delete_document(type=type_name, name=name)

@@ -15,7 +15,7 @@ from manager.manager_factory import ManagerFactory
 from message_channel.message_channel_factory import MessageChannelFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
-    stack_application_templates_router, \
+    stack_application_templates_router, infrastructure_base_router, \
     stack_infrastructure_templates_router, about_router, configurator_router, \
     policy_agent_router, policy_templates_router, snapshots_router
 from task_broker.task_broker_factory import TaskBrokerFactory
@@ -62,7 +62,9 @@ opa_broker.start(manager_factory)
 
 logger.info(
     "___________________ STARTING STACKL GRPC SERVER ____________________")
-server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=[
+server = grpc.server(
+    futures.ThreadPoolExecutor(max_workers=10),
+    options=[
         ('grpc.keepalive_time_ms', 10000),
         # send keepalive ping every 10 second, default is 2 hours
         ('grpc.keepalive_timeout_ms', 5000),
@@ -73,9 +75,9 @@ server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=[
         # allow unlimited amount of keepalive pings without data
         ('grpc.http2.min_time_between_pings_ms', 10000),
         # allow grpc pings from client every 10 seconds
-        ('grpc.http2.min_ping_interval_without_data_ms',  5000),
+        ('grpc.http2.min_ping_interval_without_data_ms', 5000),
         # allow grpc pings from client without data every 5 seconds
-])
+    ])
 protos.agent_pb2_grpc.add_StacklAgentServicer_to_server(
     AutomationJobDispenser(stackl_globals.redis_cache, document_manager),
     server)
@@ -94,6 +96,9 @@ app = FastAPI(
 app.include_router(documents_router.router,
                    prefix="/documents",
                    tags=["documents"])
+app.include_router(infrastructure_base_router.router,
+                   prefix="/infrastructure_base",
+                   tags=["infrastructure_base"])
 app.include_router(policy_templates_router.router,
                    prefix="/policy_templates",
                    tags=["policy_templates"])
