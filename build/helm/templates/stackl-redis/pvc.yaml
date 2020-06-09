@@ -1,3 +1,6 @@
+{{- if .Values.storage.pvc }}
+{{- if not .Values.storage.nfs }}
+---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -6,6 +9,11 @@ spec:
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
+  {{- with .Values.storage.pvc.storageClassName }}
+  storageClassName: {{ . }}
+  {{- end }}
   resources:
     requests:
-      storage: 1Gi
+      storage: {{ .Values.storage.pvc.size | default "1Gi" }}
+{{ end }}
+{{ end }}
