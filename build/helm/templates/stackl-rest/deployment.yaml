@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: "{{ template "stackl.rest" . }}"
   labels:
-    {{ include "stackl.labels" . | nindent 4 }}
+    {{- include "stackl.labels" . | nindent 4 }}
     component: rest
 spec:
   replicas: {{ .Values.stacklRest.replicas }}
@@ -24,10 +24,10 @@ spec:
       containers:
         - name: stackl-rest
           image: "{{ .Values.stacklRest.image }}"
-          {{ if eq .Values.mode "dev" }}
+          {{- if eq .Values.mode "dev" }}
           args:
             - /start-reload.sh
-          {{ end }}
+          {{- end }}
           resources:
             requests:
               memory: 256Mi
@@ -59,7 +59,7 @@ spec:
               value: "1"
             - name: "PYTHONUNBUFFERED"
               value: "TRUE"
-          {{ if eq .Values.mode "prod"}}
+          {{- if eq .Values.mode "prod"}}
           livenessProbe:
             httpGet:
               path: /docs
