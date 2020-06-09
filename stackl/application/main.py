@@ -16,7 +16,7 @@ from message_channel.message_channel_factory import MessageChannelFactory
 from opa_broker.opa_broker_factory import OPABrokerFactory
 from routers import documents_router, stack_instances_router, functional_requirements_router, services_router, \
     stack_application_templates_router, infrastructure_base_router, \
-    stack_infrastructure_templates_router, about_router, configurator_router, \
+    stack_infrastructure_templates_router, about_router, \
     policy_agent_router, policy_templates_router, snapshots_router
 from task_broker.task_broker_factory import TaskBrokerFactory
 from utils.general_utils import get_hostname
@@ -123,9 +123,6 @@ app.include_router(stack_application_templates_router.router,
 app.include_router(stack_infrastructure_templates_router.router,
                    prefix="/stack_infrastructure_templates",
                    tags=["stack_infrastructure_templates"])
-app.include_router(configurator_router.router,
-                   prefix="/configurator",
-                   tags=["configurator"])
 app.include_router(about_router.router, prefix="/about", tags=["about"])
 
 

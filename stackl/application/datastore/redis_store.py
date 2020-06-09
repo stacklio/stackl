@@ -19,7 +19,7 @@ class RedisStore(DataStore):
 
     def get(self, **keys):
         document_key = keys.get("category") + '/' + keys.get(
-                "type") + '/' + keys.get("name")
+            "type") + '/' + keys.get("document_name")
         logger.debug(f"[RedisStore] get on key '{document_key}'")
 
         content = []
@@ -29,8 +29,8 @@ class RedisStore(DataStore):
                 status_code=StatusCode.NOT_FOUND, content={})
         else:
             content = json.loads(self.redis.get(document_key))
-            response = self._create_store_response(
-                status_code=StatusCode.OK, content=content)
+            response = self._create_store_response(status_code=StatusCode.OK,
+                                                   content=content)
         logger.debug(f"[RedisStore] StoreResponse for get: {response}")
         return response
 
@@ -45,34 +45,6 @@ class RedisStore(DataStore):
         response = self._create_store_response(status_code=StatusCode.OK,
                                                content=content)
         logger.debug(f"[RedisStore] StoreResponse for get: {response}")
-        return response
-
-    def get_configurator_file(self, configurator_file):
-        document_key = 'statefiles/' + configurator_file
-        redis_value = self.redis.get(document_key)
-        if redis_value is None:
-            response = self._create_store_response(
-                status_code=StatusCode.NOT_FOUND, content={})
-        else:
-            response = self._create_store_response(
-                status_code=StatusCode.CREATED,
-                content=json.loads(redis_value))
-        logger.debug(f"[RedisStore] StoreResponse for get: {response}")
-        return response
-
-    def put_configurator_file(self, name, configurator_file):
-        document_key = 'statefiles/' + name
-        self.redis.set(document_key, json.dumps(configurator_file))
-        response = self._create_store_response(
-            status_code=StatusCode.CREATED,
-            content=json.loads(self.redis.get(document_key)))
-        logger.debug(f"[RedisStore] StoreResponse for put: {response}")
-        return response
-
-    def delete_configurator_file(self, configurator_file):
-        document_key = 'statefiles/' + configurator_file
-        self.redis.delete(document_key)
-        response = self._create_store_response(status_code=200, content={})
         return response
 
     def put(self, file):

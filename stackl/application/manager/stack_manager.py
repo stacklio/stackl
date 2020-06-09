@@ -60,7 +60,8 @@ class StackManager(Manager):
                     job = self.agent_broker.create_job_for_agent(
                         stack_instance, "update", self.document_manager)
                 self.document_manager.write_stack_instance(stack_instance)
-        elif task["subtype"] == "DELETE_STACK":  #TODO: Do we want to keep deleted stacks as documents?
+        elif task[
+                "subtype"] == "DELETE_STACK":  #TODO: Do we want to keep deleted stacks as documents?
             (stack_instance, return_result) = self._process_stack_request(
                 task["json_data"], "delete")
             if not return_result == StatusCode.BAD_REQUEST:

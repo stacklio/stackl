@@ -16,18 +16,6 @@ class DataStore(ABC):
     def delete(self, **keys):
         pass
 
-    @abstractmethod
-    def get_configurator_file(self, configurator_file):
-        pass
-
-    @abstractmethod
-    def put_configurator_file(self, name, configurator_file):
-        pass
-
-    @abstractmethod
-    def delete_configurator_file(self, configurator_file):
-        pass
-
     def _create_store_response(self,
                                status_code=StatusCode.OK,
                                reason=None,

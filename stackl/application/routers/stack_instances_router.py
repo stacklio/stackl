@@ -63,7 +63,7 @@ async def get_stack_instance(name: str):
         'args': (name)
     })
     logger.info(
-        f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
+        f"[StackInstances POST] Giving StackTask '{dict(task)}' to task_broker"
     )
     task_broker.give_task(task)
     result = await task_broker.get_task_result(task.id)
@@ -104,7 +104,8 @@ async def get_stack_instances(name: str = ""):
 
 
 @router.post('')
-async def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
+async def post_stack_instance(
+    stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
 
@@ -114,7 +115,7 @@ async def post_stack_instance(stack_instance_invocation: StackInstanceInvocation
         'subtype': "CREATE_STACK",
     })
     logger.info(
-        f"[StackInstances POST] Giving StackTask '{task.__dict__}' to task_broker"
+        f"[StackInstances POST] Giving StackTask '{dict(task)}' to task_broker"
     )
 
     task_broker.give_task(task)
@@ -166,7 +167,7 @@ async def delete_stack_instance(name: str):
         'subtype': "DELETE_STACK",
     })
     logger.info(
-        f"[StackInstances DELETE] Giving StackTask '{task.__dict__}' to task_broker"
+        f"[StackInstances DELETE] Giving StackTask '{dict(task)}' to task_broker"
     )
 
     result = await task_broker.give_task(task)

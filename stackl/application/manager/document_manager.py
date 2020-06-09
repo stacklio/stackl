@@ -318,21 +318,6 @@ class DocumentManager(Manager):
         store_response = self.store.put(fr.dict())
         return store_response.content
 
-    def get_configurator_file(self, statefile_name):
-        """gets a configurator file from the store"""
-        store_response = self.store.get_configurator_file(statefile_name)
-        return store_response.content
-
-    def write_configurator_file(self, name, statefile):
-        """writes a configurator statefile to the store
-        """
-        store_response = self.store.put_configurator_file(name, statefile)
-        return store_response.content
-
-    def delete_configurator_file(self, statefile_name):
-        store_response = self.store.delete_configurator_file(statefile_name)
-        return store_response.content
-
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys
     def _process_document_keys(self, keys):

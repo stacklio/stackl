@@ -27,8 +27,7 @@ class LocalFileSystemStore(DataStore):
                     "name") + ".json"
         if not os.path.exists(document_key):
             return self._create_store_response(
-                status_code=StatusCode.NOT_FOUND,
-                content="File is not found")
+                status_code=StatusCode.NOT_FOUND, content="File is not found")
         logger.debug(f"[LocalFileSystemStore] get on key '{document_key}'")
         try:
             with open(document_key) as file_to_get:
@@ -72,54 +71,6 @@ class LocalFileSystemStore(DataStore):
                 content=f"Error getting file. Error '{err}'")
         logger.debug(
             f"[LocalFileSystemStore] StoreResponse for get_all: {response}")
-        return response
-
-    def get_configurator_file(self, configurator_file):
-        document_key = self.datastore_url + 'statefiles/' + configurator_file + ".json"
-        try:
-            with open(document_key, 'r') as storedfile:
-                response = self._create_store_response(
-                    status_code=StatusCode.CREATED,
-                    content=json.load(storedfile))
-        except FileNotFoundError:
-            response = self._create_store_response(
-                status_code=StatusCode.NOT_FOUND, content={})
-        logger.debug(
-            f"[LocalFileSystemStore] StoreResponse for get: {response}")
-        return response
-
-    def put_configurator_file(self, name, configurator_file):
-        document_key = self.datastore_url + 'statefiles/' + name + ".json"
-        try:
-            with open(document_key, 'w+') as outfile:
-                json.dump(configurator_file,
-                          outfile,
-                          sort_keys=True,
-                          indent=4,
-                          separators=(',', ': '))
-            with open(document_key, 'r') as storedfile:
-                response = self._create_store_response(
-                    status_code=StatusCode.CREATED,
-                    content=json.load(storedfile))
-        except OSError as err:
-            response = self._create_store_response(
-                status_code=StatusCode.INTERNAL_ERROR,
-                content=f"Error getting file. Error '{err}'")
-        logger.debug(
-            f"[LocalFileSystemStore] StoreResponse for put: {response}")
-        return response
-
-    def delete_configurator_file(self, configurator_file):
-        document_key = self.datastore_url + 'statefiles/' + configurator_file + ".json"
-        try:
-            os.remove(document_key)
-        except OSError as err:
-            response = self._create_store_response(
-                status_code=StatusCode.INTERNAL_ERROR,
-                content=f"Error getting file. Error '{err}'")
-        response = self._create_store_response(status_code=200, content={})
-        logger.debug(
-            f"[LocalFileSystemStore] StoreResponse for put: {response}")
         return response
 
     def put(self, file):

@@ -11,6 +11,8 @@ DOCKER_IMAGE_DOCKER_AGENT=stacklio/stackl-docker-agent
 
 VERSIONTAG=dev
 
+VERSION=0.1.2dev
+
 ######################################################
 #
 # Documentation targets
@@ -134,9 +136,19 @@ skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 	kubectl port-forward service/registry -n container-registry 5000:5000 &
 	skaffold dev --force=false --port-forward --no-prune=true --no-prune-children=true
 
+.PHONY: openapi
+openapi:
+	openapi-generator generate -i http://localhost:8080/openapi.json -g python --package-name stackl_client --additional-properties=packageVersion=${VERSION} -o /tmp/stackl-client
+	pip3 install /tmp/stackl-client
+
+.PHONY: stackl_cli
+stackl_cli:
+	pip3 install -e stackl/stackl_cli/
+
 build: build_prepare build_rest build_worker build_grpc_base build_kubernetes_agent build_docker_agent
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
 install: build prepare start
+full_install: install openapi stackl_cli
 dev: kaniko-warmer skaffold
 kubernetes: build_kubernetes_agent push_kubernetes_agent
 all: build push

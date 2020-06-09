@@ -84,7 +84,8 @@ def instance(stackl_context: StacklContext, output, name):
 def environment(stackl_context: StacklContext, output, name):
     document_type = "environment"
     if name is None:
-        env = stackl_context.documents_api.get_documents_by_type(document_type)
+        env = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type(
+            document_type)
     else:
         env = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type_and_name(
             document_type, name)
@@ -98,7 +99,8 @@ def environment(stackl_context: StacklContext, output, name):
 def location(stackl_context: StacklContext, output, name):
     document_type = "location"
     if name is None:
-        env = stackl_context.documents_api.get_documents_by_type(document_type)
+        env = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type(
+            document_type)
     else:
         env = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type_and_name(
             document_type, name)
@@ -112,7 +114,8 @@ def location(stackl_context: StacklContext, output, name):
 def zone(stackl_context: StacklContext, output, name):
     document_type = "zone"
     if name is None:
-        env = stackl_context.documents_api.get_documents_by_type(document_type)
+        env = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type(
+            document_type)
     else:
         env = stackl_context.infrastructure_base_api.get_infrastructure_base_by_type_and_name(
             document_type, name)
