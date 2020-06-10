@@ -13,6 +13,8 @@ class StacklContext(object):
         self.api_client = stackl_client.ApiClient(configuration=configuration)
         self.documents_api = stackl_client.DocumentsApi(
             api_client=self.api_client)
+        self.infrastructure_base_api = stackl_client.InfrastructureBaseApi(
+            api_client=self.api_client)
         self.functional_requirements_api = stackl_client.FunctionalRequirementsApi(
             api_client=self.api_client)
         self.services_api = stackl_client.ServicesApi(
