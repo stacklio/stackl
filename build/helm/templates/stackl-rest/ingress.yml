@@ -1,3 +1,4 @@
+{{- if .Values.stacklRest.ingress.enabled -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -5,12 +6,21 @@ metadata:
   labels:
     {{- include "stackl.labels" . | nindent 4 }}
     component: rest
+  annotations:
+  {{- range $key, $value := .Values.stacklRest.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
 spec:
   rules:
-    - host: {{ .Values.stacklRest.hostname }}
+    - host: {{ .Values.stacklRest.ingress.hostname }}
       http:
         paths:
           - path: /
             backend:
               serviceName: "{{ template "stackl.rest" . }}"
               servicePort: 8080
+  {{- if .Values.stacklRest.ingress.tls }}
+  tls:
+{{ toYaml .Values.stacklRest.ingress.tls | indent 4 }}
+  {{- end }}
+{{- end }}

@@ -30,7 +30,22 @@ stacklRest:
   image: stacklio/stackl-rest:0.1.1
   name: stackl-rest
   serviceType: NodePort
-  hostname: stackl.example.com
+  ingress:
+    enabled: true
+    hostname: stackl.example.com
+    annotations:
+      # kubernetes.io/ingress.class: traefik
+      # traefik.ingress.kubernetes.io/frontend-entry-points: https
+    tls:
+      # - hosts:
+      #   - stackl.example.com
+      #   secretName: stackl
+  ingressRoute:
+    enabled: false
+    host: stackl.example.com
+    annotations: {}
+    tls:
+      # secretName: stackl
   replicaCount: 1
 
 stacklWorker:
@@ -46,7 +61,21 @@ stacklRedis:
 stacklOpa:
   image: openpolicyagent/opa:0.20.5
   name: stackl-opa
-  hostname: opa.example.com
+  ingress:
+    enabled: true
+    hostname: opa.example.com
+    annotations:
+      # kubernetes.io/ingress.class: traefik
+      # traefik.ingress.kubernetes.io/frontend-entry-points: https
+    tls:
+      # - hosts:
+      #   - opa.example.com
+  ingressRoute:
+    enabled: false
+    host: opa.example.com
+    annotations: {}
+    tls:
+      # secretName: opa
   replicaCount: 1
 
 # example imagePullSecrets: [name: pull-secret-name]

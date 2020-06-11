@@ -55,7 +55,7 @@ A stack infrastructure template specifies which IT Infrastructure is available t
     "type": "environment",
     "name": "production",
     "hostname": "vsphere.local",
-    "username": "administrator@vsphere.local",
+    "username": "",
     "password": "supersecurepassword123!",
     "datastore": "vsanDatastore"
 }
