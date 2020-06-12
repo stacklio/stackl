@@ -13,7 +13,7 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 
 @router.get('', response_model=List[StackApplicationTemplate])
-async def get_stack_application_templates():
+def get_stack_application_templates():
     """Returns all functional requirements with a specific type"""
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'stack_application_templates'"
@@ -25,13 +25,13 @@ async def get_stack_application_templates():
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.get('/{name}', response_model=StackApplicationTemplate)
-async def get_stack_application_template_by_name(name: str):
+def get_stack_application_template_by_name(name: str):
     """Returns a functional requirement"""
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'stack_application_template' and document '{name}'"
@@ -42,13 +42,13 @@ async def get_stack_application_template_by_name(name: str):
         'subtype': "GET_DOCUMENT"
     })
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.post('', response_model=StackApplicationTemplate)
-async def post_stack_application_template(document: StackApplicationTemplate):
+def post_stack_application_template(document: StackApplicationTemplate):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
@@ -59,13 +59,13 @@ async def post_stack_application_template(document: StackApplicationTemplate):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.put('', response_model=StackApplicationTemplate)
-async def put_stack_application_template(document: StackApplicationTemplate):
+def put_stack_application_template(document: StackApplicationTemplate):
     """Create the document with a specific type and an optional name given in the payload"""
     task = DocumentTask({
         'channel': 'worker',
@@ -74,13 +74,13 @@ async def put_stack_application_template(document: StackApplicationTemplate):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.delete('/{name}', status_code=202)
-async def delete_stack_application_template(name: str):
+def delete_stack_application_template(name: str):
     task = DocumentTask({
         'channel': 'worker',
         'args': ("stack_application_template", name),
@@ -88,6 +88,6 @@ async def delete_stack_application_template(name: str):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result

@@ -21,13 +21,14 @@ types_history = ["snapshot", "log"]
 types = types_configs + types_items + types_history
 
 
-class RedisCache():
+class RedisCache:
     def __init__(self):
         self.redis_cache = None
 
     def connect(self):
         try:
-            self.redis_cache = redis.StrictRedis(host='localhost', port=6379)
+            self.redis_cache = redis.StrictRedis(
+                host=get_config_key("REDIS_HOST"), port=6379)
         except Exception:  #pylint: disable=broad-except
             self.redis_cache = redis.StrictRedis(host="localhost", port=6379)
 

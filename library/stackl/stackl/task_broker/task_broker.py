@@ -91,21 +91,6 @@ class TaskBroker(ABC):
         self.remove_task_from_queue(source_task_id)
         self.asyncio_task_completed.set()
 
-    async def get_task_result(self, task_id):
-        while True:
-            self.asyncio_task_completed.clear()
-            if task_id == self.result_dict["task_id_of_result"]:
-                result = self.result_dict["result"]
-                logger.debug(
-                    f"[TaskBroker] get_task_result. A task completed. Task  '{task_id}' has result: '{result}'."
-                )
-
-                self.result_dict = empty_result_dict
-                return result
-            logger.debug(
-                f"[TaskBroker] get_task_result. No result yet, waiting.")
-            await self.asyncio_task_completed.wait()
-
     # Run in thread
     def task_queue_monitor(self):
         try:

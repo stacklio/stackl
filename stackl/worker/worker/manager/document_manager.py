@@ -110,7 +110,7 @@ class DocumentManager(Manager):
 
     def collect_documents(self, type_name):
         logger.debug(
-            f"[DocumentManager] collect_documents. Collect all documents of type '{type_name}' and optional name '{name}'"
+            f"[DocumentManager] collect_documents. Collect all documents of type '{type_name}'"
         )
         if type_name in types_configs:
             category = "configs"

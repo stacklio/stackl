@@ -14,7 +14,7 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 
 @router.get('/{type_name}', response_model=CollectionDocument)
-async def collect_documents_by_type(type_name: str):
+def collect_documents_by_type(type_name: str):
     """Returns a collection of all the documents with the specific type and optionally containing the given name"""
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name '{type_name}'"
@@ -26,7 +26,7 @@ async def collect_documents_by_type(type_name: str):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
     document: CollectionDocument = {
         "name": "CollectionDocumentByType_" + type_name,
         "description":
@@ -41,7 +41,7 @@ async def collect_documents_by_type(type_name: str):
 
 
 @router.get('/{type_name}/{name}')
-async def get_document_by_type_and_name(type_name: str, name: str):
+def get_document_by_type_and_name(type_name: str, name: str):
     """Returns a specific document with a type and name"""
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type '{type_name}' and document '{name}'"
@@ -52,7 +52,7 @@ async def get_document_by_type_and_name(type_name: str, name: str):
         'subtype': "GET_DOCUMENT"
     })
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     if not isinstance(result, Collection):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -61,7 +61,7 @@ async def get_document_by_type_and_name(type_name: str, name: str):
 
 
 @router.post('')
-async def post_document(document: BaseDocument):
+def post_document(document: BaseDocument):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
@@ -72,7 +72,7 @@ async def post_document(document: BaseDocument):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     if not StatusCode.is_successful(result):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -81,10 +81,10 @@ async def post_document(document: BaseDocument):
 
 
 @router.put('')
-async def put_document(document: BaseDocument, request: Request):
+def put_document(document: BaseDocument, request: Request):
     """Update (or create) the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PutDocument] API PUT request with data: {document}")
-    json_body = await request.json()
+    json_body = request.json()
     logger.info(f"[PutDocument] API PUT request with request: {json_body}")
     task = DocumentTask({
         'channel': 'worker',
@@ -93,7 +93,7 @@ async def put_document(document: BaseDocument, request: Request):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
     logger.info(f"[PutDocument] API PUT request with result: '{result}'")
 
     if not StatusCode.is_successful(result):
@@ -104,7 +104,7 @@ async def put_document(document: BaseDocument, request: Request):
 
 
 @router.delete('/{type_name}/{name}')
-async def delete_document(type_name: str, name: str):
+def delete_document(type_name: str, name: str):
     """Delete a specific document with a type and name"""
     logger.info(
         f"[DeleteDocument] API Delete request for type '{type_name}' and document '{name}'"
@@ -116,7 +116,7 @@ async def delete_document(type_name: str, name: str):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     if not StatusCode.is_successful(result):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,

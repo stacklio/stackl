@@ -1,3 +1,4 @@
+import ast
 import logging
 
 from stackl.message_channel.message_channel_factory import MessageChannelFactory
@@ -22,34 +23,33 @@ class CustomTaskBroker(TaskBroker):
     def get_task_handler(self):
         # Import here so this works with the rest component which doesn't have a taskhandler
         # might be worth to refactor this part
-        from handler.task_handler import TaskHandler
+        from worker.handler.task_handler import TaskHandler
         return TaskHandler()
 
     def give_task(self, task_obj):
-        try:
-            super().give_task(task_obj)
+        super().give_task(task_obj)
 
-            if getattr(task_obj, "topic", None) != "result":
-                self.add_task_to_queue(task_obj)
+        if getattr(task_obj, "topic", None) != "result":
+            self.add_task_to_queue(task_obj)
 
-            if task_obj.cast_type == "anycast":
-                if getattr(task_obj, "return_channel", None) is None:
-                    task_obj.return_channel = get_hostname()
-                    logger.debug(
-                        f"[CustomTaskBroker] give_task. Adding return_channel: '{task_obj.return_channel}'"
-                    )
+        if task_obj.cast_type == "anycast":
+            if getattr(task_obj, "return_channel", None) is None:
+                task_obj.return_channel = get_hostname()
                 logger.debug(
-                    f"[CustomTaskBroker] give_task. Task to push: '{task_obj}'"
+                    f"[CustomTaskBroker] give_task. Adding return_channel: '{task_obj.return_channel}'"
                 )
-                self.message_channel.push("task_" + "common" + ':process',
-                                          task_obj.as_json_string())
-            else:
-                self.message_channel.publish(task_obj)
-            return
-        except Exception as e:  #pylint: disable=broad-except
-            logger.error(
-                f"[CustomTaskBroker] Invalid task received. Error message '{e}'"
-            )
+            logger.debug(
+                f"[CustomTaskBroker] give_task. Task to push: '{task_obj}'")
+            self.message_channel.push("task_" + "common" + ':process',
+                                      task_obj.as_json_string())
+        else:
+            self.message_channel.publish(task_obj)
+        return
+
+    def get_task_result(self, task_id):
+        for result_task in self.message_channel.listen_result(get_hostname()):
+            if task_id == ast.literal_eval(result_task.source_task)["id"]:
+                return result_task
 
     def get_task(self, tag):
         task = self.message_channel.pop("task_" + tag + ':process')[1]

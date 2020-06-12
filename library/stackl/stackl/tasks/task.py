@@ -33,7 +33,7 @@ class Task(ABC):
         self.topic = json_obj.get('topic', 'None')
         self.cast_type = json_obj.get('cast_type', 'anycast')
         self.channel = json_obj.get('channel', 'all')
-        self.id = generate_random_string()
+        self.id = json_obj.get('id', generate_random_string())
         self._set_source(json_obj)
         self.args = json_obj.get('args', None)
         self.return_channel = json_obj.get('return_channel', None)

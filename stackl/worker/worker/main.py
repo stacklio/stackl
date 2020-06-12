@@ -38,16 +38,12 @@ class Worker:
         logger.debug("[Worker] Initialised Worker.")
 
     def run(self):
-        try:
-            logger.debug("[Worker] Starting Worker")
-            self.task_broker.start_worker(
-                subscribe_channels=self.get_subscribe_channels())
+        logger.debug("[Worker] Starting Worker")
+        self.task_broker.start_worker(
+            subscribe_channels=self.get_subscribe_channels())
 
-            logger.debug("[Worker] Starting queue listen")
-            self.start_task_popping()
-
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"[Worker] Exception occured in Worker: {e}")
+        logger.debug("[Worker] Starting queue listen")
+        self.start_task_popping()
 
     def start_task_popping(self):
         logger.info(

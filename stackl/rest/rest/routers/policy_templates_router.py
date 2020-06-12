@@ -13,7 +13,7 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 
 @router.get('', response_model=List[PolicyTemplate])
-async def get_policy_templates():
+def get_policy_templates():
     """Returns all functional requirements with a specific type"""
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'policy_template'"
@@ -25,13 +25,13 @@ async def get_policy_templates():
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.get('/{policy_name}', response_model=PolicyTemplate)
-async def get_policy_template_by_name(policy_name: str):
+def get_policy_template_by_name(policy_name: str):
     """Returns a policy template"""
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'policy_template' and document '{policy_name}'"
@@ -42,13 +42,13 @@ async def get_policy_template_by_name(policy_name: str):
         'subtype': "GET_DOCUMENT"
     })
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.put('')
-async def put_policy_template(policy: PolicyTemplate):
+def put_policy_template(policy: PolicyTemplate):
     logger.info(
         f"[PutDocument] API PUT request with policy_template: {policy}")
     task = DocumentTask({
@@ -58,6 +58,6 @@ async def put_policy_template(policy: PolicyTemplate):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
     logger.info(f"[PutDocument] API PUT request with result: '{result}'")
-    return result
+    return result.return_result

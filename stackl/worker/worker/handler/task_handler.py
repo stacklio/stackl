@@ -1,9 +1,9 @@
 import logging
 
-from enums.cast_type import CastType
-from handler import Handler
-from task.result_task import ResultTask
-from task_broker.task_broker_factory import TaskBrokerFactory
+from stackl.enums.cast_type import CastType
+from .handler import Handler
+from stackl.tasks.result_task import ResultTask
+from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -29,7 +29,7 @@ class TaskHandler(Handler):
             logger.info(
                 f"[TaskHandler] Unknown task with type '{item.topic}'! Ignoring."
             )
-        if result is None: #Keep for potential future use - in case we want report results
+        if result is None:  #Keep for potential future use - in case we want report results
             return
         if item.get_attribute('return_channel'):
             return ResultTask({

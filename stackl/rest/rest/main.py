@@ -2,8 +2,11 @@
 import logging
 import os
 
+import uvicorn
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
+
+import stackl.stackl_globals as stackl_globals
 from .routers import documents_router, infrastructure_base_router, policy_templates_router, snapshots_router, \
     stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router
@@ -21,6 +24,9 @@ logger.addHandler(ch)
 
 logger.info(
     "___________________ STARTING STACKL API SERVER ____________________")
+
+# initialize stackl globals
+stackl_globals.initialize()
 
 # Add routes
 app = FastAPI(
@@ -71,3 +77,6 @@ def use_route_names_as_operation_ids(application: FastAPI) -> None:
 
 
 use_route_names_as_operation_ids(app)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

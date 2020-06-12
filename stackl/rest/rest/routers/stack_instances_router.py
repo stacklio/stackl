@@ -52,7 +52,7 @@ class StackInstanceUpdate(BaseModel):
 
 
 @router.get('/{name}', response_model=StackInstance)
-async def get_stack_instance(name: str):
+def get_stack_instance(name: str):
     """Returns a stack instance with a specific name"""
     logger.info(
         f"[StackInstancesName GET] Getting document for stack instance '{name}'"
@@ -66,7 +66,7 @@ async def get_stack_instance(name: str):
         f"[StackInstances POST] Giving StackTask '{dict(task)}' to task_broker"
     )
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     if not isinstance(result, Collection):
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
@@ -76,7 +76,7 @@ async def get_stack_instance(name: str):
 
 
 @router.get('/', response_model=List[StackInstance])
-async def get_stack_instances(name: str = ""):
+def get_stack_instances(name: str = ""):
     """Returns all stack instances that contain optional name"""
     logger.info(
         f"[StackInstancesAll GET] Returning all stack instances that contain optional name '{name}'"
@@ -87,14 +87,13 @@ async def get_stack_instances(name: str = ""):
         'args': name
     })
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     return result
 
 
 @router.post('')
-async def post_stack_instance(
-    stack_instance_invocation: StackInstanceInvocation):
+def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
 
@@ -104,11 +103,10 @@ async def post_stack_instance(
         'subtype': "CREATE_STACK",
     })
     logger.info(
-        f"[StackInstances POST] Giving StackTask '{dict(task)}' to task_broker"
-    )
+        f"[StackInstances POST] Giving StackTask '{task}' to task_broker")
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
@@ -120,7 +118,7 @@ async def post_stack_instance(
 
 
 @router.put('')
-async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
+def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
     logger.info("[StackInstances PUT] Received PUT request")
 
@@ -132,7 +130,7 @@ async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     logger.info(
         f"[StackInstances PUT] Giving StackTask '{task}' to task_broker")
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
     if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
@@ -145,7 +143,7 @@ async def put_stack_instance(stack_instance_update: StackInstanceUpdate):
 
 
 @router.delete('/{name}')
-async def delete_stack_instance(name: str):
+def delete_stack_instance(name: str):
     """Delete a stack instance with a specific name"""
     logger.info(f"[StackInstances DELETE] Received DELETE request for {name}")
     json_data = {}
@@ -159,7 +157,7 @@ async def delete_stack_instance(name: str):
         f"[StackInstances DELETE] Giving StackTask '{dict(task)}' to task_broker"
     )
 
-    result = await task_broker.give_task(task)
+    result = task_broker.give_task(task)
 
     if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,

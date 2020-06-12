@@ -19,7 +19,7 @@ class RedisStore(DataStore):
 
     def get(self, **keys):
         document_key = keys.get("category") + '/' + keys.get(
-            "type") + '/' + keys.get("document_name")
+            "type") + '/' + keys.get("name")
         logger.debug(f"[RedisStore] get on key '{document_key}'")
 
         redis_value = self.redis.get(document_key)

@@ -13,7 +13,7 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 
 @router.get('', response_model=List[FunctionalRequirement])
-async def get_functional_requirements():
+def get_functional_requirements():
     """Returns all functional requirements with a specific type"""
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'policy_template'"
@@ -25,13 +25,13 @@ async def get_functional_requirements():
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.get('/{name}', response_model=FunctionalRequirement)
-async def get_functional_requirement_by_name(name: str):
+def get_functional_requirement_by_name(name: str):
     """Returns a functional requirement"""
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'policy_template' and document '{name}'"
@@ -42,13 +42,12 @@ async def get_functional_requirement_by_name(name: str):
         'subtype': "GET_DOCUMENT"
     })
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
-
-    return result
+    result = task_broker.get_task_result(task.id)
+    return result.return_result
 
 
 @router.post('', response_model=FunctionalRequirement)
-async def post_functional_requirement(document: FunctionalRequirement):
+def post_functional_requirement(document: FunctionalRequirement):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
@@ -59,13 +58,13 @@ async def post_functional_requirement(document: FunctionalRequirement):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.put('', response_model=FunctionalRequirement)
-async def put_functional_requirement(document: FunctionalRequirement):
+def put_functional_requirement(document: FunctionalRequirement):
     """Create the document with a specific type and an optional name given in the payload"""
     task = DocumentTask({
         'channel': 'worker',
@@ -74,13 +73,13 @@ async def put_functional_requirement(document: FunctionalRequirement):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.delete('/{name}', status_code=202)
-async def delete_functional_requirement(type_name: str, name: str):
+def delete_functional_requirement(type_name: str, name: str):
     logger.info(
         f"[DeleteDocument] API Delete request for type '{type_name}' and document '{name}'"
     )
@@ -91,6 +90,6 @@ async def delete_functional_requirement(type_name: str, name: str):
     })
 
     task_broker.give_task(task)
-    result = await task_broker.get_task_result(task.id)
+    result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result

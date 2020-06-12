@@ -7,6 +7,8 @@ from .message_channel import MessageChannel
 from stackl.tasks.task_factory import TaskFactory
 from stackl.utils.general_utils import get_config_key
 
+from ..tasks.result_task import ResultTask
+
 logger = logging.getLogger("STACKL_LOGGER")
 
 
@@ -15,7 +17,7 @@ class RedisQueue(MessageChannel):
         super(RedisQueue, self).__init__()
         self.redis_host = get_config_key("REDIS_HOST")
 
-        self.queue = None
+        self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
         self.pubsub = None
         self.task_handler = None
         self.listen_management_thread = None
@@ -26,7 +28,6 @@ class RedisQueue(MessageChannel):
             logger.info("[RedisQueue] RedisQueue already started!")
         else:
             logger.info("[RedisQueue] RedisQueue connecting to redis")
-            self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
             self.pubsub = self.queue.pubsub()
             if task_handler is None:
                 raise Exception(
@@ -61,32 +62,35 @@ class RedisQueue(MessageChannel):
             return self.listen(return_channel, timeout=timeout)
         return {}
 
+    def listen_result(self, channel):
+        logger.info(f"[RedisQueue] Broker listening on: {channel}")
+        psub = self.queue.pubsub()
+        psub.subscribe(channel)
+        for message in psub.listen():
+            logger.info(f"[RedisQueue] Broker got message: '{message}'")
+            if message['type'] != 'subscribe':
+                task = TaskFactory.create_task(message['data'])
+                if isinstance(task, ResultTask):
+                    yield task
+
     def listen_permanent(self, channels):
-        try:
-            self._pubsub_channels(self.pubsub, channels, action='subscribe')
-            logger.info(f"[RedisQueue] Broker listening on: {channels}")
-            self.started = True
+        self._pubsub_channels(self.pubsub, channels, action='subscribe')
+        logger.info(f"[RedisQueue] Broker listening on: {channels}")
+        self.started = True
 
-            for message in self.pubsub.listen():
-                logger.info(f"[RedisQueue] Broker got message: '{message}'")
-                if message['type'] != 'subscribe':
-                    # parse task
-                    task = TaskFactory.create_task(message['data'])
-                    result_task = self.task_handler.handle(task)
-                    if result_task is not None and result_task.get_attribute(
-                            'topic', '') == 'result':
-                        time.sleep(0.5)
-                        self.publish(result_task)
+        for message in self.pubsub.listen():
+            logger.info(f"[RedisQueue] Broker got message: '{message}'")
+            if message['type'] != 'subscribe':
+                # parse task
+                task = TaskFactory.create_task(message['data'])
+                result_task = self.task_handler.handle(task)
+                if result_task is not None and result_task.get_attribute(
+                        'topic', '') == 'result':
+                    time.sleep(0.5)
+                    self.publish(result_task)
 
-            logger.debug("[RedisQueue] Error listen_permanent stopped")
-            self._pubsub_channels(self.pubsub, channels, action='unsubscribe')
-            raise Exception("[RedisQueue] Error listen_permanent stopped")
-        except Exception as e:  #pylint: disable=broad-except
-            logger.error(
-                f"[RedisQueue] Exception occured in listen_permanent: {e}")
-            logger.error("[RedisQueue] Retrying to connect...")
-            self.pubsub = self.queue.pubsub()
-            self.listen_permanent(channels)
+        logger.debug("[RedisQueue] Error listen_permanent stopped")
+        self._pubsub_channels(self.pubsub, channels, action='unsubscribe')
 
     def listen(self, channel, timeout=5):
         logger.info(f"[RedisQueue] Listening temporary to channel {channel}")
@@ -112,14 +116,7 @@ class RedisQueue(MessageChannel):
     def push(self, name, *values):
         logger.debug(
             f"[RedisQueue] Doing push(). Name {name} and values {values}")
-        try:
-            result = self.queue.lpush(name, *values)
-        except Exception as e:  #pylint: disable=broad-except
-            logger.debug(f"[RedisQueue] Exception occured in push '{e}'")
-            logger.debug("[RedisQueue] Trying again with wait of 5 seconds")
-            self.queue = StrictRedis(host=self.redis_host, port=6379, db=0)
-            time.sleep(5)
-            result = self.queue.lpush(name, *values)
+        result = self.queue.lpush(name, *values)
         return result
 
     def pop(self, name):
