@@ -5,8 +5,8 @@
     "params": {
         "datastore": "vsanDatastore",
         "hostname": "p00vca01.nubera.local",
-        "password": "Nubera1!",
-        "username": "administrator@vsphere.local"
+        "password": "",
+        "username": ""
     },
     "type": "environment"
 }
