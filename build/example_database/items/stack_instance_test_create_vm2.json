@@ -19,9 +19,9 @@
                 "folder": "fred_10.10.3.0",
                 "hostname": "p00vca01.nubera.local",
                 "network": "ls3-Fred",
-                "password": "***REMOVED***",
+                "password": "",
                 "replicas": "1",
-                "username": "administrator@vsphere.local",
+                "username": "",
                 "vm_name": "testtesttest",
                 "vmw_image": "stackl-centos-template",
                 "webserver": "nginx"

@@ -17,8 +17,8 @@
             "datastore": "vsanDatastore",
             "hostname": "p00vca01.nubera.local",
             "network": "ls3-Fred",
-            "password": "***REMOVED***",
-            "username": "administrator@vsphere.local"
+            "password": "",
+            "username": ""
         },
         "production.brussels.cluster2": {
             "resources": {
@@ -35,8 +35,8 @@
             "datastore": "vsanDatastore",
             "hostname": "p00vca01.nubera.local",
             "network": "ls3-Fred",
-            "password": "***REMOVED***",
-            "username": "administrator@vsphere.local"
+            "password": "",
+            "username": ""
         }
     },
     "infrastructure_targets": [
