@@ -27,7 +27,7 @@ agentBroker:
   type: grpc
 
 stacklRest:
-  image: stacklio/stackl-rest:v0.1.1
+  image: stacklio/stackl-rest:v0.1.2
   name: stackl-rest
   serviceType: NodePort
   ingress:
@@ -49,7 +49,7 @@ stacklRest:
   replicaCount: 1
 
 stacklWorker:
-  image: stacklio/stackl-worker:v0.1.1
+  image: stacklio/stackl-worker:v0.1.2
   name: stackl-worker
   replicaCount: 1
 
