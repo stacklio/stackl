@@ -48,7 +48,7 @@ class StackManager(Manager):
         elif task["subtype"] == "CREATE_STACK":
             (stack_instance, return_result) = self._process_stack_request(
                 task["json_data"], "create")
-            if not return_result == StatusCode.BAD_REQUEST:
+            if stack_instance is not None:
                 self.agent_task_broker.create_job_for_agent(
                     stack_instance, "create", self.document_manager)
                 self.document_manager.write_stack_instance(stack_instance)
@@ -74,7 +74,7 @@ class StackManager(Manager):
             return_result = StatusCode.BAD_REQUEST
 
         logger.debug(f"[StackManager] Handled StackTask")
-        resultTask = ResultTask({
+        result_task = ResultTask({
             'channel': task.get('return_channel'),
             'cast_type': CastType.BROADCAST.value,
             'result_msg':
@@ -83,7 +83,7 @@ class StackManager(Manager):
             'result_code': StatusCode.OK,
             'source_task': task
         })
-        self.message_channel.publish(resultTask)
+        self.message_channel.publish(result_task)
 
     # Rudimentary rollback system. It should also take into account the reason for the failure.
     # For instance, rollback create should behave differently if the failure was because the item already existed then when the problem occured during actual creation
@@ -177,11 +177,11 @@ class StackManager(Manager):
         job['document'] = instance_data
         job['type'] = 'stack_instance'
         handler = StackHandler(self.document_manager, self.opa_broker)
-        merged_sat_sit_obj, status_code = handler.handle(job)
+        merged_sat_sit_obj, err_message = handler.handle(job)
         logger.debug(
-            f"[StackManager ]_process_stack_request. Handle complete. status_code '{status_code}'. merged_sat_sit_obj '{merged_sat_sit_obj}'"
+            f"[StackManager ]_process_stack_request. Handle complete. merged_sat_sit_obj '{merged_sat_sit_obj}'"
         )
-        return merged_sat_sit_obj, status_code
+        return merged_sat_sit_obj, err_message
 
     def _validate_stack_request(self, instance_data, stack_action):
         # check existence of stack_instance

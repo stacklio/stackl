@@ -58,6 +58,5 @@ def put_policy_template(policy: PolicyTemplate):
     })
 
     task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
-    logger.info(f"[PutDocument] API PUT request with result: '{result}'")
-    return result.return_result
+    task_broker.get_task_result(task.id)
+    return policy

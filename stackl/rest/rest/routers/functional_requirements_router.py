@@ -58,9 +58,9 @@ def post_functional_requirement(document: FunctionalRequirement):
     })
 
     task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    task_broker.get_task_result(task.id)
 
-    return result.return_result
+    return document
 
 
 @router.put('', response_model=FunctionalRequirement)
@@ -73,9 +73,9 @@ def put_functional_requirement(document: FunctionalRequirement):
     })
 
     task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    task_broker.get_task_result(task.id)
 
-    return result.return_result
+    return document
 
 
 @router.delete('/{name}', status_code=202)

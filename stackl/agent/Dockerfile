@@ -9,6 +9,7 @@ ENV PYTHONFAULTHANDLER=1 \
   PIP_DEFAULT_TIMEOUT=100 \
   POETRY_VERSION=1.0.9
 
+
 # System deps:
 RUN pip install "poetry==$POETRY_VERSION"
 
@@ -17,13 +18,13 @@ COPY library /library
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 
-COPY stackl/worker/poetry.lock stackl/worker/pyproject.toml /app/
+COPY stackl/agent/poetry.lock stackl/agent/pyproject.toml /app/
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
-COPY stackl/worker/. /app
+COPY stackl/agent/. /app
 
-CMD ["poetry", "run", "start-worker"]
+CMD ["poetry", "run", "start-agent"]

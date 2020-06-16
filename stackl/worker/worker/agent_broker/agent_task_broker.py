@@ -44,18 +44,17 @@ class AgentTaskBroker:
                 infrastructure_target = service_definition.infrastructure_target
                 agent = self.get_agent_for_job(infrastructure_target)
                 for fr in service_doc["functional_requirements"]:
-                    fr_doc = document_manager.get_document(
-                        type="functional_requirement", document_name=fr)
+                    fr_doc = document_manager.get_functional_requirement(fr)
                     logger.debug(
                         f"[AgentTaskBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
                     )
                     invoc = {}
                     invoc['action'] = action
                     invoc['functional_requirement'] = fr
-                    invoc['image'] = fr_doc['invocation']['image']
+                    invoc['image'] = fr_doc.invocation.image
                     invoc['infrastructure_target'] = infrastructure_target
                     invoc['stack_instance'] = stack_instance.name
-                    invoc['tool'] = fr_doc['invocation']['tool']
+                    invoc['tool'] = fr_doc.invocation.tool
                     invoc['service'] = service_name
 
                     self.redis.publish(agent, json.dumps(invoc))

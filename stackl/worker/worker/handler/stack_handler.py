@@ -1,13 +1,13 @@
 import logging
 
-from .handler import Handler
 from stackl.enums.stackl_codes import StatusCode
 from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from stackl.models.items.stack_instance_model import StackInstance
 from stackl.models.items.stack_instance_service_model import StackInstanceService
 from stackl.models.items.stack_instance_status_model import StackInstanceStatus, Status
 from stackl.utils.general_utils import get_timestamp
-from stackl.utils.stackl_exceptions import NoOpaResultException
+
+from .handler import Handler
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -36,7 +36,7 @@ class StackHandler(Handler):
         self, item, opa_decision,
         stack_infrastructure_template: StackInfrastructureTemplate):
         stack_instance_doc = StackInstance(
-            name=item['name'],
+            name=item['stack_instance_name'],
             stack_infrastructure_template=item[
                 'stack_infrastructure_template'],
             stack_application_template=item['stack_application_template'])
@@ -47,8 +47,6 @@ class StackHandler(Handler):
         for svc, targets in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
             svc_doc = self.document_manager.get_service(svc)
-
-            # TODO take first target in list if multiple, maybe we should let opa always only return one?
             service_definitions = []
             for infra_target in targets:
                 service_definition = StackInstanceService()
@@ -171,7 +169,7 @@ class StackHandler(Handler):
         if not opa_solution['fulfilled']:
             logger.error(
                 f"[StackHandler]: Opa result message: {opa_solution['msg']}")
-            return None, StatusCode.BAD_REQUEST
+            return None, opa_solution['msg']
 
         service_targets = opa_solution['services']
 
@@ -185,7 +183,7 @@ class StackHandler(Handler):
                     logger.error(
                         f"[StackHandler]: Opa result message: {new_result['msg']}"
                     )
-                    return None, StatusCode.BAD_REQUEST
+                    return None, new_result['msg']
 
                 self.process_service_targets(policy_params, new_result,
                                              service_targets)
@@ -195,7 +193,7 @@ class StackHandler(Handler):
             logger.error(
                 f"[StackHandler] _handle_create. replica_policy not satisfied: {service_targets['result']['msg']}"
             )
-            return None, StatusCode.BAD_REQUEST
+            return None, service_targets['result']['msg']
 
         # Verify that each of the SIT policies doesn't violate
 
@@ -206,13 +204,11 @@ class StackHandler(Handler):
             logger.error(
                 f"[StackHandler] _handle_create. sit policies not satisfied {infringment_messages}"
             )
-            return None, StatusCode.BAD_REQUEST
+            message = "\n".join([x['msg'] for x in infringment_messages])
+            return None, message
 
-        try:
-            return self._create_stack_instance(
-                item, service_targets['result']['services'], stack_infr), 200
-        except NoOpaResultException:
-            return None, StatusCode.BAD_REQUEST
+        return self._create_stack_instance(
+            item, service_targets['result']['services'], stack_infr), None
 
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr):
         infringment_messages = []
@@ -243,8 +239,6 @@ class StackHandler(Handler):
         for svc in service_targets:
             services_just_one[svc] = 1
         if 'replicas' in item:
-            # TODO verwijder dit
-            logger.debug("hij steekt erin")
             replicas = item['replicas']
             parameters["parameters"] = {}
             parameters["parameters"]["services"] = {

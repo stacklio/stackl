@@ -6,8 +6,8 @@ CONTAINER_ENGINE = $(shell command -v podman 2> /dev/null || command -v docker 2
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
 DOCKER_IMAGE_REST=stacklio/stackl-rest
 DOCKER_IMAGE_WORKER=stacklio/stackl-worker
-DOCKER_IMAGE_KUBERNETES_AGENT=stacklio/stackl-kubernetes-agent
-DOCKER_IMAGE_DOCKER_AGENT=stacklio/stackl-docker-agent
+DOCKER_IMAGE_AGENT=stacklio/stackl-agent
+DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 
 VERSIONTAG=dev
 
@@ -33,31 +33,22 @@ build_prepare:
 .PHONY: build_rest
 build_rest:
 	@echo "Building stackl rest"
-	cd stackl/application; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_REST):$(VERSIONTAG) -f Dockerfile_rest .
+	${CONTAINER_ENGINE} build -f stackl/rest/Dockerfile -t $(DOCKER_IMAGE_REST):$(VERSIONTAG) .
 
 .PHONY: build_worker
 build_worker:
 	@echo "Building stackl worker"
-	cd stackl/application; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_WORKER):$(VERSIONTAG) -f Dockerfile_worker .
+	${CONTAINER_ENGINE} build -f stackl/worker/Dockerfile -t $(DOCKER_IMAGE_WORKER):$(VERSIONTAG) .
 
-.PHONY: build_kubernetes_agent
-build_kubernetes_agent:
-	@echo "Building stackl kubernetes agent"
-	cd stackl/agents/kubernetes_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_KUBERNETES_AGENT):$(VERSIONTAG) .
+.PHONY: build_agent
+build_agent:
+	@echo "Building agent "
+	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):$(VERSIONTAG) .
 
-build_grpc_base:
-	@echo "Building grpc base"
-	cd stackl/agents/grpc_base; ${CONTAINER_ENGINE} build -t stacklio/grpc-base:latest .
-
-.PHONY: build_grpc_base_dev
-build_grpc_base_dev:
-	@echo "Building grpc base"
-	cd stackl/agents/grpc_base; ${CONTAINER_ENGINE} build  -t registry.container-registry.svc.cluster.local:5000/grpc_base .
-
-.PHONY: build_docker_agent
-build_docker_agent:
-	@echo "Building stackl docker agent"
-	cd stackl/agents/docker_agent; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_DOCKER_AGENT):$(VERSIONTAG) .
+.PHONY: build_job_broker
+build_job_broker:
+	@echo "Building job broker"
+	${CONTAINER_ENGINE} build -f stackl/job_broker/Dockerfile -t $(DOCKER_IMAGE_JOB_BROKER):$(VERSIONTAG) .
 
 .PHONY: push_prepare
 push_prepare:
@@ -69,25 +60,20 @@ push_rest:
 	@echo "Pushing rest"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_REST):$(VERSIONTAG)
 
-.PHONY: push_grpc_base_dev
-push_grpc_base_dev:
-	@echo "Pushing push_grpc_base_dev"
-	${CONTAINER_ENGINE} push registry.container-registry.svc.cluster.local:5000/grpc_base
-
 .PHONY: push_worker
 push_worker:
 	@echo "Pushing worker"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_WORKER):$(VERSIONTAG)
 
-.PHONY: push_docker_agent
-push_docker_agent:
-	@echo "Pushing docker agent"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_DOCKER_AGENT):$(VERSIONTAG)
+.PHONY: push_agent
+push_agent:
+	@echo "Pushing agent"
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):$(VERSIONTAG)
 
-.PHONY: push_kubernetes_agent
-push_kubernetes_agent:
-	@echo "Pushing kubernetes agent"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_KUBERNETES_AGENT):$(VERSIONTAG)
+.PHONY: push_job_broker
+push_job_broker:
+	@echo "Pushing job broker"
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_JOB_BROKER):$(VERSIONTAG)
 
 .PHONY: prepare
 prepare:
@@ -143,10 +129,10 @@ openapi:
 
 .PHONY: stackl_cli
 stackl_cli:
-	pip3 install -e stackl/stackl_cli/
+	pip3 install -e stackl/cli/
 
-build: build_prepare build_rest build_worker build_grpc_base build_kubernetes_agent build_docker_agent
-push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent
+build: build_prepare build_rest build_worker build_agent build_job_broker
+push: push_prepare push_rest push_worker push_agent
 install: build prepare start
 full_install: install openapi stackl_cli
 dev: kaniko-warmer skaffold

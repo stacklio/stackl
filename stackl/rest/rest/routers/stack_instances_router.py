@@ -1,13 +1,13 @@
 import logging
-from typing import Dict, Any, List
 from collections.abc import Collection
+from typing import Dict, Any, List
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
-
 from stackl.enums.stackl_codes import StatusCode
 from stackl.models.items.stack_instance_model import StackInstance
-from stackl.tasks.stack_task import StackTask
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
+from stackl.tasks.stack_task import StackTask
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
@@ -51,6 +51,10 @@ class StackInstanceUpdate(BaseModel):
         }
 
 
+class StackCreateResult(BaseModel):
+    result: str
+
+
 @router.get('/{name}', response_model=StackInstance)
 def get_stack_instance(name: str):
     """Returns a stack instance with a specific name"""
@@ -72,7 +76,7 @@ def get_stack_instance(name: str):
         raise HTTPException(status_code=StatusCode.NOT_FOUND,
                             detail='Stack instance ' + str(name) +
                             ' not found')
-    return result
+    return result.return_result
 
 
 @router.get('/', response_model=List[StackInstance])
@@ -89,7 +93,7 @@ def get_stack_instances(name: str = ""):
     task_broker.give_task(task)
     result = task_broker.get_task_result(task.id)
 
-    return result
+    return result.return_result
 
 
 @router.post('')
@@ -108,13 +112,9 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     task_broker.give_task(task)
     result = task_broker.get_task_result(task.id)
 
-    if not StatusCode.is_successful(result):
-        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
-                            detail="NOT OK!")
-    return {
-        'return_code': result,
-        'message': 'Stack instance creating'
-    }, result
+    stack_create_result = StackCreateResult(result=str(result.return_result))
+
+    return stack_create_result
 
 
 @router.put('')

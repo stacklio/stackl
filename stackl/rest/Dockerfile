@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim-2020-04-27
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7-2020-04-27
 
 
 ENV PYTHONFAULTHANDLER=1 \
@@ -11,16 +11,18 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.0.9
 
 # System deps:
-RUN pip install "poetry==1.0.8"
+RUN pip install "poetry==$POETRY_VERSION"
+
+COPY library /library
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 
-COPY poetry.lock pyproject.toml /app/
+COPY stackl/rest/poetry.lock stackl/rest/pyproject.toml /app/
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
-COPY . /app
+COPY stackl/rest/. /app

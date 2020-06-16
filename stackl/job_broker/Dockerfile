@@ -1,7 +1,7 @@
 FROM python:3.7-slim-buster
 
 ENV PYTHONFAULTHANDLER=1 \
-  MODULE_NAME="job.main" \
+  MODULE_NAME="job_worker.main" \
   PYTHONUNBUFFERED=1 \
   PYTHONHASHSEED=random \
   PIP_NO_CACHE_DIR=off \
@@ -17,13 +17,13 @@ COPY library /library
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 
-COPY stackl/worker/poetry.lock stackl/worker/pyproject.toml /app/
+COPY stackl/job_broker/poetry.lock stackl/job_broker/pyproject.toml /app/
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
-COPY stackl/worker/. /app
+COPY stackl/job_broker/. /app
 
-CMD ["poetry", "run", "start-worker"]
+CMD ["poetry", "run", "start-job-broker"]
