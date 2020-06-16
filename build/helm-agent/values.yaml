@@ -4,7 +4,7 @@ image:
 mode: prod
 
 stacklAgent:
-  image: stacklio/stackl-kubernetes-agent:v0.1.1
+  image: stacklio/stackl-kubernetes-agent:v0.1.2
   name: stackl-agent
   replicaCount: 1
   agentName: agent
