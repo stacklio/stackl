@@ -10,8 +10,6 @@ from stackl_protos.agent_pb2_grpc import add_StacklAgentServicer_to_server
 
 def start():
     stackl_globals.initialize()
-    logging.info(
-        "___________________ STARTING STACKL GRPC SERVER ____________________")
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=10),
         options=[
@@ -33,6 +31,8 @@ def start():
         AutomationJobDispenser(stackl_globals.redis_cache, task_broker),
         server)
     server.add_insecure_port('[::]:50051')
+    print(
+        "___________________ STARTING STACKL GRPC SERVER ____________________")
     server.start()
     server.wait_for_termination()
 

@@ -9,6 +9,8 @@ from stackl.models.items.stack_instance_model import StackInstance
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.stack_task import StackTask
 
+from stackl.tasks.document_task import DocumentTask
+
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 task_broker = TaskBrokerFactory().get_task_broker()
@@ -61,21 +63,13 @@ def get_stack_instance(name: str):
     logger.info(
         f"[StackInstancesName GET] Getting document for stack instance '{name}'"
     )
-    task = StackTask({
+    task = DocumentTask({
         'channel': 'worker',
-        'subtype': "GET_STACK",
-        'args': name
+        'args': ('stack_instance', name),
+        'subtype': "GET_DOCUMENT"
     })
-    logger.info(
-        f"[StackInstances POST] Giving StackTask '{dict(task)}' to task_broker"
-    )
     task_broker.give_task(task)
     result = task_broker.get_task_result(task.id)
-
-    if not isinstance(result, Collection):
-        raise HTTPException(status_code=StatusCode.NOT_FOUND,
-                            detail='Stack instance ' + str(name) +
-                            ' not found')
     return result.return_result
 
 
@@ -85,11 +79,12 @@ def get_stack_instances(name: str = ""):
     logger.info(
         f"[StackInstancesAll GET] Returning all stack instances that contain optional name '{name}'"
     )
-    task = StackTask({
+    task = DocumentTask({
         'channel': 'worker',
-        'subtype': "GET_ALL_STACKS",
-        'args': name
+        'args': "stack_instance",
+        'subtype': "COLLECT_DOCUMENT"
     })
+
     task_broker.give_task(task)
     result = task_broker.get_task_result(task.id)
 

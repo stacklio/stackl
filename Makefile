@@ -9,7 +9,7 @@ DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 
-VERSIONTAG=dev
+VERSIONTAG=0.1.2dev
 
 VERSION=0.1.2dev
 
@@ -132,7 +132,7 @@ stackl_cli:
 	pip3 install -e stackl/cli/
 
 build: build_prepare build_rest build_worker build_agent build_job_broker
-push: push_prepare push_rest push_worker push_agent
+push: push_prepare push_rest push_worker push_agent push_job_broker
 install: build prepare start
 full_install: install openapi stackl_cli
 dev: kaniko-warmer skaffold

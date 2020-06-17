@@ -1,12 +1,10 @@
 import logging
 from collections.abc import Collection
+from typing import List
 
 from fastapi import APIRouter, HTTPException
-
 from stackl.enums.stackl_codes import StatusCode
 from stackl.models.history.snapshot_model import Snapshot
-
-from stackl.models.configs.document_model import CollectionDocument
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.snapshot_task import SnapshotTask
 
@@ -34,7 +32,7 @@ def get_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     return result.return_result
 
 
-@router.get('/list/{type_name}/{name}', response_model=CollectionDocument)
+@router.get('/list/{type_name}/{name}', response_model=List[Snapshot])
 def list_snapshots(type_name: str, name: str):
     """Returns all the snapshots for doc with type_name and name """
     logger.info(
@@ -48,17 +46,7 @@ def list_snapshots(type_name: str, name: str):
     task_broker.give_task(task)
     result = task_broker.get_task_result(task.id)
 
-    if not isinstance(result, Collection):
-        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
-                            detail="NOT OK!")
-
-    document: CollectionDocument = {
-        "name": "CollectionDocumentForSnapshot_" + name,
-        "description": "Document that contains all the snapshots for " + name,
-        "type": "snapshot",
-        "documents": result
-    }
-    return document.return_result
+    return result.return_result
 
 
 @router.post('/{type_name}/{name}')

@@ -6,13 +6,15 @@ from stackl.models.items.service_model import Service
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
 
+from stackl.models.items.stack_instance_model import StackInstance
+
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
 task_broker = TaskBrokerFactory().get_task_broker()
 
 
-@router.get('', response_model=List[Service])
+@router.get('', response_model=List[StackInstance])
 def get_services():
     """Returns all functional requirements with a specific type"""
     logger.info(
@@ -30,7 +32,7 @@ def get_services():
     return result.return_result
 
 
-@router.get('/{name}', response_model=Service)
+@router.get('/{name}', response_model=StackInstance)
 def get_service_by_name(name: str):
     """Returns a functional requirement"""
     logger.info(

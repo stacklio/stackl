@@ -19,7 +19,6 @@ class JobHandler:
     def invoke_automation(self, invoc):
         handler = self.tool_factory.get_handler(invoc)
         result, error_message = handler.handle()
-        print("Handle done")
         print(result)
         print(error_message)
         automation_result = AutomationResult()
@@ -70,11 +69,11 @@ def start():
         )
         for job in stub.GetJob(agent_metadata, wait_for_ready=True):
             print("Job received from STACKL through gRPC stream")
-            try:
-                job_handler.invoke_automation(job)
-                print("Waiting for new job")
-            except Exception as e:
-                print(f"Exception during automation: {e}")
+            # try:
+            job_handler.invoke_automation(job)
+            print("Waiting for new job")
+            # except Exception as e:
+            #     print(f"Exception during automation: {e}")
 
 
 if __name__ == '__main__':

@@ -65,19 +65,3 @@ Create the name of the service account to use
 {{- define "stackl.agent" -}}
   {{- printf "%s-agent" (include "stackl.fullname" .) -}}
 {{- end -}}
-
-{{- define "stackl.redis" -}}
-  {{- printf "%s-redis" (include "stackl.fullname" .) -}}
-{{- end -}}
-
-{{- define "stackl.rest" -}}
-  {{- printf "%s-rest" (include "stackl.fullname" .) -}}
-{{- end -}}
-
-{{- define "stackl.worker" -}}
-  {{- printf "%s-worker" (include "stackl.fullname" .) -}}
-{{- end -}}
-
-{{- define "stackl.opa" -}}
-  {{- printf "%s-opa" (include "stackl.fullname" .) -}}
-{{- end -}}

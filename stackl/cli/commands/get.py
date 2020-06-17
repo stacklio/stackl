@@ -185,3 +185,15 @@ def policy_template(stackl_context: StacklContext, output, name):
         env = stackl_context.policy_templates_api.get_policy_template_by_name(
             name)
     click.echo(parse(env, output))
+
+
+@get.command()
+@click.option('-o', '--output')
+@click.argument('name', required=False)
+@pass_stackl_context
+def snapshot(stackl_context: StacklContext, output, name):
+    if name is None:
+        env = stackl_context.snapshot_api.list_snapshots()
+    else:
+        env = stackl_context.snapshot_api.get_snapshot(name)
+    click.echo(parse(env, output))
