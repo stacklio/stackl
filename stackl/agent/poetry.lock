@@ -219,7 +219,7 @@ develop = true
 name = "stackl-protos"
 optional = false
 python-versions = "^3.7"
-version = "0.1.2dev"
+version = "0.1.3dev"
 
 [package.dependencies]
 protobuf = "^3.12.2"

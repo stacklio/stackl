@@ -18,14 +18,14 @@ agentBroker:
   type: grpc
 
 stacklRest:
-  image: stacklio/stackl-rest:0.1.2dev
+  image: stacklio/stackl-rest:0.1.3dev
   name: stackl-rest
   serviceType: NodePort
   hostname: stackl.example.com
   replicaCount: 1
 
 stacklWorker:
-  image: stacklio/stackl-worker:0.1.2dev
+  image: stacklio/stackl-worker:0.1.3dev
   name: stackl-worker
   replicaCount: 1
 
@@ -41,7 +41,7 @@ stacklOpa:
   replicaCount: 1
 
 stacklJobBroker:
-  image: stacklio/stackl-job-broker:0.1.2dev
+  image: stacklio/stackl-job-broker:0.1.3dev
   name: stackl-job-broker
   serviceType: NodePort
   replicaCount: 1

@@ -9,9 +9,9 @@ DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 
-VERSIONTAG=0.1.2dev
+VERSIONTAG=0.1.3dev
 
-VERSION=0.1.2dev
+VERSION=0.1.3dev
 
 ######################################################
 #

@@ -4,7 +4,7 @@ image:
 mode: prod
 
 stacklAgent:
-  image: stacklio/stackl-agent:0.1.2dev
+  image: stacklio/stackl-agent:0.1.3dev
   name: stackl-agent
   replicaCount: 1
   agentName: agent
