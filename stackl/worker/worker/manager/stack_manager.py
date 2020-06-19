@@ -19,8 +19,6 @@ class StackManager(Manager):
     def __init__(self):
         super(StackManager, self).__init__()
 
-        self.agent_task_broker = AgentTaskBroker(stackl_globals.redis_cache)
-
         task_broker_factory = TaskBrokerFactory()
         self.task_broker = task_broker_factory.get_task_broker()
 
@@ -30,21 +28,22 @@ class StackManager(Manager):
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
+        self.agent_task_broker = AgentTaskBroker(stackl_globals.redis_cache,
+                                                 self.task_broker)
+
         self.document_manager = None  # To be given after initalisation by manager_factory
         self.snapshot_manager = None  # To be given after initalisation by manager_factory
 
     def handle_task(self, task):
         logger.debug(f"[StackManager] handling stack_task '{task}'")
-        stack_instance = None
 
         if task["subtype"] == "GET_STACK":
             (stack_instance_name) = task["args"]
             return_result = self.document_manager.get_document(
                 type="stack_instance", name=stack_instance_name)
         elif task["subtype"] == "GET_ALL_STACKS":
-            (stack_instance_name) = task["args"]
             return_result = self.document_manager.collect_documents(
-                type_name="stack_instance", name=stack_instance_name)
+                type_name="stack_instance")
         elif task["subtype"] == "CREATE_STACK":
             (stack_instance, return_result) = self._process_stack_request(
                 task["json_data"], "create")
@@ -74,14 +73,19 @@ class StackManager(Manager):
             return_result = StatusCode.BAD_REQUEST
 
         logger.debug(f"[StackManager] Handled StackTask")
-        result_task = ResultTask({
-            'channel': task.get('return_channel'),
-            'cast_type': CastType.BROADCAST.value,
+        result_task = ResultTask.parse_obj({
+            'channel':
+            task.get('return_channel'),
+            'cast_type':
+            CastType.BROADCAST.value,
             'result_msg':
             f"StackTask with type '{task['subtype']}' was handled",
-            'return_result': return_result,
-            'result_code': StatusCode.OK,
-            'source_task': task
+            'return_result':
+            return_result,
+            'result_code':
+            StatusCode.OK,
+            'source_task':
+            task
         })
         self.message_channel.publish(result_task)
 

@@ -1,9 +1,10 @@
 import logging
 
 from stackl.enums.cast_type import CastType
-from .handler import Handler
-from stackl.tasks.result_task import ResultTask
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
+from stackl.tasks.result_task import ResultTask
+
+from .handler import Handler
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -22,18 +23,15 @@ class TaskHandler(Handler):
             pass
         elif item.topic == 'result':
             logger.info(
-                f"[TaskHandler] Received result: {item.as_json_string()}. Processing."
-            )
+                f"[TaskHandler] Received result: {item.json()}. Processing.")
             self.task_broker.handle_result_task(item)
         else:
             logger.info(
                 f"[TaskHandler] Unknown task with type '{item.topic}'! Ignoring."
             )
-        if result is None:  #Keep for potential future use - in case we want report results
-            return
-        if item.get_attribute('return_channel'):
+        if item.return_channel is not None:
             return ResultTask({
-                'channel': item.get_attribute('return_channel'),
+                'channel': item.return_channel,
                 'cast_type': CastType.BROADCAST.value,
                 'result': result,
                 'source_task': item

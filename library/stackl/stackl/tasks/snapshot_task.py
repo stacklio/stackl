@@ -1,23 +1,19 @@
-from .task import Task, logger
+from pydantic import validator
+
+from .task import Task
 
 
 class SnapshotTask(Task):
-    @property
-    def valid_subtypes(self):
-        return [
+    topic: str = "snapshot_task"
+    snapshot_doc_type: str = None
+    snapshot_doc_name: str = None
+
+    @validator('subtype')
+    def valid_subtypes(self, subtype):
+        subtypes = [
             "GET_SNAPSHOT", "LIST_SNAPSHOT", "CREATE_SNAPSHOT",
             "RESTORE_SNAPSHOT", "DELETE_SNAPSHOT"
         ]
-
-    def _load_json_object(self, json_obj):
-        super()._load_json_object(json_obj)
-        self.topic = 'snapshot_task'
-        self.snapshot_doc_type = json_obj.get('snapshot_doc_type', None)
-        self.snapshot_doc_name = json_obj.get('snapshot_doc_name', None)
-        subtype = json_obj.get('subtype', [None])
-        if subtype in self.valid_subtypes:
-            self.subtype = subtype
-        else:
-            logger.info(
-                "[SnapshotTask] The given SnapshotTask has an invalid subtype")
-            raise Exception("The given SnapshotTask has an invalid subtype")
+        if subtype not in subtypes:
+            raise ValueError("subtype for DocumentTask not valid")
+        return subtype

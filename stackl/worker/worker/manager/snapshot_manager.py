@@ -45,7 +45,7 @@ class SnapshotManager(Manager):
         logger.debug(
             f"[SnapshotManager] Succesfully handled snapshot task. Creating ResultTask."
         )
-        resultTask = ResultTask({
+        resultTask = ResultTask.parse_obj({
             'channel': task['return_channel'],
             'result_msg':
             f"Document with type '{task['subtype']}' was handled",

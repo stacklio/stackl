@@ -20,7 +20,7 @@ def get_services():
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'service'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': "service",
         'subtype': "COLLECT_DOCUMENT"
@@ -38,7 +38,7 @@ def get_service_by_name(name: str):
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'service' and document '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ('service', name),
         'subtype': "GET_DOCUMENT"
@@ -54,7 +54,7 @@ def post_service(document: Service):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "POST_DOCUMENT"
@@ -69,7 +69,7 @@ def post_service(document: Service):
 @router.put('', response_model=Service)
 def put_service(document: Service):
     """Create the document with a specific type and an optional name given in the payload"""
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "PUT_DOCUMENT"
@@ -83,7 +83,7 @@ def put_service(document: Service):
 
 @router.delete('/{name}', status_code=202)
 def delete_service(name: str):
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ("service", name),
         'subtype': "DELETE_DOCUMENT"

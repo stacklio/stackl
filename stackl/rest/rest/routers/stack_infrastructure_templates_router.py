@@ -18,7 +18,7 @@ def get_stack_infrastructure_templates():
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'stack_infrastructrure_templates'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': "stack_infrastructure_template",
         'subtype': "COLLECT_DOCUMENT"
@@ -36,7 +36,7 @@ def get_stack_infrastructure_template_by_name(name: str):
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'stack_infrastructure_template' and document '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ('stack_application_template', name),
         'subtype': "GET_DOCUMENT"
@@ -52,7 +52,7 @@ def post_stack_infrastructure_template(document: StackInfrastructureTemplate):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "POST_DOCUMENT"
@@ -67,7 +67,7 @@ def post_stack_infrastructure_template(document: StackInfrastructureTemplate):
 @router.put('', response_model=StackInfrastructureTemplate)
 def put_stack_infrastructure_template(document: StackInfrastructureTemplate):
     """Create the document with a specific type and an optional name given in the payload"""
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "PUT_DOCUMENT"
@@ -81,7 +81,7 @@ def put_stack_infrastructure_template(document: StackInfrastructureTemplate):
 
 @router.delete('/{name}', status_code=202)
 def delete_stack_infrastructure_template(name: str):
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ("stack_infrastructure_template", name),
         'subtype': "DELETE_DOCUMENT"

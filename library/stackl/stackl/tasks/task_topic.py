@@ -8,6 +8,7 @@ from .stack_task import StackTask
 
 
 class TaskTopic(Enum):
+    agent = AgentTask
     report = ReportTask
     result = ResultTask
     document = DocumentTask

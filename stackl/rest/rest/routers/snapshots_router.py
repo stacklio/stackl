@@ -19,7 +19,7 @@ def get_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     logger.info(
         f"[GetSnapSHOT GET] API GET request for snapshot of doc with type '{type_name}' and '{name}' and snapshot_nb '{snapshot_nb}'"
     )
-    task = SnapshotTask({
+    task = SnapshotTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name, snapshot_nb),
         'subtype': "GET_SNAPSHOT"
@@ -38,7 +38,7 @@ def list_snapshots(type_name: str, name: str):
     logger.info(
         f"[ListSnapshots GET] API GET request for snapshot of doc with type_name '{type_name}' and '{name}' "
     )
-    task = SnapshotTask({
+    task = SnapshotTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name),
         'subtype': "LIST_SNAPSHOT"
@@ -55,7 +55,7 @@ def create_snapshot(type_name: str, name: str):
     logger.info(
         f"[CreateSnapshot POST] API POST request for snapshot of doc with type_name '{type_name}' and '{name}'"
     )
-    task = SnapshotTask({
+    task = SnapshotTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name),
         'subtype': "CREATE_SNAPSHOT"
@@ -74,7 +74,7 @@ def restore_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     logger.info(
         f"[RestoreSnapshot POST] API POST request for doc with type_name '{type_name}' and '{name}' and snapshot_nb '{snapshot_nb}'"
     )
-    task = SnapshotTask({
+    task = SnapshotTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name, snapshot_nb),
         'subtype': "RESTORE_SNAPSHOT"
@@ -93,7 +93,7 @@ def delete_snapshot(type_name: str, name: str, snapshot_nb: int = 1):
     logger.info(
         f"[DeleteSnapshot DEL] API DEL request for snapshot of doc with type_name '{type_name}' and '{name}' and snapshot_nb '{snapshot_nb}'"
     )
-    task = SnapshotTask({
+    task = SnapshotTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name, snapshot_nb),
         'subtype': "DELETE_SNAPSHOT"

@@ -63,7 +63,7 @@ def get_stack_instance(name: str):
     logger.info(
         f"[StackInstancesName GET] Getting document for stack instance '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ('stack_instance', name),
         'subtype': "GET_DOCUMENT"
@@ -79,7 +79,7 @@ def get_stack_instances(name: str = ""):
     logger.info(
         f"[StackInstancesAll GET] Returning all stack instances that contain optional name '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': "stack_instance",
         'subtype': "COLLECT_DOCUMENT"
@@ -96,7 +96,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
 
-    task = StackTask({
+    task = StackTask.parse_obj({
         'channel': 'worker',
         'json_data': stack_instance_invocation.dict(),
         'subtype': "CREATE_STACK",
@@ -105,11 +105,10 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
         f"[StackInstances POST] Giving StackTask '{task}' to task_broker")
 
     task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
-
-    stack_create_result = StackCreateResult(result=str(result.return_result))
-
-    return stack_create_result
+    for result in task_broker.get_task_results(task.id):
+        stack_create_result = StackCreateResult(
+            result=str(result.return_result))
+        yield stack_create_result
 
 
 @router.put('')
@@ -117,7 +116,7 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
     logger.info("[StackInstances PUT] Received PUT request")
 
-    task = StackTask({
+    task = StackTask.parse_obj({
         'channel': 'worker',
         'json_data': stack_instance_update.dict(),
         'subtype': "UPDATE_STACK",
@@ -143,7 +142,7 @@ def delete_stack_instance(name: str):
     logger.info(f"[StackInstances DELETE] Received DELETE request for {name}")
     json_data = {}
     json_data['name'] = name
-    task = StackTask({
+    task = StackTask.parse_obj({
         'channel': 'worker',
         'json_data': json_data,
         'subtype': "DELETE_STACK",

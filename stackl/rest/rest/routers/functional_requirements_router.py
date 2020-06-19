@@ -18,7 +18,7 @@ def get_functional_requirements():
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'policy_template'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': "functional_requirement",
         'subtype': "COLLECT_DOCUMENT"
@@ -36,7 +36,7 @@ def get_functional_requirement_by_name(name: str):
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'policy_template' and document '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ('functional_requirement', name),
         'subtype': "GET_DOCUMENT"
@@ -51,7 +51,7 @@ def post_functional_requirement(document: FunctionalRequirement):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "POST_DOCUMENT"
@@ -66,7 +66,7 @@ def post_functional_requirement(document: FunctionalRequirement):
 @router.put('', response_model=FunctionalRequirement)
 def put_functional_requirement(document: FunctionalRequirement):
     """Create the document with a specific type and an optional name given in the payload"""
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "PUT_DOCUMENT"
@@ -83,7 +83,7 @@ def delete_functional_requirement(type_name: str, name: str):
     logger.info(
         f"[DeleteDocument] API Delete request for type '{type_name}' and document '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name),
         'subtype': "DELETE_DOCUMENT"

@@ -51,6 +51,11 @@ class CustomTaskBroker(TaskBroker):
             if task_id == ast.literal_eval(result_task.source_task)["id"]:
                 return result_task
 
+    def get_task_results(self, task_id):
+        for result_task in self.message_channel.listen_result(get_hostname()):
+            if task_id == ast.literal_eval(result_task.source_task)["id"]:
+                yield result_task
+
     def get_task(self, tag):
         task = self.message_channel.pop("task_" + tag + ':process')[1]
         logger.debug(f"[CustomTaskBroker] get_task. returning task: '{task}'")

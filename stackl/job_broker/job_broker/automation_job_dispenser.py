@@ -3,14 +3,10 @@ import logging
 import threading
 
 from redis import StrictRedis
-
 from stackl.models.items.stack_instance_status_model import StackInstanceStatus
-
 from stackl.task_broker.task_broker import TaskBroker
-
-from stackl.tasks.stack_task import StackTask
-
 from stackl.tasks.document_task import DocumentTask
+
 from stackl_protos.agent_pb2 import AgentMetadata, ConnectionResult, Invocation, AutomationResult, Status
 from stackl_protos.agent_pb2_grpc import StacklAgentServicer
 
@@ -67,10 +63,12 @@ class AutomationJobDispenser(StacklAgentServicer):
         logger.info(
             f"[AutomationJobDispenser] processing result {automation_result}")
 
-        task = StackTask({
-            'channel': 'worker',
-            'subtype': "GET_STACK",
-            'args': automation_result.stack_instance
+        task = DocumentTask.parse_obj({
+            'channel':
+            'worker',
+            'subtype':
+            "GET_DOCUMENT",
+            'args': ('stack_instance', automation_result.stack_instance)
         })
 
         self.task_broker.give_task(task)
@@ -107,7 +105,7 @@ class AutomationJobDispenser(StacklAgentServicer):
             stack_instance.status.append(stack_instance_status)
 
         logger.info(f"[AutomationJobDispenser] done processing")
-        task = DocumentTask({
+        task = DocumentTask.parse_obj({
             'channel': 'worker',
             'document': stack_instance.dict(),
             'subtype': "PUT_DOCUMENT"

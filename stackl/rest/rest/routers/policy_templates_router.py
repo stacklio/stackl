@@ -18,7 +18,7 @@ def get_policy_templates():
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name 'policy_template'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': "policy_template",
         'subtype': "COLLECT_DOCUMENT"
@@ -36,7 +36,7 @@ def get_policy_template_by_name(policy_name: str):
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'policy_template' and document '{policy_name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': ('policy_template', policy_name),
         'subtype': "GET_DOCUMENT"
@@ -51,7 +51,7 @@ def get_policy_template_by_name(policy_name: str):
 def put_policy_template(policy: PolicyTemplate):
     logger.info(
         f"[PutDocument] API PUT request with policy_template: {policy}")
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': policy.dict(),
         'subtype': "PUT_DOCUMENT"

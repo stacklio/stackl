@@ -1,26 +1,24 @@
-from .task import Task, logger
+from typing import Any
+
+from pydantic import validator
+
+from .task import Task
 
 
 class StackTask(Task):
-    @property
-    def valid_subtypes(self):
-        return [
+    topic: str = "stack_task"
+    json_data: Any = None
+    send_channel: str = "agent"
+
+    @validator('subtype')
+    def valid_subtypes(self, subtype):
+        subtypes = [
             "GET_STACK",
             "GET_ALL_STACKS",
             "CREATE_STACK",
             "UPDATE_STACK",
             "DELETE_STACK",
         ]
-
-    def _load_json_object(self, json_obj):
-        super()._load_json_object(json_obj)
-        self.topic = 'stack_task'
-        self.json_data = json_obj.get('json_data', None)
-        self.send_channel = "agent"
-        subtype = json_obj.get('subtype', [None])
-        if subtype in self.valid_subtypes:
-            self.subtype = subtype
-        else:
-            logger.info(
-                "[StackTask] The given StackTask has an invalid subtype")
-            raise Exception("The given StackTask has an invalid subtype")
+        if subtype not in subtypes:
+            raise ValueError("subtype for DocumentTask not valid")
+        return subtype

@@ -53,7 +53,7 @@ class DocumentManager(Manager):
             return_result = self.delete_document(type=type_name, name=name)
         logger.debug(
             f"[DocumentManager] Handled document task. Creating ResultTask.")
-        resultTask = ResultTask({
+        resultTask = ResultTask.parse_obj({
             'channel': task['return_channel'],
             'result_msg':
             f"DocumentTask with type '{task['subtype']}' was handled",

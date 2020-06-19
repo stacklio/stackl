@@ -19,7 +19,7 @@ def collect_documents_by_type(type_name: str):
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name '{type_name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': type_name,
         'subtype': "COLLECT_DOCUMENT"
@@ -46,7 +46,7 @@ def get_document_by_type_and_name(type_name: str, name: str):
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type '{type_name}' and document '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name),
         'subtype': "GET_DOCUMENT"
@@ -65,7 +65,7 @@ def post_document(document: BaseDocument):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {document}")
 
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': document.dict(),
         'subtype': "POST_DOCUMENT"
@@ -86,7 +86,7 @@ def put_document(document: BaseDocument, request: Request):
     logger.info(f"[PutDocument] API PUT request with data: {document}")
     json_body = request.json()
     logger.info(f"[PutDocument] API PUT request with request: {json_body}")
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'document': json_body,
         'subtype': "PUT_DOCUMENT"
@@ -109,7 +109,7 @@ def delete_document(type_name: str, name: str):
     logger.info(
         f"[DeleteDocument] API Delete request for type '{type_name}' and document '{name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': (type_name, name),
         'subtype': "DELETE_DOCUMENT"

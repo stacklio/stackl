@@ -2,13 +2,15 @@ import json
 import logging
 
 from redis import StrictRedis
+from stackl.task_broker.task_broker import TaskBroker
 
 logger = logging.getLogger("STACKL_LOGGER")
 
 
 class AgentTaskBroker:
-    def __init__(self, redis: StrictRedis):
+    def __init__(self, redis: StrictRedis, task_broker: TaskBroker):
         self.redis = redis
+        self.task_broker = task_broker
 
     def get_agent_for_job(self, target):
         agents = self._get_agents()

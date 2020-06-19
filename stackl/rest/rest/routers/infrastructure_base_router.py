@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from fastapi import APIRouter
 from stackl.models.configs.infrastructure_base_document import InfrastructureBaseDocument
@@ -12,13 +13,13 @@ task_broker = TaskBrokerFactory().get_task_broker()
 
 
 @router.get('/{infrastructure_base_type}',
-            response_model=InfrastructureBaseDocument)
+            response_model=List[InfrastructureBaseDocument])
 def get_infrastructure_base_by_type(infrastructure_base_type: str):
     """Returns a specific infrastructure_base document with a type and name"""
     logger.info(
         f"[CollectionDocumentByType GET] API COLLECT request with type_name '{infrastructure_base_type}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel': 'worker',
         'args': infrastructure_base_type,
         'subtype': "COLLECT_DOCUMENT"
@@ -38,7 +39,7 @@ def get_infrastructure_base_by_type_and_name(infrastructure_base_type: str,
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type '{infrastructure_base_type}' and document '{infrastructure_base_name}'"
     )
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel':
         'worker',
         'args': (infrastructure_base_type, infrastructure_base_name),
@@ -59,10 +60,13 @@ def post_infrastructure_base(
         f"[PostDocument] Receiver POST request with data: {infrastructure_base_document}"
     )
 
-    task = DocumentTask({
-        'channel': 'worker',
-        'document': infrastructure_base_document.dict(),
-        'subtype': "POST_DOCUMENT"
+    task = DocumentTask.parse_obj({
+        'channel':
+        'worker',
+        'document':
+        infrastructure_base_document.dict(),
+        'subtype':
+        "POST_DOCUMENT"
     })
 
     task_broker.give_task(task)
@@ -75,10 +79,13 @@ def post_infrastructure_base(
 def put_infrastructure_base(
     infrastructure_base_document: InfrastructureBaseDocument):
     """UPDATES the infrastructure_base document with a specific type and an optional name given in the payload"""
-    task = DocumentTask({
-        'channel': 'worker',
-        'document': infrastructure_base_document.dict(),
-        'subtype': "PUT_DOCUMENT"
+    task = DocumentTask.parse_obj({
+        'channel':
+        'worker',
+        'document':
+        infrastructure_base_document.dict(),
+        'subtype':
+        "PUT_DOCUMENT"
     })
 
     task_broker.give_task(task)
@@ -91,7 +98,7 @@ def put_infrastructure_base(
                status_code=202)
 def delete_infrastructure_base(infrastructure_base_type: str,
                                infrastructure_base_name: str):
-    task = DocumentTask({
+    task = DocumentTask.parse_obj({
         'channel':
         'worker',
         'args': (infrastructure_base_type, infrastructure_base_name),
