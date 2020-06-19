@@ -4,6 +4,7 @@ import logging
 from stackl.message_channel.message_channel_factory import MessageChannelFactory
 from .task_broker import TaskBroker
 from stackl.utils.general_utils import get_hostname
+from stackl.models.items.stack_instance_status_model import Status
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -53,8 +54,10 @@ class CustomTaskBroker(TaskBroker):
 
     def get_task_results(self, task_id):
         for result_task in self.message_channel.listen_result(get_hostname()):
-            if task_id == ast.literal_eval(result_task.source_task)["id"]:
+            if task_id == ast.literal_eval(result_task.source_task.id):
                 yield result_task
+                if result_task.status == Status.READY:
+                    break
 
     def get_task(self, tag):
         task = self.message_channel.pop("task_" + tag + ':process')[1]

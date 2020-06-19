@@ -8,7 +8,6 @@ from .task import Task
 class StackTask(Task):
     topic: str = "stack_task"
     json_data: Any = None
-    send_channel: str = "agent"
 
     @validator('subtype')
     def valid_subtypes(self, subtype):

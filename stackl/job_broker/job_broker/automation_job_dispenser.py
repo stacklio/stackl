@@ -10,6 +10,8 @@ from stackl.tasks.document_task import DocumentTask
 from stackl_protos.agent_pb2 import AgentMetadata, ConnectionResult, Invocation, AutomationResult, Status
 from stackl_protos.agent_pb2_grpc import StacklAgentServicer
 
+from stackl.tasks.result_task import ResultTask
+
 logger = logging.getLogger("STACKL_LOGGER")
 
 
@@ -112,5 +114,6 @@ class AutomationJobDispenser(StacklAgentServicer):
         })
 
         self.task_broker.give_task(task)
+        task = ResultTask.parse_obj({})
         connection_result = ConnectionResult(success=True)
         return connection_result

@@ -10,6 +10,7 @@ from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.stack_task import StackTask
 
 from stackl.tasks.document_task import DocumentTask
+from stackl.utils.general_utils import get_hostname
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
@@ -100,6 +101,7 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
         'channel': 'worker',
         'json_data': stack_instance_invocation.dict(),
         'subtype': "CREATE_STACK",
+        'return_channel': get_hostname()
     })
     logger.info(
         f"[StackInstances POST] Giving StackTask '{task}' to task_broker")

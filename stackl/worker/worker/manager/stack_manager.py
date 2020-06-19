@@ -49,7 +49,8 @@ class StackManager(Manager):
                 task["json_data"], "create")
             if stack_instance is not None:
                 self.agent_task_broker.create_job_for_agent(
-                    stack_instance, "create", self.document_manager)
+                    stack_instance, "create", self.document_manager,
+                    task["return_channel"])
                 self.document_manager.write_stack_instance(stack_instance)
         elif task["subtype"] == "UPDATE_STACK":
             (stack_instance, return_result) = self._process_stack_request(
@@ -85,7 +86,9 @@ class StackManager(Manager):
             'result_code':
             StatusCode.OK,
             'source_task':
-            task
+            task,
+            'status':
+            ""
         })
         self.message_channel.publish(result_task)
 

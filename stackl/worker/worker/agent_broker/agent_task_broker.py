@@ -3,6 +3,7 @@ import logging
 
 from redis import StrictRedis
 from stackl.task_broker.task_broker import TaskBroker
+from stackl.tasks.agent_task import AgentTask
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -29,7 +30,8 @@ class AgentTaskBroker:
         # If no agents are available for this job right now we put it on agent_unavailable
         return "agent_unavailable"
 
-    def create_job_for_agent(self, stack_instance, action, document_manager):
+    def create_job_for_agent(self, stack_instance, action, document_manager,
+                             return_channel):
         logger.debug(
             f"[AgentTaskBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
         )
@@ -59,7 +61,16 @@ class AgentTaskBroker:
                     invoc['tool'] = fr_doc.invocation.tool
                     invoc['service'] = service_name
 
-                    self.redis.publish(agent, json.dumps(invoc))
+                    agent_task = AgentTask.parse_obj({
+                        'channel':
+                        agent,
+                        'invocation':
+                        invoc,
+                        'return_channel':
+                        return_channel
+                    })
+
+                    self.task_broker.give_task(agent_task)
 
     def _get_agents(self):
         agents = {}
