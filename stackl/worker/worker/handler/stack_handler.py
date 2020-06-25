@@ -208,7 +208,8 @@ class StackHandler(Handler):
             return None, message
 
         return self._create_stack_instance(
-            item, service_targets['result']['services'], stack_infr), None
+            item, service_targets['result']['services'],
+            stack_infr), service_targets['result']['services']
 
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr):
         infringment_messages = []

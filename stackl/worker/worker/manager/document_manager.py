@@ -3,6 +3,8 @@ import logging
 
 from stackl.enums.cast_type import CastType
 from stackl.enums.stackl_codes import StatusCode
+
+from stackl.tasks.document_task import DocumentTask
 from .manager import Manager
 from stackl.models.configs.document_model import BaseDocument
 from stackl.models.configs.environment_model import Environment
@@ -34,29 +36,29 @@ class DocumentManager(Manager):
 
         self.snapshot_manager = None  #Given after initalisation by manager_factory
 
-    def handle_task(self, task):
+    def handle_task(self, task: DocumentTask):
         logger.debug(f"[DocumentManager] handling document_task '{task}'")
-        if task["subtype"] == "GET_DOCUMENT":
-            (type_name, name) = task["args"]
+        if task.subtype == "GET_DOCUMENT":
+            (type_name, name) = task.args
             return_result = self.get_document(type=type_name, name=name)
-        elif task["subtype"] == "COLLECT_DOCUMENT":
-            type_name = task["args"]
+        elif task.subtype == "COLLECT_DOCUMENT":
+            type_name = task.args
             return_result = self.collect_documents(type_name=type_name)
-        elif task["subtype"] == "POST_DOCUMENT":
-            document = task["document"]
+        elif task.subtype == "POST_DOCUMENT":
+            document = task.document
             return_result = self.write_document(document)
-        elif task["subtype"] == "PUT_DOCUMENT":
-            document = task["document"]
+        elif task.subtype == "PUT_DOCUMENT":
+            document = task.document
             return_result = self.write_document(document, overwrite=True)
-        elif task["subtype"] == "DELETE_DOCUMENT":
-            (type_name, name) = task["args"]
+        elif task.subtype == "DELETE_DOCUMENT":
+            (type_name, name) = task.args
             return_result = self.delete_document(type=type_name, name=name)
         logger.debug(
             f"[DocumentManager] Handled document task. Creating ResultTask.")
         resultTask = ResultTask.parse_obj({
-            'channel': task['return_channel'],
+            'channel': task.return_channel,
             'result_msg':
-            f"DocumentTask with type '{task['subtype']}' was handled",
+            f"DocumentTask with type '{task.subtype}' was handled",
             'return_result': return_result,
             'result_code': StatusCode.OK,
             'cast_type': CastType.BROADCAST.value,

@@ -4,6 +4,7 @@ import grpc
 
 from agent.docker.docker_tool_factory import DockerToolFactory
 from agent.kubernetes.kubernetes_tool_factory import KubernetesToolFactory
+from agent.mock.mock_tool_factory import MockToolFactory
 from stackl_protos.agent_pb2 import AgentMetadata, AutomationResult, Status
 from stackl_protos.agent_pb2_grpc import StacklAgentStub
 
@@ -14,6 +15,8 @@ class JobHandler:
             self.tool_factory = KubernetesToolFactory()
         elif os.environ["AGENT_NAME"] == "docker":
             self.tool_factory = DockerToolFactory()
+        elif os.environ["AGENT_NAME"] == "mock":
+            self.tool_factory = MockToolFactory()
         self.stackl_agent_stub = stackl_agent_stub
 
     def invoke_automation(self, invoc):
@@ -26,10 +29,12 @@ class JobHandler:
         automation_result.service = invoc.service
         automation_result.functional_requirement = invoc.functional_requirement
         automation_result.infrastructure_target = invoc.infrastructure_target
+        automation_result.requester = invoc.requester
+        automation_result.source_task_id = invoc.source_task_id
         if result == 0:
-            automation_result.status = Status.READY
+            automation_result.status = Status.Value("READY")
         else:
-            automation_result.status = Status.FAILED
+            automation_result.status = Status.Value("FAILED")
             automation_result.error_message = error_message
 
         print("Handle done")
@@ -69,11 +74,11 @@ def start():
         )
         for job in stub.GetJob(agent_metadata, wait_for_ready=True):
             print("Job received from STACKL through gRPC stream")
-            # try:
-            job_handler.invoke_automation(job)
-            print("Waiting for new job")
-            # except Exception as e:
-            #     print(f"Exception during automation: {e}")
+            try:
+                job_handler.invoke_automation(job)
+                print("Waiting for new job")
+            except Exception as e:
+                print(f"Exception during automation: {e}")
 
 
 if __name__ == '__main__':

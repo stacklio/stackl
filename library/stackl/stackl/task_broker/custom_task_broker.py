@@ -42,21 +42,21 @@ class CustomTaskBroker(TaskBroker):
             logger.debug(
                 f"[CustomTaskBroker] give_task. Task to push: '{task_obj}'")
             self.message_channel.push("task_" + "common" + ':process',
-                                      task_obj.as_json_string())
+                                      task_obj.json())
         else:
             self.message_channel.publish(task_obj)
         return
 
     def get_task_result(self, task_id):
         for result_task in self.message_channel.listen_result(get_hostname()):
-            if task_id == ast.literal_eval(result_task.source_task)["id"]:
+            if task_id == result_task.source_task.id:
                 return result_task
 
     def get_task_results(self, task_id):
         for result_task in self.message_channel.listen_result(get_hostname()):
-            if task_id == ast.literal_eval(result_task.source_task.id):
+            if task_id == result_task.source_task_id:
                 yield result_task
-                if result_task.status == Status.READY:
+                if result_task.status != "progress":
                     break
 
     def get_task(self, tag):

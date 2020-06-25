@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import validator
 
-from .task import Task, logger
+from .task import Task
 
 
 class DocumentTask(Task):
@@ -11,7 +11,7 @@ class DocumentTask(Task):
     subtype: str = None
 
     @validator('subtype')
-    def valid_subtypes(self, subtype):
+    def valid_subtypes(cls, subtype):
         subtypes = [
             "GET_DOCUMENT",  # GET: To get a document
             "COLLECT_DOCUMENT",  # GET: To collect all documents of certain parameters

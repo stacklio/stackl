@@ -10,7 +10,7 @@ class StackTask(Task):
     json_data: Any = None
 
     @validator('subtype')
-    def valid_subtypes(self, subtype):
+    def valid_subtypes(cls, subtype):
         subtypes = [
             "GET_STACK",
             "GET_ALL_STACKS",

@@ -24,7 +24,7 @@ class TaskHandler(Handler):
         elif item.topic == 'result':
             logger.info(
                 f"[TaskHandler] Received result: {item.json()}. Processing.")
-            self.task_broker.handle_result_task(item)
+            # self.task_broker.handle_result_task(item)
         else:
             logger.info(
                 f"[TaskHandler] Unknown task with type '{item.topic}'! Ignoring."

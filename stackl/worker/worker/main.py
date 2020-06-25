@@ -7,6 +7,7 @@ import stackl.stackl_globals as stackl_globals
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
 from stackl.utils.general_utils import get_hostname  # pylint: disable=import-error
 
+from stackl.tasks.document_task import DocumentTask
 from .manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 
 # initialize stackl globals
@@ -62,7 +63,8 @@ class Worker:
                     f"[Worker] DocumentTask with subtype \'{task_attr['subtype']}\'"
                 )
                 thread = threading.Thread(
-                    target=self.document_manager.handle_task, args=[task_attr])
+                    target=self.document_manager.handle_task,
+                    args=[DocumentTask.parse_obj(task_attr)])
                 thread.start()
             elif task_attr["topic"] == "snapshot_task":
                 logger.info(

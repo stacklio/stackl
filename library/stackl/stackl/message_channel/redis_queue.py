@@ -50,17 +50,12 @@ class RedisQueue(MessageChannel):
                 "[RedisQueue] postpone pubsub start due to empty channel list")
 
     def publish(self, task):
-        return_channel = task.get_attribute('return_channel')
-        timeout = task.get_attribute('timeout')
-        channel = task.get_channel()
-        message_str = task.as_json_string()
+        channel = task.channel
+        message_str = task.json()
         logger.info(
             f"[RedisQueue] Channel '{channel}': Sending message via pubsub: {message_str}"
         )
         self.queue.publish(channel, message_str)
-        if return_channel is not None:
-            return self.listen(return_channel, timeout=timeout)
-        return {}
 
     def listen_result(self, channel):
         logger.info(f"[RedisQueue] Broker listening on: {channel}")
@@ -104,8 +99,7 @@ class RedisQueue(MessageChannel):
             if message and (message['type'] != 'subscribe'
                             and message['type'] != 'unsubscribe'):
                 result_task = TaskFactory.create_task(message['data'])
-                logger.debug(
-                    f"[RedisQueue] resultTask: {result_task.as_json_string()}")
+                logger.debug(f"[RedisQueue] resultTask: {result_task.json()}")
                 return_array.append(result_task)
                 continue
             time.sleep(0.1)

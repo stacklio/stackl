@@ -30,7 +30,7 @@ def instance(stackl_context: StacklContext, stack_infrastructure_template,
         params=json.loads(params),
         tags=json.loads(tags))
     res = stackl_context.stack_instances_api.post_stack_instance(invocation)
-    click.echo(res['result'])
+    click.echo(res)
 
 
 @create.command()

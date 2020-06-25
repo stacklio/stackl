@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Collection
 from typing import Dict, Any, List
 
 from fastapi import APIRouter, HTTPException
@@ -7,9 +6,8 @@ from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
 from stackl.enums.stackl_codes import StatusCode
 from stackl.models.items.stack_instance_model import StackInstance
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
-from stackl.tasks.stack_task import StackTask
-
 from stackl.tasks.document_task import DocumentTask
+from stackl.tasks.stack_task import StackTask
 from stackl.utils.general_utils import get_hostname
 
 logger = logging.getLogger("STACKL_LOGGER")
@@ -93,7 +91,8 @@ def get_stack_instances(name: str = ""):
 
 
 @router.post('')
-def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
+async def post_stack_instance(
+    stack_instance_invocation: StackInstanceInvocation):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
 
@@ -107,10 +106,9 @@ def post_stack_instance(stack_instance_invocation: StackInstanceInvocation):
         f"[StackInstances POST] Giving StackTask '{task}' to task_broker")
 
     task_broker.give_task(task)
-    for result in task_broker.get_task_results(task.id):
-        stack_create_result = StackCreateResult(
-            result=str(result.return_result))
-        yield stack_create_result
+    result = task_broker.get_task_result(task.id)
+
+    return result.return_result
 
 
 @router.put('')
@@ -126,16 +124,8 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     logger.info(
         f"[StackInstances PUT] Giving StackTask '{task}' to task_broker")
     task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
 
-    if not StatusCode.is_successful(result):
-        raise HTTPException(status_code=StatusCode.BAD_REQUEST,
-                            detail="NOT OK!")
-
-    return {
-        'return_code': StatusCode.ACCEPTED,
-        'message': 'Stack instance updating'
-    }, StatusCode.ACCEPTED
+    return "Stack instance updating"
 
 
 @router.delete('/{name}')

@@ -9,7 +9,7 @@ class SnapshotTask(Task):
     snapshot_doc_name: str = None
 
     @validator('subtype')
-    def valid_subtypes(self, subtype):
+    def valid_subtypes(cls, subtype):
         subtypes = [
             "GET_SNAPSHOT", "LIST_SNAPSHOT", "CREATE_SNAPSHOT",
             "RESTORE_SNAPSHOT", "DELETE_SNAPSHOT"

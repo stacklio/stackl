@@ -14,6 +14,8 @@ message Invocation {
     string functional_requirement = 5;
     string tool = 6;
     string action = 7;
+    string requester = 8;
+    string source_task_id = 9;
 }
 
 message ConnectionResult {
@@ -37,4 +39,6 @@ message AutomationResult {
     Status status = 4;
     string error_message = 5;
     string infrastructure_target = 6;
+    string requester = 7;
+    string source_task_id = 8;
 }

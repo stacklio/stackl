@@ -23,6 +23,6 @@ class StatusCode(IntEnum):
     @classmethod
     def is_successful(cls, code):
         if isinstance(code, StatusCode):
-            return 200 <= code.value < 400
+            return 200 <= code < 400
         else:
             return 200 <= code < 400

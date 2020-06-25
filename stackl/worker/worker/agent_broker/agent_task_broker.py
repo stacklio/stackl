@@ -31,7 +31,7 @@ class AgentTaskBroker:
         return "agent_unavailable"
 
     def create_job_for_agent(self, stack_instance, action, document_manager,
-                             return_channel):
+                             return_channel, source_task_id):
         logger.debug(
             f"[AgentTaskBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
         )
@@ -60,14 +60,13 @@ class AgentTaskBroker:
                     invoc['stack_instance'] = stack_instance.name
                     invoc['tool'] = fr_doc.invocation.tool
                     invoc['service'] = service_name
+                    invoc['source_task_id'] = source_task_id
 
                     agent_task = AgentTask.parse_obj({
-                        'channel':
-                        agent,
-                        'invocation':
-                        invoc,
-                        'return_channel':
-                        return_channel
+                        'channel': agent,
+                        'invocation': invoc,
+                        'return_channel': return_channel,
+                        'cast_type': "direct"
                     })
 
                     self.task_broker.give_task(agent_task)

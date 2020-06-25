@@ -31,9 +31,8 @@ def apply(stackl_context, directory, config_file, params, tags, secrets,
                              stackl_context, instance_name)
 
 
-@pass_stackl_context
-def apply_stack_instance(config_file, params, tags, secrets, stackl_context,
-                         instance_name):
+def apply_stack_instance(config_file, params, tags, secrets, replicas,
+                         stackl_context, instance_name):
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     params = {**config_doc['params'], **json.loads(params)}
     tags = json.loads(tags)
@@ -44,20 +43,21 @@ def apply_stack_instance(config_file, params, tags, secrets, stackl_context,
     if hasattr(config_doc, 'tags'):
         tags = {**config_doc['tags'], **json.loads(tags)}
     invocation = stackl_client.StackInstanceInvocation(
-        name=instance_name,
+        stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
             "stack_infrastructure_template"],
         stack_application_template=config_doc["stack_application_template"],
         params=params,
         replicas=replicas,
         secrets=secrets,
-        tags=json.loads(tags))
+        tags=tags)
     try:
         stackl_context.stack_instances_api.get_stack_instance(instance_name)
         res = stackl_context.stack_instances_api.put_stack_instance(invocation)
     except stackl_client.exceptions.ApiException:
         res = stackl_context.stack_instances_api.post_stack_instance(
             invocation)
+
     click.echo(res)
 
 

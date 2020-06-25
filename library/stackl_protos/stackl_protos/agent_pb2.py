@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0b\x61gent.proto\"\xa1\x01\n\nInvocation\x12\r\n\x05image\x18\x01 \x01(\t\x12\x1d\n\x15infrastructure_target\x18\x02 \x01(\t\x12\x16\n\x0estack_instance\x18\x03 \x01(\t\x12\x0f\n\x07service\x18\x04 \x01(\t\x12\x1e\n\x16\x66unctional_requirement\x18\x05 \x01(\t\x12\x0c\n\x04tool\x18\x06 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x07 \x01(\t\"#\n\x10\x43onnectionResult\x12\x0f\n\x07success\x18\x01 \x01(\x08\"/\n\rAgentMetadata\x12\x10\n\x08selector\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\"\xaa\x01\n\x10\x41utomationResult\x12\x16\n\x0estack_instance\x18\x01 \x01(\t\x12\x0f\n\x07service\x18\x02 \x01(\t\x12\x1e\n\x16\x66unctional_requirement\x18\x03 \x01(\t\x12\x17\n\x06status\x18\x04 \x01(\x0e\x32\x07.Status\x12\x15\n\rerror_message\x18\x05 \x01(\t\x12\x1d\n\x15infrastructure_target\x18\x06 \x01(\t*\x1f\n\x06Status\x12\t\n\x05READY\x10\x00\x12\n\n\x06\x46\x41ILED\x10\x01\x32\xa4\x01\n\x0bStacklAgent\x12\x34\n\rRegisterAgent\x12\x0e.AgentMetadata\x1a\x11.ConnectionResult\"\x00\x12)\n\x06GetJob\x12\x0e.AgentMetadata\x1a\x0b.Invocation\"\x00\x30\x01\x12\x34\n\x0cReportResult\x12\x11.AutomationResult\x1a\x11.ConnectionResultb\x06proto3')
+  serialized_pb=_b('\n\x0b\x61gent.proto\"\xcc\x01\n\nInvocation\x12\r\n\x05image\x18\x01 \x01(\t\x12\x1d\n\x15infrastructure_target\x18\x02 \x01(\t\x12\x16\n\x0estack_instance\x18\x03 \x01(\t\x12\x0f\n\x07service\x18\x04 \x01(\t\x12\x1e\n\x16\x66unctional_requirement\x18\x05 \x01(\t\x12\x0c\n\x04tool\x18\x06 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x07 \x01(\t\x12\x11\n\trequester\x18\x08 \x01(\t\x12\x16\n\x0esource_task_id\x18\t \x01(\t\"#\n\x10\x43onnectionResult\x12\x0f\n\x07success\x18\x01 \x01(\x08\"/\n\rAgentMetadata\x12\x10\n\x08selector\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\"\xd5\x01\n\x10\x41utomationResult\x12\x16\n\x0estack_instance\x18\x01 \x01(\t\x12\x0f\n\x07service\x18\x02 \x01(\t\x12\x1e\n\x16\x66unctional_requirement\x18\x03 \x01(\t\x12\x17\n\x06status\x18\x04 \x01(\x0e\x32\x07.Status\x12\x15\n\rerror_message\x18\x05 \x01(\t\x12\x1d\n\x15infrastructure_target\x18\x06 \x01(\t\x12\x11\n\trequester\x18\x07 \x01(\t\x12\x16\n\x0esource_task_id\x18\x08 \x01(\t*\x1f\n\x06Status\x12\t\n\x05READY\x10\x00\x12\n\n\x06\x46\x41ILED\x10\x01\x32\xa4\x01\n\x0bStacklAgent\x12\x34\n\rRegisterAgent\x12\x0e.AgentMetadata\x1a\x11.ConnectionResult\"\x00\x12)\n\x06GetJob\x12\x0e.AgentMetadata\x1a\x0b.Invocation\"\x00\x30\x01\x12\x34\n\x0cReportResult\x12\x11.AutomationResult\x1a\x11.ConnectionResultb\x06proto3')
 )
 
 _STATUS = _descriptor.EnumDescriptor(
@@ -41,8 +41,8 @@ _STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=438,
-  serialized_end=469,
+  serialized_start=524,
+  serialized_end=555,
 )
 _sym_db.RegisterEnumDescriptor(_STATUS)
 
@@ -108,6 +108,20 @@ _INVOCATION = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='requester', full_name='Invocation.requester', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='source_task_id', full_name='Invocation.source_task_id', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -121,7 +135,7 @@ _INVOCATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=16,
-  serialized_end=177,
+  serialized_end=220,
 )
 
 
@@ -151,8 +165,8 @@ _CONNECTIONRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=179,
-  serialized_end=214,
+  serialized_start=222,
+  serialized_end=257,
 )
 
 
@@ -189,8 +203,8 @@ _AGENTMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=216,
-  serialized_end=263,
+  serialized_start=259,
+  serialized_end=306,
 )
 
 
@@ -243,6 +257,20 @@ _AUTOMATIONRESULT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='requester', full_name='AutomationResult.requester', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='source_task_id', full_name='AutomationResult.source_task_id', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -255,8 +283,8 @@ _AUTOMATIONRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=266,
-  serialized_end=436,
+  serialized_start=309,
+  serialized_end=522,
 )
 
 _AUTOMATIONRESULT.fields_by_name['status'].enum_type = _STATUS
@@ -303,8 +331,8 @@ _STACKLAGENT = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=472,
-  serialized_end=636,
+  serialized_start=558,
+  serialized_end=722,
   methods=[
   _descriptor.MethodDescriptor(
     name='RegisterAgent',

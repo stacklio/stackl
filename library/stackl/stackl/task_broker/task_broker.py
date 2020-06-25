@@ -1,12 +1,10 @@
-import ast
+import asyncio
+import json
 import logging
 import threading
-import asyncio
 from abc import ABC, abstractmethod
-import json
 
 import stackl.stackl_globals as stackl_globals
-
 from stackl.enums.stackl_codes import StatusCode
 from stackl.utils.general_utils import get_absolute_time_seconds
 
@@ -63,7 +61,7 @@ class TaskBroker(ABC):
     def add_task_to_queue(self, task_obj):
         task_queue = stackl_globals.get_task_queue()
         task_queue.append({
-            "task": task_obj.as_json_string(),
+            "task": task_obj.json(),
             "id": task_obj.id,
             "start_time": get_absolute_time_seconds(),
             "timeout": task_obj.timeout,
@@ -74,22 +72,23 @@ class TaskBroker(ABC):
         )
         self.task_signal.set()
 
-    def handle_result_task(self, result_task):
-        source_task_id = ast.literal_eval(result_task.source_task)["id"]
-        logger.debug(
-            f"[TaskBroker] handle_result_task. Removing source task '{source_task_id}' and returning result '{result_task.return_result}'"
-        )
-        self.result_dict["task_id_of_result"] = source_task_id
-        self.result_dict["result"] = result_task.return_result
-
-        if not StatusCode.is_successful(result_task.result_code):
-            logger.debug(
-                f"[TaskBroker] handle_result_task. Result was a failure. Rolling back.'"
-            )
-            self.initiate_rollback_task(source_task_id)
-
-        self.remove_task_from_queue(source_task_id)
-        self.asyncio_task_completed.set()
+    # TODO delete this
+    # def handle_result_task(self, result_task):
+    #     source_task_id = result_task.source_task.id
+    #     logger.debug(
+    #         f"[TaskBroker] handle_result_task. Removing source task '{source_task_id}' and returning result '{result_task.return_result}'"
+    #     )
+    #     self.result_dict["task_id_of_result"] = source_task_id
+    #     self.result_dict["result"] = result_task.return_result
+    #
+    #     if not StatusCode.is_successful(result_task.result_code):
+    #         logger.debug(
+    #             f"[TaskBroker] handle_result_task. Result was a failure. Rolling back.'"
+    #         )
+    #         self.initiate_rollback_task(source_task_id)
+    #
+    #     self.remove_task_from_queue(source_task_id)
+    #     self.asyncio_task_completed.set()
 
     # Run in thread
     def task_queue_monitor(self):
@@ -125,7 +124,7 @@ class TaskBroker(ABC):
                             self.result_dict["result"] = StatusCode.ROLLBACKED
                             self.asyncio_task_completed.set()
                 self.task_signal.clear()
-        except Exception as e:  #pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             logger.error(
                 f"[TaskBroker] task_queue_monitor. Encountered an issue. Exception: '{e}'"
             )

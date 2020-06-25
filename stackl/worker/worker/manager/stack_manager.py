@@ -37,6 +37,8 @@ class StackManager(Manager):
     def handle_task(self, task):
         logger.debug(f"[StackManager] handling stack_task '{task}'")
 
+        result_msg = None
+        return_result = None
         if task["subtype"] == "GET_STACK":
             (stack_instance_name) = task["args"]
             return_result = self.document_manager.get_document(
@@ -50,16 +52,17 @@ class StackManager(Manager):
             if stack_instance is not None:
                 self.agent_task_broker.create_job_for_agent(
                     stack_instance, "create", self.document_manager,
-                    task["return_channel"])
+                    task["return_channel"], task["id"])
                 self.document_manager.write_stack_instance(stack_instance)
         elif task["subtype"] == "UPDATE_STACK":
             (stack_instance, return_result) = self._process_stack_request(
                 task["json_data"], "update")
             # Lets not create the job object when we don't want an invocation
-            if not return_result == StatusCode.BAD_REQUEST:
-                if not stack_task["json_data"]["disable_invocation"]:
-                    job = self.agent_broker.create_job_for_agent(
-                        stack_instance, "update", self.document_manager)
+            if stack_instance is not None and not task["json_data"][
+                    "disable_invocation"]:
+                self.agent_task_broker.create_job_for_agent(
+                    stack_instance, "update", self.document_manager,
+                    task["return_channel"], task["id"])
                 self.document_manager.write_stack_instance(stack_instance)
         elif task[
                 "subtype"] == "DELETE_STACK":  # TODO: Do we want to keep deleted stacks as documents?
@@ -80,7 +83,7 @@ class StackManager(Manager):
             'cast_type':
             CastType.BROADCAST.value,
             'result_msg':
-            f"StackTask with type '{task['subtype']}' was handled",
+            result_msg,
             'return_result':
             return_result,
             'result_code':
@@ -88,7 +91,9 @@ class StackManager(Manager):
             'source_task':
             task,
             'status':
-            ""
+            "done",
+            'source_task_id':
+            task["id"]
         })
         self.message_channel.publish(result_task)
 
@@ -184,11 +189,11 @@ class StackManager(Manager):
         job['document'] = instance_data
         job['type'] = 'stack_instance'
         handler = StackHandler(self.document_manager, self.opa_broker)
-        merged_sat_sit_obj, err_message = handler.handle(job)
+        stack_instance, err_message = handler.handle(job)
         logger.debug(
-            f"[StackManager ]_process_stack_request. Handle complete. merged_sat_sit_obj '{merged_sat_sit_obj}'"
+            f"[StackManager ]_process_stack_request. Handle complete. stack_instance '{stack_instance}'"
         )
-        return merged_sat_sit_obj, err_message
+        return stack_instance, err_message
 
     def _validate_stack_request(self, instance_data, stack_action):
         # check existence of stack_instance

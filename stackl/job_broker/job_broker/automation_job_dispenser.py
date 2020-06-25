@@ -3,14 +3,16 @@ import logging
 import threading
 
 from redis import StrictRedis
-from stackl.models.items.stack_instance_status_model import StackInstanceStatus
+from stackl.models.items.stack_instance_status_model import StackInstanceStatus, Status
 from stackl.task_broker.task_broker import TaskBroker
 from stackl.tasks.document_task import DocumentTask
-
-from stackl_protos.agent_pb2 import AgentMetadata, ConnectionResult, Invocation, AutomationResult, Status
-from stackl_protos.agent_pb2_grpc import StacklAgentServicer
-
 from stackl.tasks.result_task import ResultTask
+
+from stackl.models.items.stack_instance_model import StackInstance
+
+from stackl.enums.stackl_codes import StatusCode
+from stackl_protos.agent_pb2 import AgentMetadata, ConnectionResult, Invocation, AutomationResult
+from stackl_protos.agent_pb2_grpc import StacklAgentServicer
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -30,20 +32,23 @@ class AutomationJobDispenser(StacklAgentServicer):
         return connection_result
 
     def unregister_agent(self):
-        logger.debug(f"Unregister agent")
+        print(f"Unregister agent")
         self.redis.delete(self.agent)
         threading.Event().set()
 
     def GetJob(self, agent_metadata: AgentMetadata, context):
-        logger.debug(f"Request for job received")
+        print(f"Request for job received")
         agent_p = self.redis.pubsub()
         agent_p.subscribe(agent_metadata.name)
         context.add_callback(self.unregister_agent)
         for message in agent_p.listen():
-            logger.debug(f"Received message: {message}")
+            print(f"Received message: {message}")
             invocation = Invocation()
+            if message["type"] == "subscribe":
+                continue
+            message_json = json.loads(message["data"])
             try:
-                invoc_message = json.loads(message["data"])
+                invoc_message = message_json["invocation"]
             except TypeError:
                 continue
             invocation.image = invoc_message["image"]
@@ -55,14 +60,15 @@ class AutomationJobDispenser(StacklAgentServicer):
                 "functional_requirement"]
             invocation.tool = invoc_message["tool"]
             invocation.action = invoc_message["action"]
-            logger.debug(f"invocation {invocation}")
+            invocation.requester = message_json["return_channel"]
+            invocation.source_task_id = invoc_message["source_task_id"]
+            print(f"invocation {invocation}")
             yield invocation
         # TODO Lets check if listen fails if the connection drops, then this place would be perfect to deregister the agent
-        logger.debug(
-            f"Connection dropped, deregister agent #{agent_metadata.name}")
+        print(f"Connection dropped, deregister agent #{agent_metadata.name}")
 
     def ReportResult(self, automation_result: AutomationResult, context):
-        logger.info(
+        print(
             f"[AutomationJobDispenser] processing result {automation_result}")
 
         task = DocumentTask.parse_obj({
@@ -76,7 +82,8 @@ class AutomationJobDispenser(StacklAgentServicer):
         self.task_broker.give_task(task)
         result = self.task_broker.get_task_result(task.id)
 
-        stack_instance = result.return_result
+        stack_instance_dict = result.return_result
+        stack_instance = StackInstance.parse_obj(stack_instance_dict)
 
         stack_instance_status = StackInstanceStatus()
         stack_instance_status.service = automation_result.service
@@ -106,7 +113,7 @@ class AutomationJobDispenser(StacklAgentServicer):
         if not changed:
             stack_instance.status.append(stack_instance_status)
 
-        logger.info(f"[AutomationJobDispenser] done processing")
+        print(f"[AutomationJobDispenser] done processing")
         task = DocumentTask.parse_obj({
             'channel': 'worker',
             'document': stack_instance.dict(),
@@ -114,6 +121,18 @@ class AutomationJobDispenser(StacklAgentServicer):
         })
 
         self.task_broker.give_task(task)
-        task = ResultTask.parse_obj({})
+        task = ResultTask.parse_obj({
+            'channel': automation_result.requester,
+            'result_msg':
+            f"Finished provisioning {automation_result.functional_requirement} of {automation_result.service} on infrastructure target: {automation_result.infrastructure_target}",
+            'return_result': "",
+            'result_code': StatusCode.OK,
+            'cast_type': "broadcast",
+            'source_task_id': automation_result.source_task_id,
+            'status': "progress"
+        })
+
+        self.task_broker.give_task(task)
+
         connection_result = ConnectionResult(success=True)
         return connection_result
