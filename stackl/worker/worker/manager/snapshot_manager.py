@@ -45,7 +45,7 @@ class SnapshotManager(Manager):
         logger.debug(
             f"[SnapshotManager] Succesfully handled snapshot task. Creating ResultTask."
         )
-        resultTask = ResultTask.parse_obj({
+        result_task = ResultTask.parse_obj({
             'channel': task['return_channel'],
             'result_msg':
             f"Document with type '{task['subtype']}' was handled",
@@ -54,31 +54,18 @@ class SnapshotManager(Manager):
             'cast_type': CastType.BROADCAST.value,
             'source_task': task
         })
-        self.message_channel.publish(resultTask)
+        self.message_channel.publish(result_task)
 
     def rollback_task(self, task):
         pass
 
-    def get_snapshot(self, type_doc, name_doc, snapshot_nb=1):
+    def get_snapshots(self, type_doc, name_doc, snapshot_nb=1):
         logger.debug(
             f"[SnapshotManager] get_snapshot. Get the '{snapshot_nb}' most recent snapshot for doc with type '{type_doc}' and name '{name_doc}'"
         )
-        results = self.list_snapshots(type_doc, name_doc)
-        logger.debug(
-            f"[SnapshotManager] get_snapshot.  Selecting nb '{snapshot_nb}' from the retrieved list of snapshots: '{results}'"
-        )
-        if (snapshot_nb - 1) < len(results):
-            return results[snapshot_nb - 1][1]
-        return {}
+        results = self.document_manager.get_snapshots(type_doc, name_doc)
 
-    def list_snapshots(self, type_doc, name_doc):
-        logger.debug(
-            f"[SnapshotManager] list_snapshots.Get all snapshots for doc with type '{type_doc}' and name '{name_doc}'"
-        )
-        result = self.document_manager.collect_documents(
-            "snapshot_" + type_doc, name_doc)
-        result = sorted(result, reverse=True, key=lambda item: item[0][-25:-5])
-        return result
+        return results
 
     def create_snapshot(self, type_name, name):
         logger.debug(

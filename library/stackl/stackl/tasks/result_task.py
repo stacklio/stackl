@@ -7,7 +7,7 @@ class ResultTask(Task):
     topic: str = "result"
     result_msg: str = None
     return_result: Any = None
-    result_code: str = None
+    result_code: int = None
     subtype: str = "RESULT"
     source_task: Task = None
     status: str = None
