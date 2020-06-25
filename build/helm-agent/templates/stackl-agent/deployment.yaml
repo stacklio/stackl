@@ -50,6 +50,8 @@ spec:
               value: "{{ .Values.stacklAgent.grpcHost }}"
             - name: "AGENT_SELECTOR"
               value: "{{ .Values.stacklAgent.selector }}"
+            - name: "AGENT_NAME"
+              value: "kubernetes"
             {{- with .Values.stacklAgent.vaultAddr }}
             - name: "VAULT_ADDR"
               value: "{{ . }}"

@@ -1,12 +1,15 @@
-#This policy is used for multiple redundancy, through the value parameter
-package orchestration
-​
-​
-replicas = x {
-	service = input.policy_input.service
-	amount = input.policy_input.amount
-	count(input.services[service]) >= amount
-	x = {service: array.slice(input.services[service], 0, amount)}
-} else = x {
-   x = {input.policy_input.service: []}
+package replicas
+solutions = {"fulfilled": true, "services": result} {
+  not input.parameters.exclusive
+  result = {service_key: service_targets |
+          amount := input.parameters.services[service_key]
+          targets := input.services[service_key]
+          count(targets) >= amount
+          service_targets := array.slice(targets, 0, amount)
+  }
+  # Check if each service has targets
+  count(input.services) == count(result)
+}
+else = {"fulfilled": false, "msg": msg} {
+  msg := sprintf("Not enough targets for services %v", [input.services])
 }

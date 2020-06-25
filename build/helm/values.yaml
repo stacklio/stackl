@@ -27,7 +27,7 @@ agentBroker:
   type: grpc
 
 stacklRest:
-  image: stacklio/stackl-rest:v0.1.2
+  image: stacklio/stackl-rest:0.1.3dev
   name: stackl-rest
   serviceType: NodePort
   ingress:
@@ -49,7 +49,7 @@ stacklRest:
   replicaCount: 1
 
 stacklWorker:
-  image: stacklio/stackl-worker:v0.1.2
+  image: stacklio/stackl-worker:0.1.3dev
   name: stackl-worker
   replicaCount: 1
 
@@ -77,6 +77,13 @@ stacklOpa:
     tls:
       # secretName: opa
   replicaCount: 1
+
+stacklJobBroker:
+  image: stacklio/stackl-job-broker:0.1.3dev
+  name: stackl-job-broker
+  serviceType: NodePort
+  replicaCount: 1
+
 
 # example imagePullSecrets: [name: pull-secret-name]
 imagePullSecrets: []

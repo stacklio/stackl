@@ -1,7 +1,0 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim-2020-04-27
-
-COPY requirements_rest.txt requirements_rest.txt
-
-RUN pip install --no-cache-dir -r /app/requirements_rest.txt
-
-COPY . /app
