@@ -1,4 +1,0 @@
-requests==2.22.0
-redis==3.4.1
-grpcio==1.29.0
-protobuf==3.11.3

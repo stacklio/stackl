@@ -6,7 +6,7 @@ networks:
 services:
   stackl-rest:
     restart: always
-    image: stacklio/stackl-rest:v0.1.2
+    image: stacklio/stackl-rest:0.1.3dev
     container_name: stackl_app
     depends_on:
       - stackl-redis
@@ -16,9 +16,10 @@ services:
     volumes:
       - {{ datastore_lfs_volume }}:/lfs_store/
 {% endif %}
+    depends_on:
+      - stackl-redis
     ports:
       - {{http_port}}:80
-      - 50051:50051
     environment:  
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
@@ -39,7 +40,7 @@ services:
       - WEB_CONCURRENCY=1
   stackl-worker:
     restart: always
-    image: stacklio/stackl-worker:v0.1.2
+    image: stacklio/stackl-worker:0.1.3dev
     networks:
       - stackl_bridge
     stdin_open: true
@@ -80,21 +81,20 @@ services:
       - stackl_bridge
   stackl-agent:
     restart: always
-{% if agent_broker_type == 'Local' %}
-    image: stacklio/stackl-docker-agent:v0.1.2
+    image: stacklio/stackl-agent:v0.1.3dev
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
-{% else %}
-    image: stacklio/stackl-kubernetes-agent:v0.1.2
-{% endif %}
+    depends_on:
+      - stackl-job-broker
     networks:
       - stackl_bridge
     environment:
       - STACKL_HOST=stackl-rest:80
       - HOST_MACHINE=stackl-agent
       - AGENT_SELECTOR="*.*.*"
-      - STACKL_GRPC_HOST=stackl-rest:50051
+      - AGENT_NAME=docker
+      - STACKL_GRPC_HOST=stackl-job-broker:50051
       - AGENT_ID=docker-agent
       - TAGS=['common']
       - TENANT={{ tenant_name }}
@@ -119,3 +119,18 @@ services:
 #      - "/opa_files/orchestration_default_policies.rego"
     networks:
      - stackl_bridge
+  stackl-job-broker:
+    restart: always
+    image: stacklio/stackl-job-broker:dev
+    container_name: stackl_job
+    networks:
+      - stackl_bridge
+    depends_on:
+      - stackl-redis
+    ports:
+      - 50051:50051
+    environment:
+      - GRPC_VERBOSITY="DEBUG"
+      - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
+      - STACKL_REDIS_HOST=stackl-redis
+      - LOGLEVEL=DEBUG

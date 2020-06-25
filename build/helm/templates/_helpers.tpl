@@ -77,3 +77,7 @@ Create the name of the service account to use
 {{- define "stackl.opa" -}}
   {{- printf "%s-opa" (include "stackl.fullname" .) -}}
 {{- end -}}
+
+{{- define "stackl.job-broker" -}}
+  {{- printf "%s-job-broker" (include "stackl.fullname" .) -}}
+{{- end -}}

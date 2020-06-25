@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+service StacklAgent {
+    rpc RegisterAgent (AgentMetadata) returns (ConnectionResult) {};
+    rpc GetJob (AgentMetadata) returns (stream Invocation) {};
+    rpc ReportResult (AutomationResult) returns (ConnectionResult);
+}
+
+message Invocation {
+    string image = 1;
+    string infrastructure_target = 2;
+    string stack_instance = 3;
+    string service = 4;
+    string functional_requirement = 5;
+    string tool = 6;
+    string action = 7;
+    string requester = 8;
+    string source_task_id = 9;
+}
+
+message ConnectionResult {
+    bool success = 1;
+}
+
+message AgentMetadata {
+    string selector = 1;
+    string name = 2;
+}
+
+enum Status {
+    READY = 0;
+    FAILED = 1;
+}
+
+message AutomationResult {
+    string stack_instance = 1;
+    string service = 2;
+    string functional_requirement = 3;
+    Status status = 4;
+    string error_message = 5;
+    string infrastructure_target = 6;
+    string requester = 7;
+    string source_task_id = 8;
+}
