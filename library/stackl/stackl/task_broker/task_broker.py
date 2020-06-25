@@ -31,12 +31,6 @@ class TaskBroker(ABC):
         self.result_dict = empty_result_dict
 
     @abstractmethod
-    def start_worker(
-        self,
-        subscribe_channels=None):  # subscribe channels used by subclasses
-        logger.debug(f"[TaskBroker] Starting Task Broker for Worker")
-
-    @abstractmethod
     def give_task(self, task_obj):
         pass
 
@@ -71,24 +65,6 @@ class TaskBroker(ABC):
             f"[TaskBroker] Added task to queue. Task_id '{task_obj.id}'. Updated queue: '{stackl_globals.get_task_queue()}'"
         )
         self.task_signal.set()
-
-    # TODO delete this
-    # def handle_result_task(self, result_task):
-    #     source_task_id = result_task.source_task.id
-    #     logger.debug(
-    #         f"[TaskBroker] handle_result_task. Removing source task '{source_task_id}' and returning result '{result_task.return_result}'"
-    #     )
-    #     self.result_dict["task_id_of_result"] = source_task_id
-    #     self.result_dict["result"] = result_task.return_result
-    #
-    #     if not StatusCode.is_successful(result_task.result_code):
-    #         logger.debug(
-    #             f"[TaskBroker] handle_result_task. Result was a failure. Rolling back.'"
-    #         )
-    #         self.initiate_rollback_task(source_task_id)
-    #
-    #     self.remove_task_from_queue(source_task_id)
-    #     self.asyncio_task_completed.set()
 
     # Run in thread
     def task_queue_monitor(self):

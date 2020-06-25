@@ -5,9 +5,9 @@ import threading
 
 import stackl.stackl_globals as stackl_globals
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
+from stackl.tasks.document_task import DocumentTask
 from stackl.utils.general_utils import get_hostname  # pylint: disable=import-error
 
-from stackl.tasks.document_task import DocumentTask
 from .manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 
 # initialize stackl globals
@@ -40,10 +40,6 @@ class Worker:
 
     def run(self):
         logger.debug("[Worker] Starting Worker")
-        self.task_broker.start_worker(
-            subscribe_channels=self.get_subscribe_channels())
-
-        logger.debug("[Worker] Starting queue listen")
         self.start_task_popping()
 
     def start_task_popping(self):
@@ -73,14 +69,6 @@ class Worker:
                 thread = threading.Thread(
                     target=self.snapshot_manager.handle_task, args=[task_attr])
                 thread.start()
-            elif task_attr["topic"] == "agent_task":
-                # logger.info(
-                #     f"[Worker] AgentTask with subtype \'{task_attr['subtype']}\'"
-                # )
-                # thread = threading.Thread(target=self.agent_broker.handle_task,
-                #                           args=[task_attr])
-                # thread.start()
-                continue
             elif task_attr["topic"] == "stack_task":
                 logger.info(
                     f"[Worker] StackTask with subtype \'{task_attr['subtype']}\'"
