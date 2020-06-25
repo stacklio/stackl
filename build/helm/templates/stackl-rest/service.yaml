@@ -12,5 +12,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{ include "stackl.selectorLabels" . | nindent 4 }}
+    {{- include "stackl.selectorLabels" . | nindent 4 }}
     component: rest

@@ -10,7 +10,6 @@ from agent.kubernetes.outputs.ansible_output import AnsibleOutput
 stackl_plugin = """
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-
 DOCUMENTATION = '''
 name: stackl
 plugin_type: inventory
@@ -47,18 +46,15 @@ options:
       description: Vault token path
       required: false
 '''
-
 EXAMPLES = '''
 plugin: stackl
 host: "http://localhost:8080"
 stack_instance: "test_vm"
 '''
-
 import json
 import hvac
 import stackl_client
 import base64
-
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
 
@@ -80,14 +76,14 @@ def get_base64_secrets(service):
     decoded_secrets = {}
     for key, secret in secrets.items():
         try:
-            decoded_secrets[key] = base64.b64decode(secret + "===").decode("utf-8").rstrip()
+            decoded_secrets[key] = base64.b64decode(secret + "===").decode(
+                "utf-8").rstrip()
         except Exception:
             raise AnsibleParserError("Could not decode secret")
     return decoded_secrets
 
 
 class InventoryModule(BaseInventoryPlugin):
-
     NAME = 'stackl'
 
     def verify_file(self, path):
@@ -108,34 +104,33 @@ class InventoryModule(BaseInventoryPlugin):
             api_client = stackl_client.ApiClient(configuration=configuration)
             api_instance = stackl_client.StackInstancesApi(
                 api_client=api_client)
-
             stack_instance_name = self.get_option("stack_instance")
             stack_instance = api_instance.get_stack_instance(
                 stack_instance_name)
-
             for service, si_service in stack_instance.services.items():
                 self.inventory.add_group(service)
                 for index, service_definition in enumerate(si_service):
                     self.inventory.add_host(host=service + "_" + str(index),
                                             group=service)
-                    self.inventory.set_variable(service, "infrastructure_target",
-                                                service_definition.infrastructure_target)
-                    for key, value in service_definition.provisioning_parameters.items():
+                    self.inventory.set_variable(
+                        service, "infrastructure_target",
+                        service_definition.infrastructure_target)
+                    for key, value in service_definition.provisioning_parameters.items(
+                    ):
                         self.inventory.set_variable(service, key, value)
-
-                    if hasattr(si_service, "secrets"):
+                    if hasattr(service_definition, "secrets"):
+                        print("erin")
                         if self.get_option("secret_handler") == "vault":
                             secrets = get_vault_secrets(
-                                si_service, self.get_option("vault_addr"),
+                                service_definition,
+                                self.get_option("vault_addr"),
                                 self.get_option("vault_token_path"))
                         elif self.get_option("secret_handler") == "base64":
-                            secrets = get_base64_secrets(si_service)
+                            secrets = get_base64_secrets(service_definition)
                         for key, value in secrets.items():
                             self.inventory.set_variable(service, key, value)
-
         except Exception as e:
-            raise AnsibleParserError(
-                'All correct options required: {}'.format(e))
+            raise AnsibleError(format(e))
 """
 
 playbook_include_role = """

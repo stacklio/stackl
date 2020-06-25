@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: "{{ template "stackl.redis" . }}"
   labels:
-    {{ include "stackl.labels" . | nindent 4 }}
+    {{- include "stackl.labels" . | nindent 4 }}
 data:
-  {{ (.Files.Glob "conf/redis.conf").AsConfig | nindent 2 }}
+  {{- (.Files.Glob "conf/redis.conf").AsConfig | nindent 2 }}
