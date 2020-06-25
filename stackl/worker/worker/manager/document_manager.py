@@ -187,7 +187,7 @@ class DocumentManager(Manager):
         else:
             doc_org_string = json.dumps(doc_obj)
             logger.debug(
-                f"[DocumentManager] Removing document with concent '{doc_org_string}'"
+                f"[DocumentManager] Removing document with content '{doc_org_string}'"
             )
             keys['file'] = doc_obj
             store_response = self.store.delete(**keys)
@@ -318,6 +318,12 @@ class DocumentManager(Manager):
         """
         store_response = self.store.put(fr.dict())
         return store_response.content
+
+    def get_snapshots(self, type, name):
+        store_response = self.store.get(type=type,
+                                        category="history",
+                                        name=name)
+        snapshot
 
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys
