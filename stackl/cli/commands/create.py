@@ -34,6 +34,15 @@ def instance(stackl_context: StacklContext, stack_infrastructure_template,
 
 
 @create.command()
+@click.argument("type", required=True)
+@click.argument("name", required=True)
+@pass_stackl_context
+def snapshot(stackl_context: StacklContext, type, name):
+    result = stackl_context.snapshot_api.create_snapshot(type, name)
+    click.echo(result)
+
+
+@create.command()
 @click.option('-p', '--policy-file', type=click.File())
 @click.option('-i', '--inputs', type=click.STRING, default="")
 @click.argument('policy-name')

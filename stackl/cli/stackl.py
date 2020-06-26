@@ -7,6 +7,7 @@ from commands.delete import delete
 from commands.edit import edit
 from commands.get import get
 from commands.info import info
+from commands.restore import restore
 from commands.update import update
 
 
@@ -23,3 +24,4 @@ cli.add_command(edit)
 cli.add_command(create)
 cli.add_command(update)
 cli.add_command(delete)
+cli.add_command(restore)

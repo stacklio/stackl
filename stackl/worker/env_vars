@@ -1,4 +1,4 @@
-export STACKL_STORE=Redis
+export STACKL_STORE=LFS
 export STACKL_DATASTORE_PATH=/tmp/stackldb
 export STACKL_TASK_BROKER=Custom
 export STACKL_AGENT_BROKER=kubernetes
