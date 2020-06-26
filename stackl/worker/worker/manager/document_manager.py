@@ -3,9 +3,7 @@ import logging
 
 from stackl.enums.cast_type import CastType
 from stackl.enums.stackl_codes import StatusCode
-
-from stackl.tasks.document_task import DocumentTask
-from .manager import Manager
+from stackl.message_channel.message_channel_factory import MessageChannelFactory
 from stackl.models.configs.document_model import BaseDocument
 from stackl.models.configs.environment_model import Environment
 from stackl.models.configs.functional_requirement_model import FunctionalRequirement
@@ -14,13 +12,16 @@ from stackl.models.configs.policy_template_model import PolicyTemplate
 from stackl.models.configs.stack_application_template_model import StackApplicationTemplate
 from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from stackl.models.configs.zone_model import Zone
+from stackl.models.history.snapshot_model import Snapshot
 from stackl.models.items.service_model import Service
 from stackl.models.items.stack_instance_model import StackInstance
 from stackl.stackl_globals import types, types_configs, types_items, types_history
-from stackl.tasks.result_task import ResultTask
 from stackl.task_broker.task_broker_factory import TaskBrokerFactory
+from stackl.tasks.document_task import DocumentTask
+from stackl.tasks.result_task import ResultTask
 from stackl.utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
-from stackl.message_channel.message_channel_factory import MessageChannelFactory
+
+from .manager import Manager
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -34,7 +35,7 @@ class DocumentManager(Manager):
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
-        self.snapshot_manager = None  #Given after initalisation by manager_factory
+        self.snapshot_manager = None  # Given after initalisation by manager_factory
 
     def handle_task(self, task: DocumentTask):
         logger.debug(f"[DocumentManager] handling document_task '{task}'")
@@ -156,13 +157,13 @@ class DocumentManager(Manager):
             )
             if sorted(prev_document_string) == sorted(
                     doc_new_string
-            ):  #Sorted since the doc might've changed the ordering
+            ):  # Sorted since the doc might've changed the ordering
                 logger.debug(
                     f"[DocumentManager] Original document and new document are the same! NOT updating"
                 )
                 return StatusCode.OK
             else:
-                #Since we are overwriting, take a snapshot first
+                # Since we are overwriting, take a snapshot first
                 if make_snapshot:
                     self.snapshot_manager.create_snapshot(
                         document["type"], document["name"])
@@ -319,11 +320,19 @@ class DocumentManager(Manager):
         store_response = self.store.put(fr.dict())
         return store_response.content
 
-    def get_snapshots(self, type, name):
-        store_response = self.store.get(type=type,
-                                        category="history",
+    def get_snapshot(self, name) -> Snapshot:
+        store_response = self.store.get(category="history",
+                                        type="snapshot",
                                         name=name)
-        snapshot
+        snapshot = Snapshot.parse_obj(store_response.content)
+        return snapshot
+
+    def get_snapshots(self, type, name):
+        store_response = self.store.get_all(type_name=type,
+                                            category="history",
+                                            wildcard_prefix=f"{name}")
+
+        return store_response.content
 
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys
