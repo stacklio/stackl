@@ -189,6 +189,25 @@ def policy_template(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
+@click.argument('type')
+@click.argument('name')
+@pass_stackl_context
+def snapshots(stackl_context: StacklContext, type, name, output):
+    snapshots = stackl_context.snapshot_api.get_snapshots(type, name)
+    click.echo(parse(snapshots, output))
+
+
+@get.command()
+@click.option('-o', '--output')
+@click.argument("name")
+@pass_stackl_context
+def snapshot(stackl_context: StacklContext, name, output):
+    snapshot = stackl_context.snapshot_api.get_snapshot(name)
+    click.echo(parse(snapshot, output))
+
+
+@get.command()
+@click.option('-o', '--output')
 @click.argument('name', required=False)
 @pass_stackl_context
 def snapshot(stackl_context: StacklContext, output, name):

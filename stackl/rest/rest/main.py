@@ -2,12 +2,12 @@
 import logging
 import os
 
+import stackl.stackl_globals as stackl_globals
 import uvicorn
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
-import stackl.stackl_globals as stackl_globals
-from .routers import documents_router, infrastructure_base_router, policy_templates_router, snapshots_router, \
+from .routers import infrastructure_base_router, policy_templates_router, snapshots_router, \
     stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router
 
@@ -34,9 +34,6 @@ app = FastAPI(
     description="stackl",
 )
 
-app.include_router(documents_router.router,
-                   prefix="/documents",
-                   tags=["documents"])
 app.include_router(infrastructure_base_router.router,
                    prefix="/infrastructure_base",
                    tags=["infrastructure_base"])
