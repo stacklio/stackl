@@ -42,7 +42,7 @@ class LocalFileSystemStore(DataStore):
             f"[LocalFileSystemStore] StoreResponse for get: {response}")
         return response
 
-    def get_all(self, category, type_name):
+    def get_all(self, category, type_name, wildcard_prefix=None):
         document_key = self.datastore_url + category + '/'
         logger.debug(
             f"[LocalFileSystemStore] get_all in '{document_key}' for type '{type_name}'"
@@ -56,9 +56,13 @@ class LocalFileSystemStore(DataStore):
                         f"[LocalFileSystemStore] get_all. Looking at files '{file}' that have type '{type_name}'"
                     )
                     if type_name in file and file.endswith(".json"):
+                        if wildcard_prefix is not None and wildcard_prefix not in file:
+                            logger.debug(
+                                f"[LocalFileSystemStore] {wildcard_prefix} not in {file}"
+                            )
+                            continue
                         with open(dirpath + file) as file_to_get:
-                            content.append(
-                                (dirpath + file, json.load(file_to_get)))
+                            content.append(json.load(file_to_get))
                         logger.debug(
                             f"[LocalFileSystemStore] get_all. File found. Added to content. len(content): '{len(content)}'"
                         )

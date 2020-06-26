@@ -33,10 +33,22 @@ class RedisStore(DataStore):
         logger.debug(f"[RedisStore] StoreResponse for get: {response}")
         return response
 
-    def get_all(self, category, type_name):
-        document_key = category + '/' + type_name + '/*'
+    def get_all(self, category, type_name, wildcard_prefix=""):
+        document_key = f"{category}/{type_name}/{wildcard_prefix}*"
         logger.debug(
             f"[RedisStore] get_all in '{document_key}' for type '{type_name}'")
+        content = []
+        for key in self.redis.scan_iter(document_key):
+            content.append(json.loads(self.redis.get(key)))
+        response = self._create_store_response(status_code=StatusCode.OK,
+                                               content=content)
+        logger.debug(f"[RedisStore] StoreResponse for get: {response}")
+        return response
+
+    def get_history(self, category, type, name):
+        document_key = category + '/' + type + '/' + name
+        logger.debug(
+            f"[RedisStore] get_history in '{document_key}' for type '{type}'")
         content = []
         for key in self.redis.scan_iter(document_key):
             content.append(json.loads(self.redis.get(key)))
