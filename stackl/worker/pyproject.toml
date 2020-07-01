@@ -17,6 +17,7 @@ pyparsing = "^2.4.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
+pylint = "^2.5.3"
 
 [tool.poetry.scripts]
 start-worker = "worker.main:start"
