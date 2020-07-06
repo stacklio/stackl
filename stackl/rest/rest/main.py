@@ -2,11 +2,11 @@
 import logging
 import os
 
-import stackl.stackl_globals as stackl_globals
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.routing import APIRoute
 
+from rest.producer.producer_factory import get_producer
 from .routers import infrastructure_base_router, policy_templates_router, snapshots_router, \
     stack_instances_router, functional_requirements_router, services_router, stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router
@@ -25,8 +25,10 @@ logger.addHandler(ch)
 logger.info(
     "___________________ STARTING STACKL API SERVER ____________________")
 
-# initialize stackl globals
-stackl_globals.initialize()
+
+def producer():
+    return get_producer()
+
 
 # Add routes
 app = FastAPI(
@@ -36,7 +38,8 @@ app = FastAPI(
 
 app.include_router(infrastructure_base_router.router,
                    prefix="/infrastructure_base",
-                   tags=["infrastructure_base"])
+                   tags=["infrastructure_base"],
+                   dependencies=[Depends(producer)])
 app.include_router(policy_templates_router.router,
                    prefix="/policy_templates",
                    tags=["policy_templates"])

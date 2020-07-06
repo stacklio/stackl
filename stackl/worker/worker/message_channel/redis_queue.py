@@ -2,10 +2,10 @@ import json
 import logging
 
 from redis import StrictRedis
+from stackl.tasks.result_task import ResultTask
 from stackl.utils.general_utils import get_config_key
 
 from .message_channel import MessageChannel
-from ..tasks.result_task import ResultTask
 
 logger = logging.getLogger("STACKL_LOGGER")
 

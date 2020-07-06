@@ -1,16 +1,11 @@
-import json
 import logging
-import threading
-
-from redis import StrictRedis
-from stackl.models.items.stack_instance_status_model import StackInstanceStatus, Status
-from stackl.task_broker.task_broker import TaskBroker
-from stackl.tasks.document_task import DocumentTask
-from stackl.tasks.result_task import ResultTask
 
 from stackl.models.items.stack_instance_model import StackInstance
+from stackl.models.items.stack_instance_status_model import StackInstanceStatus, Status
+from stackl.tasks.agent_task import AgentTask
+from stackl.tasks.document_task import DocumentTask
 
-from stackl.enums.stackl_codes import StatusCode
+from job_broker.message_channel.message_channel_factory import get_message_channel
 from stackl_protos.agent_pb2 import AgentMetadata, ConnectionResult, Invocation, AutomationResult
 from stackl_protos.agent_pb2_grpc import StacklAgentServicer
 
@@ -18,54 +13,45 @@ logger = logging.getLogger("STACKL_LOGGER")
 
 
 class AutomationJobDispenser(StacklAgentServicer):
-    def __init__(self, redis: StrictRedis, task_broker: TaskBroker):
-        self.redis = redis
-        self.task_broker = task_broker
+    def __init__(self):
+        self.message_channel = get_message_channel()
         self.agent = None
 
     def RegisterAgent(self, agent_metadata: AgentMetadata, context):
-        self.redis.set(f'agents/{agent_metadata.name}',
-                       agent_metadata.selector)
+        self.message_channel.register_agent(agent_metadata.name,
+                                            agent_metadata.selector)
         self.agent = agent_metadata.name
         connection_result = ConnectionResult()
         connection_result.success = True
         return connection_result
 
-    def unregister_agent(self):
-        print(f"Unregister agent")
-        self.redis.delete(self.agent)
-        threading.Event().set()
+    def _unregister_agent(self):
+        print(f"Connection dropped, deregister agent #{self.agent}")
+        self.message_channel.unregister_agent(self.agent)
+
+    def process_agent_task(self, task: AgentTask):
+        print(f"Received agent task: {task}")
+        invocation = Invocation()
+        invocation.image = task.invocation["image"]
+        invocation.infrastructure_target = task.invocation[
+            "infrastructure_target"]
+        invocation.stack_instance = task.invocation["stack_instance"]
+        invocation.service = task.invocation["service"]
+        invocation.functional_requirement = task.invocation[
+            "functional_requirement"]
+        invocation.tool = task.invocation["tool"]
+        invocation.action = task.invocation["action"]
+        invocation.source_task_id = task.invocation["source_task_id"]
+        print(f"invocation {invocation}")
+        return invocation
 
     def GetJob(self, agent_metadata: AgentMetadata, context):
         print(f"Request for job received")
-        agent_p = self.redis.pubsub()
-        agent_p.subscribe(agent_metadata.name)
-        context.add_callback(self.unregister_agent)
-        for message in agent_p.listen():
-            print(f"Received message: {message}")
-            invocation = Invocation()
-            if message["type"] == "subscribe":
-                continue
-            message_json = json.loads(message["data"])
-            try:
-                invoc_message = message_json["invocation"]
-            except TypeError:
-                continue
-            invocation.image = invoc_message["image"]
-            invocation.infrastructure_target = invoc_message[
-                "infrastructure_target"]
-            invocation.stack_instance = invoc_message["stack_instance"]
-            invocation.service = invoc_message["service"]
-            invocation.functional_requirement = invoc_message[
-                "functional_requirement"]
-            invocation.tool = invoc_message["tool"]
-            invocation.action = invoc_message["action"]
-            invocation.requester = message_json["return_channel"]
-            invocation.source_task_id = invoc_message["source_task_id"]
-            print(f"invocation {invocation}")
-            yield invocation
-        # TODO Lets check if listen fails if the connection drops, then this place would be perfect to deregister the agent
-        print(f"Connection dropped, deregister agent #{agent_metadata.name}")
+        context.add_callback(self._unregister_agent)
+        invocations = self.message_channel.listen_for_jobs(
+            self.process_agent_task)
+        for invoc in invocations:
+            yield invoc
 
     def ReportResult(self, automation_result: AutomationResult, context):
         print(
@@ -79,8 +65,7 @@ class AutomationJobDispenser(StacklAgentServicer):
             'args': ('stack_instance', automation_result.stack_instance)
         })
 
-        self.task_broker.give_task(task)
-        result = self.task_broker.get_task_result(task.id)
+        result = self.message_channel.give_task_and_get_result(task)
 
         stack_instance_dict = result.return_result
         stack_instance = StackInstance.parse_obj(stack_instance_dict)
@@ -120,19 +105,7 @@ class AutomationJobDispenser(StacklAgentServicer):
             'subtype': "PUT_DOCUMENT"
         })
 
-        self.task_broker.give_task(task)
-        task = ResultTask.parse_obj({
-            'channel': automation_result.requester,
-            'result_msg':
-            f"Finished provisioning {automation_result.functional_requirement} of {automation_result.service} on infrastructure target: {automation_result.infrastructure_target}",
-            'return_result': "",
-            'result_code': StatusCode.OK,
-            'cast_type': "broadcast",
-            'source_task_id': automation_result.source_task_id,
-            'status': "progress"
-        })
-
-        self.task_broker.give_task(task)
+        self.message_channel.give_task_and_get_result(task)
 
         connection_result = ConnectionResult(success=True)
         return connection_result

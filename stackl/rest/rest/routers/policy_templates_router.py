@@ -3,13 +3,14 @@ from typing import List
 
 from fastapi import APIRouter
 from stackl.models.configs.policy_template_model import PolicyTemplate
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
+
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 @router.get('', response_model=List[PolicyTemplate])
@@ -24,8 +25,7 @@ def get_policy_templates():
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -41,8 +41,8 @@ def get_policy_template_by_name(policy_name: str):
         'args': ('policy_template', policy_name),
         'subtype': "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -57,6 +57,5 @@ def put_policy_template(policy: PolicyTemplate):
         'subtype': "PUT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
     return policy

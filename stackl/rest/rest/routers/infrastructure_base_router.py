@@ -3,13 +3,14 @@ from typing import List
 
 from fastapi import APIRouter
 from stackl.models.configs.infrastructure_base_document import InfrastructureBaseDocument
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
+
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 @router.get('/{infrastructure_base_type}',
@@ -25,8 +26,7 @@ def get_infrastructure_base_by_type(infrastructure_base_type: str):
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -46,8 +46,8 @@ def get_infrastructure_base_by_type_and_name(infrastructure_base_type: str,
         'subtype':
         "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -69,8 +69,7 @@ def post_infrastructure_base(
         "POST_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return infrastructure_base_document
 
@@ -88,8 +87,7 @@ def put_infrastructure_base(
         "PUT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return infrastructure_base_document
 
@@ -106,7 +104,6 @@ def delete_infrastructure_base(infrastructure_base_type: str,
         "DELETE_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result

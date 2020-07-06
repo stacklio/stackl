@@ -4,7 +4,7 @@ from .task import Task
 
 
 class ReportTask(Task):
-    topic: str = "report"
+    topic: str = "report_task"
     function: str
     args: Any = None
     attribute: Any = None

@@ -4,12 +4,13 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from stackl.enums.stackl_codes import StatusCode
 from stackl.models.history.snapshot_model import Snapshot
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.snapshot_task import SnapshotTask
+
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 @router.get('/{name}', response_model=Snapshot)
@@ -22,8 +23,7 @@ async def get_snapshot(name: str):
         'subtype': "GET_SNAPSHOT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -39,8 +39,8 @@ async def get_snapshots(type_name: str, name: str):
         'args': (type_name, name),
         'subtype': "GET_SNAPSHOTS"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -55,8 +55,8 @@ async def restore_snapshot(name: str):
         'args': name,
         'subtype': "RESTORE_SNAPSHOT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
     if not StatusCode.is_successful(result.result_code):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
@@ -74,8 +74,8 @@ async def create_snapshot(type_name: str, name: str):
         'args': (type_name, name),
         'subtype': "CREATE_SNAPSHOT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
     if not StatusCode.is_successful(result.result_code):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,
                             detail="NOT OK!")
@@ -93,8 +93,8 @@ async def delete_snapshot(name: str):
         'args': name,
         'subtype': "DELETE_SNAPSHOT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     if not StatusCode.is_successful(result.result_code):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,

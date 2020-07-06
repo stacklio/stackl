@@ -14,8 +14,8 @@ import time
 logger = logging.getLogger("STACKL_LOGGER")
 
 
-def get_config_key(key):
-    value = os.environ.get('STACKL_' + key.upper(), None)
+def get_config_key(key, default=None):
+    value = os.environ.get('STACKL_' + key.upper(), default)
     logger.info(
         f"[General Utils] get_config_key. Key: '{key}'. Value: '{value}'")
     if value:

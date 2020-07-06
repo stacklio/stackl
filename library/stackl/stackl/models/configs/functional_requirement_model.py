@@ -7,6 +7,7 @@ class Invocation(BaseModel):
     image: str
     description: str
     tool: str
+    as_group: bool = False
 
 
 class FunctionalRequirement(BaseDocument):

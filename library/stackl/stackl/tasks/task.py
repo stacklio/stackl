@@ -12,7 +12,7 @@ class Task(BaseModel, ABC):
     source = None
     topic: str
     cast_type: str = "anycast"
-    channel: str = all
+    channel: str = None
     id: str = generate_random_string()
     source: Any = get_hostname()
     args: Any = None

@@ -2,13 +2,12 @@ import logging
 
 from stackl.enums.cast_type import CastType
 from stackl.enums.stackl_codes import StatusCode
-from stackl.message_channel.message_channel_factory import MessageChannelFactory
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.result_task import ResultTask
+from stackl.tasks.stack_task import StackTask
 from stackl.utils.general_utils import get_timestamp
 
-from stackl.tasks.stack_task import StackTask
 from .manager import Manager
+from worker.message_channel.message_channel_factory import MessageChannelFactory
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -17,8 +16,6 @@ class SnapshotManager(Manager):
     def __init__(self):
         super(SnapshotManager, self).__init__()
 
-        task_broker_factory = TaskBrokerFactory()
-        self.task_broker = task_broker_factory.get_task_broker()
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
@@ -53,7 +50,7 @@ class SnapshotManager(Manager):
             'cast_type': CastType.BROADCAST.value,
             'source_task': task
         })
-        self.message_channel.publish(result_task)
+        self.message_channel.give_task(result_task)
 
     def rollback_task(self, task):
         pass
@@ -105,7 +102,6 @@ class SnapshotManager(Manager):
         result = self.document_manager.write_document(
             snapshot_document.snapshot, overwrite=True, make_snapshot=False)
         if snapshot_document.snapshot["type"] == "stack_instance":
-
             invocation = {
                 "stack_instance_name": snapshot_document.snapshot["name"],
                 "disable_invocation": False,

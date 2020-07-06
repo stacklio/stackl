@@ -4,7 +4,7 @@ from .task import Task
 
 
 class ResultTask(Task):
-    topic: str = "result"
+    topic: str = "result_task"
     result_msg: str = None
     return_result: Any = None
     result_code: int = None

@@ -3,17 +3,17 @@ from abc import ABC, abstractmethod
 
 class MessageChannel(ABC):
     @abstractmethod
-    def publish(self, task):
+    def register_agent(self, name, selector):
         pass
 
     @abstractmethod
-    def push(self, name, *values):
+    def unregister_agent(self):
         pass
 
     @abstractmethod
-    def pop(self, name):
+    def listen_for_jobs(self, callback_function):
         pass
 
     @abstractmethod
-    def _pubsub_channels(self, pubsub, channels, action='subscribe'):
+    def give_task_and_get_result(self, task):
         pass

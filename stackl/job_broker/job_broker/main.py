@@ -1,15 +1,12 @@
-import logging
 from concurrent import futures
 
 import grpc
-from .automation_job_dispenser import AutomationJobDispenser
-from stackl import stackl_globals
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
+
 from stackl_protos.agent_pb2_grpc import add_StacklAgentServicer_to_server
+from .automation_job_dispenser import AutomationJobDispenser
 
 
 def start():
-    stackl_globals.initialize()
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=10),
         options=[
@@ -26,10 +23,7 @@ def start():
             ('grpc.http2.min_ping_interval_without_data_ms', 5000),
             # allow grpc pings from client without data every 5 seconds
         ])
-    task_broker = TaskBrokerFactory().get_task_broker()
-    add_StacklAgentServicer_to_server(
-        AutomationJobDispenser(stackl_globals.redis_cache, task_broker),
-        server)
+    add_StacklAgentServicer_to_server(AutomationJobDispenser(), server)
     server.add_insecure_port('[::]:50051')
     print(
         "___________________ STARTING STACKL GRPC SERVER ____________________")

@@ -1,17 +1,13 @@
-import json
 import logging.config
 import os
-import threading
 
-import stackl.stackl_globals as stackl_globals
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory  # pylint: disable=import-error
-from stackl.tasks.document_task import DocumentTask
+from worker.message_channel.message_channel_factory import MessageChannelFactory
+from stackl.tasks.task import Task
 from stackl.utils.general_utils import get_hostname  # pylint: disable=import-error
 
 from .manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 
 # initialize stackl globals
-stackl_globals.initialize()
 
 logger = logging.getLogger("STACKL_LOGGER")
 level = os.environ.get("LOGLEVEL", "INFO").upper()
@@ -27,55 +23,28 @@ logger.addHandler(ch)
 class Worker:
     def __init__(self):
         self.manager_factory = ManagerFactory()
+        message_channel_factory = MessageChannelFactory()
         self.stack_manager = self.manager_factory.get_stack_manager()
         self.document_manager = self.manager_factory.get_document_manager()
         self.snapshot_manager = self.manager_factory.get_snapshot_manager()
 
         self.hostname = get_hostname()
 
-        self.task_broker_factory = TaskBrokerFactory()
-        self.task_broker = self.task_broker_factory.get_task_broker()
+        self.message_channel = message_channel_factory.get_message_channel()
 
         logger.debug("[Worker] Initialised Worker.")
 
     def run(self):
         logger.debug("[Worker] Starting Worker")
-        self.start_task_popping()
+        self.message_channel.start(self.process_task)
 
-    def start_task_popping(self):
-        logger.info(
-            "[Worker] start_task_popping. Started listen on message channel")
-        while True:
-            logger.info("[Worker] Waiting for items to appear in queue")
-            tag = "common"
-            task = self.task_broker.get_task(tag)
-
-            logger.info(
-                f"[Worker] Popped item. Type '{type(task)}'. Item: '{task}'")
-
-            task_attr = json.loads(task)
-            if task_attr["topic"] == "document_task":
-                logger.info(
-                    f"[Worker] DocumentTask with subtype \'{task_attr['subtype']}\'"
-                )
-                thread = threading.Thread(
-                    target=self.document_manager.handle_task,
-                    args=[DocumentTask.parse_obj(task_attr)])
-                thread.start()
-            elif task_attr["topic"] == "snapshot_task":
-                logger.info(
-                    f"[Worker] SnapshotTask with subtype \'{task_attr['subtype']}\'"
-                )
-                thread = threading.Thread(
-                    target=self.snapshot_manager.handle_task, args=[task_attr])
-                thread.start()
-            elif task_attr["topic"] == "stack_task":
-                logger.info(
-                    f"[Worker] StackTask with subtype \'{task_attr['subtype']}\'"
-                )
-                thread = threading.Thread(
-                    target=self.stack_manager.handle_task, args=[task_attr])
-                thread.start()
+    def process_task(self, task: Task):
+        if task.topic == "document_task":
+            return self.document_manager.handle_task(task)
+        elif task.topic == "snapshot_task":
+            return self.snapshot_manager.handle_task(task)
+        elif task.topic == "stack_task":
+            return self.stack_manager.handle_task(task)
 
     def get_subscribe_channels(self):
         return ['all', 'worker', self.hostname]
