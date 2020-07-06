@@ -3,13 +3,14 @@ from typing import List
 
 from fastapi import APIRouter
 from stackl.models.configs.functional_requirement_model import FunctionalRequirement
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
+
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 @router.get('', response_model=List[FunctionalRequirement])
@@ -24,8 +25,7 @@ def get_functional_requirements():
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -41,8 +41,8 @@ def get_functional_requirement_by_name(name: str):
         'args': ('functional_requirement', name),
         'subtype': "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
     return result.return_result
 
 
@@ -57,8 +57,7 @@ def post_functional_requirement(document: FunctionalRequirement):
         'subtype': "POST_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -72,8 +71,7 @@ def put_functional_requirement(document: FunctionalRequirement):
         'subtype': "PUT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -89,7 +87,6 @@ def delete_functional_requirement(type_name: str, name: str):
         'subtype': "DELETE_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result

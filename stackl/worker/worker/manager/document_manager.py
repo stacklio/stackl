@@ -3,7 +3,6 @@ import logging
 
 from stackl.enums.cast_type import CastType
 from stackl.enums.stackl_codes import StatusCode
-from stackl.message_channel.message_channel_factory import MessageChannelFactory
 from stackl.models.configs.document_model import BaseDocument
 from stackl.models.configs.environment_model import Environment
 from stackl.models.configs.functional_requirement_model import FunctionalRequirement
@@ -15,29 +14,38 @@ from stackl.models.configs.zone_model import Zone
 from stackl.models.history.snapshot_model import Snapshot
 from stackl.models.items.service_model import Service
 from stackl.models.items.stack_instance_model import StackInstance
-from stackl.stackl_globals import types, types_configs, types_items, types_history
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
 from stackl.tasks.result_task import ResultTask
 from stackl.utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 
+from worker.message_channel.message_channel_factory import MessageChannelFactory
 from .manager import Manager
 
 logger = logging.getLogger("STACKL_LOGGER")
+
+types_categories = ["configs", "items", "history"]
+types_configs = [
+    "environment", "location", "zone", "stack_application_template",
+    "stack_infrastructure_template", "functional_requirement",
+    "resource_requirement", "authentication", "policy_template"
+]
+types_items = [
+    "stack_instance", "stack_template", "infrastructure_target", "service"
+]
+types_history = ["snapshot", "log"]
+types = types_configs + types_items + types_history
 
 
 class DocumentManager(Manager):
     def __init__(self):
         super(DocumentManager, self).__init__()
 
-        task_broker_factory = TaskBrokerFactory()
-        self.task_broker = task_broker_factory.get_task_broker()
         message_channel_factory = MessageChannelFactory()
         self.message_channel = message_channel_factory.get_message_channel()
 
         self.snapshot_manager = None  # Given after initalisation by manager_factory
 
-    def handle_task(self, task: DocumentTask):
+    def handle_task(self, task: DocumentTask) -> ResultTask:
         logger.debug(f"[DocumentManager] handling document_task '{task}'")
         if task.subtype == "GET_DOCUMENT":
             (type_name, name) = task.args
@@ -56,7 +64,7 @@ class DocumentManager(Manager):
             return_result = self.delete_document(type=type_name, name=name)
         logger.debug(
             f"[DocumentManager] Handled document task. Creating ResultTask.")
-        resultTask = ResultTask.parse_obj({
+        result_task = ResultTask.parse_obj({
             'channel': task.return_channel,
             'result_msg':
             f"DocumentTask with type '{task.subtype}' was handled",
@@ -65,7 +73,7 @@ class DocumentManager(Manager):
             'cast_type': CastType.BROADCAST.value,
             'source_task': task
         })
-        self.message_channel.publish(resultTask)
+        return result_task
 
     # Rudimentary rollback system. It should also take into account the reason for the failure.
     # For instance, rollback create should behave differently if the failure was because the item already existed then when the problem occured during actual creation

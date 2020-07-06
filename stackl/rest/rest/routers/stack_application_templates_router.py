@@ -3,13 +3,14 @@ from typing import List
 
 from fastapi import APIRouter
 from stackl.models.configs.stack_application_template_model import StackApplicationTemplate
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
+
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 @router.get('', response_model=List[StackApplicationTemplate])
@@ -24,8 +25,7 @@ def get_stack_application_templates():
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -41,8 +41,8 @@ def get_stack_application_template_by_name(name: str):
         'args': ('stack_application_template', name),
         'subtype': "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -58,8 +58,7 @@ def post_stack_application_template(document: StackApplicationTemplate):
         'subtype': "POST_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -73,8 +72,7 @@ def put_stack_application_template(document: StackApplicationTemplate):
         'subtype': "PUT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -87,7 +85,6 @@ def delete_stack_application_template(name: str):
         'subtype': "DELETE_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result

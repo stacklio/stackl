@@ -5,14 +5,15 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
 from stackl.enums.stackl_codes import StatusCode
 from stackl.models.items.stack_instance_model import StackInstance
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
 from stackl.tasks.stack_task import StackTask
 from stackl.utils.general_utils import get_hostname
 
+from rest.producer.producer_factory import get_producer
+
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 class StackInstanceInvocation(BaseModel):
@@ -67,8 +68,8 @@ def get_stack_instance(name: str):
         'args': ('stack_instance', name),
         'subtype': "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
     return result.return_result
 
 
@@ -84,8 +85,7 @@ def get_stack_instances(name: str = ""):
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -105,8 +105,7 @@ async def post_stack_instance(
     logger.info(
         f"[StackInstances POST] Giving StackTask '{task}' to task_broker")
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -123,7 +122,6 @@ def put_stack_instance(stack_instance_update: StackInstanceUpdate):
     })
     logger.info(
         f"[StackInstances PUT] Giving StackTask '{task}' to task_broker")
-    task_broker.give_task(task)
 
     return "Stack instance updating"
 
@@ -143,7 +141,7 @@ def delete_stack_instance(name: str):
         f"[StackInstances DELETE] Giving StackTask '{dict(task)}' to task_broker"
     )
 
-    result = task_broker.give_task(task)
+    result = producer.give_task_and_get_result(task)
 
     if not StatusCode.is_successful(result):
         raise HTTPException(status_code=StatusCode.BAD_REQUEST,

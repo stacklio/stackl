@@ -3,13 +3,14 @@ from typing import List
 
 from fastapi import APIRouter
 from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
 from stackl.tasks.document_task import DocumentTask
+
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
 @router.get('', response_model=List[StackInfrastructureTemplate])
@@ -24,8 +25,7 @@ def get_stack_infrastructure_templates():
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -41,8 +41,8 @@ def get_stack_infrastructure_template_by_name(name: str):
         'args': ('stack_application_template', name),
         'subtype': "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -58,8 +58,7 @@ def post_stack_infrastructure_template(document: StackInfrastructureTemplate):
         'subtype': "POST_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -73,8 +72,7 @@ def put_stack_infrastructure_template(document: StackInfrastructureTemplate):
         'subtype': "PUT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -82,12 +80,13 @@ def put_stack_infrastructure_template(document: StackInfrastructureTemplate):
 @router.delete('/{name}', status_code=202)
 def delete_stack_infrastructure_template(name: str):
     task = DocumentTask.parse_obj({
-        'channel': 'worker',
+        'channel':
+        'worker',
         'args': ("stack_infrastructure_template", name),
-        'subtype': "DELETE_DOCUMENT"
+        'subtype':
+        "DELETE_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result

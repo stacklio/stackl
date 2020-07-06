@@ -3,18 +3,18 @@ from typing import List
 
 from fastapi import APIRouter
 from stackl.models.items.service_model import Service
-from stackl.task_broker.task_broker_factory import TaskBrokerFactory
+from stackl.models.items.stack_instance_model import StackInstance
 from stackl.tasks.document_task import DocumentTask
 
-from stackl.models.items.stack_instance_model import StackInstance
+from rest.producer.producer_factory import get_producer
 
 logger = logging.getLogger("STACKL_LOGGER")
 router = APIRouter()
 
-task_broker = TaskBrokerFactory().get_task_broker()
+producer = get_producer()
 
 
-@router.get('', response_model=List[StackInstance])
+@router.get('', response_model=List[Service])
 def get_services():
     """Returns all functional requirements with a specific type"""
     logger.info(
@@ -26,13 +26,12 @@ def get_services():
         'subtype': "COLLECT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
 
-@router.get('/{name}', response_model=StackInstance)
+@router.get('/{name}', response_model=Service)
 def get_service_by_name(name: str):
     """Returns a functional requirement"""
     logger.info(
@@ -43,8 +42,8 @@ def get_service_by_name(name: str):
         'args': ('service', name),
         'subtype': "GET_DOCUMENT"
     })
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result
 
@@ -60,8 +59,7 @@ def post_service(document: Service):
         'subtype': "POST_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -75,8 +73,7 @@ def put_service(document: Service):
         'subtype': "PUT_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    task_broker.get_task_result(task.id)
+    producer.give_task_and_get_result(task)
 
     return document
 
@@ -89,7 +86,6 @@ def delete_service(name: str):
         'subtype': "DELETE_DOCUMENT"
     })
 
-    task_broker.give_task(task)
-    result = task_broker.get_task_result(task.id)
+    result = producer.give_task_and_get_result(task)
 
     return result.return_result

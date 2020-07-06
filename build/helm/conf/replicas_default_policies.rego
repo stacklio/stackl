@@ -1,5 +1,6 @@
 package replicas
 solutions = {"fulfilled": true, "services": result} {
+
   not input.parameters.exclusive
   result = {service_key: service_targets |
           amount := input.parameters.services[service_key]

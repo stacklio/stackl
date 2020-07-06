@@ -1,9 +1,10 @@
 import logging
 
-from stackl.message_channel.redis_queue import RedisQueue
-
 from stackl.utils.general_utils import get_config_key
 from stackl.utils.stackl_singleton import Singleton
+
+from .rabbit_mq_channel import RabbitMqChannel
+from .redis_queue import RedisQueue
 
 logger = logging.getLogger("STACKL_LOGGER")
 
@@ -18,6 +19,8 @@ class MessageChannelFactory(metaclass=Singleton):
 
         if self.message_channel_type == "Redis":
             self.message_channel = RedisQueue()
+        if self.message_channel_type == "RabbitMQ":
+            self.message_channel = RabbitMqChannel()
         else:  # default to Redis
             self.message_channel = RedisQueue()
 
