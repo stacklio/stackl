@@ -9,7 +9,7 @@ DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_KUBERNETES_AGENT=stacklio/stackl-kubernetes-agent
 DOCKER_IMAGE_DOCKER_AGENT=stacklio/stackl-docker-agent
 
-VERSIONTAG=dev
+VERSIONTAG=v0.1.3-rc1
 
 ######################################################
 #
@@ -133,6 +133,15 @@ config-microk8s-registry:
 skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 	kubectl port-forward service/registry -n container-registry 5000:5000 &
 	skaffold dev --force=false --port-forward --no-prune=true --no-prune-children=true
+
+.PHONY: openapi
+openapi:
+	openapi-generator generate -i http://localhost:8080/openapi.json -g python --package-name stackl_client --additional-properties=packageVersion=${VERSIONTAG} -o /tmp/stackl-client
+	pip3 install /tmp/stackl-client
+
+.PHONY: stackl_cli
+stackl_cli:
+	pip3 install -e stackl/stackl_cli/.
 
 build: build_prepare build_rest build_worker build_grpc_base build_kubernetes_agent build_docker_agent
 push: push_prepare push_rest push_worker push_kubernetes_agent push_docker_agent

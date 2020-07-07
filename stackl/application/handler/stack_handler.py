@@ -42,6 +42,7 @@ class StackHandler(Handler):
                 'stack_infrastructure_template'],
             stack_application_template=item['stack_application_template'])
         stack_instance_doc.instance_params = item['params']
+        stack_instance_doc.service_params = item['service_params']
         stack_instance_doc.instance_secrets = item['secrets']
         services = {}
         stack_instance_statuses = []
@@ -55,15 +56,11 @@ class StackHandler(Handler):
                 service_definition = StackInstanceService()
                 service_definition.infrastructure_target = infra_target
 
-                service_definition_status = []
                 capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     infra_target]["provisioning_parameters"]
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     infra_target]["secrets"]
-                merged_capabilities = {
-                    **capabilities_of_target,
-                    **svc_doc.params
-                }
+
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
                     stack_instance_status = StackInstanceStatus(
@@ -76,13 +73,15 @@ class StackHandler(Handler):
                     fr_doc = self.document_manager.get_functional_requirement(
                         fr)
                     merged_capabilities = {
-                        **merged_capabilities,
-                        **fr_doc.params
+                        **capabilities_of_target,
+                        **fr_doc.params,
+                        **svc_doc.params
                     }
                     merged_secrets = {**merged_secrets, **fr_doc.secrets}
                 service_definition.provisioning_parameters = {
                     **merged_capabilities,
-                    **item['params']
+                    **item['params'],
+                    **item['service_params'].get(svc, {})
                 }
                 service_definition.secrets = {
                     **merged_secrets,
@@ -108,6 +107,10 @@ class StackHandler(Handler):
             **stack_instance.instance_secrets,
             **item['secrets']
         }
+        stack_instance.service_params = {
+            **stack_instance.service_params,
+            **item['service_params']
+        }
 
         stack_instance_statuses = []
         for svc, service_definitions in stack_instance.services.items():
@@ -118,10 +121,7 @@ class StackHandler(Handler):
                     infrastructure_target]["provisioning_parameters"]
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.infrastructure_target]["secrets"]
-                merged_capabilities = {
-                    **capabilities_of_target,
-                    **svc_doc.params
-                }
+
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
                     if not item["disable_invocation"]:
@@ -136,13 +136,15 @@ class StackHandler(Handler):
                     fr_doc = self.document_manager.get_functional_requirement(
                         fr)
                     merged_capabilities = {
-                        **merged_capabilities,
-                        **fr_doc.params
+                        **capabilities_of_target,
+                        **fr_doc.params,
+                        **svc_doc.params
                     }
                     merged_secrets = {**merged_secrets, **fr_doc.secrets}
                 service_definition.provisioning_parameters = {
                     **merged_capabilities,
-                    **stack_instance.instance_params
+                    **stack_instance.instance_params,
+                    **stack_instance.service_params.get(svc, {})
                 }
                 service_definition.secrets = {
                     **merged_secrets,

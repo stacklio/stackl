@@ -20,29 +20,33 @@ def cli():
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
 @click.option('-s', '--secrets', default="{}")
+@click.option('-e', '--service-params', default="{}")
 @click.argument('instance-name', required=False)
 @pass_stackl_context
 def apply(stackl_context, directory, config_file, params, tags, secrets,
-          replicas, instance_name):
+          service_params, replicas, instance_name):
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:
-        apply_stack_instance(config_file, params, tags, secrets, replicas,
-                             stackl_context, instance_name)
+        apply_stack_instance(config_file, params, tags, secrets,
+                             service_params, replicas, stackl_context,
+                             instance_name)
 
 
-@pass_stackl_context
-def apply_stack_instance(config_file, params, tags, secrets, stackl_context,
-                         instance_name):
+def apply_stack_instance(config_file, params, tags, secrets, service_params,
+                         replicas, stackl_context, instance_name):
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     params = {**config_doc['params'], **json.loads(params)}
     tags = json.loads(tags)
     replicas = {**getattr(config_doc, 'replicas', {}), **json.loads(replicas)}
     secrets = json.loads(secrets)
-    if hasattr(config_doc, 'secrets'):
-        secrets = {**config_doc['secrets'], **json.loads(secrets)}
-    if hasattr(config_doc, 'tags'):
-        tags = {**config_doc['tags'], **json.loads(tags)}
+    service_params = json.loads(service_params)
+    if "service_params" in config_doc:
+        service_params = {**config_doc['service_params'], **service_params}
+    if "secrets" in config_doc:
+        secrets = {**config_doc['secrets'], **secrets}
+    if "tags" in config_doc:
+        tags = {**config_doc['tags'], **tags}
     invocation = stackl_client.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
@@ -50,14 +54,16 @@ def apply_stack_instance(config_file, params, tags, secrets, stackl_context,
         stack_application_template=config_doc["stack_application_template"],
         params=params,
         replicas=replicas,
+        service_params=service_params,
         secrets=secrets,
-        tags=json.loads(tags))
+        tags=tags)
     try:
         stackl_context.stack_instances_api.get_stack_instance(instance_name)
         res = stackl_context.stack_instances_api.put_stack_instance(invocation)
     except stackl_client.exceptions.ApiException:
         res = stackl_context.stack_instances_api.post_stack_instance(
             invocation)
+
     click.echo(res)
 
 
