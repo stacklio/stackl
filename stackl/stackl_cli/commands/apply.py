@@ -4,8 +4,8 @@ from pathlib import Path
 import click
 import stackl_client
 import yaml
-
 from context import pass_stackl_context
+from mergedeep import merge
 
 
 @click.group()
@@ -42,7 +42,8 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     secrets = json.loads(secrets)
     service_params = json.loads(service_params)
     if "service_params" in config_doc:
-        service_params = {**config_doc['service_params'], **service_params}
+        service_params = merge(config_doc['service_params'], service_params)
+        click.echo(service_params)
     if "secrets" in config_doc:
         secrets = {**config_doc['secrets'], **secrets}
     if "tags" in config_doc:
@@ -73,15 +74,15 @@ def upload_files(directory, stackl_context):
             # ignore dotfiles
             if path.name.startswith('.'):
                 continue
-            click.echo(f"Reading document: { str(path) }")
+            click.echo(f"Reading document: {str(path)}")
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
             if 'name' in stackl_doc:
                 click.echo(
-                    f"Applying stackl document: { str(path) + ' ' + stackl_doc['name']}"
+                    f"Applying stackl document: {str(path) + ' ' + stackl_doc['name']}"
                 )
             else:
                 click.echo(
-                    f"Error in stackl document, no 'name' found: { path }")
+                    f"Error in stackl document, no 'name' found: {path}")
             try:
                 if stackl_doc["type"] in ["environment", "location", "zone"]:
                     stackl_context.documents_api.put_document(stackl_doc)

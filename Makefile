@@ -9,7 +9,7 @@ DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_KUBERNETES_AGENT=stacklio/stackl-kubernetes-agent
 DOCKER_IMAGE_DOCKER_AGENT=stacklio/stackl-docker-agent
 
-VERSIONTAG=v0.1.3-rc1
+VERSIONTAG=v0.1.3-rc2
 
 ######################################################
 #
