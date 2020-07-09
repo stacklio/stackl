@@ -8,6 +8,7 @@ DOCKER_IMAGE_REST=stacklio/stackl-rest
 DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
+DOCKER_IMAGE_CLI=stacklio/stackl-cli
 
 VERSIONTAG=0.1.3dev
 
@@ -49,6 +50,11 @@ build_agent:
 build_job_broker:
 	@echo "Building job broker"
 	${CONTAINER_ENGINE} build -f stackl/job_broker/Dockerfile -t $(DOCKER_IMAGE_JOB_BROKER):$(VERSIONTAG) .
+
+.PHONY: build_stackl_cli
+build_stackl_cli:
+	@echo "Building stackl-cli"
+	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):$(VERSIONTAG) stackl/cli
 
 .PHONY: push_prepare
 push_prepare:
