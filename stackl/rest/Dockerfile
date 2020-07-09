@@ -1,4 +1,5 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7-2020-04-27
+# FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7-2020-04-27
+FROM nexus-dockerext.dome.dev/ubi8/ubi-minimal:8.2-301
 
 
 ENV PYTHONFAULTHANDLER=1 \
@@ -11,7 +12,17 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.0.9
 
 # System deps:
-RUN pip install "poetry==$POETRY_VERSION"
+RUN microdnf install -y python38 && \
+    pip3 install --no-cache-dir "poetry==$POETRY_VERSION"&& \
+    microdnf clean all
+
+COPY stackl/rest/start.sh /start.sh
+RUN chmod +x /start.sh
+
+COPY stackl/rest/gunicorn_conf.py /gunicorn_conf.py
+
+COPY stackl/rest/start-reload.sh /start-reload.sh
+RUN chmod +x /start-reload.sh
 
 COPY library /library
 
@@ -26,3 +37,9 @@ RUN poetry config virtualenvs.create false \
 
 # Creating folders, and files for a project:
 COPY stackl/rest/. /app
+ENV PYTHONPATH=/app
+EXPOSE 80
+
+# Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
+# And then will start Gunicorn with Uvicorn
+CMD ["/start.sh"]

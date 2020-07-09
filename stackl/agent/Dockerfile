@@ -1,4 +1,5 @@
-FROM python:3.7-slim-buster
+# FROM python:3.7-slim-buster
+FROM nexus-dockerext.dome.dev/ubi8/ubi-minimal:8.2-301
 
 ENV PYTHONFAULTHANDLER=1 \
   MODULE_NAME="job.main" \
@@ -11,7 +12,9 @@ ENV PYTHONFAULTHANDLER=1 \
 
 
 # System deps:
-RUN pip install "poetry==$POETRY_VERSION"
+RUN microdnf install -y python38 && \
+    pip3 install --no-cache-dir "poetry==$POETRY_VERSION" && \
+    microdnf clean all
 
 COPY library /library
 
