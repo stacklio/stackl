@@ -9,9 +9,11 @@ DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 DOCKER_IMAGE_CLI=stacklio/stackl-cli
+DOCKER_IMAGE_OPA=stacklio/opa
+DOCKER_IMAGE_REDIS=stacklio/redis
 
+OPA_VERSION=v0.21.1
 VERSIONTAG=0.1.3dev
-
 VERSION=0.1.3dev
 
 ######################################################
@@ -55,6 +57,17 @@ build_job_broker:
 build_stackl_cli:
 	@echo "Building stackl-cli"
 	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):$(VERSIONTAG) stackl/cli
+
+.PHONY: build_opa
+build_opa:
+	@echo "Building opa"
+	${CONTAINER_ENGINE} build -f stackl/opa/Dockerfile --build-arg "OPA_VERSION=${OPA_VERSION}" -t $(DOCKER_IMAGE_OPA):$(OPA_VERSION) stackl/opa
+
+.PHONY: build_redis
+build_redis:
+	@echo "Building redis"
+	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(VERSIONTAG) stackl/redis
+
 
 .PHONY: push_prepare
 push_prepare:
