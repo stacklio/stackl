@@ -112,10 +112,12 @@ async def post_stack_instance(
 
 
 @router.put('')
-def put_stack_instance(
+async def put_stack_instance(
+    background_tasks: BackgroundTasks,
     stack_instance_update: StackInstanceUpdate,
     document_manager: DocumentManager = Depends(get_document_manager),
-    stack_manager: StackManager = Depends(get_stack_manager)):
+    stack_manager: StackManager = Depends(get_stack_manager),
+    redis=Depends(get_redis)):
     """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
     logger.info("[StackInstances PUT] Received PUT request")
 
@@ -126,7 +128,11 @@ def put_stack_instance(
 
     document_manager.write_stack_instance(stack_instance)
 
-    return {"result": "stack instance creating"}
+    # Perform invocations
+    background_tasks.add_task(create_job_for_agent, stack_instance, "update",
+                              document_manager, redis)
+
+    return {"result": "stack instance updating"}
 
 
 @router.delete('/{name}')
