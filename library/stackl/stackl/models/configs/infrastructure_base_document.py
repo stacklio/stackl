@@ -8,6 +8,7 @@ class InfrastructureBaseDocument(BaseModel):
     category: str
     description = "Base Document"
     type: str
+    cloud_provider: str = ""
     params: dict = {}
     secrets: dict = {}
     outputs: dict = {}

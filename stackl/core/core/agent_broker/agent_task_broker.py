@@ -24,6 +24,7 @@ async def create_job_for_agent(stack_instance, action, document_manager,
             fr_jobs = []
             for service_definition in stack_instance.services[service_name]:
                 infrastructure_target = service_definition.infrastructure_target
+                cloud_provider = service_definition.cloud_provider
 
                 logger.debug(
                     f"[AgentTaskBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
@@ -31,10 +32,10 @@ async def create_job_for_agent(stack_instance, action, document_manager,
                 invoc = {}
                 invoc['action'] = action
                 invoc['functional_requirement'] = fr
-                invoc['image'] = fr_doc.invocation.image
+                invoc['image'] = fr_doc.invocation[cloud_provider].image
                 invoc['infrastructure_target'] = infrastructure_target
                 invoc['stack_instance'] = stack_instance.name
-                invoc['tool'] = fr_doc.invocation.tool
+                invoc['tool'] = fr_doc.invocation[cloud_provider].tool
                 invoc['service'] = service_name
 
                 logger.debug("Appending job")
@@ -44,7 +45,7 @@ async def create_job_for_agent(stack_instance, action, document_manager,
                     _queue_name=service_definition.agent)
                 fr_jobs.append(asyncio.create_task(job.result(timeout=3600)))
 
-                if fr_doc.invocation.as_group:
+                if fr_doc.invocation[cloud_provider].as_group:
                     logger.debug("running as group")
                     break
 
