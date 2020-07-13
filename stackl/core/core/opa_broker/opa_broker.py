@@ -160,7 +160,10 @@ class OPABroker:
             params = service.params
             for fr in service.functional_requirements:
                 fr_doc = self.document_manager.get_functional_requirement(fr)
-                frs[fr] = fr_doc.invocation.dict()
+                frs[fr] = {
+                    key: value.dict()
+                    for (key, value) in fr_doc.invocation.items()
+                }
                 params = {**params, **fr_doc.params}
             service_data = {
                 "functional_requirements": frs,

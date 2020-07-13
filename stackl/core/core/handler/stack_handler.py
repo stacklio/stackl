@@ -392,6 +392,15 @@ class StackHandler(Handler):
             else:
                 infr_target_agent = "common"
 
+            if zone.cloud_provider != "":
+                infr_target_cloud_provider = zone.cloud_provider
+            elif location.cloud_provider != "":
+                infr_target_cloud_provider = location.cloud_provider
+            elif environment.cloud_provider != "":
+                infr_target_cloud_provider = environment.cloud_provider
+            else:
+                infr_target_cloud_provider = "generic"
+
             infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
@@ -410,6 +419,8 @@ class StackHandler(Handler):
                 "policies"] = infr_target_policies
             infr_targets_capabilities[infr_target_key][
                 "agent"] = infr_target_agent
+            infr_targets_capabilities[infr_target_key][
+                "cloud_provider"] = infr_target_cloud_provider
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())
