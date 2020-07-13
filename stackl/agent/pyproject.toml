@@ -6,12 +6,10 @@ authors = ["Frederic <frederic.vanreet@icloud.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-grpcio = "^1.29.0"
-protobuf = "^3.12.2"
 kubernetes = "^11.0.0"
 pyyaml = "^5.3.1"
 stackl_client = "^0.1.1"
-stackl-protos = {path = "../../library/stackl_protos"}
+arq = "^0.19"
 
 [tool.poetry.dev-dependencies]
 

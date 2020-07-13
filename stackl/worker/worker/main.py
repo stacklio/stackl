@@ -1,15 +1,15 @@
 import logging.config
 import os
 
-from worker.message_channel.message_channel_factory import MessageChannelFactory
+from core.message_channel.message_channel_factory import MessageChannelFactory
 from stackl.tasks.task import Task
 from stackl.utils.general_utils import get_hostname  # pylint: disable=import-error
 
-from .manager.manager_factory import ManagerFactory  # pylint: disable=no-name-in-module,import-error
+from core.manager import ManagerFactory  # pylint: disable=no-name-in-module,import-error
 
 # initialize stackl globals
 
-logger = logging.getLogger("STACKL_LOGGER")
+from loguru import logger
 level = os.environ.get("LOGLEVEL", "INFO").upper()
 logger.setLevel(level)
 ch = logging.StreamHandler()

@@ -15,3 +15,4 @@ class InfrastructureBaseDocument(BaseModel):
     policies: dict = {}
     packages: List[str] = []
     tags: dict = {}
+    agent: str = ""
