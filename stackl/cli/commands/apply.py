@@ -43,7 +43,6 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     service_params = json.loads(service_params)
     if "service_params" in config_doc:
         service_params = merge(config_doc['service_params'], service_params)
-        click.echo(service_params)
     if "secrets" in config_doc:
         secrets = {**config_doc['secrets'], **secrets}
     if "tags" in config_doc:

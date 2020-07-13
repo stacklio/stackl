@@ -117,7 +117,7 @@ class StackHandler(Handler):
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
-                    if not item["disable_invocation"]:
+                    if not item.disable_invocation:
                         stack_instance_status = StackInstanceStatus(
                             functional_requirement=fr,
                             service=svc,
@@ -422,10 +422,10 @@ class StackHandler(Handler):
             f"[StackHandler] _handle_update received with item: '{item}'")
         if "name" in item:
             stack_instance = self.document_manager.get_stack_instance(
-                item['name'])
+                item.name)
         else:
             stack_instance = self.document_manager.get_stack_instance(
-                item['stack_instance_name'])
+                item.stack_instance_name)
 
         stack_instance = self._update_stack_instance(stack_instance, item)
         return stack_instance, 200
