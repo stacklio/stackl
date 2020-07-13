@@ -4,3 +4,6 @@ export AGENT_NAME=mock
 export AGENT_SELECTOR="development.belgium.*"
 export STACKL_GRPC_HOST=localhost:50051
 export STACKL_HOST=localhost:8000
+export REDIS_HOST=localhost
+export ACTOR_NAME=development
+export QUEUE_NAME=development

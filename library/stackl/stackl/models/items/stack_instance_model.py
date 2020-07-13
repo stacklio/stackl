@@ -11,6 +11,7 @@ class StackInstance(BaseModel):
     type = "stack_instance"
     deleted: bool = False
     instance_params: Dict[str, Any] = {}
+    service_params: Dict[str, Dict[str, Any]] = {}
     instance_secrets: Dict[str, Any] = {}
     services: Dict[str, List[StackInstanceService]] = {}
     stack_infrastructure_template: str

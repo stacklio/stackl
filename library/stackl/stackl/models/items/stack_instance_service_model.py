@@ -7,3 +7,4 @@ class StackInstanceService(BaseModel):
     infrastructure_target: str = None
     provisioning_parameters: Dict[str, Any] = None
     secrets: Dict[str, Any] = None
+    agent: str = ""

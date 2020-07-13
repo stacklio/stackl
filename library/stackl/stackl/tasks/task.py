@@ -5,7 +5,7 @@ from typing import Any
 from pydantic import BaseModel
 from stackl.utils.general_utils import generate_random_string, get_hostname
 
-logger = logging.getLogger("STACKL_LOGGER")
+from loguru import logger
 
 
 class Task(BaseModel, ABC):
