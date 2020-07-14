@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "stackl"
-version = "0.1.3dev"
+version = "0.2.0dev"
 description = ""
 authors = ["Frederic <frederic.vanreet@icloud.com>"]
 

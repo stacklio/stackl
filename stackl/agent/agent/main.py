@@ -6,11 +6,11 @@ from agent.docker.docker_tool_factory import DockerToolFactory
 from agent.kubernetes.kubernetes_tool_factory import KubernetesToolFactory
 from agent.mock.mock_tool_factory import MockToolFactory
 
-if os.environ.get("AGENT_NAME", None) == "kubernetes":
+if os.environ.get("AGENT_TYPE", None) == "kubernetes":
     tool_factory = KubernetesToolFactory()
-elif os.environ.get("AGENT_NAME", None) == "docker":
+elif os.environ.get("AGENT_TYPE", None) == "docker":
     tool_factory = DockerToolFactory()
-elif os.environ.get("AGENT_NAME", None) == "mock":
+elif os.environ.get("AGENT_TYPE", None) == "mock":
     tool_factory = MockToolFactory()
 
 
@@ -32,6 +32,6 @@ async def invoke_automation(ctx, invoc):
 
 class AgentSettings:
     functions = [invoke_automation]
-    queue_name = os.environ["QUEUE_NAME"]
+    queue_name = os.environ["AGENT_NAME"]
     redis_settings = RedisSettings(host=os.environ["REDIS_HOST"],
                                    port=os.environ.get("REDIS_PORT", 6379))

@@ -27,4 +27,4 @@ RUN poetry config virtualenvs.create false \
 # Creating folders, and files for a project:
 COPY stackl/agent/. /app
 
-CMD ["poetry", "run", "start-agent"]
+CMD ["poetry", "run", "arq", "agent.main.AgentSettings"]
