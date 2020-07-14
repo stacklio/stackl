@@ -1,7 +1,9 @@
-FROM python:3.7-slim-buster
+
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7-2020-04-27
+
 
 ENV PYTHONFAULTHANDLER=1 \
-  MODULE_NAME="job.main" \
+  MODULE_NAME="core.main" \
   PYTHONUNBUFFERED=1 \
   PYTHONHASHSEED=random \
   PIP_NO_CACHE_DIR=off \
@@ -17,13 +19,11 @@ COPY library /library
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 
-COPY stackl/worker/poetry.lock stackl/worker/pyproject.toml /app/
+COPY stackl/core/poetry.lock stackl/core/pyproject.toml /app/
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
-COPY stackl/worker/. /app
-
-CMD ["poetry", "run", "start-worker"]
+COPY stackl/core/. /app
