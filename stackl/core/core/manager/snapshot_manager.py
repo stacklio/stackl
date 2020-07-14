@@ -1,56 +1,23 @@
-import logging
+from core.manager.document_manager import DocumentManager
+from loguru import logger
+import time
 
-from stackl.enums.cast_type import CastType
 from stackl.enums.stackl_codes import StatusCode
-from stackl.tasks.result_task import ResultTask
 from stackl.tasks.stack_task import StackTask
 from stackl.utils.general_utils import get_timestamp
-
 from .manager import Manager
-
-from loguru import logger
 
 
 class SnapshotManager(Manager):
     def __init__(self):
         super(SnapshotManager, self).__init__()
-
-    def handle_task(self, task):
-        logger.debug(f"[SnapshotManager] handling snapshot_task {task}")
-        if task["subtype"] == "GET_SNAPSHOTS":
-            (type_doc, name_doc) = task["args"]
-            return_result = self.get_snapshots(type_doc, name_doc)
-        if task["subtype"] == "GET_SNAPSHOT":
-            name_doc = task["args"]
-            return_result = self.get_snapshot(name_doc)
-        elif task["subtype"] == "CREATE_SNAPSHOT":
-            (type_name, name) = task["args"]
-            return_result = self.create_snapshot(type_name, name)
-        elif task["subtype"] == "RESTORE_SNAPSHOT":
-            name_doc = task["args"]
-            return_result = self.restore_snapshot(name_doc)
-        elif task["subtype"] == "DELETE_SNAPSHOT":
-            name_doc = task["args"]
-            return_result = self.delete_snapshot(name_doc)
-        logger.debug(
-            f"[SnapshotManager] Succesfully handled snapshot task. Creating ResultTask."
-        )
-        result_task = ResultTask.parse_obj({
-            'channel': task['return_channel'],
-            'result_msg':
-            f"Document with type '{task['subtype']}' was handled",
-            'return_result': return_result,
-            'result_code': StatusCode.OK,
-            'cast_type': CastType.BROADCAST.value,
-            'source_task': task
-        })
-        self.message_channel.give_task(result_task)
+        self.document_manager = DocumentManager()
 
     def rollback_task(self, task):
         pass
 
     def get_snapshot(self, name):
-        result = self.document_manager.get_snapshot(name)
+        result = self.document_manager.get_document(type="snapshot", name=name)
 
         return result
 
@@ -72,6 +39,7 @@ class SnapshotManager(Manager):
                                                       name=name)
         snapshot_document['category'] = "history"
         snapshot_document['type'] = "snapshot"
+        snapshot_document['time'] = time.time()
         if type_name not in name:
             snapshot_document['name'] = type_name + "_" + name + "_" + str(
                 get_timestamp(spaces=False))
@@ -94,8 +62,8 @@ class SnapshotManager(Manager):
         if snapshot_document == {}:
             return StatusCode.NOT_FOUND
         result = self.document_manager.write_document(
-            snapshot_document.snapshot, overwrite=True, make_snapshot=False)
-        if snapshot_document.snapshot["type"] == "stack_instance":
+            snapshot_document['snapshot'], overwrite=True, make_snapshot=False)
+        if snapshot_document['snapshot']["type"] == "stack_instance":
             invocation = {
                 "stack_instance_name": snapshot_document.snapshot["name"],
                 "disable_invocation": False,
@@ -110,9 +78,17 @@ class SnapshotManager(Manager):
             logger.info(
                 f"[StackInstances PUT] Giving StackTask '{task}' to task_broker"
             )
-            self.task_broker.give_task(task)
 
         return result
+
+    def restore_latest_snapshot(self, type_doc, name_doc):
+        snapshots = self.get_snapshots(type_doc, name_doc)
+        latest_snapshot = {"time": 0}
+        for snapshot in snapshots:
+            if snapshot['time'] > latest_snapshot['time']:
+                latest_snapshot = snapshot
+
+        self.restore_snapshot(latest_snapshot['name'])
 
     def delete_snapshot(self, name_doc_to_delete):
         logger.debug(
@@ -122,6 +98,6 @@ class SnapshotManager(Manager):
         logger.debug(
             f"[SnapshotManager] snapshot_to_delete. Snapshot to delete: '{snapshot_document}'"
         )
-        result = self.document_manager.delete_document(
-            type=snapshot_document.type, name=snapshot_document.name)
+        result = self.document_manager.delete_snapshot(
+            name=snapshot_document['name'])
         return result

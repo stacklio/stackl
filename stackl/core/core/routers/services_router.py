@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from stackl.models.items.service_model import Service
 
@@ -30,6 +30,8 @@ def get_service_by_name(
         f"[DocumentByTypeAndName GET] API GET request for type 'service' and document '{name}'"
     )
     service = document_manager.get_service(name)
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
     return service
 
 

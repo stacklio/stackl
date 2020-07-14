@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from stackl.models.configs.policy_template_model import PolicyTemplate
 
@@ -30,10 +30,13 @@ def get_policy_template_by_name(
         f"[DocumentByTypeAndName GET] API GET request for type 'policy_template' and document '{policy_name}'"
     )
     policy_template = document_manager.get_policy_template(policy_name)
+    if not policy_template:
+        raise HTTPException(status_code=404,
+                            detail="Policy template not found")
     return policy_template
 
 
-@router.put('')
+@router.put('', response_model=PolicyTemplate)
 def put_policy_template(
     policy: PolicyTemplate,
     document_manager: DocumentManager = Depends(get_document_manager)):

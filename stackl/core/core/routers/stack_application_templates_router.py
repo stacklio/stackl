@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from stackl.models.configs.stack_application_template_model import StackApplicationTemplate
 
@@ -30,6 +30,8 @@ def get_stack_application_template_by_name(
         f"[DocumentByTypeAndName GET] API GET request for type 'stack_application_template' and document '{name}'"
     )
     sat = document_manager.get_stack_application_template(name)
+    if not sat:
+        raise HTTPException(status_code=404, detail="SAT not found")
     return sat
 
 

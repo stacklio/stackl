@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from stackl.models.configs.functional_requirement_model import FunctionalRequirement
 
@@ -28,7 +28,10 @@ def get_functional_requirement_by_name(
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'policy_template' and document '{name}'"
     )
-    return document_manager.get_functional_requirement()
+    fr = document_manager.get_functional_requirement(name)
+    if not fr:
+        raise HTTPException(status_code=404, detail="FR not found")
+    return fr
 
 
 @router.post('', response_model=FunctionalRequirement)
