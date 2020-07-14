@@ -78,7 +78,7 @@ def get_stack_instance(
     return stack_instance
 
 
-@router.get('/', response_model=List[StackInstance])
+@router.get('', response_model=List[StackInstance])
 def get_stack_instances(
     name: str = "",
     document_manager: DocumentManager = Depends(get_document_manager)):

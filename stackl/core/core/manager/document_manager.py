@@ -114,13 +114,22 @@ class DocumentManager(Manager):
         store_response = self.store.put(base_document.dict())
         return store_response.content
 
+    def delete_base_document(self, type, name):
+        store_response = self.store.delete(type=type,
+                                           category="configs",
+                                           name=name)
+        return store_response
+
     def get_policy_template(self, policy_name):
         """gets a PolicyTemplate from the store"""
         store_response = self.store.get(type="policy_template",
                                         name=policy_name,
                                         category="configs")
-        policy = PolicyTemplate.parse_obj(store_response.content)
-        return policy
+        if store_response.status_code == 404:
+            return None
+        else:
+            policy = PolicyTemplate.parse_obj(store_response.content)
+            return policy
 
     def get_policy_templates(self):
         """gets all PolicyTemplate from the store"""
@@ -134,7 +143,8 @@ class DocumentManager(Manager):
         """writes a PolicyTemplate to the store
         """
         store_response = self.store.put(policy.dict())
-        return store_response.status_code
+        policy = PolicyTemplate.parse_obj(store_response.content)
+        return policy
 
     def delete_policy_template(self, name):
         store_response = self.store.delete(type="policy_template",
@@ -200,9 +210,12 @@ class DocumentManager(Manager):
         store_response = self.store.get(type="stack_application_template",
                                         name=stack_application_template_name,
                                         category="configs")
-        stack_application_template = StackApplicationTemplate.parse_obj(
-            store_response.content)
-        return stack_application_template
+        if store_response.status_code == 404:
+            return None
+        else:
+            stack_application_template = StackApplicationTemplate.parse_obj(
+                store_response.content)
+            return stack_application_template
 
     def get_stack_application_templates(
             self) -> List[StackApplicationTemplate]:
@@ -230,8 +243,11 @@ class DocumentManager(Manager):
         store_response = self.store.get(type="environment",
                                         name=environment_name,
                                         category="configs")
-        environment = Environment.parse_obj(store_response.content)
-        return environment
+        if store_response.status_code == 404:
+            return None
+        else:
+            environment = Environment.parse_obj(store_response.content)
+            return environment
 
     def get_environments(self):
         store_response = self.store.get_all(type="environment",
@@ -244,8 +260,11 @@ class DocumentManager(Manager):
         store_response = self.store.get(type="location",
                                         name=location_name,
                                         category="configs")
-        location = Location.parse_obj(store_response.content)
-        return location
+        if store_response.status_code == 404:
+            return None
+        else:
+            location = Location.parse_obj(store_response.content)
+            return location
 
     def get_locations(self):
         store_response = self.store.get_all(type="location",
@@ -258,8 +277,11 @@ class DocumentManager(Manager):
         store_response = self.store.get(type="zone",
                                         name=zone_name,
                                         category="configs")
-        zone = Zone.parse_obj(store_response.content)
-        return zone
+        if store_response.status_code == 404:
+            return None
+        else:
+            zone = Zone.parse_obj(store_response.content)
+            return zone
 
     def get_zones(self):
         store_response = self.store.get_all(type="zone", category="configs")
@@ -271,8 +293,11 @@ class DocumentManager(Manager):
         store_response = self.store.get(type="service",
                                         name=service_name,
                                         category="items")
-        service = Service.parse_obj(store_response.content)
-        return service
+        if store_response.status_code == 404:
+            return None
+        else:
+            service = Service.parse_obj(store_response.content)
+            return service
 
     def get_services(self):
         store_response = self.store.get_all(type="service", category="items")
@@ -285,13 +310,19 @@ class DocumentManager(Manager):
         store_response = self.store.put(service.dict())
         return store_response.content
 
+    def delete_service(self, name):
+        self.store.delete(type="service", name=name, category="items")
+
     def get_functional_requirement(self, functional_requirement_name):
         """gets a FunctionalRequirement Object from the store"""
         store_response = self.store.get(type="functional_requirement",
                                         name=functional_requirement_name,
                                         category="configs")
-        fr = FunctionalRequirement.parse_obj(store_response.content)
-        return fr
+        if store_response.status_code == 404:
+            return None
+        else:
+            fr = FunctionalRequirement.parse_obj(store_response.content)
+            return fr
 
     def get_functional_requirements(self) -> List[FunctionalRequirement]:
         """gets a FunctionalRequirement Object from the store"""
@@ -315,8 +346,11 @@ class DocumentManager(Manager):
         store_response = self.store.get(category="history",
                                         type="snapshot",
                                         name=name)
-        snapshot = Snapshot.parse_obj(store_response.content)
-        return snapshot
+        if store_response.status_code == 404:
+            return None
+        else:
+            snapshot = Snapshot.parse_obj(store_response.content)
+            return snapshot
 
     def get_snapshots(self, type, name):
         store_response = self.store.get_all(type=type,
@@ -324,6 +358,9 @@ class DocumentManager(Manager):
                                             wildcard_prefix=f"{name}")
 
         return store_response.content
+
+    def delete_snapshot(self, name: str):
+        self.store.delete(type="snapshot", name=name, category="history")
 
     # Method processes and checks document keys.
     # Supports fuzzy get - trying to determine keys from other keys

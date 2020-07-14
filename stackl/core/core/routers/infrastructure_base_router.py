@@ -1,8 +1,7 @@
 import logging
-from http.client import HTTPException
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from stackl.models.configs.infrastructure_base_document import InfrastructureBaseDocument
 
 from core.manager.document_manager import DocumentManager
@@ -59,6 +58,9 @@ def get_infrastructure_base_by_type_and_name(
             status_code=400,
             detail="type has to be environment, location or zone")
 
+    if not infrastructure_document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
     return infrastructure_document
 
 
@@ -89,7 +91,7 @@ def put_infrastructure_base(
 
 
 @router.delete('/{infrastructure_base_type}/{infrastructure_base_name}',
-               status_code=202)
+               status_code=200)
 def delete_infrastructure_base(
     infrastructure_base_type: str,
     infrastructure_base_name: str,
