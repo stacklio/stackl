@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 
 from arq.connections import RedisSettings
 
@@ -14,8 +15,21 @@ elif os.environ.get("AGENT_TYPE", None) == "mock":
     tool_factory = MockToolFactory()
 
 
+@dataclass(frozen=True)
+class Invocation:
+    action: str
+    functional_requirement: str
+    service: str
+    stack_instance: str
+    infrastructure_target: str
+    image: str
+    tool: str
+
+
 async def invoke_automation(ctx, invoc):
-    handler = tool_factory.get_handler(invoc)
+    print(invoc)
+    invocation = Invocation(**invoc)
+    handler = tool_factory.get_handler(invocation)
     result, error_message = handler.handle()
     print(result)
     print(error_message)
