@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 
@@ -28,7 +28,10 @@ def get_stack_infrastructure_template_by_name(
     logger.info(
         f"[DocumentByTypeAndName GET] API GET request for type 'stack_infrastructure_template' and document '{name}'"
     )
-    return document_manager.get_stack_infrastructure_template(name)
+    sit = document_manager.get_stack_infrastructure_template(name)
+    if not sit:
+        raise HTTPException(status_code=404, detail="SIT not found")
+    return sit
 
 
 @router.post('', response_model=StackInfrastructureTemplate)
