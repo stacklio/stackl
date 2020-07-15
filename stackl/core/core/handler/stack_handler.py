@@ -6,6 +6,7 @@ from stackl.models.items.stack_instance_service_model import StackInstanceServic
 from stackl.models.items.stack_instance_status_model import StackInstanceStatus
 from stackl.utils.general_utils import get_timestamp
 
+from stackl.models.items.stack_infrastructure_target_model import StackInfrastructureTarget
 from .handler import Handler
 
 
@@ -50,11 +51,13 @@ class StackHandler(Handler):
                 service_definition.infrastructure_target = infra_target
 
                 capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target]["provisioning_parameters"]
+                    infra_target].provisioning_parameters
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target]["secrets"]
+                    infra_target].secrets
                 agent = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target]['agent']
+                    infra_target].agent
+                cloud_provider = stack_infrastructure_template.infrastructure_capabilities[
+                    infra_target].cloud_provider
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
@@ -80,6 +83,7 @@ class StackHandler(Handler):
                 }
                 service_definition.secrets = {**merged_secrets, **item.secrets}
                 service_definition.agent = agent
+                service_definition.cloud_provider = cloud_provider
                 service_definitions.append(service_definition)
             services[svc] = service_definitions
         stack_instance_doc.services = services
@@ -213,8 +217,7 @@ class StackHandler(Handler):
         infringment_messages = []
         for service, targets in service_targets['result']['services'].items():
             for t in targets:
-                policies = stack_infr.infrastructure_capabilities[t][
-                    'policies']
+                policies = stack_infr.infrastructure_capabilities[t].policies
 
                 for policy_name, policy_attributes in policies.items():
                     policy = self.document_manager.get_policy_template(
@@ -404,23 +407,16 @@ class StackHandler(Handler):
             infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
-            infr_targets_capabilities[infr_target_key] = {}
-            infr_targets_capabilities[infr_target_key][
-                "provisioning_parameters"] = infr_target_capability
-            infr_targets_capabilities[infr_target_key][
-                "tags"] = infr_target_tags
-            infr_targets_capabilities[infr_target_key][
-                "packages"] = infr_target_packages
-            infr_targets_capabilities[infr_target_key][
-                "resources"] = infr_target_resources
-            infr_targets_capabilities[infr_target_key][
-                "secrets"] = infr_target_secrets
-            infr_targets_capabilities[infr_target_key][
-                "policies"] = infr_target_policies
-            infr_targets_capabilities[infr_target_key][
-                "agent"] = infr_target_agent
-            infr_targets_capabilities[infr_target_key][
-                "cloud_provider"] = infr_target_cloud_provider
+            infr_targets_capabilities[
+                infr_target_key] = StackInfrastructureTarget(
+                    provisioning_parameters=infr_target_capability,
+                    tags=infr_target_tags,
+                    packages=infr_target_packages,
+                    resources=infr_target_resources,
+                    secrets=infr_target_secrets,
+                    policies=infr_target_policies,
+                    agent=infr_target_agent,
+                    cloud_provider=infr_target_cloud_provider)
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())
