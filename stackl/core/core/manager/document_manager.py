@@ -186,13 +186,16 @@ class DocumentManager(Manager):
             type="stack_infrastructure_template",
             name=stack_infrastructure_template_name,
             category="configs")
-        stack_infrastructure_template = StackInfrastructureTemplate.parse_obj(
-            store_response.content)
-        return stack_infrastructure_template
+        if store_response.status_code == 404:
+            return None
+        else:
+            stack_infrastructure_template = StackInfrastructureTemplate.parse_obj(
+                store_response.content)
+            return stack_infrastructure_template
 
     def get_stack_infrastructure_templates(self):
         store_response = self.store.get_all(
-            type="stack_infrastructure_templates", category="configs")
+            type="stack_infrastructure_template", category="configs")
         sits = parse_obj_as(List[StackInfrastructureTemplate],
                             store_response.content)
         return sits
@@ -203,6 +206,13 @@ class DocumentManager(Manager):
         """
         store_response = self.store.put(stack_infrastructure_template.dict())
         return store_response.content
+
+    def delete_stack_infrastructure_template(self, name):
+        store_response = self.store.delete(
+            type="stack_infrastructure_template",
+            category="configs",
+            name=name)
+        return store_response
 
     def get_stack_application_template(
             self, stack_application_template_name) -> StackApplicationTemplate:
