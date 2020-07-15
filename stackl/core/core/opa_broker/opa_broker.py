@@ -134,14 +134,14 @@ class OPABroker:
         for target in sit_targets:
             target_data = {
                 "resources":
-                sit_doc.infrastructure_capabilities[target]["resources"],
+                sit_doc.infrastructure_capabilities[target].resources,
                 "packages":
-                sit_doc.infrastructure_capabilities[target]["packages"],
+                sit_doc.infrastructure_capabilities[target].packages,
                 "tags":
-                sit_doc.infrastructure_capabilities[target]["tags"],
+                sit_doc.infrastructure_capabilities[target].tags,
                 "params":
-                sit_doc.infrastructure_capabilities[target]
-                ['provisioning_parameters']
+                sit_doc.infrastructure_capabilities[target].
+                provisioning_parameters
             }
             targets_as_data[target] = target_data
         logger.debug(
@@ -202,12 +202,11 @@ class OPABroker:
         sit_as_opa_data = {"infrastructure_targets": targets_as_data}
         for target in sit_targets:
             target_data = {
-                "id":
-                target,
+                "id": target,
                 "resources":
-                sit_doc.infrastructure_capabilities[target]["resources"],
+                sit_doc.infrastructure_capabilities[target].resources,
                 "packages":
-                sit_doc.infrastructure_capabilities[target]["packages"]
+                sit_doc.infrastructure_capabilities[target].packages
             }
             targets_as_data.append(target_data)
         logger.debug(
