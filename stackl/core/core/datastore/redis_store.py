@@ -4,8 +4,8 @@ import logging
 import redis
 
 from .datastore import DataStore
-from stackl.enums.stackl_codes import StatusCode
-from stackl.utils.general_utils import get_config_key
+from core.enums.stackl_codes import StatusCode
+from core.utils.general_utils import get_config_key
 
 from loguru import logger
 

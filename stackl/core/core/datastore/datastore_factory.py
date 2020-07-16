@@ -1,7 +1,7 @@
 import logging
 
-from stackl.utils.general_utils import get_config_key
-from stackl.utils.stackl_singleton import Singleton
+from core.utils.general_utils import get_config_key
+from core.utils.stackl_singleton import Singleton
 
 from loguru import logger
 

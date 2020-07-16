@@ -2,7 +2,7 @@ import asyncio
 
 from loguru import logger
 
-from stackl.models.items.stack_instance_status_model import StackInstanceStatus
+from core.models.items.stack_instance_status_model import StackInstanceStatus
 
 
 async def create_job_for_agent(stack_instance, action, document_manager,
@@ -45,7 +45,7 @@ async def create_job_for_agent(stack_instance, action, document_manager,
                     "invoke_automation",
                     invoc,
                     _queue_name=service_definition.agent)
-                fr_jobs.append(asyncio.create_task(job.result(timeout=3600)))
+                fr_jobs.append(asyncio.create_task(job.result(timeout=7200)))
 
                 if fr_doc.invocation[cloud_provider].as_group:
                     logger.debug("running as group")
@@ -61,7 +61,7 @@ async def create_job_for_agent(stack_instance, action, document_manager,
                     "infrastructure_target"]
 
                 if 'error_message' in automation_result:
-                    error_message = automation_result.error_message
+                    error_message = automation_result["error_message"]
                 else:
                     error_message = ""
 

@@ -1,10 +1,10 @@
-from core.manager.document_manager import DocumentManager
-from loguru import logger
 import time
 
-from stackl.enums.stackl_codes import StatusCode
-from stackl.tasks.stack_task import StackTask
-from stackl.utils.general_utils import get_timestamp
+from loguru import logger
+
+from core.enums.stackl_codes import StatusCode
+from core.manager.document_manager import DocumentManager
+from core.utils.general_utils import get_timestamp
 from .manager import Manager
 
 
@@ -64,20 +64,8 @@ class SnapshotManager(Manager):
         result = self.document_manager.write_document(
             snapshot_document['snapshot'], overwrite=True, make_snapshot=False)
         if snapshot_document['snapshot']["type"] == "stack_instance":
-            invocation = {
-                "stack_instance_name": snapshot_document.snapshot["name"],
-                "disable_invocation": False,
-                "params": {},
-                "secrets": {}
-            }
-            task = StackTask.parse_obj({
-                'channel': 'worker',
-                'json_data': invocation,
-                'subtype': "UPDATE_STACK",
-            })
-            logger.info(
-                f"[StackInstances PUT] Giving StackTask '{task}' to task_broker"
-            )
+            pass
+            # todo
 
         return result
 

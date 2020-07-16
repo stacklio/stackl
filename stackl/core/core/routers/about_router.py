@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from stackl.utils.general_utils import get_hostname as utils_hostname
+from core.utils.general_utils import get_hostname as utils_hostname
 
 router = APIRouter()
 

@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from stackl.models.configs.infrastructure_base_document import InfrastructureBaseDocument
+from core.models.configs.infrastructure_base_document import InfrastructureBaseDocument
 
 from core.manager.document_manager import DocumentManager
 from core.manager.stackl_manager import get_document_manager

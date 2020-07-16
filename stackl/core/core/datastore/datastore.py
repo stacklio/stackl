@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from stackl.enums.stackl_codes import StatusCode
+from core.enums.stackl_codes import StatusCode
 
 
 class DataStore(ABC):
