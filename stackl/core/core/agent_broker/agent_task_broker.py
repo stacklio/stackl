@@ -33,6 +33,8 @@ async def create_job_for_agent(stack_instance, action, document_manager,
                 invoc['action'] = action
                 invoc['functional_requirement'] = fr
                 invoc['image'] = fr_doc.invocation[cloud_provider].image
+                invoc['before_command'] = fr_doc.invocation[
+                    cloud_provider].before_command
                 invoc['infrastructure_target'] = infrastructure_target
                 invoc['stack_instance'] = stack_instance.name
                 invoc['tool'] = fr_doc.invocation[cloud_provider].tool

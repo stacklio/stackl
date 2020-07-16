@@ -9,6 +9,7 @@ class Invocation(BaseModel):
     description: str = None
     tool: str
     image: str
+    before_command: str = None
     as_group: bool = False
 
 

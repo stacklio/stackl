@@ -37,25 +37,32 @@ class PackerHandler(Handler):
         self._command_args = ["packer build -force"]
         self._command_args[0] \
             += " -var-file /tmp/secrets/secret.json -var-file /tmp/variables/variables.json"
-        self._command_args[0] += " /opt/packer/packer.json"
+        self._command_args[0] += " /opt/packer/src/packer.json"
 
     def packer_variables(self):
         d = {}
-        for key, value in self._stack_instance.services[
-                self._invoc.service].provisioning_parameters.items():
+        pp = {}
+        for si_service in self._stack_instance.services[self._invoc.service]:
+            if si_service.infrastructure_target == self._invoc.infrastructure_target:
+                pp = si_service.provisioning_parameters
+        for key, value in pp.items():
             d[key] = str(value)
         return d
 
     @property
     def create_command_args(self) -> list:
-        command_args = [
-            f'packer build -force -var-file /tmp/variables/variables.json'
-        ]
+        command_args = [""]
+        if self._invoc.before_command is not None:
+            command_args[0] += f"{self._invoc.before_command}  && "
+
+        command_args[
+            0] += f"packer build -force -var-file /tmp/variables/variables.json"
+
         if self._secret_handler:
             command_args[0] += f' -var-file /tmp/secrets/secret.json'
         if self._output:
             command_args[0] += f'{self._output.command_args}'
-        command_args[0] += ' /opt/packer/packer.json'
+        command_args[0] += ' /opt/packer/src/packer.json'
         return command_args
 
     @property
