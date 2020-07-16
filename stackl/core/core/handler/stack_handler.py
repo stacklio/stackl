@@ -115,9 +115,9 @@ class StackHandler(Handler):
                 svc_doc = self.document_manager.get_service(svc)
                 capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.
-                    infrastructure_target]["provisioning_parameters"]
+                    infrastructure_target].provisioning_parameters
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    service_definition.infrastructure_target]["secrets"]
+                    service_definition.infrastructure_target].secrets
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:

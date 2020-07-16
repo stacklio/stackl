@@ -22,6 +22,7 @@ class Invocation:
     service: str
     stack_instance: str
     infrastructure_target: str
+    before_command: str
     image: str
     tool: str
 

@@ -124,7 +124,7 @@ class StackManager(Manager):
             # Everything OK for create:
             return True
         elif stack_action == "update":
-            return stack_instance_exists  # For UPDATE, OK if it exists
+            return True  # For UPDATE, OK if it exists
         elif stack_action == "delete":
             return stack_instance_exists
         return False
