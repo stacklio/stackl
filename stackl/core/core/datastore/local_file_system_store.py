@@ -3,7 +3,7 @@ import logging
 import os
 
 from .datastore import DataStore
-from stackl.enums.stackl_codes import StatusCode
+from core.enums.stackl_codes import StatusCode
 
 from loguru import logger
 

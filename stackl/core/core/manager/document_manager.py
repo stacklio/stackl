@@ -3,19 +3,19 @@ from typing import List
 
 from loguru import logger
 from pydantic import parse_obj_as
-from stackl.enums.stackl_codes import StatusCode
-from stackl.models.configs.document_model import BaseDocument
-from stackl.models.configs.environment_model import Environment
-from stackl.models.configs.functional_requirement_model import FunctionalRequirement
-from stackl.models.configs.location_model import Location
-from stackl.models.configs.policy_template_model import PolicyTemplate
-from stackl.models.configs.stack_application_template_model import StackApplicationTemplate
-from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
-from stackl.models.configs.zone_model import Zone
-from stackl.models.history.snapshot_model import Snapshot
-from stackl.models.items.service_model import Service
-from stackl.models.items.stack_instance_model import StackInstance
-from stackl.utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
+from core.enums.stackl_codes import StatusCode
+from core.models.configs.document_model import BaseDocument
+from core.models.configs.environment_model import Environment
+from core.models.configs.functional_requirement_model import FunctionalRequirement
+from core.models.configs.location_model import Location
+from core.models.configs.policy_template_model import PolicyTemplate
+from core.models.configs.stack_application_template_model import StackApplicationTemplate
+from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from core.models.configs.zone_model import Zone
+from core.models.history.snapshot_model import Snapshot
+from core.models.items.service_model import Service
+from core.models.items.stack_instance_model import StackInstance
+from core.utils.stackl_exceptions import InvalidDocTypeError, InvalidDocNameError
 
 from .manager import Manager
 

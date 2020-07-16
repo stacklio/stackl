@@ -3,11 +3,11 @@ import logging
 
 import requests
 
-from stackl.models.configs.policy_template_model import PolicyTemplate
-from stackl.models.configs.stack_application_template_model import StackApplicationTemplate
-from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
-from stackl.models.items.service_model import Service
-from stackl.utils.general_utils import get_config_key
+from core.models.configs.policy_template_model import PolicyTemplate
+from core.models.configs.stack_application_template_model import StackApplicationTemplate
+from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from core.models.items.service_model import Service
+from core.utils.general_utils import get_config_key
 
 from loguru import logger
 

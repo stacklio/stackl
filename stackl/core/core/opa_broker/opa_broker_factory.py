@@ -1,7 +1,7 @@
 import logging
 
 from .opa_broker import OPABroker
-from stackl.utils.stackl_singleton import Singleton
+from core.utils.stackl_singleton import Singleton
 
 logger = logging.getLogger(__name__)
 

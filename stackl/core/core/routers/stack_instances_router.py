@@ -6,7 +6,7 @@ from arq.connections import RedisSettings
 from fastapi import APIRouter, HTTPException, Depends
 from loguru import logger
 from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
-from stackl.models.items.stack_instance_model import StackInstance
+from core.models.items.stack_instance_model import StackInstance
 from starlette.background import BackgroundTasks
 
 from core.agent_broker.agent_task_broker import create_job_for_agent

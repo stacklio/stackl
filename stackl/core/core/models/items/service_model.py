@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 
-from stackl.models.configs.document_model import BaseDocument
+from core.models.configs.document_model import BaseDocument
 
 
 class Service(BaseDocument):

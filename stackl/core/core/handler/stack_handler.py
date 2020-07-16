@@ -1,12 +1,12 @@
 from loguru import logger
-from stackl.enums.stackl_codes import StatusCode
-from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
-from stackl.models.items.stack_instance_model import StackInstance
-from stackl.models.items.stack_instance_service_model import StackInstanceService
-from stackl.models.items.stack_instance_status_model import StackInstanceStatus
-from stackl.utils.general_utils import get_timestamp
+from core.enums.stackl_codes import StatusCode
+from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from core.models.items.stack_instance_model import StackInstance
+from core.models.items.stack_instance_service_model import StackInstanceService
+from core.models.items.stack_instance_status_model import StackInstanceStatus
+from core.utils.general_utils import get_timestamp
 
-from stackl.models.items.stack_infrastructure_target_model import StackInfrastructureTarget
+from core.models.items.stack_infrastructure_target_model import StackInfrastructureTarget
 from .handler import Handler
 
 

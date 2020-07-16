@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
-from stackl.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 
 from core.manager.document_manager import DocumentManager
 from core.manager.stackl_manager import get_document_manager

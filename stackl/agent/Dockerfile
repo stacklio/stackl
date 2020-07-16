@@ -13,8 +13,6 @@ ENV PYTHONFAULTHANDLER=1 \
 # System deps:
 RUN pip install "poetry==$POETRY_VERSION"
 
-COPY library /library
-
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 

@@ -7,7 +7,6 @@ authors = ["Frederic <frederic.vanreet@icloud.com>"]
 [tool.poetry.dependencies]
 python = "^3.7"
 requests = "^2.23.0"
-stackl = {path = "../../library/stackl"}
 importlib-metadata = "^1.6.1"
 attr = "^0.3.1"
 attrs = "^19.3.0"
