@@ -10,5 +10,6 @@ class StackInstanceService(BaseModel):
     secrets: Dict[str, Any] = None
     resources: Dict[str, str] = None
     agent: str = ""
+    opa_outputs: Dict[str, Any] = {}
     packages: List[str] = None
     tags: Dict[str, str] = None

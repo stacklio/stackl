@@ -4,12 +4,12 @@ stackl.general_utils
 This module provides general utility functions that are used within stackl
 """
 import datetime
-import logging
 import os
 import random
 import socket
 import string
 import time
+from collections import defaultdict
 
 from loguru import logger
 
@@ -53,3 +53,7 @@ def _get_timestamp_format(spaces=True):
 
 def get_hostname():
     return socket.gethostname()
+
+
+def tree():
+    return defaultdict(tree)

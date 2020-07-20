@@ -1,8 +1,8 @@
 from json import dumps
 
-from .base_handler import Handler
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.packer_output import PackerOutput
+from .base_handler import Handler
 
 
 class PackerHandler(Handler):
