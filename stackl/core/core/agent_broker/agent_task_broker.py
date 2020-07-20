@@ -53,33 +53,33 @@ async def create_job_for_agent(stack_instance, action, document_manager,
 
             for fr_job in asyncio.as_completed(fr_jobs):
                 automation_result = await fr_job
-                stack_instance_status = StackInstanceStatus()
-                stack_instance_status.service = automation_result["service"]
-                stack_instance_status.functional_requirement = automation_result[
-                    "functional_requirement"]
-                stack_instance_status.infrastructure_target = automation_result[
-                    "infrastructure_target"]
-
-                if 'error_message' in automation_result:
-                    error_message = automation_result["error_message"]
-                else:
-                    error_message = ""
-
-                stack_instance_status.status = automation_result["status"]
-                stack_instance_status.error_message = error_message
-
-                changed = False
-                for i, status in enumerate(stack_instance.status):
-                    if status.functional_requirement == automation_result[
-                            "functional_requirement"] and status.infrastructure_target == automation_result[
-                                "infrastructure_target"] and status.service == automation_result[
-                                    "service"]:
-                        stack_instance.status[i] = stack_instance_status
-                        changed = True
-                        break
-
-                if not changed:
-                    stack_instance.status.append(stack_instance_status)
-
-                document_manager.write_stack_instance(stack_instance)
+                await update_status(automation_result, document_manager,
+                                    stack_instance)
             logger.debug(f"tasks executed")
+
+
+async def update_status(automation_result, document_manager, stack_instance):
+    stack_instance_status = StackInstanceStatus()
+    stack_instance_status.service = automation_result["service"]
+    stack_instance_status.functional_requirement = automation_result[
+        "functional_requirement"]
+    stack_instance_status.infrastructure_target = automation_result[
+        "infrastructure_target"]
+    if 'error_message' in automation_result:
+        error_message = automation_result["error_message"]
+    else:
+        error_message = ""
+    stack_instance_status.status = automation_result["status"]
+    stack_instance_status.error_message = error_message
+    changed = False
+    for i, status in enumerate(stack_instance.status):
+        if status.functional_requirement == automation_result[
+                "functional_requirement"] and status.infrastructure_target == automation_result[
+                    "infrastructure_target"] and status.service == automation_result[
+                        "service"]:
+            stack_instance.status[i] = stack_instance_status
+            changed = True
+            break
+    if not changed:
+        stack_instance.status.append(stack_instance_status)
+    document_manager.write_stack_instance(stack_instance)

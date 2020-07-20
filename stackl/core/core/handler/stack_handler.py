@@ -1,12 +1,12 @@
 from loguru import logger
+
 from core.enums.stackl_codes import StatusCode
 from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from core.models.items.stack_infrastructure_target_model import StackInfrastructureTarget
 from core.models.items.stack_instance_model import StackInstance
 from core.models.items.stack_instance_service_model import StackInstanceService
 from core.models.items.stack_instance_status_model import StackInstanceStatus
-from core.utils.general_utils import get_timestamp
-
-from core.models.items.stack_infrastructure_target_model import StackInfrastructureTarget
+from core.utils.general_utils import get_timestamp, tree
 from .handler import Handler
 
 
@@ -32,7 +32,8 @@ class StackHandler(Handler):
 
     def _create_stack_instance(
         self, item, opa_decision,
-        stack_infrastructure_template: StackInfrastructureTemplate):
+        stack_infrastructure_template: StackInfrastructureTemplate,
+        opa_service_params):
         stack_instance_doc = StackInstance(
             name=item.stack_instance_name,
             stack_infrastructure_template=item.stack_infrastructure_template,
@@ -50,6 +51,8 @@ class StackHandler(Handler):
                 service_definition = StackInstanceService()
                 service_definition.infrastructure_target = infra_target
 
+                service_definition.opa_outputs = opa_service_params[svc][
+                    infra_target]
                 capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     infra_target].provisioning_parameters
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
@@ -78,6 +81,7 @@ class StackHandler(Handler):
                     merged_secrets = {**merged_secrets, **fr_doc.secrets}
                 service_definition.provisioning_parameters = {
                     **merged_capabilities,
+                    **service_definition.opa_outputs,
                     **item.params,
                     **item.service_params.get(svc, {})
                 }
@@ -118,6 +122,7 @@ class StackHandler(Handler):
                     infrastructure_target].provisioning_parameters
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.infrastructure_target].secrets
+                opa_outputs = service_definition.opa_outputs
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
@@ -140,6 +145,7 @@ class StackHandler(Handler):
                     merged_secrets = {**merged_secrets, **fr_doc.secrets}
                 service_definition.provisioning_parameters = {
                     **merged_capabilities,
+                    **opa_outputs,
                     **stack_instance.instance_params,
                     **stack_instance.service_params.get(svc, {})
                 }
@@ -175,11 +181,13 @@ class StackHandler(Handler):
 
         service_targets = opa_solution['services']
 
+        opa_service_params = tree()
         # Verify the SAT policies
         for policy_name, attributes in stack_app_template.policies.items():
+            policy = self.document_manager.get_policy_template(policy_name)
             for policy_params in attributes:
                 new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                      policy_name)
+                                                      policy)
 
                 if not new_result['fulfilled']:
                     logger.error(
@@ -187,8 +195,11 @@ class StackHandler(Handler):
                     )
                     return None, new_result['msg']
 
-                self.process_service_targets(policy_params, new_result,
-                                             service_targets)
+                self.process_service_targets(policy_params,
+                                             new_result,
+                                             service_targets,
+                                             opa_service_params,
+                                             outputs=policy.outputs)
 
         service_targets = self.evaluate_replica_policy(item, service_targets)
         if not service_targets['result']['fulfilled']:
@@ -210,8 +221,8 @@ class StackHandler(Handler):
             return None, message
 
         return self._create_stack_instance(
-            item, service_targets['result']['services'],
-            stack_infr), service_targets['result']['services']
+            item, service_targets['result']['services'], stack_infr,
+            opa_service_params), service_targets['result']['services']
 
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr):
         infringment_messages = []
@@ -257,18 +268,28 @@ class StackHandler(Handler):
         )
         return service_targets
 
-    def process_service_targets(self, attributes, new_result, service_targets):
+    def process_service_targets(self,
+                                attributes,
+                                new_result,
+                                service_targets,
+                                opa_service_params,
+                                outputs=None):
         service = attributes['service']
         st = service_targets[service]
         new_targets = []
         for t in st:
-            if t in new_result['targets']:
+            if outputs is not None:
+                for tt in new_result['targets']:
+                    if tt['target'] == t:
+                        new_targets.append(t)
+                    for output in outputs:
+                        opa_service_params[service][t][output] = tt[output]
+            elif t in new_result['targets']:
                 new_targets.append(t)
         service_targets[service] = new_targets
 
-    def evaluate_sat_policy(self, attributes, opa_data, policy_name):
+    def evaluate_sat_policy(self, attributes, opa_data, policy):
         policy_input = {}
-        policy = self.document_manager.get_policy_template(policy_name)
         policy_input["parameters"] = attributes
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
@@ -305,35 +326,6 @@ class StackHandler(Handler):
         required_tags["required_tags"] = item.tags
         opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
         return opa_data
-
-    ##TODO Deprecate in the future once OPA is up
-    def _filter_zones_req_application(self, matching_zones_app_req, app_infr):
-        logger.debug(
-            "[StackHandler] _filter__filter_zones_req_applicationzones_req_services. Filtering for zones '{0}' and app_infr '{1}'"
-            .format(matching_zones_app_req, app_infr))
-        for (service, zone) in matching_zones_app_req:
-            list_of_same_zone_services = [
-                other_service
-                for (other_service, other_zone) in matching_zones_app_req
-                if (zone == other_zone)
-            ]
-            for other_service in list_of_same_zone_services:
-                poss_targets_intersection = list(
-                    set(app_infr[service].keys())
-                    & set(app_infr[other_service].keys()))
-                logger.debug(
-                    "[StackHandler] _filter_zones_req_application. Filtering for intersection '{0}' of services zones '{0}' for service {1} and other_service {2}"
-                    .format(poss_targets_intersection, service, other_service))
-                if poss_targets_intersection is []:
-                    return "The given SIT cannot satisfy the SAT: there are services that need to share zones but cannot"
-                else:
-                    for poss_target in app_infr[service].keys():
-                        if poss_target not in poss_targets_intersection:
-                            del app_infr[service][poss_target]
-                    for poss_target in app_infr[other_service].keys():
-                        if poss_target not in poss_targets_intersection:
-                            del app_infr[other_service][poss_target]
-        return app_infr
 
     def _update_infr_capabilities(
             self,

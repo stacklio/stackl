@@ -10,6 +10,7 @@ class PolicyTemplate(BaseModel):
     type: str = "policy_template"
     policy: str
     inputs: List[str]
+    outputs: List[str] = None
 
     # class Config:
     #     schema_extra = {
