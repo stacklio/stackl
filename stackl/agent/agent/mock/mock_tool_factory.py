@@ -12,4 +12,5 @@ class MockToolFactory(ToolFactory):
             return MockHandler(invoc)
         else:
             raise ValueError(
-                "[ToolFactory] Tool '{}' is not recognized".format(invoc.tool))
+                "[ToolFactory] Tool '{}' is not recognized".format(
+                    invoc["tool"]))
