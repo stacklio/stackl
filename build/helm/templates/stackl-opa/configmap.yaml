@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: "orchestration-policy"
-  labels:
-    {{- include "stackl.labels" . | nindent 4 }}
-data:
-  {{- (.Files.Glob "conf/orchestration_default_policies.rego").AsConfig | nindent 2 }}
-  {{- (.Files.Glob "conf/replicas_default_policies.rego").AsConfig | nindent 2 }}

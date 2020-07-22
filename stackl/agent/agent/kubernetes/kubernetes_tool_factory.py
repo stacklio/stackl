@@ -14,4 +14,5 @@ class KubernetesToolFactory(ToolFactory):
             return PackerHandler(invoc)
         else:
             raise ValueError(
-                "[ToolFactory] Tool '{}' is not recognized".format(invoc.tool))
+                "[ToolFactory] Tool '{}' is not recognized".format(
+                    invoc["tool"]))

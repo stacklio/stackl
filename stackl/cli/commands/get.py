@@ -6,7 +6,7 @@ from stackl_client import StackInfrastructureTemplate
 from tabulate import tabulate
 
 try:
-    from yaml import CDumper as Dumper
+    from yaml import CDumper as Dumper, SafeDumper
 except ImportError:
     from yaml import Dumper
 
@@ -204,15 +204,3 @@ def snapshots(stackl_context: StacklContext, type, name, output):
 def snapshot(stackl_context: StacklContext, name, output):
     snapshot = stackl_context.snapshot_api.get_snapshot(name)
     click.echo(parse(snapshot, output))
-
-
-@get.command()
-@click.option('-o', '--output')
-@click.argument('name', required=False)
-@pass_stackl_context
-def snapshot(stackl_context: StacklContext, output, name):
-    if name is None:
-        env = stackl_context.snapshot_api.list_snapshots()
-    else:
-        env = stackl_context.snapshot_api.get_snapshot(name)
-    click.echo(parse(env, output))

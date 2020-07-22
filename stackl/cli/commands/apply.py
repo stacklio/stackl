@@ -4,8 +4,8 @@ from pathlib import Path
 import click
 import stackl_client
 import yaml
-
 from context import pass_stackl_context
+from mergedeep import merge
 
 
 @click.group()
@@ -20,28 +20,33 @@ def cli():
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
 @click.option('-s', '--secrets', default="{}")
+@click.option('-e', '--service-params', default="{}")
 @click.argument('instance-name', required=False)
 @pass_stackl_context
 def apply(stackl_context, directory, config_file, params, tags, secrets,
-          replicas, instance_name):
+          service_params, replicas, instance_name):
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:
-        apply_stack_instance(config_file, params, tags, secrets, replicas,
-                             stackl_context, instance_name)
+        apply_stack_instance(config_file, params, tags, secrets,
+                             service_params, replicas, stackl_context,
+                             instance_name)
 
 
-def apply_stack_instance(config_file, params, tags, secrets, replicas,
-                         stackl_context, instance_name):
+def apply_stack_instance(config_file, params, tags, secrets, service_params,
+                         replicas, stackl_context, instance_name):
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     params = {**config_doc['params'], **json.loads(params)}
     tags = json.loads(tags)
     replicas = {**getattr(config_doc, 'replicas', {}), **json.loads(replicas)}
     secrets = json.loads(secrets)
-    if hasattr(config_doc, 'secrets'):
-        secrets = {**config_doc['secrets'], **json.loads(secrets)}
-    if hasattr(config_doc, 'tags'):
-        tags = {**config_doc['tags'], **json.loads(tags)}
+    service_params = json.loads(service_params)
+    if "service_params" in config_doc:
+        service_params = merge(config_doc['service_params'], service_params)
+    if "secrets" in config_doc:
+        secrets = {**config_doc['secrets'], **secrets}
+    if "tags" in config_doc:
+        tags = {**config_doc['tags'], **tags}
     invocation = stackl_client.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
@@ -49,6 +54,7 @@ def apply_stack_instance(config_file, params, tags, secrets, replicas,
         stack_application_template=config_doc["stack_application_template"],
         params=params,
         replicas=replicas,
+        service_params=service_params,
         secrets=secrets,
         tags=tags)
     try:
@@ -67,15 +73,15 @@ def upload_files(directory, stackl_context):
             # ignore dotfiles
             if path.name.startswith('.'):
                 continue
-            click.echo(f"Reading document: { str(path) }")
+            click.echo(f"Reading document: {str(path)}")
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
             if 'name' in stackl_doc:
                 click.echo(
-                    f"Applying stackl document: { str(path) + ' ' + stackl_doc['name']}"
+                    f"Applying stackl document: {str(path) + ' ' + stackl_doc['name']}"
                 )
             else:
                 click.echo(
-                    f"Error in stackl document, no 'name' found: { path }")
+                    f"Error in stackl document, no 'name' found: {path}")
             try:
                 if stackl_doc["type"] in ["environment", "location", "zone"]:
                     stackl_context.infrastructure_base_api.put_infrastructure_base(

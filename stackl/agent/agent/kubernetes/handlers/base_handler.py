@@ -279,9 +279,8 @@ class Handler(ABC):
             for cm in cms:
                 self._api_instance_core.create_namespaced_config_map(
                     self.stackl_namespace, cm)
-            self._api_instance.create_namespaced_job(self.stackl_namespace,
-                                                     body,
-                                                     pretty=True)
+            created_job = self._api_instance.create_namespaced_job(
+                self.stackl_namespace, body, pretty=True)
         except ApiException as e:
             logging.error(
                 f"Exception when calling BatchV1Api->create_namespaced_job: {e}\n"
@@ -304,8 +303,12 @@ class Handler(ABC):
                 )
             return 0, ""
         else:
-            # TODO give proper output here
-            return 1, "Still need proper output"
+            job_pods = self._api_instance_core.list_namespaced_pod(
+                self.stackl_namespace,
+                label_selector=f"job-name={created_job.metadata.name}")
+            logs = self._api_instance_core.read_namespaced_pod_log(
+                job_pods.items[0].metadata.name, self.stackl_namespace)
+            return 1, logs
 
     @property
     def index(self):

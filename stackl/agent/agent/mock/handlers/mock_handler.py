@@ -1,3 +1,5 @@
+import time
+
 from ..configurator_handler import ConfiguratorHandler
 
 
@@ -13,6 +15,9 @@ class MockHandler(ConfiguratorHandler):
 
     def handle(self):
         print(self._invoc)
-        print("This is a fake handler, nothing is actually provisioned")
-
-        return 0, ""
+        print(
+            "This is a fake handler, nothing is actually provisioned, sleeping 5 seconds"
+        )
+        time.sleep(5)
+        print("fake provisioning done")
+        return 1, "mock fake"
