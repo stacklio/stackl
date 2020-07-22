@@ -1,0 +1,9 @@
+export STACKL_STORE=Redis
+export STACKL_TASK_BROKER=Custom
+export STACKL_AGENT_BROKER=kubernetes
+export STACKL_MESSAGE_CHANNEL=Redis
+export LOGLEVEL=DEBUG
+export STACKL_REDIS_HOST=localhost
+export REDIS_HOST=localhost
+export STACKL_OPA_HOST=localhost:8181
+export PYTHONUNBUFFERED="TRUE"
