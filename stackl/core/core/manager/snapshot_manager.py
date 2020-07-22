@@ -61,13 +61,11 @@ class SnapshotManager(Manager):
         )
         if snapshot_document == {}:
             return StatusCode.NOT_FOUND
-        result = self.document_manager.write_document(
-            snapshot_document['snapshot'], overwrite=True, make_snapshot=False)
-        if snapshot_document['snapshot']["type"] == "stack_instance":
-            pass
-            # todo
+        self.document_manager.write_document(snapshot_document['snapshot'],
+                                             overwrite=True,
+                                             make_snapshot=False)
 
-        return result
+        return snapshot_document
 
     def restore_latest_snapshot(self, type_doc, name_doc):
         snapshots = self.get_snapshots(type_doc, name_doc)
@@ -76,7 +74,7 @@ class SnapshotManager(Manager):
             if snapshot['time'] > latest_snapshot['time']:
                 latest_snapshot = snapshot
 
-        self.restore_snapshot(latest_snapshot['name'])
+        return self.restore_snapshot(latest_snapshot['name'])
 
     def delete_snapshot(self, name_doc_to_delete):
         logger.debug(

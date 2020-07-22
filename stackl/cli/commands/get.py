@@ -6,7 +6,7 @@ from stackl_client import StackInfrastructureTemplate
 from tabulate import tabulate
 
 try:
-    from yaml import CDumper as Dumper
+    from yaml import CDumper as Dumper, SafeDumper
 except ImportError:
     from yaml import Dumper
 

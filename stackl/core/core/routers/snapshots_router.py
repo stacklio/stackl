@@ -2,10 +2,14 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
+from starlette.background import BackgroundTasks
 
+from core.agent_broker.agent_task_broker import create_job_for_agent
+from core.manager.document_manager import DocumentManager
 from core.manager.snapshot_manager import SnapshotManager
-from core.manager.stackl_manager import get_snapshot_manager
+from core.manager.stackl_manager import get_snapshot_manager, get_redis, get_document_manager
 from core.models.history.snapshot_model import Snapshot
+from core.models.items.stack_instance_model import StackInstance
 
 router = APIRouter()
 
@@ -40,14 +44,23 @@ def get_snapshots(
 @router.post('/restore/{name}')
 def restore_snapshot(
     name: str,
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+    background_tasks: BackgroundTasks,
+    document_manager: DocumentManager = Depends(get_document_manager),
+    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager),
+    redis=Depends(get_redis)):
     """Restore the latest or optionally the given number most recent snapshot of the doc with the given type_name and name """
     logger.info(
         f"[RestoreSnapshot POST] API POST request for doc with '{name}'")
 
-    result = snapshot_manager.restore_snapshot(name)
+    snapshot_document = snapshot_manager.restore_snapshot(name)
 
-    return result
+    if snapshot_document['snapshot']["type"] == "stack_instance":
+        stack_instance = StackInstance.parse_obj(snapshot_document["snapshot"])
+        background_tasks.add_task(create_job_for_agent, stack_instance,
+                                  "update", document_manager, redis)
+        return {"result": "stack instance restored, restoring in progress"}
+    else:
+        return {"result": "snapshot restored"}
 
 
 @router.post('/restore/{type_name}/{name}')

@@ -2,14 +2,20 @@ import asyncio
 
 from loguru import logger
 
+from core.manager.stackl_manager import get_snapshot_manager
+from core.models.items.stack_instance_model import StackInstance
 from core.models.items.stack_instance_status_model import StackInstanceStatus
 
 
-async def create_job_for_agent(stack_instance, action, document_manager,
-                               redis):
+async def create_job_for_agent(stack_instance,
+                               action,
+                               document_manager,
+                               redis,
+                               first_run=True):
     logger.debug(
         f"[AgentTaskBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
     )
+    success = True
     for service in stack_instance.services:
         service_name = service
         logger.debug(f"[AgentTaskBroker] service name: '{service_name}")
@@ -55,7 +61,22 @@ async def create_job_for_agent(stack_instance, action, document_manager,
                 automation_result = await fr_job
                 await update_status(automation_result, document_manager,
                                     stack_instance)
+                if automation_result["status"] == "FAILED":
+                    success = False
+
             logger.debug(f"tasks executed")
+
+    if success and action == "delete":
+        document_manager.delete_stack_instance(stack_instance.name)
+    elif not success and first_run:
+        snapshot_document = get_snapshot_manager().restore_latest_snapshot(
+            "stack_instance", stack_instance.name)
+        stack_instance = StackInstance.parse_obj(snapshot_document["snapshot"])
+        await create_job_for_agent(stack_instance,
+                                   action,
+                                   document_manager,
+                                   redis,
+                                   first_run=False)
 
 
 async def update_status(automation_result, document_manager, stack_instance):
