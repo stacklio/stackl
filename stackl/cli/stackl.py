@@ -10,8 +10,10 @@ from commands.info import info
 from commands.restore import restore
 from commands.update import update
 
+CLICK_CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-@click.group()
+
+@click.group(context_settings=CLICK_CONTEXT_SETTINGS)
 def cli():
     pass
 

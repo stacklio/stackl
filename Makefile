@@ -5,13 +5,14 @@
 CONTAINER_ENGINE = $(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null)
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
 DOCKER_IMAGE_REST=stacklio/stackl-rest
+DOCKER_IMAGE_CORE=stacklio/stackl-core
 DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 
-VERSIONTAG=0.1.3dev
+VERSIONTAG=0.2.0dev
 
-VERSION=0.1.3dev
+VERSION=0.2.0dev
 
 ######################################################
 #
@@ -34,6 +35,11 @@ build_prepare:
 build_rest:
 	@echo "Building stackl rest"
 	${CONTAINER_ENGINE} build -f stackl/rest/Dockerfile -t $(DOCKER_IMAGE_REST):$(VERSIONTAG) .
+
+.PHONY: build_core
+build_core:
+	@echo "Building stackl core"
+	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t $(DOCKER_IMAGE_CORE):$(VERSIONTAG) .
 
 .PHONY: build_worker
 build_worker:
@@ -59,6 +65,11 @@ push_prepare:
 push_rest:
 	@echo "Pushing rest"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_REST):$(VERSIONTAG)
+
+.PHONY: push_core
+push_core:
+	@echo "Pushing core"
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_CORE):$(VERSIONTAG)
 
 .PHONY: push_worker
 push_worker:
