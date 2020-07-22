@@ -1,18 +1,15 @@
-import os
 from typing import Dict, Any, List
 
-from arq import create_pool
-from arq.connections import RedisSettings
 from fastapi import APIRouter, HTTPException, Depends
 from loguru import logger
 from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
-from core.models.items.stack_instance_model import StackInstance
 from starlette.background import BackgroundTasks
 
 from core.agent_broker.agent_task_broker import create_job_for_agent
 from core.manager.document_manager import DocumentManager
 from core.manager.stack_manager import StackManager
-from core.manager.stackl_manager import get_document_manager, get_stack_manager
+from core.manager.stackl_manager import get_document_manager, get_stack_manager, get_redis
+from core.models.items.stack_instance_model import StackInstance
 
 router = APIRouter()
 
@@ -58,12 +55,6 @@ class StackInstanceUpdate(BaseModel):
 
 class StackCreateResult(BaseModel):
     result: str
-
-
-async def get_redis():
-    return await create_pool(
-        RedisSettings(host=os.environ["REDIS_HOST"],
-                      port=os.environ.get("REDIS_PORT", 6379)))
 
 
 @router.get('/{name}', response_model=StackInstance)
@@ -136,24 +127,15 @@ async def put_stack_instance(
 
 
 @router.delete('/{name}')
-def delete_stack_instance(name: str):
+def delete_stack_instance(
+    name: str,
+    background_tasks: BackgroundTasks,
+    document_manager: DocumentManager = Depends(get_document_manager),
+    redis=Depends(get_redis)):
     """Delete a stack instance with a specific name"""
-    pass
-    # logger.info(f"[StackInstances DELETE] Received DELETE request for {name}")
-    # json_data = {}
-    # json_data['name'] = name
-    # task = StackTask.parse_obj({
-    #     'channel': 'worker',
-    #     'json_data': json_data,
-    #     'subtype': "DELETE_STACK",
-    # })
-    # logger.info(
-    #     f"[StackInstances DELETE] Giving StackTask '{dict(task)}' to task_broker"
-    # )
-    #
-    # result = producer.give_task_and_get_result(task)
-    #
-    # if not StatusCode.is_successful(result):
-    #     raise HTTPException(status_code=StatusCode.BAD_REQUEST,
-    #                         detail="NOT OK!")
-    # return result
+    stack_instance = document_manager.get_stack_instance(name)
+
+    background_tasks.add_task(create_job_for_agent, stack_instance, "delete",
+                              document_manager, redis)
+
+    return {"result": f"Deleting stack instance {name}"}

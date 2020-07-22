@@ -1,6 +1,7 @@
 export PYTHONUNBUFFERED=TRUE
 export AGENT_ID=development
-export AGENT_NAME=mock
+export AGENT_NAME=common
+export AGENT_TYPE=mock
 export AGENT_SELECTOR="development.belgium.*"
 export STACKL_GRPC_HOST=localhost:50051
 export STACKL_HOST=localhost:8000
