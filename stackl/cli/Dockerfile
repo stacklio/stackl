@@ -21,19 +21,23 @@ RUN wget -q https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -
     chmod a+x /tmp/jq /tmp/stackl-cli/bin/check-stackl-instance /tmp/stackl-cli/bin/docker-entrypoint.sh /tmp/stackl-cli/bin/convert_json_from_spec && \
     mkdir -p /tmp/stackl-cli/.stackl && \
     chgrp -R 0 /tmp/stackl-cli && \
-    chmod -R g=u /tmp/stackl-cli && \
-    chmod g=u /etc/passwd
+    chmod -R g=u /tmp/stackl-cli
 
 FROM python:3.8.2-slim-buster
-
+# RUN \
+#     chmod g=u /etc/passwd && chmod 777 /etc/passwd && chmod 777 /etc/group && \
+#     useradd -m -u 1000 vagrant_azpcontainer && \
+#     groupadd azure_pipelines_sudo
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libyaml-dev=0.2.1-1 && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*  && \
+    rm -rf /root
 
 COPY --from=build /opt/venv /opt/venv
 COPY --from=build /tmp/stackl-cli /opt/stackl-cli
 COPY --from=build /tmp/jq /usr/local/bin/jq
+
 
 WORKDIR /opt/stackl-cli
 
@@ -43,6 +47,6 @@ ENV HOME=/opt/stackl-cli
 
 USER 1001:0
 
-ENTRYPOINT ["/opt/stackl-cli/bin/docker-entrypoint.sh", "stackl"]
+# ENTRYPOINT ["/opt/stackl-cli/bin/docker-entrypoint.sh", "stackl"]
 
-CMD ["--help"]
+# CMD ["--help"]
