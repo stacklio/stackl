@@ -48,7 +48,7 @@ make kaniko-warmer
 Windows/Mac
 
 ```shell script
-podman run -v /var/snap/microk8s/common/kaniko/:/workspace gcr.io/kaniko-project/warmer:latest --cache-dir=/workspace/cache --image=stacklio/grpc-base:latest --image=registry.access.redhat.com/ubi8/ubi-minimal:8.2-301
+podman run -v /var/snap/microk8s/common/kaniko/:/workspace gcr.io/kaniko-project/warmer:latest --cache-dir=/workspace/cache --image=stacklio/grpc-base:latest --image=registry.access.redhat.com/ubi8/ubi-minimal:8.2-339
 exit
 ```
 
