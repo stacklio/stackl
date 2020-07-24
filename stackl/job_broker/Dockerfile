@@ -1,5 +1,4 @@
-# FROM python:3.7-slim-buster
-FROM nexus-dockerext.dome.dev/ubi8/ubi-minimal:8.2-301
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-301
 
 ENV PYTHONFAULTHANDLER=1 \
   MODULE_NAME="job_worker.main" \

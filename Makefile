@@ -127,8 +127,7 @@ kaniko-warmer:
 	${CONTAINER_ENGINE} run -v /var/snap/microk8s/common/kaniko/:/workspace \
 	  gcr.io/kaniko-project/warmer:latest\
 	  --cache-dir=/workspace/cache \
-	  --image=python:3.8.2-slim-buster \
-	  --image=tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim-2020-04-27
+	  --image=registry.access.redhat.com/ubi8/ubi-minimal:8.2-301
 
 .PHONY: config-microk8s-registry
 config-microk8s-registry:

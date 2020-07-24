@@ -1,5 +1,4 @@
-# FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7-2020-04-27
-FROM nexus-dockerext.dome.dev/ubi8/ubi-minimal:8.2-301
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-301
 
 
 ENV PYTHONFAULTHANDLER=1 \
