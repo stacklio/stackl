@@ -127,7 +127,7 @@ kaniko-warmer:
 	${CONTAINER_ENGINE} run -v /var/snap/microk8s/common/kaniko/:/workspace \
 	  gcr.io/kaniko-project/warmer:latest\
 	  --cache-dir=/workspace/cache \
-	  --image=registry.access.redhat.com/ubi8/ubi-minimal:8.2-339
+	  --image=registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
 
 .PHONY: config-microk8s-registry
 config-microk8s-registry:
