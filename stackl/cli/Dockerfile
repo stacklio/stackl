@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-301 as build
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-339 as build
 
 COPY --chown=1001:0 . /opt/stackl-cli
 
@@ -20,7 +20,7 @@ RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 >
     chgrp -R 0 /tmp/stackl-cli && \
     chmod -R g=u /tmp/stackl-cli
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-301
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-339
 
 COPY --from=build /opt/venv /opt/venv
 COPY --from=build /tmp/stackl-cli /opt/stackl-cli

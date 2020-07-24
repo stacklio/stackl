@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-301
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-339
 
 WORKDIR /usr/src/app
 
