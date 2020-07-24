@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-339
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
 
 ENV PYTHONFAULTHANDLER=1 \
   MODULE_NAME="job.main" \
