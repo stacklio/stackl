@@ -8,7 +8,7 @@ authors = ["Frederic <frederic.vanreet@icloud.com>"]
 python = "^3.7"
 kubernetes = "^11.0.0"
 pyyaml = "^5.3.1"
-stackl_client = "0.2.0.dev0"
+stackl_client = "0.2.0dev"
 arq = "^0.19"
 
 [tool.poetry.dev-dependencies]

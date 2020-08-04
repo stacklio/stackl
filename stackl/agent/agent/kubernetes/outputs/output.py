@@ -10,7 +10,7 @@ class Output:
         self.stack_instance = None
         self.output_file = ''
         self.stackl_host = f'http://{os.environ["STACKL_HOST"]}'
-        self.stackl_cli_image = 'stacklio/stackl-cli:feature-outputs'
+        self.stackl_cli_image = 'stacklio/stackl-cli:0.2.0dev'
         self.stackl_cli_command = ['/bin/bash', '-c']
         self._functional_requirement = functional_requirement
         self._env_list = None
