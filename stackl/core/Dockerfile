@@ -15,7 +15,7 @@ RUN microdnf install -y python38 && \
     pip3 install --no-cache-dir "poetry==$POETRY_VERSION"&& \
     microdnf clean all
 
-COPY stackl/rest/start.sh /start.sh
+COPY stackl/core/start.sh /start.sh
 RUN chmod +x /start.sh
 
 COPY stackl/core/gunicorn_conf.py /gunicorn_conf.py

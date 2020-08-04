@@ -121,7 +121,7 @@ openapi:
 stackl_cli:
 	pip3 install -e stackl/cli/
 
-build: build_prepare build_core build_agent
+build: build_prepare build_core build_agent build_opa build_redis
 push: push_prepare push_core push_agent
 install: build prepare start
 full_install: install openapi stackl_cli

@@ -7,4 +7,4 @@ RUN microdnf install -y redis-5.0.3-2.module_el8.2.0+318+3d7e67ea && redis-serve
 
 COPY redis.conf /usr/local/etc/redis/redis.conf
 
-CMD ["redis-server", "/usr/local/etc/redis/redis.conf" ]
+CMD ["redis-server", "/usr/local/etc/redis/redis.conf", "--appendonly", "yes"]
