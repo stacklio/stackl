@@ -4,15 +4,12 @@
 
 CONTAINER_ENGINE = $(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null)
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
-DOCKER_IMAGE_REST=stacklio/stackl-rest
 DOCKER_IMAGE_CORE=stacklio/stackl-core
-DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
-DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 
-VERSIONTAG=0.2.0rcdev-stefke
+VERSIONTAG=0.2.0dev
 
-VERSION=0.2.0rcdev-stefke
+VERSION=0.2.0dev
 
 ######################################################
 #
