@@ -6,10 +6,13 @@ CONTAINER_ENGINE = $(shell command -v podman 2> /dev/null || command -v docker 2
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
 DOCKER_IMAGE_CORE=stacklio/stackl-core
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
+DOCKER_IMAGE_CLI=stacklio/stackl-cli
+DOCKER_IMAGE_OPA=stacklio/opa
+DOCKER_IMAGE_REDIS=stacklio/redis
 
+OPA_VERSION=v0.21.1
 VERSIONTAG=0.2.0dev
 
-VERSION=0.2.0dev
 
 ######################################################
 #
@@ -38,6 +41,21 @@ build_agent:
 	@echo "Building agent "
 	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):$(VERSIONTAG) .
 
+.PHONY: build_stackl_cli
+build_stackl_cli:
+	@echo "Building stackl-cli"
+	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):$(VERSIONTAG) stackl/cli
+
+.PHONY: build_opa
+build_opa:
+	@echo "Building opa"
+	${CONTAINER_ENGINE} build -f stackl/opa/Dockerfile --build-arg "OPA_VERSION=${OPA_VERSION}" -t $(DOCKER_IMAGE_OPA):$(OPA_VERSION) stackl/opa
+
+.PHONY: build_redis
+build_redis:
+	@echo "Building redis"
+	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(VERSIONTAG) stackl/redis
+
 .PHONY: push_prepare
 push_prepare:
 	@echo "Pushing prepare"
@@ -58,11 +76,6 @@ prepare:
 	@echo "Creating docker-compose"
 	${CONTAINER_ENGINE} run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG) --conf /input/stackl.yml
 	@echo "Created docker-compose file in build/make/dev"
-
-.PHONY: proto
-proto:
-	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/agents/grpc_base/protos/. --grpc_python_out=stackl/agents/grpc_base/protos/. stackl/protos/agent.proto
-	python3 -m grpc_tools.protoc -Istackl/protos --python_out=stackl/application/protos/. --grpc_python_out=stackl/application/protos/. stackl/protos/agent.proto
 
 .PHONY: start
 start:
@@ -86,8 +99,7 @@ kaniko-warmer:
 	${CONTAINER_ENGINE} run -v /var/snap/microk8s/common/kaniko/:/workspace \
 	  gcr.io/kaniko-project/warmer:latest\
 	  --cache-dir=/workspace/cache \
-	  --image=python:3.8.2-slim-buster \
-	  --image=tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim-2020-04-27
+	  --image=registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
 
 .PHONY: config-microk8s-registry
 config-microk8s-registry:
@@ -102,14 +114,14 @@ skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 
 .PHONY: openapi
 openapi:
-	openapi-generator generate -i http://localhost:8000/openapi.json -g python --package-name stackl_client --additional-properties=packageVersion=${VERSION} -o /tmp/stackl-client
+	openapi-generator generate -i http://localhost:8000/openapi.json -g python --package-name stackl_client --additional-properties=packageVersion=${VERSIONTAG} -o /tmp/stackl-client
 	pip3 install /tmp/stackl-client
 
 .PHONY: stackl_cli
 stackl_cli:
 	pip3 install -e stackl/cli/
 
-build: build_prepare build_core build_agent 
+build: build_prepare build_core build_agent build_opa build_redis
 push: push_prepare push_core push_agent
 install: build prepare start
 full_install: install openapi stackl_cli

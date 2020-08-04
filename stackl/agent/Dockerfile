@@ -1,4 +1,4 @@
-FROM python:3.7-slim-buster
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
 
 ENV PYTHONFAULTHANDLER=1 \
   MODULE_NAME="job.main" \
@@ -11,7 +11,9 @@ ENV PYTHONFAULTHANDLER=1 \
 
 
 # System deps:
-RUN pip install "poetry==$POETRY_VERSION"
+RUN microdnf install -y python38 && \
+    pip3 install --no-cache-dir "poetry==$POETRY_VERSION" && \
+    microdnf clean all
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /app

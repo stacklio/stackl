@@ -4,10 +4,9 @@ networks:
     external:
       name: stackl_bridge
 services:
-  stackl-rest:
+  stackl-core:
     restart: always
-    image: stacklio/stackl-rest:0.2.0dev
-    container_name: stackl_app
+    image: stacklio/stackl-core:0.2.0dev
     depends_on:
       - stackl-redis
     networks:
@@ -16,8 +15,6 @@ services:
     volumes:
       - {{ datastore_lfs_volume }}:/lfs_store/
 {% endif %}
-    depends_on:
-      - stackl-redis
     ports:
       - {{http_port}}:80
     environment:  
@@ -26,7 +23,7 @@ services:
       - STACKL_AGENT_BROKER={{ agent_broker_type }}
       - STACKL_DATASTORE_PATH=/lfs_store
       - STACKL_AGENT_HOST={{ agent_host }}
-      - STACKL_OPA_HOST=stackl-opa-server:8181
+      - STACKL_OPA_HOST=stackl-opa:8181
       - GRPC_VERBOSITY="DEBUG"
       - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
       - STACKL_STACKLRESTHOST=stackl-rest
@@ -35,72 +32,38 @@ services:
       - TCP_PORTS=80
       - SERVICE_PORTS=80
       - STACKL_REDIS_HOST=stackl-redis
+      - REDIS_HOST=stackl-redis
       - LOGLEVEL=DEBUG
       - WORKERS_PER_CORE=1
       - WEB_CONCURRENCY=1
-  stackl-worker:
-    restart: always
-    image: stacklio/stackl-worker:0.2.0dev
-    networks:
-      - stackl_bridge
-    stdin_open: true
-    tty: true
-{% if datastore_type == 'LFS' %}
-    volumes:
-      - {{ datastore_lfs_volume }}:/lfs_store/
-{% endif %}
-    depends_on:
-      - stackl-rest
-      - stackl-redis
-    ports:
-      - 9999:9999
-    environment:
-      - STACKL_STORE={{ datastore_type }}
-      - STACKL_DATASTORE_PATH=/lfs_store
-      - STACKL_TASK_BROKER={{ task_broker_type }}
-      - STACKL_AGENT_BROKER={{ agent_broker_type }}
-      - STACKL_AGENT_HOST={{ agent_host }}
-      - STACKL_OPA_HOST=stackl-opa-server:8181
-      - GRPC_VERBOSITY="DEBUG"
-      - STACKL_LOGPATH=/var/log/stackl.log
-      - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
-      - STACKL_STACKLRESTHOST=stackl-rest
-      - STACKL_STACKLRESTPORT=80
-      - STACKL_REDISSENTINELHOST=stackl-redis
-      - STACKL_ROLE=worker
-      - STACKL_REDIS_HOST=stackl-redis
-      - TCP_PORTS=8888
-      - LOGLEVEL=DEBUG
   stackl-redis:
     restart: always
-    command: ["redis-server", "--appendonly", "yes"]
-    image: redis:5.0.5
+    image: stacklio/redis:0.2.0dev
+    ports:
+      - 6379:6379
     volumes:
     -  /tmp/redis-data:/data
     networks:
       - stackl_bridge
   stackl-agent:
     restart: always
-    image: stacklio/stackl-agent:v0.2.0dev
+    image: stacklio/stackl-agent:0.2.0dev
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
     depends_on:
-      - stackl-job-broker
+      - stackl-redis
     networks:
       - stackl_bridge
     environment:
-      - STACKL_HOST=stackl-rest:80
-      - HOST_MACHINE=stackl-agent
-      - AGENT_SELECTOR="*.*.*"
-      - AGENT_NAME=docker
-      - STACKL_GRPC_HOST=stackl-job-broker:50051
-      - AGENT_ID=docker-agent
-      - TAGS=['common']
-      - TENANT={{ tenant_name }}
-  stackl-opa-server:
+      - PYTHONUNBUFFERED=TRUE
+      - AGENT_NAME=common
+      - AGENT_TYPE=mock
+      - STACKL_HOST=stackl-core:80
+      - REDIS_HOST=stackl-redis
+      - REDIS_PORT=6379
+  stackl-opa:
     restart: always
-    image: openpolicyagent/opa:latest
+    image: stacklio/opa:v0.21.1
     ports:
       - 8181:8181
     # WARNING: OPA is NOT running with an authorization policy configured. This
@@ -119,18 +82,3 @@ services:
 #      - "/opa_files/orchestration_default_policies.rego"
     networks:
      - stackl_bridge
-  stackl-job-broker:
-    restart: always
-    image: stacklio/stackl-job-broker:dev
-    container_name: stackl_job
-    networks:
-      - stackl_bridge
-    depends_on:
-      - stackl-redis
-    ports:
-      - 50051:50051
-    environment:
-      - GRPC_VERBOSITY="DEBUG"
-      - STACKL_MESSAGE_CHANNEL={{ message_channel_type }}
-      - STACKL_REDIS_HOST=stackl-redis
-      - LOGLEVEL=DEBUG
