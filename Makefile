@@ -10,9 +10,9 @@ DOCKER_IMAGE_WORKER=stacklio/stackl-worker
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_JOB_BROKER=stacklio/stackl-job-broker
 
-VERSIONTAG=0.2.0rc1
+VERSIONTAG=0.2.0rcdev-stefke
 
-VERSION=0.2.0rc1
+VERSION=0.2.0rcdev-stefke
 
 ######################################################
 #
@@ -31,60 +31,30 @@ build_prepare:
 	@echo "Building prepare image"
 	cd build/make/prepare; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG) .
 
-.PHONY: build_rest
-build_rest:
-	@echo "Building stackl rest"
-	${CONTAINER_ENGINE} build -f stackl/rest/Dockerfile -t $(DOCKER_IMAGE_REST):$(VERSIONTAG) .
-
 .PHONY: build_core
 build_core:
 	@echo "Building stackl core"
 	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t $(DOCKER_IMAGE_CORE):$(VERSIONTAG) .
-
-.PHONY: build_worker
-build_worker:
-	@echo "Building stackl worker"
-	${CONTAINER_ENGINE} build -f stackl/worker/Dockerfile -t $(DOCKER_IMAGE_WORKER):$(VERSIONTAG) .
 
 .PHONY: build_agent
 build_agent:
 	@echo "Building agent "
 	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):$(VERSIONTAG) .
 
-.PHONY: build_job_broker
-build_job_broker:
-	@echo "Building job broker"
-	${CONTAINER_ENGINE} build -f stackl/job_broker/Dockerfile -t $(DOCKER_IMAGE_JOB_BROKER):$(VERSIONTAG) .
-
 .PHONY: push_prepare
 push_prepare:
 	@echo "Pushing prepare"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG)
-
-.PHONY: push_rest
-push_rest:
-	@echo "Pushing rest"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_REST):$(VERSIONTAG)
 
 .PHONY: push_core
 push_core:
 	@echo "Pushing core"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_CORE):$(VERSIONTAG)
 
-.PHONY: push_worker
-push_worker:
-	@echo "Pushing worker"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_WORKER):$(VERSIONTAG)
-
 .PHONY: push_agent
 push_agent:
 	@echo "Pushing agent"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):$(VERSIONTAG)
-
-.PHONY: push_job_broker
-push_job_broker:
-	@echo "Pushing job broker"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_JOB_BROKER):$(VERSIONTAG)
 
 .PHONY: prepare
 prepare:
@@ -142,8 +112,8 @@ openapi:
 stackl_cli:
 	pip3 install -e stackl/cli/
 
-build: build_prepare build_rest build_worker build_agent build_job_broker
-push: push_prepare push_rest push_worker push_agent push_job_broker
+build: build_prepare build_core build_agent 
+push: push_prepare push_core push_agent
 install: build prepare start
 full_install: install openapi stackl_cli
 dev: kaniko-warmer skaffold
