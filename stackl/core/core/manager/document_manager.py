@@ -161,9 +161,9 @@ class DocumentManager(Manager):
         return stack_instance
 
     def get_stack_instances(self):
-        store_response = self.store.get(type="stack_instance",
-                                        category="items")
-        stack_instances = parse_obj_as(List[PolicyTemplate],
+        store_response = self.store.get_all(type="stack_instance",
+                                            category="items")
+        stack_instances = parse_obj_as(List[StackInstance],
                                        store_response.content)
         return stack_instances
 
