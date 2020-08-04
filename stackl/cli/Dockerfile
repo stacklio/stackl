@@ -1,4 +1,4 @@
-FROM python:3.8.2-slim-buster as build
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
 
 COPY --chown=1001:0 . /opt/stackl-cli
 
@@ -6,43 +6,26 @@ WORKDIR /opt/stackl-cli
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN python -m venv /opt/venv && \
-    pip3 install --no-cache . && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN microdnf install -y python38 && \
+    python3 -m venv /opt/venv && \
+    pip3 install --no-cache .
 
-COPY scripts/check-stackl-instance.sh /tmp/stackl-cli/bin/check-stackl-instance
-COPY scripts/docker-entrypoint.sh /tmp/stackl-cli/bin/docker-entrypoint.sh
-COPY scripts/convert_json_from_spec.py /tmp/stackl-cli/bin/convert_json_from_spec
+COPY scripts/check-stackl-instance.sh /opt/stackl-cli/bin/check-stackl-instance
+COPY scripts/docker-entrypoint.sh /opt/stackl-cli/bin/docker-entrypoint.sh
+COPY scripts/convert_json_from_spec.py /opt/stackl-cli/bin/convert_json_from_spec
 
-RUN wget -q https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O /tmp/jq && \
-    chmod a+x /tmp/jq /tmp/stackl-cli/bin/check-stackl-instance /tmp/stackl-cli/bin/docker-entrypoint.sh /tmp/stackl-cli/bin/convert_json_from_spec && \
-    mkdir -p /tmp/stackl-cli/.stackl && \
-    chgrp -R 0 /tmp/stackl-cli && \
-    chmod -R g=u /tmp/stackl-cli && \
-    chmod g=u /etc/passwd
-
-FROM python:3.8.2-slim-buster
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libyaml-dev=0.2.1-1 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY --from=build /opt/venv /opt/venv
-COPY --from=build /tmp/stackl-cli /opt/stackl-cli
-COPY --from=build /tmp/jq /usr/local/bin/jq
+RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > /opt/jq && \
+    chmod a+x /opt/jq /opt/stackl-cli/bin/check-stackl-instance /opt/stackl-cli/bin/docker-entrypoint.sh /opt/stackl-cli/bin/convert_json_from_spec && \
+    mkdir -p /opt/stackl-cli/.stackl && \
+    chgrp -R 0 /opt/stackl-cli && \
+    chmod -R g=u /opt/stackl-cli
 
 WORKDIR /opt/stackl-cli
 
-ENV PATH="/opt/venv/bin:/opt/stackl-cli/bin:$PATH"
+ENV PATH="/opt/venv/bin:/opt/stackl-cli/bin:/opt:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV HOME=/opt/stackl-cli
 
 USER 1001:0
 
-ENTRYPOINT ["/opt/stackl-cli/bin/docker-entrypoint.sh", "stackl"]
-
-CMD ["--help"]
+# CMD ["--help"]
