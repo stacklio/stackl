@@ -80,6 +80,7 @@ async def create_job_for_agent(stack_instance,
 
 
 async def update_status(automation_result, document_manager, stack_instance):
+    stack_instance = document_manager.get_stack_instance(stack_instance.name)
     stack_instance_status = StackInstanceStatus()
     stack_instance_status.service = automation_result["service"]
     stack_instance_status.functional_requirement = automation_result[
