@@ -108,27 +108,68 @@ class InventoryModule(BaseInventoryPlugin):
             stack_instance = api_instance.get_stack_instance(
                 stack_instance_name)
             for service, si_service in stack_instance.services.items():
-                self.inventory.add_group(service)
+                # self.inventory.add_group(service)
                 for index, service_definition in enumerate(si_service):
-                    self.inventory.add_host(host=service + "_" + str(index),
-                                            group=service)
-                    self.inventory.set_variable(
-                        service, "infrastructure_target",
-                        service_definition.infrastructure_target)
-                    for key, value in service_definition.provisioning_parameters.items(
-                    ):
-                        self.inventory.set_variable(service, key, value)
-                    if hasattr(service_definition, "secrets"):
-                        print("erin")
-                        if self.get_option("secret_handler") == "vault":
-                            secrets = get_vault_secrets(
-                                service_definition,
-                                self.get_option("vault_addr"),
-                                self.get_option("vault_token_path"))
-                        elif self.get_option("secret_handler") == "base64":
-                            secrets = get_base64_secrets(service_definition)
-                        for key, value in secrets.items():
+                    # self.inventory.add_host(host=service + "_" + str(index),
+                    #                         group=service)
+                    # self.inventory.set_variable(
+                    #     service, "infrastructure_target",
+                    #     service_definition.infrastructure_target)
+                    if "stackl_hosts" in service_definition.provisioning_parameters and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
+                        stackl_hosts = service_definition.provisioning_parameters[
+                            'stackl_hosts']
+                        for group in service_definition.provisioning_parameters[
+                                'stackl_inventory_groups']:
+                            for tag in group['tags']:
+                                print(f"tag {tag}")
+                                self.inventory.add_group(tag)
+                                [
+                                    self.inventory.add_host(
+                                        host=stackl_hosts[x], group=tag)
+                                    for x in range(group['count'])
+                                ]
+                                for key, value in service_definition.provisioning_parameters.items(
+                                ):
+                                    self.inventory.set_variable(
+                                        tag, key, value)
+                                if hasattr(service_definition, "secrets"):
+                                    if self.get_option(
+                                            "secret_handler") == "vault":
+                                        secrets = get_vault_secrets(
+                                            service_definition,
+                                            self.get_option("vault_addr"),
+                                            self.get_option(
+                                                "vault_token_path"))
+                                    elif self.get_option(
+                                            "secret_handler") == "base64":
+                                        secrets = get_base64_secrets(
+                                            service_definition)
+                                    for key, value in secrets.items():
+                                        self.inventory.set_variable(
+                                            tag, key, value)
+                            del stackl_hosts[0:group['count']]
+                    else:
+                        self.inventory.add_host(host=service + "_" +
+                                                str(index),
+                                                group=service)
+                        self.inventory.set_variable(
+                            service, "infrastructure_target",
+                            service_definition.infrastructure_target)
+                        for key, value in service_definition.provisioning_parameters.items(
+                        ):
                             self.inventory.set_variable(service, key, value)
+                        if hasattr(service_definition, "secrets"):
+                            if self.get_option("secret_handler") == "vault":
+                                secrets = get_vault_secrets(
+                                    service_definition,
+                                    self.get_option("vault_addr"),
+                                    self.get_option("vault_token_path"))
+                            elif self.get_option("secret_handler") == "base64":
+                                secrets = get_base64_secrets(
+                                    service_definition)
+                            for key, value in secrets.items():
+                                self.inventory.set_variable(
+                                    service, key, value)
         except Exception as e:
             raise AnsibleError(format(e))
 """
@@ -260,20 +301,23 @@ class Invocation():
         :rtype: List[str]
         """
         pattern = self._service + "_" + str(self.index)
-        self._command_args = [
-            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
-        ]
-        self._command_args[
-            0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
-        # self._command_args[
-        #     0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
-        # self._command_args[
-        #     0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
-        # self._command_args[
-        #     0] += f'-e ansible_role={self._functional_requirement} '
-        if self._output:
+        self._command_args = ['echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd']
+        if "ansible_playbook_path" in self.provisioning_parameters:
             self._command_args[
-                0] += f'-e outputs_path={self._output.output_file} '
+                0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+        else:
+            pattern = self._service + "_" + str(self.index)
+            self._command_args[
+                0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
+            # self._command_args[
+            #     0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
+            # self._command_args[
+            #     0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
+            # self._command_args[
+            #     0] += f'-e ansible_role={self._functional_requirement} '
+            if self._output:
+                self._command_args[
+                    0] += f'-e outputs_path={self._output.output_file} '
         return self._command_args
 
     @property
