@@ -16,7 +16,7 @@ def cli():
 @cli.command()
 @click.option('-d', '--directory', type=click.Path(exists=True))
 @click.option('-c', '--config-file', type=click.File())
-@click.option('-p', '--params', default="{}")
+@click.option('-p', '--params', default="[{}]", multiple=True)
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
 @click.option('-s', '--secrets', default="{}")
@@ -35,8 +35,11 @@ def apply(stackl_context, directory, config_file, params, tags, secrets,
 
 def apply_stack_instance(config_file, params, tags, secrets, service_params,
                          replicas, stackl_context, instance_name):
+    final_params = {}
+    for item in params:
+        final_params = {**final_params, **json.loads(item)}
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
-    params = {**config_doc['params'], **json.loads(params)}
+    final_params = {**config_doc['params'], **final_params}
     tags = json.loads(tags)
     replicas = {**getattr(config_doc, 'replicas', {}), **json.loads(replicas)}
     secrets = json.loads(secrets)
@@ -52,7 +55,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         stack_infrastructure_template=config_doc[
             "stack_infrastructure_template"],
         stack_application_template=config_doc["stack_application_template"],
-        params=params,
+        params=final_params,
         replicas=replicas,
         service_params=service_params,
         secrets=secrets,
