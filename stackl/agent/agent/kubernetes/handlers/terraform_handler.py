@@ -27,7 +27,8 @@ class Invocation():
         self._command = ["/bin/sh", "-c"]
         if self._functional_requirement_obj.outputs:
             self._output = TerraformOutput(self._functional_requirement_obj,
-                                           self._invoc.stack_instance)
+                                           self._invoc.stack_instance,
+                                           self._invoc.infrastructure_target)
         """ Volumes is an array containing dicts that define Kubernetes volumes
         volume = {
             name: affix for volume name, str

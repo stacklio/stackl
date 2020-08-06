@@ -121,8 +121,8 @@ async def put_stack_instance(
 
     # Perform invocations
     if not stack_instance_update.disable_invocation:
-        background_tasks.add_task(create_job_for_agent, stack_instance, "update",
-                                document_manager, redis)
+        background_tasks.add_task(create_job_for_agent, stack_instance,
+                                  "update", document_manager, redis)
 
     return {"result": "stack instance updating"}
 

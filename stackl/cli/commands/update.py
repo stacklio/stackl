@@ -12,7 +12,7 @@ def update():
 
 
 @update.command()
-@click.option('-p', '--params', default="[{}]", multiple=True)
+@click.option('-p', '--params', default=[], multiple=True)
 @click.option('-s', '--secrets', default="{}")
 @click.option('-d', '--disable-invocation', is_flag=True)
 @click.argument('instance-name')

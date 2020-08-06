@@ -14,7 +14,7 @@ def create():
 @create.command()
 @click.option('--stack-infrastructure-template')
 @click.option('--stack-application-template')
-@click.option('-p', '--params', default="[{}]", multiple=True)
+@click.option('-p', '--params', default=[], multiple=True)
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
 @click.argument('instance-name')

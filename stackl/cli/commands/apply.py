@@ -16,7 +16,7 @@ def cli():
 @cli.command()
 @click.option('-d', '--directory', type=click.Path(exists=True))
 @click.option('-c', '--config-file', type=click.File())
-@click.option('-p', '--params', default="[{}]", multiple=True)
+@click.option('-p', '--params', default=[], multiple=True)
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
 @click.option('-s', '--secrets', default="{}")
@@ -41,7 +41,8 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     final_params = {**config_doc['params'], **final_params}
     tags = json.loads(tags)
-    replicas = {**getattr(config_doc, 'replicas', {}), **json.loads(replicas)}
+    if "replicas" in config_doc:
+        replicas = {**config_doc['replicas'], **json.loads(replicas)}
     secrets = json.loads(secrets)
     service_params = json.loads(service_params)
     if "service_params" in config_doc:

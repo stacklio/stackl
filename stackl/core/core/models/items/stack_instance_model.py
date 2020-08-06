@@ -6,10 +6,17 @@ from .stack_instance_service_model import StackInstanceService
 from .stack_instance_status_model import StackInstanceStatus
 
 
+class HostTarget(BaseModel):
+    host: str
+    target: str
+
+
 class StackInstance(BaseModel):
     name: str
     type = "stack_instance"
     deleted: bool = False
+    hosts: Dict[str, Any] = {}
+    groups: Dict[str, List[HostTarget]] = {}
     instance_params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}
     instance_secrets: Dict[str, Any] = {}
