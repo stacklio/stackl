@@ -112,6 +112,13 @@ class StackHandler(Handler):
             **stack_instance.service_params,
             **item.service_params
         }
+        logger.debug(f"item params: {item.params}")
+        if "stackl_hosts" in item.params:
+            stack_instance.hosts[item.params[
+                "infrastructure_target"]] = item.params["stackl_hosts"]
+
+        if "stackl_groups" in item.params:
+            stack_instance.groups = item.params["stackl_groups"]
 
         stack_instance_statuses = []
         for svc, service_definitions in stack_instance.services.items():
