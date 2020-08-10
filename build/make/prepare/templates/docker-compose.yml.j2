@@ -16,7 +16,7 @@ services:
       - {{ datastore_lfs_volume }}:/lfs_store/
 {% endif %}
     ports:
-      - {{http_port}}:80
+      - {{http_port}}:8080
     environment:  
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
@@ -58,7 +58,7 @@ services:
       - PYTHONUNBUFFERED=TRUE
       - AGENT_NAME=common
       - AGENT_TYPE=mock
-      - STACKL_HOST=stackl-core:80
+      - STACKL_HOST=stackl-core:8080
       - REDIS_HOST=stackl-redis
       - REDIS_PORT=6379
   stackl-opa:
