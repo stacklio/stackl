@@ -16,8 +16,9 @@ async def create_job_for_agent(stack_instance,
         f"[AgentTaskBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
     )
     success = True
-    for service in stack_instance.services:
-        service_name = service
+    sat = document_manager.get_stack_application_template(
+        stack_instance.stack_application_template)
+    for service_name in sat.services:
         logger.debug(f"[AgentTaskBroker] service name: '{service_name}")
         service_doc = document_manager.get_document(type="service",
                                                     name=service_name)

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from loguru import logger
 
 from core.enums.stackl_codes import StatusCode
@@ -41,7 +43,7 @@ class StackHandler(Handler):
         stack_instance_doc.instance_params = item.params
         stack_instance_doc.service_params = item.service_params
         stack_instance_doc.instance_secrets = item.secrets
-        services = {}
+        services = OrderedDict()
         stack_instance_statuses = []
         for svc, targets in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
