@@ -44,3 +44,11 @@ def put_policy_template(
         f"[PutDocument] API PUT request with policy_template: {policy}")
     policy_template = document_manager.write_policy_template(policy)
     return policy_template
+
+
+@router.delete('/{name}', status_code=200)
+def delete_policy_template(
+    name: str,
+    document_manager: DocumentManager = Depends(get_document_manager)):
+    document_manager.delete_policy_template(name)
+    return {"result": "deleted policy template"}
