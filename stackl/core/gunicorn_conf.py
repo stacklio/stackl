@@ -10,7 +10,7 @@ if max_workers_str:
 web_concurrency_str = os.getenv("WEB_CONCURRENCY", None)
 
 host = os.getenv("HOST", "0.0.0.0")
-port = os.getenv("PORT", "80")
+port = os.getenv("PORT", "8080")
 bind_env = os.getenv("BIND", None)
 use_loglevel = os.getenv("LOG_LEVEL", "info")
 if bind_env:
@@ -46,7 +46,6 @@ accesslog = use_accesslog
 graceful_timeout = int(graceful_timeout_str)
 timeout = int(timeout_str)
 keepalive = int(keepalive_str)
-
 
 # For debugging and testing
 log_data = {

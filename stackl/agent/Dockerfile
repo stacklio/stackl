@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
 
 ENV PYTHONFAULTHANDLER=1 \
-  MODULE_NAME="job.main" \
+  MODULE_NAME="agent.main" \
   PYTHONUNBUFFERED=1 \
   PYTHONHASHSEED=random \
   PIP_NO_CACHE_DIR=off \
@@ -20,6 +20,7 @@ WORKDIR /app
 
 COPY stackl/agent/poetry.lock stackl/agent/pyproject.toml /app/
 
+
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
@@ -27,4 +28,4 @@ RUN poetry config virtualenvs.create false \
 # Creating folders, and files for a project:
 COPY stackl/agent/. /app
 
-CMD ["poetry", "run", "arq", "agent.main.AgentSettings"]
+CMD ["arq", "agent.main.AgentSettings"]
