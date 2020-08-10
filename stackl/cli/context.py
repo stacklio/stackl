@@ -6,8 +6,13 @@ import stackl_client
 
 class StacklContext(object):
     def __init__(self):
-        with open(config_path, 'r+') as stackl_config:
-            host = stackl_config.read()
+        host = None
+        try:
+            with open(config_path, 'r+') as stackl_config:
+                host = stackl_config.read()
+        except FileNotFoundError:
+            click.echo("Config file not found, run `stackl connect` first")
+            exit(1)
         configuration = stackl_client.Configuration()
         configuration.host = host
         self.api_client = stackl_client.ApiClient(configuration=configuration)
