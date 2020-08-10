@@ -57,6 +57,37 @@ import stackl_client
 import base64
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
+from collections import defaultdict
+
+def check_groups(stackl_groups, stackl_inventory_groups, host_list):
+    count_group_dict = defaultdict(int)
+    target_count = len(host_list)
+    for group in stackl_inventory_groups:
+        for tag in group['tags']:
+            count_group_dict[tag] += group['count']
+
+    for tag, count in count_group_dict.items():
+        if not tag in stackl_groups or not len(
+                stackl_groups[tag]) == count * target_count:
+            return False
+    return True
+
+
+def create_groups(hosts, stackl_inventory_groups):
+    groups = defaultdict(list)
+    for item in stackl_inventory_groups:
+        for tag in item["tags"]:
+            for index in range(item["count"]):
+                for target, host_list in hosts.items():
+                    try:
+                        host = stackl_client.HostTarget(target=target, host=host_list[index])
+                    except IndexError as e:
+                        print(e)
+                        exit(1)
+                    groups[tag].append(host)
+        for target in hosts:
+            del hosts[target][0:item["count"]]
+    return groups
 
 
 def get_vault_secrets(service, address, token_path):
@@ -115,39 +146,40 @@ class InventoryModule(BaseInventoryPlugin):
                     # self.inventory.set_variable(
                     #     service, "infrastructure_target",
                     #     service_definition.infrastructure_target)
-                    if "stackl_hosts" in service_definition.provisioning_parameters and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
-                        stackl_hosts = service_definition.provisioning_parameters[
-                            'stackl_hosts']
-                        for group in service_definition.provisioning_parameters[
-                                'stackl_inventory_groups']:
-                            for tag in group['tags']:
-                                print(f"tag {tag}")
-                                self.inventory.add_group(tag)
-                                [
-                                    self.inventory.add_host(
-                                        host=stackl_hosts[x], group=tag)
-                                    for x in range(group['count'])
-                                ]
-                                for key, value in service_definition.provisioning_parameters.items(
-                                ):
-                                    self.inventory.set_variable(
-                                        tag, key, value)
-                                if hasattr(service_definition, "secrets"):
-                                    if self.get_option(
-                                            "secret_handler") == "vault":
-                                        secrets = get_vault_secrets(
-                                            service_definition,
-                                            self.get_option("vault_addr"),
-                                            self.get_option(
-                                                "vault_token_path"))
-                                    elif self.get_option(
-                                            "secret_handler") == "base64":
-                                        secrets = get_base64_secrets(
-                                            service_definition)
-                                    for key, value in secrets.items():
+                    if stack_instance.hosts and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
+                        if not check_groups(
+                                stack_instance.groups,
+                                service_definition.provisioning_parameters[
+                                    'stackl_inventory_groups'],
+                                stack_instance.hosts):
+                            stack_instance.groups = create_groups(stack_instance.hosts, service_definition.provisioning_parameters[
+                                    'stackl_inventory_groups'])
+                            stack_update = stackl_client.StackInstanceUpdate(stack_instance_name=stack_instance.name, params={"stackl_groups": stack_instance.groups}, disable_invocation=True)
+                            api_instance.put_stack_instance(stack_update)
+                        for item, value in stack_instance.groups.items():
+                            for group in value:
+                                if group.target == service_definition.infrastructure_target:
+                                    self.inventory.add_group(item)
+                                    self.inventory.add_host(host=group.host, group=item)
+                                    for key, value in service_definition.provisioning_parameters.items(
+                                    ):
                                         self.inventory.set_variable(
-                                            tag, key, value)
-                            del stackl_hosts[0:group['count']]
+                                            item, key, value)
+                                    if hasattr(service_definition, "secrets"):
+                                        if self.get_option(
+                                                "secret_handler") == "vault":
+                                            secrets = get_vault_secrets(
+                                                service_definition,
+                                                self.get_option("vault_addr"),
+                                                self.get_option(
+                                                    "vault_token_path"))
+                                        elif self.get_option(
+                                                "secret_handler") == "base64":
+                                            secrets = get_base64_secrets(
+                                                service_definition)
+                                        for key, value in secrets.items():
+                                            self.inventory.set_variable(
+                                                item, key, value)
                     else:
                         self.inventory.add_host(host=service + "_" +
                                                 str(index),
