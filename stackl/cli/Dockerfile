@@ -6,7 +6,7 @@ WORKDIR /opt/stackl-cli
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN microdnf install -y python38 && \
+RUN microdnf install -y python38 shadow-utils-2:4.6-8.el8.x86_64 && \
     python3 -m venv /opt/venv && \
     pip3 install --no-cache .
 
