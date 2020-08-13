@@ -1,5 +1,6 @@
 from .secrets.base64_secret_handler import Base64SecretHandler
 from .secrets.vault_secret_handler import VaultSecretHandler
+from .secrets.conjur_secret_handler import ConjurSecretHandler
 import os
 
 
@@ -16,5 +17,20 @@ def get_secret_handler(invoc, stack_instance, secret_format):
                                       vault_mount_point)
         elif secret_handler.lower() == "base64":
             return Base64SecretHandler(invoc, stack_instance, secret_format)
+        elif secret_handler.lower() == "conjur":
+            authenticator_client_container_name = os.environ[
+                'AUTHENTICATOR_CLIENT_CONTAINER_NAME']
+            conjur_appliance_url = os.environ['CONJUR_APPLIANCE_URL']
+            conjur_account = os.environ['CONJUR_ACCOUNT']
+            conjur_authn_token_file = os.environ['CONJUR_AUTHN_TOKEN_FILE']
+            conjur_authn_url = os.environ['CONJUR_AUTHN_URL']
+            conjur_authn_login = os.environ['CONJUR_AUTHN_LOGIN']
+            conjur_ssl_config_map = os.environ['CONJUR_SSL_CONFIG_MAP']
+            return ConjurSecretHandler(invoc, stack_instance, secret_format,
+                                       authenticator_client_container_name,
+                                       conjur_appliance_url, conjur_account,
+                                       conjur_authn_token_file,
+                                       conjur_authn_url, conjur_authn_login,
+                                       conjur_ssl_config_map)
     else:
         return None
