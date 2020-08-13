@@ -11,6 +11,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 from agent.kubernetes.outputs.output import Output
+from agent.kubernetes.secrets.conjur_secret_handler import ConjurSecretHandler
 
 
 def create_job_object(name: str,
@@ -121,17 +122,13 @@ def create_job_object(name: str,
     if env_list:
         for key, value in env_list.items():
             if isinstance(value, dict):
-                if 'config_map_ref' in value:
+                if 'config_map_key_ref' in value:
                     k8s_env_from = client.V1EnvVar(
                         name=key,
                         value_from=client.V1EnvVarSource(
-                            config_map_ref=value['config_map_ref']))
-                    k8s_env_list.append(k8s_env_from)
-                elif 'secret_ref' in value:
-                    k8s_env_from = client.V1EnvVar(
-                        name=key,
-                        value_from=client.V1EnvVarSource(
-                            config_map_ref=value['config_map_ref']))
+                            config_map_key_ref=client.V1ConfigMapKeySelector(
+                                name=value['config_map_key_ref']["name"],
+                                key=value['config_map_key_ref']["key"])))
                     k8s_env_list.append(k8s_env_from)
                 elif 'field_ref' in value:
                     k8s_env_from = client.V1EnvVar(
@@ -459,3 +456,12 @@ class Handler(ABC):
             getattr(f, '__isabstractmethod__', False)
             for f in (self.wait_for_job, self.handle, self.get_k8s_objects,
                       self.action))
+
+    @property
+    def create_command_args(self) -> List[str]:
+        if isinstance(self.secret_handler, ConjurSecretHandler):
+            return [
+                "summon --provider summon-conjur -f /tmp/conjur/secrets.yml "
+            ]
+        else:
+            return [""]

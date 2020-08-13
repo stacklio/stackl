@@ -2,6 +2,7 @@ import json
 from .base_handler import Handler
 from agent.kubernetes.outputs.terraform_output import TerraformOutput
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
+from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
 
 class TerraformHandler(Handler):
@@ -68,20 +69,20 @@ class Invocation():
 
     @property
     def create_command_args(self) -> list:
-        command_args = []
+        command_args = super().create_command_args
         if self._secret_handler.terraform_backend_enabled:
-            command_args.append(
-                f'mv /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
-            )
+            command_args[
+                0] += f'mv /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
         else:
-            command_args.append(f'terraform init')
+            command_args[0] += f'terraform init'
         if self._secret_handler and self._secret_handler.terraform_backend_enabled:
             command_args[
                 0] += f' -backend-config=key={self._stack_instance.name}'
         command_args[
             0] += f' && terraform apply -auto-approve -var-file {self.variables_file}'
 
-        if self._secret_handler:
+        if self._secret_handler and not isinstance(self._secret_handler,
+                                                   ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
         if self._output:
             command_args[0] += f' {self._output.command_args}'
@@ -102,7 +103,8 @@ class Invocation():
         command_args[
             0] += f' && terraform destroy -auto-approve -var-file {self.variables_file}'
 
-        if self._secret_handler:
+        if self._secret_handler and not isinstance(self._secret_handler,
+                                                   ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
         if self._output:
             command_args[0] += f' {self._output.command_args}'

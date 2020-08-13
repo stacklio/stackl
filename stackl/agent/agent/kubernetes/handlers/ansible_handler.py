@@ -332,8 +332,11 @@ class Invocation():
         :return: A list with strings containing shell commands
         :rtype: List[str]
         """
+        self._command_args = super.create_command_args()
         pattern = self._service + "_" + str(self.index)
-        self._command_args = ['echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd']
+        self._command_args[0] += [
+            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
+        ]
         if "ansible_playbook_path" in self.provisioning_parameters:
             self._command_args[
                 0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
