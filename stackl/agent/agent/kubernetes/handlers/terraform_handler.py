@@ -65,7 +65,7 @@ class Invocation():
 
     @property
     def command(self):
-        return ["/bin/sh", "-c"]
+        return self._command
 
     @property
     def create_command_args(self) -> list:
@@ -84,6 +84,11 @@ class Invocation():
         if self._secret_handler and not isinstance(self._secret_handler,
                                                    ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
+        elif isinstance(self._secret_handler, ConjurSecretHandler):
+            command_args[0] = command_args[0].replace(
+                "&&",
+                "&& summon --provider summon-conjur -f /tmp/conjur/secrets.yml"
+            )
         if self._output:
             command_args[0] += f' {self._output.command_args}'
         return command_args
@@ -106,6 +111,11 @@ class Invocation():
         if self._secret_handler and not isinstance(self._secret_handler,
                                                    ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
+        elif isinstance(self._secret_handler, ConjurSecretHandler):
+            command_args[0] = command_args[0].replace(
+                "&&",
+                "&& summon --provider summon-conjur -f /tmp/conjur/secrets.yml"
+            )
         if self._output:
             command_args[0] += f' {self._output.command_args}'
         return command_args

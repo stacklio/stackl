@@ -3,6 +3,7 @@ from json import dumps
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.packer_output import PackerOutput
 from .base_handler import Handler
+from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
 
 class PackerHandler(Handler):
@@ -58,8 +59,14 @@ class PackerHandler(Handler):
         command_args[
             0] += f"packer build -force -var-file /tmp/variables/variables.json"
 
-        if self._secret_handler:
+        if self._secret_handler and not isinstance(self._secret_handler,
+                                                   ConjurSecretHandler):
             command_args[0] += f' -var-file /tmp/secrets/secret.json'
+        elif isinstance(self._secret_handler, ConjurSecretHandler):
+            command_args[0] = command_args[0].replace(
+                "&&",
+                "&& summon --provider summon-conjur -f /tmp/conjur/secrets.yml"
+            )
         if self._output:
             command_args[0] += f'{self._output.command_args}'
         command_args[0] += ' /opt/packer/src/packer.json'
