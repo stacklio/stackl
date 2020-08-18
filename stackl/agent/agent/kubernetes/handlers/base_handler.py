@@ -11,6 +11,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 from agent.kubernetes.outputs.output import Output
+from agent.kubernetes.secrets.conjur_secret_handler import ConjurSecretHandler
 
 
 def create_job_object(name: str,
@@ -30,7 +31,8 @@ def create_job_object(name: str,
                       restart_policy: str = "Never",
                       backoff_limit: int = 0,
                       service_account: str = "stackl-agent-stackl-agent",
-                      labels={}) -> client.V1Job:
+                      labels={},
+                      env_from: List[Dict] = None) -> client.V1Job:
     """Creates a Job object using the Kubernetes client
 
     :param name: Job name affix
@@ -119,10 +121,41 @@ def create_job_object(name: str,
 
     if env_list:
         for key, value in env_list.items():
-            k8s_env = client.V1EnvVar(name=key, value=value)
-            k8s_env_list.append(k8s_env)
+            if isinstance(value, dict):
+                if 'config_map_key_ref' in value:
+                    k8s_env_from = client.V1EnvVar(
+                        name=key,
+                        value_from=client.V1EnvVarSource(
+                            config_map_key_ref=client.V1ConfigMapKeySelector(
+                                name=value['config_map_key_ref']["name"],
+                                key=value['config_map_key_ref']["key"])))
+                    k8s_env_list.append(k8s_env_from)
+                elif 'field_ref' in value:
+                    k8s_env_from = client.V1EnvVar(
+                        name=key,
+                        value_from=client.V1EnvVarSource(
+                            field_ref=client.V1ObjectFieldSelector(
+                                field_path=value['field_ref'])))
+                    k8s_env_list.append(k8s_env_from)
+            else:
+                k8s_env = client.V1EnvVar(name=key, value=value)
+                k8s_env_list.append(k8s_env)
+
+    k8s_env_from_list = []
+
+    # if env_from:
+    #     for env in env_from:
+    #         if 'config_map_ref' in env:
+    #             k8s_env_from = client.V1EnvFromSource(
+    #                 config_map_ref=env['config_map_ref'])
+    #             k8s_env_from_list.append(k8s_env_from)
+    #         elif 'secret_ref' in env:
+    #             k8s_env_from = client.V1EnvFromSource(
+    #                 secret_ref=env['secret_ref'])
+    #             k8s_env_from_list.append(k8s_env_from)
 
     logging.debug(f"Environment list created for job {name}: {k8s_env_list}")
+    print(f"Environment list created for job {name}: {k8s_env_list}")
     root_hack = client.V1SecurityContext()
     root_hack.run_as_user = 0
 
@@ -132,7 +165,8 @@ def create_job_object(name: str,
                                    volume_mounts=k8s_volume_mounts,
                                    image_pull_policy=image_pull_policy,
                                    command=command,
-                                   args=command_args)
+                                   args=command_args,
+                                   env_from=k8s_env_from_list)
 
     k8s_init_containers = []
 
@@ -140,9 +174,12 @@ def create_job_object(name: str,
     for c in init_containers:
         k8s_c = client.V1Container(name=c['name'],
                                    image=c['image'],
-                                   args=c['args'],
                                    volume_mounts=k8s_volume_mounts,
                                    env=k8s_env_list)
+
+        if 'args' in c:
+            k8s_c.args = c['args']
+
         k8s_init_containers.append(k8s_c)
 
     k8s_secrets = []
@@ -151,8 +188,7 @@ def create_job_object(name: str,
 
     logging.debug(f"Secret list created for job {name}: {k8s_secrets}")
 
-    containers = []
-    containers.append(container)
+    containers = [container]
     if output:
         output.volume_mounts = k8s_volume_mounts
         output.env = k8s_env_list
@@ -231,6 +267,7 @@ class Handler(ABC):
         self._stack_instance = self._stack_instance_api.get_stack_instance(
             self._invoc.stack_instance)
         self._output = None
+        self._env_from = {}
         self._env_list = {}
         self._volumes = []
         self._init_containers = []
@@ -275,6 +312,7 @@ class Handler(ABC):
                                       service_account=self.service_account,
                                       output=self._output,
                                       labels=labels)
+        print(body)
         try:
             for cm in cms:
                 self._api_instance_core.create_namespaced_config_map(
@@ -369,6 +407,18 @@ class Handler(ABC):
             init_containers += self._output.init_containers
         return init_containers
 
+    @property
+    def env_from(self) -> list:
+        """Returns the combined env_from from the Handler, SecretHandler, Output
+
+        :return: env_from
+        :rtype: list
+        """
+        env_from = self._env_from
+        if self.secret_handler:
+            env_from.update(self.secret_handler._env_from)
+        return env_from
+
     @env_list.setter
     def env_list(self, value):
         self._env_list = value
@@ -406,3 +456,12 @@ class Handler(ABC):
             getattr(f, '__isabstractmethod__', False)
             for f in (self.wait_for_job, self.handle, self.get_k8s_objects,
                       self.action))
+
+    @property
+    def create_command_args(self) -> List[str]:
+        if isinstance(self.secret_handler, ConjurSecretHandler):
+            return [
+                "summon --provider summon-conjur -f /tmp/conjur/secrets.yml "
+            ]
+        else:
+            return [""]

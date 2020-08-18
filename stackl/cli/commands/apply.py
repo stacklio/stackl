@@ -41,8 +41,9 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     config_doc = yaml.load(config_file.read(), Loader=yaml.FullLoader)
     final_params = {**config_doc['params'], **final_params}
     tags = json.loads(tags)
+    replicas = json.loads(replicas)
     if "replicas" in config_doc:
-        replicas = {**config_doc['replicas'], **json.loads(replicas)}
+        replicas = {**config_doc['replicas'], **replicas}
     secrets = json.loads(secrets)
     service_params = json.loads(service_params)
     if "service_params" in config_doc:
