@@ -139,14 +139,13 @@ class InventoryModule(BaseInventoryPlugin):
             stack_instance = api_instance.get_stack_instance(
                 stack_instance_name)
             for service, si_service in stack_instance.services.items():
-                # self.inventory.add_group(service)
                 for index, service_definition in enumerate(si_service):
                     # self.inventory.add_host(host=service + "_" + str(index),
                     #                         group=service)
                     # self.inventory.set_variable(
                     #     service, "infrastructure_target",
                     #     service_definition.infrastructure_target)
-                    if stack_instance.hosts and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
+                    if hasattr(stack_instance, "hosts") and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
                         if not check_groups(
                                 stack_instance.groups,
                                 service_definition.provisioning_parameters[
@@ -181,6 +180,7 @@ class InventoryModule(BaseInventoryPlugin):
                                             self.inventory.set_variable(
                                                 item, key, value)
                     else:
+                        self.inventory.add_group(service)
                         self.inventory.add_host(host=service + "_" +
                                                 str(index),
                                                 group=service)

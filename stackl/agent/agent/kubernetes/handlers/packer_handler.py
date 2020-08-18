@@ -35,10 +35,6 @@ class PackerHandler(Handler):
             self._volumes.append(self._output.volume_mount)
             self._volumes.append(self._output.spec_mount)
         self._command = ["/bin/sh", "-c"]
-        self._command_args = ["packer build -force"]
-        self._command_args[0] \
-            += " -var-file /tmp/secrets/secret.json -var-file /tmp/variables/variables.json"
-        self._command_args[0] += " /opt/packer/src/packer.json"
 
     def packer_variables(self):
         d = {}

@@ -20,11 +20,13 @@ class StackManager(Manager):
         logger.debug(
             f"[StackManager] _process_stack_request. Converting instance data '{instance_data}' to job wrapper object"
         )
-        if not self._validate_stack_request(instance_data, stack_action):
+        valid, validation_error = self._validate_stack_request(
+            instance_data, stack_action)
+        if not valid:
             logger.debug(
                 f"[StackManager ] _process_stack_request. Validation failed. Returning StatusCode.BAD_REQUEST"
             )
-            return None, "Validate stack request failed, stack instance probably already exists"
+            return None, validation_error
 
         job = {}
         job['action'] = stack_action
@@ -40,7 +42,8 @@ class StackManager(Manager):
     def rollback_task(self, task):
         pass
 
-    def _validate_stack_request(self, instance_data, stack_action):
+    def _validate_stack_request(self, instance_data,
+                                stack_action) -> (bool, str):
         # check existence of stack_instance
         if "name" in instance_data:
             stack_name = instance_data.name
@@ -54,7 +57,7 @@ class StackManager(Manager):
         )
         if stack_action == "create":
             if stack_instance_exists:
-                return False
+                return False, "Stack instance already exists"
             # check if SIT exists
             infr_template_exists = self.document_manager.get_document(
                 type="stack_infrastructure_template",
@@ -63,7 +66,7 @@ class StackManager(Manager):
                 f"[StackManager] _validate_stack_request. infr_template_exists (should be the case): {not infr_template_exists is {}}"
             )
             if not infr_template_exists:
-                return False
+                return False, f"Stack infrastructure template: {instance_data.stack_infrastructure_template} does not exist"
 
             # check if SAT exists
             stack_application_template = self.document_manager.get_document(
@@ -73,11 +76,11 @@ class StackManager(Manager):
                 f"[StackManager] _validate_stack_request. application_template_name exists (should be the case): {not stack_application_template is {}}"
             )
             if not stack_application_template:
-                return False
+                return False, f"Stack application template: {instance_data.stack_application_template} does not exist"
             # Everything OK for create:
-            return True
+            return True, ""
         elif stack_action == "update":
-            return True  # For UPDATE, OK if it exists
+            return True, ""  # For UPDATE, OK if it exists
         elif stack_action == "delete":
             return stack_instance_exists
-        return False
+        return False, ""

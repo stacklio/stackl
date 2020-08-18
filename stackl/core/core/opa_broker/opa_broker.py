@@ -1,7 +1,7 @@
 import json
-import logging
 
 import requests
+from loguru import logger
 
 from core.models.configs.policy_template_model import PolicyTemplate
 from core.models.configs.stack_application_template_model import StackApplicationTemplate
@@ -9,10 +9,7 @@ from core.models.configs.stack_infrastructure_template_model import StackInfrast
 from core.models.items.service_model import Service
 from core.utils.general_utils import get_config_key
 
-from loguru import logger
 
-
-##TODO WIP!
 class OPABroker:
     def __init__(self):
         self.opa_host = "http://{}".format(get_config_key("OPA_HOST"))
@@ -42,7 +39,7 @@ class OPABroker:
             response = requests.post(self.opa_host + "/v1/data/" +
                                      policy_package + "/" + policy_rule,
                                      data=json.dumps(input_dict))
-        except Exception as err:  #pylint: disable=broad-except
+        except Exception as err:  # pylint: disable=broad-except
             logger.debug(f"[OPABroker] ask_opa_policy_decision. error '{err}'")
             return {}
         if response.status_code >= 300:
