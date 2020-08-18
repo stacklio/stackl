@@ -11,7 +11,8 @@ DOCKER_IMAGE_OPA=stacklio/opa
 DOCKER_IMAGE_REDIS=stacklio/redis
 
 OPA_VERSION=v0.21.1
-VERSIONTAG=0.2.0dev
+REDIS_VERSION=5.0.3
+VERSIONTAG=0.2.0
 
 
 ######################################################
@@ -29,22 +30,22 @@ docs-%:
 .PHONY: build_prepare
 build_prepare:
 	@echo "Building prepare image"
-	cd build/make/prepare; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG) .
+	cd build/make/prepare; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_PREPARE):v$(VERSIONTAG) .
 
 .PHONY: build_core
 build_core:
 	@echo "Building stackl core"
-	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t $(DOCKER_IMAGE_CORE):$(VERSIONTAG) .
+	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t $(DOCKER_IMAGE_CORE):v$(VERSIONTAG) .
 
 .PHONY: build_agent
 build_agent:
 	@echo "Building agent "
-	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):$(VERSIONTAG) .
+	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):v$(VERSIONTAG) .
 
 .PHONY: build_stackl_cli
 build_stackl_cli:
 	@echo "Building stackl-cli"
-	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):$(VERSIONTAG) stackl/cli
+	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):v$(VERSIONTAG) stackl/cli
 
 .PHONY: build_opa
 build_opa:
@@ -54,27 +55,27 @@ build_opa:
 .PHONY: build_redis
 build_redis:
 	@echo "Building redis"
-	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(VERSIONTAG) stackl/redis
+	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):v$(REDIS_VERSION) stackl/redis
 
 .PHONY: push_prepare
 push_prepare:
 	@echo "Pushing prepare"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG)
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_PREPARE):v$(VERSIONTAG)
 
 .PHONY: push_core
 push_core:
 	@echo "Pushing core"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_CORE):$(VERSIONTAG)
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_CORE):v$(VERSIONTAG)
 
 .PHONY: push_agent
 push_agent:
 	@echo "Pushing agent"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):$(VERSIONTAG)
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):v$(VERSIONTAG)
 
 .PHONY: prepare
 prepare:
 	@echo "Creating docker-compose"
-	${CONTAINER_ENGINE} run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input $(DOCKER_IMAGE_PREPARE):$(VERSIONTAG) --conf /input/stackl.yml
+	${CONTAINER_ENGINE} run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input $(DOCKER_IMAGE_PREPARE):v$(VERSIONTAG) --conf /input/stackl.yml
 	@echo "Created docker-compose file in build/make/dev"
 
 .PHONY: start

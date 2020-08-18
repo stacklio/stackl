@@ -251,7 +251,7 @@ description = "STACKL"
 name = "stackl-client"
 optional = false
 python-versions = "*"
-version = "0.2.0.dev0"
+version = "0.2.0"
 
 [package.dependencies]
 certifi = "*"
@@ -293,7 +293,8 @@ version = "0.57.0"
 six = "*"
 
 [metadata]
-content-hash = "e9d2d5dfb09ff55b8d5b8bcc65e44514adc22dbedb02742f8e8c15abd0e46fb8"
+content-hash = "7b946b067873cd683e513e68a8e339a8fabb6bc31248c1b32ac4d09d0a371c0d"
+lock-version = "1.0"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -456,7 +457,7 @@ six = [
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 stackl-client = [
-    {file = "stackl-client-0.2.0.dev0.tar.gz", hash = "sha256:5788db1d5b749385da991c598d85596fc349c79df194a2fbd6c880c8b6ed7433"},
+    {file = "stackl-client-0.2.0.tar.gz", hash = "sha256:6d17bd3677ffc6baf9fded68c73a5693a444773843875c8b23eef2d9c904b269"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.7.4.2-py2-none-any.whl", hash = "sha256:f8d2bd89d25bc39dabe7d23df520442fa1d8969b82544370e03d88b5a591c392"},

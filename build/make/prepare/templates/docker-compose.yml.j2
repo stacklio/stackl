@@ -6,7 +6,7 @@ networks:
 services:
   stackl-core:
     restart: always
-    image: stacklio/stackl-core:0.2.0dev
+    image: stacklio/stackl-core:v0.2.0
     depends_on:
       - stackl-redis
     networks:
@@ -38,7 +38,7 @@ services:
       - WEB_CONCURRENCY=1
   stackl-redis:
     restart: always
-    image: stacklio/redis:0.2.0dev
+    image: stacklio/redis:v0.2.0
     ports:
       - 6379:6379
     volumes:
@@ -47,7 +47,7 @@ services:
       - stackl_bridge
   stackl-agent:
     restart: always
-    image: stacklio/stackl-agent:0.2.0dev
+    image: stacklio/stackl-agent:v0.2.0
     volumes:
       - /tmp:/tmp
     depends_on:
