@@ -27,12 +27,12 @@ def get_secret_handler(invoc, stack_instance, secret_format):
             conjur_authn_login = os.environ['CONJUR_AUTHN_LOGIN']
             conjur_ssl_config_map = os.environ['CONJUR_SSL_CONFIG_MAP']
             conjur_ssl_config_map_key = os.environ['CONJUR_SSL_CONFIG_MAP_KEY']
-            return ConjurSecretHandler(invoc, stack_instance, secret_format,
-                                       authenticator_client_container_name,
-                                       conjur_appliance_url, conjur_account,
-                                       conjur_authn_token_file,
-                                       conjur_authn_url, conjur_authn_login,
-                                       conjur_ssl_config_map,
-                                       conjur_ssl_config_map_key)
+            conjur_verify = os.environ.get('CONJUR_VERIFY', 'True')
+            return ConjurSecretHandler(
+                invoc, stack_instance, secret_format,
+                authenticator_client_container_name, conjur_appliance_url,
+                conjur_account, conjur_authn_token_file, conjur_authn_url,
+                conjur_authn_login, conjur_ssl_config_map,
+                conjur_ssl_config_map_key, conjur_verify)
     else:
         return None

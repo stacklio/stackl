@@ -7,6 +7,8 @@ from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.ansible_output import AnsibleOutput
 
+from ..secrets.conjur_secret_handler import ConjurSecretHandler
+
 stackl_plugin = """
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -39,12 +41,25 @@ options:
       choices: 
         - vault
         - base64
+        - conjur
   vault_addr:
       description: Vault Address
       required: false
   vault_token_path:
       description: Vault token path
       required: false
+  conjur_addr:
+      description: Conjur Address
+      required: false
+  conjur_account:
+      description: Conjur account
+      required: false
+  conjur_token_path:
+      description: Conjur token path
+      required: false
+  conjur_verify:
+      description: Conjur verify
+      default: True
 '''
 EXAMPLES = '''
 plugin: stackl
@@ -55,9 +70,11 @@ import json
 import hvac
 import stackl_client
 import base64
+import requests
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
 from collections import defaultdict
+
 
 def check_groups(stackl_groups, stackl_inventory_groups, host_list):
     count_group_dict = defaultdict(int)
@@ -80,7 +97,8 @@ def create_groups(hosts, stackl_inventory_groups):
             for index in range(item["count"]):
                 for target, host_list in hosts.items():
                     try:
-                        host = stackl_client.HostTarget(target=target, host=host_list[index])
+                        host = stackl_client.HostTarget(target=target,
+                                                        host=host_list[index])
                     except IndexError as e:
                         print(e)
                         exit(1)
@@ -114,6 +132,30 @@ def get_base64_secrets(service):
     return decoded_secrets
 
 
+def get_conjur_secrets(service, address, account, token_path, verify):
+    with open(token_path) as token_file:
+        token = json.load(token_file)
+    if isinstance(verify, str) and verify.lower() == "false":
+        verify = False
+    elif isinstance(verify, str) and verify.lower() == "true":
+        verify = True
+
+    token = json.dumps(token).encode('utf-8')
+    secrets = service.secrets
+    conjur_secrets = {}
+    for key, secret_path in secrets.items():
+        path = secret_path.split("!var")[1].strip()
+        r = requests.get(
+            f"{address}/secrets/{account}/variable/{path}",
+            headers={
+                'Authorization':
+                f'Token token=\"{base64.b64encode(token).decode("utf-8")}\"'
+            },
+            verify=verify)
+        conjur_secrets[key] = r.text
+    return conjur_secrets
+
+
 class InventoryModule(BaseInventoryPlugin):
     NAME = 'stackl'
 
@@ -145,21 +187,31 @@ class InventoryModule(BaseInventoryPlugin):
                     # self.inventory.set_variable(
                     #     service, "infrastructure_target",
                     #     service_definition.infrastructure_target)
-                    if hasattr(stack_instance, "hosts") and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
+                    if hasattr(
+                            stack_instance, "hosts"
+                    ) and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
                         if not check_groups(
                                 stack_instance.groups,
                                 service_definition.provisioning_parameters[
                                     'stackl_inventory_groups'],
                                 stack_instance.hosts):
-                            stack_instance.groups = create_groups(stack_instance.hosts, service_definition.provisioning_parameters[
+                            stack_instance.groups = create_groups(
+                                stack_instance.hosts,
+                                service_definition.provisioning_parameters[
                                     'stackl_inventory_groups'])
-                            stack_update = stackl_client.StackInstanceUpdate(stack_instance_name=stack_instance.name, params={"stackl_groups": stack_instance.groups}, disable_invocation=True)
+                            stack_update = stackl_client.StackInstanceUpdate(
+                                stack_instance_name=stack_instance.name,
+                                params={
+                                    "stackl_groups": stack_instance.groups
+                                },
+                                disable_invocation=True)
                             api_instance.put_stack_instance(stack_update)
                         for item, value in stack_instance.groups.items():
                             for group in value:
                                 if group.target == service_definition.infrastructure_target:
                                     self.inventory.add_group(item)
-                                    self.inventory.add_host(host=group.host, group=item)
+                                    self.inventory.add_host(host=group.host,
+                                                            group=item)
                                     for key, value in service_definition.provisioning_parameters.items(
                                     ):
                                         self.inventory.set_variable(
@@ -176,6 +228,13 @@ class InventoryModule(BaseInventoryPlugin):
                                                 "secret_handler") == "base64":
                                             secrets = get_base64_secrets(
                                                 service_definition)
+                                        elif self.get_option("secret_handler") == "conjur":
+                                            secrets = get_conjur_secrets(
+                                                service_definition,
+                                                self.get_option("conjur_addr"),
+                                                self.get_option("conjur_account"),
+                                                self.get_option("conjur_token_path"),
+                                                self.get_option("conjur_verify"))
                                         for key, value in secrets.items():
                                             self.inventory.set_variable(
                                                 item, key, value)
@@ -199,6 +258,13 @@ class InventoryModule(BaseInventoryPlugin):
                             elif self.get_option("secret_handler") == "base64":
                                 secrets = get_base64_secrets(
                                     service_definition)
+                            elif self.get_option("secret_handler") == "conjur":
+                                secrets = get_conjur_secrets(
+                                    service_definition,
+                                    self.get_option("conjur_addr"),
+                                    self.get_option("conjur_account"),
+                                    self.get_option("conjur_token_path"),
+                                    self.get_option("conjur_verify"))
                             for key, value in secrets.items():
                                 self.inventory.set_variable(
                                     service, key, value)
@@ -256,7 +322,8 @@ class Invocation():
             self._output = AnsibleOutput(self._functional_requirement_obj,
                                          self._invoc.stack_instance)
         self._env_list = {
-            "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory"
+            "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory",
+            "ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED": "True"
         }
         if isinstance(self._secret_handler, VaultSecretHandler):
             stackl_inv = {
@@ -273,6 +340,18 @@ class Invocation():
                 "host": environ['STACKL_HOST'],
                 "stack_instance": self._invoc.stack_instance,
                 "secret_handler": "base64"
+            }
+        elif isinstance(self._secret_handler, ConjurSecretHandler):
+            stackl_inv = {
+                "plugin": "stackl",
+                "host": environ['STACKL_HOST'],
+                "stack_instance": self._invoc.stack_instance,
+                "secret_handler": "conjur",
+                "conjur_addr": self._secret_handler._conjur_appliance_url,
+                "conjur_account": self._secret_handler._conjur_account,
+                "conjur_token_path":
+                self._secret_handler._conjur_authn_token_file,
+                "conjur_verify": self._secret_handler._conjur_verify
             }
         else:
             stackl_inv = {
@@ -332,9 +411,7 @@ class Invocation():
         :return: A list with strings containing shell commands
         :rtype: List[str]
         """
-        self._command_args = super.create_command_args()
-        pattern = self._service + "_" + str(self.index)
-        self._command_args[0] += [
+        self._command_args = [
             'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
         ]
         if "ansible_playbook_path" in self.provisioning_parameters:

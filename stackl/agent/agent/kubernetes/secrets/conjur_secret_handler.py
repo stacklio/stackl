@@ -8,7 +8,7 @@ class ConjurSecretHandler(SecretHandler):
                  authenticator_client_container_name, conjur_appliance_url,
                  conjur_account, conjur_authn_token_file, conjur_authn_url,
                  conjur_authn_login, conjur_ssl_config_map,
-                 conjur_ssl_config_map_key):
+                 conjur_ssl_config_map_key, conjur_verify):
         super().__init__(invoc, stack_instance, secret_format)
         self._invoc = invoc
         self._authenticator_client_container_name = authenticator_client_container_name
@@ -19,6 +19,7 @@ class ConjurSecretHandler(SecretHandler):
         self._conjur_authn_login = conjur_authn_login
         self._conjur_ssl_config_map = conjur_ssl_config_map
         self._conjur_ssl_config_map_key = conjur_ssl_config_map_key
+        self._conjur_verify = conjur_verify
         self._volumes = [{
             "name": "conjur-access-token",
             "type": "empty_dir",
