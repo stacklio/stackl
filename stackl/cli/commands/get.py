@@ -2,6 +2,8 @@ import json
 
 import click
 import yaml
+from commands.autocomplete import get_stack_instances, get_environments, get_locations, get_zones, get_sats, get_sits, \
+    get_services, get_functional_requirements, get_policy_templates
 from stackl_client import StackInfrastructureTemplate, ApiException
 from tabulate import tabulate
 
@@ -66,9 +68,10 @@ def parse(stackl_object, output_type):
             return "Output type not supported"
 
 
+
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_stack_instances)
 @pass_stackl_context
 def instance(stackl_context: StacklContext, output, name):
     try:
@@ -83,7 +86,7 @@ def instance(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_environments)
 @pass_stackl_context
 def environment(stackl_context: StacklContext, output, name):
     document_type = "environment"
@@ -101,7 +104,7 @@ def environment(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_locations)
 @pass_stackl_context
 def location(stackl_context: StacklContext, output, name):
     document_type = "location"
@@ -119,7 +122,7 @@ def location(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_zones)
 @pass_stackl_context
 def zone(stackl_context: StacklContext, output, name):
     document_type = "zone"
@@ -137,39 +140,39 @@ def zone(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_sats)
 @pass_stackl_context
 def sat(stackl_context: StacklContext, output, name):
     try:
         if name is None:
-            env = stackl_context.sat_api.get_stack_application_templates()
+            sat = stackl_context.sat_api.get_stack_application_templates()
         else:
-            env = stackl_context.sat_api.get_stack_application_template_by_name(
+            sat = stackl_context.sat_api.get_stack_application_template_by_name(
                 name)
-        click.echo(parse(env, output))
+        click.echo(parse(sat, output))
     except ApiException as e:
         click.echo(e.body)
 
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_sits)
 @pass_stackl_context
 def sit(stackl_context: StacklContext, output, name):
     try:
         if name is None:
-            env = stackl_context.sit_api.get_stack_infrastructure_templates()
+            sit = stackl_context.sit_api.get_stack_infrastructure_templates()
         else:
-            env = stackl_context.sit_api.get_stack_infrastructure_template_by_name(
+            sit = stackl_context.sit_api.get_stack_infrastructure_template_by_name(
                 name)
-        click.echo(parse(env, output))
+        click.echo(parse(sit, output))
     except ApiException as e:
         click.echo(e.body)
 
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_services)
 @pass_stackl_context
 def service(stackl_context: StacklContext, output, name):
     try:
@@ -184,7 +187,7 @@ def service(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_functional_requirements)
 @pass_stackl_context
 def functional_requirement(stackl_context: StacklContext, output, name):
     try:
@@ -201,7 +204,7 @@ def functional_requirement(stackl_context: StacklContext, output, name):
 
 @get.command()
 @click.option('-o', '--output')
-@click.argument('name', required=False)
+@click.argument('name', required=False, autocompletion=get_policy_templates)
 @pass_stackl_context
 def policy_template(stackl_context: StacklContext, output, name):
     try:
