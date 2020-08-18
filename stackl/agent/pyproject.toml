@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "agent"
-version = "0.2.0"
+version = "0.2.1dev"
 description = ""
 authors = ["Frederic <frederic.vanreet@icloud.com>"]
 

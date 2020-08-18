@@ -17,7 +17,7 @@ logger.info(
 app = FastAPI(
     title="STACKL",
     description="stackl",
-    version="0.2.0"
+    version="0.2.1dev"
 )
 
 app.include_router(infrastructure_base_router.router,
