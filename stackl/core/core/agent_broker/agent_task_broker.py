@@ -26,7 +26,11 @@ async def create_job_for_agent(stack_instance,
 
         # infrastructure target and agent are the same for each service, make sure we use the same agent for
         # each invocation of a service
-        for fr in service_doc["functional_requirements"]:
+        functional_requirements = service_doc["functional_requirements"]
+        if action == "delete":
+            functional_requirements = reversed(functional_requirements)
+
+        for fr in functional_requirements:
             fr_doc = document_manager.get_functional_requirement(fr)
             fr_jobs = []
             for service_definition in stack_instance.services[service_name]:
@@ -64,6 +68,10 @@ async def create_job_for_agent(stack_instance,
                                     stack_instance)
                 if automation_result["status"] == "FAILED":
                     success = False
+
+            if not success:
+                logger.debug("Not all fr's succeeded, stopping execution")
+                return
 
             logger.debug(f"tasks executed")
 

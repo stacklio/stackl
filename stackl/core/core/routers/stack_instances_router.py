@@ -66,6 +66,8 @@ def get_stack_instance(
         f"[StackInstancesName GET] Getting document for stack instance '{name}'"
     )
     stack_instance = document_manager.get_stack_instance(name)
+    if not stack_instance:
+        raise HTTPException(status_code=404, detail="Stack instance not found")
     return stack_instance
 
 

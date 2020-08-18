@@ -139,14 +139,13 @@ class InventoryModule(BaseInventoryPlugin):
             stack_instance = api_instance.get_stack_instance(
                 stack_instance_name)
             for service, si_service in stack_instance.services.items():
-                # self.inventory.add_group(service)
                 for index, service_definition in enumerate(si_service):
                     # self.inventory.add_host(host=service + "_" + str(index),
                     #                         group=service)
                     # self.inventory.set_variable(
                     #     service, "infrastructure_target",
                     #     service_definition.infrastructure_target)
-                    if stack_instance.hosts and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
+                    if hasattr(stack_instance, "hosts") and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
                         if not check_groups(
                                 stack_instance.groups,
                                 service_definition.provisioning_parameters[
@@ -181,6 +180,7 @@ class InventoryModule(BaseInventoryPlugin):
                                             self.inventory.set_variable(
                                                 item, key, value)
                     else:
+                        self.inventory.add_group(service)
                         self.inventory.add_host(host=service + "_" +
                                                 str(index),
                                                 group=service)
@@ -333,7 +333,9 @@ class Invocation():
         :rtype: List[str]
         """
         pattern = self._service + "_" + str(self.index)
-        self._command_args = ['echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd']
+        self._command_args = [
+            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
+        ]
         if "ansible_playbook_path" in self.provisioning_parameters:
             self._command_args[
                 0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'

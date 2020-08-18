@@ -220,7 +220,7 @@ class StackHandler(Handler):
         # Verify that each of the SIT policies doesn't violate
 
         infringment_messages = self.evaluate_sit_policies(
-            opa_data, service_targets, stack_infr)
+            opa_data, service_targets, stack_infr, item.params)
 
         if infringment_messages:
             logger.error(
@@ -233,7 +233,8 @@ class StackHandler(Handler):
             item, service_targets['result']['services'], stack_infr,
             opa_service_params), service_targets['result']['services']
 
-    def evaluate_sit_policies(self, opa_data, service_targets, stack_infr):
+    def evaluate_sit_policies(self, opa_data, service_targets, stack_infr,
+                              item_params):
         infringment_messages = []
         for service, targets in service_targets['result']['services'].items():
             for t in targets:
@@ -246,7 +247,11 @@ class StackHandler(Handler):
                     # Make sure the policy is in OPA
                     self.opa_broker.add_policy(policy.name, policy.policy)
 
-                    policy_input = {"parameters": policy_attributes}
+                    policy_input = {
+                        "parameters": policy_attributes,
+                        "stack_instance_params": item_params,
+                        "target": t
+                    }
 
                     opa_data_with_inputs = {**opa_data, **policy_input}
                     # evaluate

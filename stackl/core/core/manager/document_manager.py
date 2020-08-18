@@ -157,6 +157,9 @@ class DocumentManager(Manager):
         store_response = self.store.get(type="stack_instance",
                                         name=stack_instance_name,
                                         category="items")
+        if store_response.status_code == 404:
+            logger.debug("not found returning none")
+            return None
         stack_instance = StackInstance.parse_obj(store_response.content)
         return stack_instance
 
@@ -165,6 +168,8 @@ class DocumentManager(Manager):
                                             category="items")
         stack_instances = parse_obj_as(List[StackInstance],
                                        store_response.content)
+        if store_response.status_code == 404:
+            return None
         return stack_instances
 
     def write_stack_instance(self, stack_instance):
