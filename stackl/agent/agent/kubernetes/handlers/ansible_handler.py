@@ -273,24 +273,16 @@ class InventoryModule(BaseInventoryPlugin):
 """
 
 playbook_include_role = """
+- hosts: "{{ pattern }}"
+  tasks:
+    - include_role:
+        name: "{{ ansible_role }}"
 - hosts: localhost
   connection: local
   gather_facts: no
   tasks:
-    - include_role:
-        name: "{{ ansible_role }}"
     - set_fact:
-        output_dict: {}
-    - set_fact:
-        output_dict: "{{ output_dict | combine(vars) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'environment': environment}) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'group_names': group_names}) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'groups': groups}) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'hostvars': hostvars}) }}"
+        output_dict: "{{ hostvars }}"
     - copy:
         content: "{{ output_dict | to_nice_json }}"
         dest: "{{ outputs_path | default('/tmp/outputs.json') }}"
@@ -421,12 +413,8 @@ class Invocation():
             pattern = self._service + "_" + str(self.index)
             self._command_args[
                 0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
-            # self._command_args[
-            #     0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
-            # self._command_args[
-            #     0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
-            # self._command_args[
-            #     0] += f'-e ansible_role={self._functional_requirement} '
+            self._command_args[
+                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern}'
             if self._output:
                 self._command_args[
                     0] += f'-e outputs_path={self._output.output_file} '

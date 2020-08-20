@@ -1,24 +1,23 @@
 #!/opt/venv/bin/python
-from abc import ABC, abstractmethod
-from glom import glom
-import json
 import argparse
+import json
 import sys
+from abc import ABC, abstractmethod
+from collections import defaultdict
+
+from glom import glom
 
 
 class Converter(ABC):
     @property
-    @abstractmethod
     def input_doc(self):
         pass
 
     @property
-    @abstractmethod
     def spec_doc(self):
         pass
 
     @property
-    @abstractmethod
     def output_path(self):
         pass
 
@@ -26,20 +25,11 @@ class Converter(ABC):
     def convert(self):
         pass
 
+    def tree(self):
+        return defaultdict(self.tree)
+
 
 class JsonConverter(Converter):
-    @property
-    def spec_doc(self):
-        pass
-
-    @property
-    def output_path(self):
-        pass
-
-    @property
-    def input_doc(self):
-        pass
-
     def __init__(self,
                  spec_doc_file: str = 'spec.json',
                  json_doc_file: str = 'inputs.json',
@@ -59,6 +49,30 @@ class JsonConverter(Converter):
         result = {}
         for field_name, field_spec in self.json_spec.items():
             result[field_name] = glom(self.json_doc, field_spec)
+        return result
+
+
+class AnsibleConverter(Converter):
+    def __init__(self,
+                 spec_doc_file: str = 'spec.json',
+                 json_doc_file: str = 'inputs.json',
+                 outputs_file: str = 'outputs.json'):
+        self.spec_doc_file = spec_doc_file
+        self.json_doc_file = json_doc_file
+        self.outputs_file = outputs_file
+        self.read_files()
+
+    def read_files(self):
+        with open(self.json_doc_file) as f:
+            self.json_doc = json.load(f)
+        with open(self.spec_doc_file) as f:
+            self.json_spec = json.load(f)
+
+    def convert(self):
+        result = self.tree()
+        for field_name, field_spec in self.json_spec.items():
+            for host_ip, values in self.json_doc.items():
+                result[field_name][host_ip] = values[field_spec]
         return result
 
 
@@ -109,6 +123,10 @@ def main():
         converter = JsonConverter(json_doc_file=args.doc,
                                   spec_doc_file=args.spec,
                                   outputs_file=args.outputs_file)
+    if doc_format == 'ansible':
+        converter = AnsibleConverter(json_doc_file=args.doc,
+                                     spec_doc_file=args.spec,
+                                     outputs_file=args.outputs_file)
     result = converter.convert()
     with open(args.outputs_file, 'w') as f:
         json.dump(result, f)
