@@ -72,7 +72,7 @@ class Invocation():
         command_args = super().create_command_args
         if self._secret_handler.terraform_backend_enabled:
             command_args[
-                0] += f'mv /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
+                0] += f'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
         else:
             command_args[0] += f'terraform init'
         if self._secret_handler and self._secret_handler.terraform_backend_enabled:
@@ -98,13 +98,11 @@ class Invocation():
         command_args = []
         if self._secret_handler.terraform_backend_enabled:
             command_args.append(
-                f'mv /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
+                f'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
             )
         else:
             command_args.append(f'terraform init')
-        if self._secret_handler and self._secret_handler.terraform_backend_enabled:
-            command_args[
-                0] += f' -backend-config=key={self._stack_instance.name}'
+
         command_args[
             0] += f' && terraform destroy -auto-approve -var-file {self.variables_file}'
 

@@ -21,6 +21,12 @@ class SecretHandler(ABC):
                 return service_definition.secrets
 
     @property
+    def params(self):
+        for service_definition in self._stack_instance.services[self._service]:
+            if service_definition.infrastructure_target == self._invoc.infrastructure_target:
+                return service_definition.provisioning_parameters
+
+    @property
     def init_containers(self):
         return self._init_containers
 

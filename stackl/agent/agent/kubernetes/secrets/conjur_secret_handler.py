@@ -1,4 +1,4 @@
-import yaml
+import json
 
 from .base_secret_handler import SecretHandler
 
@@ -30,6 +30,13 @@ class ConjurSecretHandler(SecretHandler):
             'type': 'config_map',
             'data': {
                 'secrets.yml': self.format_secrets_yaml()
+            }
+        },{
+            'name': 'terraform-backend',
+            'mount_path': '/tmp/backend',
+            'type': 'config_map',
+            'data': {
+                'backend.tf.json': json.dumps(self._format_template())
             }
         }]
         self._init_containers = [{
@@ -66,3 +73,10 @@ class ConjurSecretHandler(SecretHandler):
             yaml_string += f"{k}: {v}\n"
 
         return yaml_string
+
+    def _format_template(self):
+        if "terraform_statefile_config" in self.params:
+            self.terraform_backend_enabled = True
+            return self.params['terraform_statefile_config']
+
+        return None

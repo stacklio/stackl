@@ -156,8 +156,6 @@ def create_job_object(name: str,
 
     logging.debug(f"Environment list created for job {name}: {k8s_env_list}")
     print(f"Environment list created for job {name}: {k8s_env_list}")
-    root_hack = client.V1SecurityContext()
-    root_hack.run_as_user = 0
 
     container = client.V1Container(name=container_name,
                                    image=container_image,
@@ -202,7 +200,6 @@ def create_job_object(name: str,
         image_pull_secrets=k8s_secrets,
         volumes=k8s_volumes,
         init_containers=k8s_init_containers,
-        security_context=root_hack,
         service_account_name=service_account)
     template.template = client.V1PodTemplateSpec(
         metadata=template.template.metadata, spec=template.template.spec)
