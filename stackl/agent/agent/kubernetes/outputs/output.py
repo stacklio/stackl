@@ -10,10 +10,10 @@ class Output:
         self.stack_instance = None
         self.output_file = ''
         self.stackl_host = f'http://{os.environ["STACKL_HOST"]}'
-        self.stackl_cli_image = 'stacklio/stackl-cli:v0.2.0'
+        self.stackl_cli_image = 'stacklio/stackl-cli:v0.2.1dev'
         self.stackl_cli_command = ['/bin/bash', '-c']
         self._functional_requirement = functional_requirement
-        self._env_list = None
+        self._env_list = {}
         self.stackl_instance_name = stackl_instance_name
         self._spec_mount = {
             "name": "outputs-spec",

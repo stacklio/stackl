@@ -123,7 +123,7 @@ def main():
         converter = JsonConverter(json_doc_file=args.doc,
                                   spec_doc_file=args.spec,
                                   outputs_file=args.outputs_file)
-    if doc_format == 'ansible':
+    elif doc_format == 'ansible':
         converter = AnsibleConverter(json_doc_file=args.doc,
                                      spec_doc_file=args.spec,
                                      outputs_file=args.outputs_file)
