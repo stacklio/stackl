@@ -7,11 +7,10 @@ from time import sleep
 from typing import Dict, List
 
 import stackl_client
-from kubernetes import client, config
-from kubernetes.client.rest import ApiException
-
 from agent.kubernetes.outputs.output import Output
 from agent.kubernetes.secrets.conjur_secret_handler import ConjurSecretHandler
+from kubernetes import client, config
+from kubernetes.client.rest import ApiException
 
 
 def create_job_object(name: str,
@@ -271,17 +270,16 @@ class Handler(ABC):
         self.stackl_namespace = os.environ['STACKL_NAMESPACE']
         self.service_account = os.environ['SERVICE_ACCOUNT']
 
-    def wait_for_job(self, job_name: str, namespace: str):
-        ready = False
-        api_response = None
-        while not ready:
+    def wait_for_job(self, job_pod_name: str, namespace: str):
+        while True:
             sleep(5)
-            api_response = self._api_instance.read_namespaced_job(
-                job_name, namespace)
-            logging.debug(f"Api response: {api_response}")
-            if api_response.status.failed or api_response.status.succeeded:
-                ready = True
-        return api_response
+            api_response = self._api_instance_core.read_namespaced_pod_status(job_pod_name, namespace)
+            print(api_response)
+            for cs in api_response.status.container_statuses:
+                if cs.name == "jobcontainer" and cs.state.terminated is not None:
+                    if cs.state.terminated.reason == "Error":
+                        return False
+                    return True
 
     def handle(self):
         logging.info(f"Invocation: {self._invoc}")
@@ -295,7 +293,7 @@ class Handler(ABC):
             "stackl.io/stack-instance": self._invoc.stack_instance,
             "stackl.io/service": self._invoc.service,
             "stackl.io/functional-requirement":
-            self._invoc.functional_requirement
+                self._invoc.functional_requirement
         }
         body, cms = create_job_object(name=name,
                                       container_image=container_image,
@@ -309,7 +307,7 @@ class Handler(ABC):
                                       service_account=self.service_account,
                                       output=self._output,
                                       labels=labels)
-        print(body)
+
         try:
             for cm in cms:
                 self._api_instance_core.create_namespaced_config_map(
@@ -321,9 +319,15 @@ class Handler(ABC):
                 f"Exception when calling BatchV1Api->create_namespaced_job: {e}\n"
             )
         logging.debug("job created")
-        api_response = self.wait_for_job(body.metadata.name,
-                                         self.stackl_namespace)
-        if api_response.status.succeeded == 1:
+        sleep(5)
+        job_pods = self._api_instance_core.list_namespaced_pod(
+            self.stackl_namespace,
+            label_selector=f"job-name={created_job.metadata.name}")
+        job_succeeded = self.wait_for_job(job_pods.items[0].metadata.name,
+                                          self.stackl_namespace)
+
+        if job_succeeded:
+            print("job succeeded")
             try:
                 for cm in cms:
                     self._api_instance_core.delete_namespaced_config_map(
@@ -338,11 +342,10 @@ class Handler(ABC):
                 )
             return 0, ""
         else:
-            job_pods = self._api_instance_core.list_namespaced_pod(
-                self.stackl_namespace,
-                label_selector=f"job-name={created_job.metadata.name}")
+            print("job failed")
             logs = self._api_instance_core.read_namespaced_pod_log(
-                job_pods.items[0].metadata.name, self.stackl_namespace)
+                job_pods.items[0].metadata.name, self.stackl_namespace, container="jobcontainer")
+            print(logs)
             return 1, logs
 
     @property
