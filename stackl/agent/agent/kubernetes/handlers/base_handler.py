@@ -278,8 +278,11 @@ class Handler(ABC):
             for cs in api_response.status.container_statuses:
                 if cs.name == "jobcontainer" and cs.state.terminated is not None:
                     if cs.state.terminated.reason == "Error":
-                        return False
-                    return True
+                        return False, "failed"
+                    return True, ""
+                if cs.name == "jobcontainer" and cs.state.waiting is not None:
+                    if cs.state.waiting.reason == "ErrImagePull" or cs.state.waiting.reason == "ImagePullBackOff":
+                        return False, "Image for this functional requirement can not be found"
 
     def handle(self):
         logging.info(f"Invocation: {self._invoc}")
@@ -323,8 +326,8 @@ class Handler(ABC):
         job_pods = self._api_instance_core.list_namespaced_pod(
             self.stackl_namespace,
             label_selector=f"job-name={created_job.metadata.name}")
-        job_succeeded = self.wait_for_job(job_pods.items[0].metadata.name,
-                                          self.stackl_namespace)
+        job_succeeded, job_status = self.wait_for_job(job_pods.items[0].metadata.name,
+                                                      self.stackl_namespace)
 
         if job_succeeded:
             print("job succeeded")
@@ -343,10 +346,12 @@ class Handler(ABC):
             return 0, ""
         else:
             print("job failed")
-            logs = self._api_instance_core.read_namespaced_pod_log(
-                job_pods.items[0].metadata.name, self.stackl_namespace, container="jobcontainer")
-            print(logs)
-            return 1, logs
+            if job_status == "failed":
+                error_msg = self._api_instance_core.read_namespaced_pod_log(
+                    job_pods.items[0].metadata.name, self.stackl_namespace, container="jobcontainer")
+            else:
+                error_msg = job_status
+            return 1, error_msg
 
     @property
     def index(self):
