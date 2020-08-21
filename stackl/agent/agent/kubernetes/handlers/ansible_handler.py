@@ -273,24 +273,17 @@ class InventoryModule(BaseInventoryPlugin):
 """
 
 playbook_include_role = """
-- hosts: localhost
-  connection: local
+- hosts: "{{ pattern }}"
   gather_facts: no
   tasks:
     - include_role:
         name: "{{ ansible_role }}"
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
     - set_fact:
-        output_dict: {}
-    - set_fact:
-        output_dict: "{{ output_dict | combine(vars) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'environment': environment}) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'group_names': group_names}) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'groups': groups}) }}"
-    - set_fact:
-        output_dict: "{{ output_dict | combine({'hostvars': hostvars}) }}"
+        output_dict: "{{ hostvars }}"
     - copy:
         content: "{{ output_dict | to_nice_json }}"
         dest: "{{ outputs_path | default('/tmp/outputs.json') }}"
@@ -317,7 +310,6 @@ class Invocation():
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
                                                   "yaml")
-        # If any outputs are defined in the functional requirement set in base_handler
         if self._functional_requirement_obj.outputs:
             self._output = AnsibleOutput(self._functional_requirement_obj,
                                          self._invoc.stack_instance)
@@ -393,9 +385,8 @@ class Invocation():
                 "playbook-role.yml": playbook_include_role
             }
         }]
-        if self._output:
-            self._volumes.append(self._output.volume_mount)
-            self._volumes.append(self._output.spec_mount)
+        # If any outputs are defined in the functional requirement set in base_handler
+
         self._init_containers = []
         self._command = ["/bin/sh", "-c"]
         self._command_args = [
@@ -417,19 +408,17 @@ class Invocation():
         if "ansible_playbook_path" in self.provisioning_parameters:
             self._command_args[
                 0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+        elif self._output:
+            pattern = self._service + "_" + str(self.index)
+            self._command_args[
+                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} '
+            self._command_args[
+                0] += f'-e outputs_path={self._output.output_file} '
         else:
             pattern = self._service + "_" + str(self.index)
             self._command_args[
                 0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
-            # self._command_args[
-            #     0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -v '
-            # self._command_args[
-            #     0] += f'-i /opt/ansible/playbooks/inventory/stackl.yml '
-            # self._command_args[
-            #     0] += f'-e ansible_role={self._functional_requirement} '
-            if self._output:
-                self._command_args[
-                    0] += f'-e outputs_path={self._output.output_file} '
+
         return self._command_args
 
     @property

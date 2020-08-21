@@ -8,7 +8,7 @@ setup(
     py_modules=['stackl', 'commands', 'context'],
     packages=find_packages(),
     install_requires=[
-        'stackl-client==0.2.1dev', 'pyYAML==5.3', 'Click==7.0',
+        'stackl-client==0.2.0', 'pyYAML==5.3', 'Click==7.0',
         'mergedeep==1.3.0', 'tabulate==0.8.6', 'glom==19.10.0'
     ],
     entry_points='''
