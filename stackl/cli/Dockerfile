@@ -10,7 +10,7 @@ RUN microdnf install -y python38 && \
     python3 -m venv /opt/venv && \
     pip3 install --no-cache .
 
-COPY scripts/check-stackl-instance.sh /opt/stackl-cli/bin/check-stackl-instance
+COPY scripts/check-stackl-instance.py /opt/stackl-cli/bin/check-stackl-instance
 COPY scripts/docker-entrypoint.sh /opt/stackl-cli/bin/docker-entrypoint.sh
 COPY scripts/convert_json_from_spec.py /opt/stackl-cli/bin/convert_json_from_spec
 

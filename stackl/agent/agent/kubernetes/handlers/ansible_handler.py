@@ -1,6 +1,8 @@
 from os import environ
-from json import dumps
 from typing import List
+
+import yaml
+
 from .base_handler import Handler
 from agent.kubernetes.secrets.base64_secret_handler import Base64SecretHandler
 from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
@@ -367,7 +369,7 @@ class Invocation():
             "mount_path": "/opt/ansible/playbooks/inventory/stackl.yml",
             "sub_path": "stackl.yml",
             "data": {
-                "stackl.yml": dumps(stackl_inv)
+                "stackl.yml": yaml.dump(stackl_inv)
             }
         }, {
             "name": "stackl-plugin",
