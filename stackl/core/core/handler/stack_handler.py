@@ -132,6 +132,8 @@ class StackHandler(Handler):
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.infrastructure_target].secrets
                 opa_outputs = service_definition.opa_outputs
+                agent = stack_infrastructure_template.infrastructure_capabilities[
+                    service_definition.infrastructure_target].agent
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
                 for fr in svc_doc.functional_requirements:
@@ -162,6 +164,7 @@ class StackHandler(Handler):
                     **merged_secrets,
                     **stack_instance.instance_secrets
                 }
+                service_definition.agent = agent
                 stack_instance.services[svc][count] = service_definition
         stack_instance.status = stack_instance_statuses
         return stack_instance
