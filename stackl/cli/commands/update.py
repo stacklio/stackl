@@ -7,8 +7,9 @@ from context import pass_stackl_context, StacklContext
 
 
 @click.group()
-def update():
-    pass
+@click.pass_context
+def update(ctx):
+    ctx.obj = StacklContext()
 
 
 @update.command()

@@ -1,14 +1,12 @@
-import json
-
 import click
-import stackl_client
 
 from context import pass_stackl_context, StacklContext
 
 
 @click.group()
-def delete():
-    pass
+@click.pass_context
+def delete(ctx):
+    ctx.obj = StacklContext()
 
 
 @delete.command()

@@ -7,8 +7,10 @@ from context import pass_stackl_context, StacklContext
 
 
 @click.group()
-def create():
-    pass
+@click.pass_context
+def create(ctx):
+    ctx.obj = StacklContext()
+
 
 
 @create.command()

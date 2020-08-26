@@ -16,8 +16,9 @@ from context import pass_stackl_context, StacklContext
 
 
 @click.group()
-def get():
-    pass
+@click.pass_context
+def get(ctx):
+    ctx.obj = StacklContext()
 
 
 def table_data(stackl_object):

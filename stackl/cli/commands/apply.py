@@ -4,16 +4,11 @@ from pathlib import Path
 import click
 import stackl_client
 import yaml
-from context import pass_stackl_context
+from context import StacklContext
 from mergedeep import merge
 
 
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.option('-d', '--directory', type=click.Path(exists=True))
 @click.option('-c', '--config-file', type=click.File())
 @click.option('-p', '--params', default=[], multiple=True)
@@ -22,9 +17,9 @@ def cli():
 @click.option('-s', '--secrets', default="{}")
 @click.option('-e', '--service-params', default="{}")
 @click.argument('instance-name', required=False)
-@pass_stackl_context
-def apply(stackl_context, directory, config_file, params, tags, secrets,
+def apply(directory, config_file, params, tags, secrets,
           service_params, replicas, instance_name):
+    stackl_context = StacklContext()
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:

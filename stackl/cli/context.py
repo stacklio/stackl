@@ -31,10 +31,11 @@ class StacklContext(object):
                     api_client=self.api_client)
         except FileNotFoundError:
             click.echo(
-                "Config file not found, run `stackl connect` first, ignore this if you are running stackl connect")
+                "Config file not found, run `stackl connect` first")
+            exit(1)
 
 
-pass_stackl_context = click.make_pass_decorator(StacklContext, ensure=True)
+pass_stackl_context = click.make_pass_decorator(StacklContext, ensure=False)
 
 
 def get_config_path():
