@@ -12,6 +12,7 @@ arq = "^0.19"
 stackl-client = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
+pylint = "^2.6.0"
 
 [tool.poetry.scripts]
 start-agent = "agent.main:start"

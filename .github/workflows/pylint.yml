@@ -1,115 +1,75 @@
-
 on:
   push:
     paths:
     - "**/*"
-
 
 jobs:
   stackl-cli:
     name: "Python ${{ matrix.python-version }}-stackl-cli"
     runs-on: [ubuntu-18.04]
     env:
-      USING_COVERAGE: '3.6,3.8'
+      USING_COVERAGE: '3.7'
 
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "pypy3"]
+        python-version: ["3.7"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - run: pip install pylint==2.4.4 && python stackl/stackl_cli/setup.py install
-      - run: listf=$(find stackl/stackl_cli -name "*.py") && pylint $listf
+      - run: pip install pylint==2.4.4
+      - run: listf=$(find stackl/cli -name "*.py") && pylint $listf
 
-  stackl-rest:
-    name: "Python ${{ matrix.python-version }}-stackl-rest"
+  stackl-core:
+    name: "Python ${{ matrix.python-version }}-stackl-core"
     runs-on: [ubuntu-18.04]
     env:
-      USING_COVERAGE: '3.6,3.8'
+      USING_COVERAGE: '3.7'
 
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "pypy3"]
+        python-version: ["3.7"]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - name: Install
+        uses: abatilo/actions-poetry@v1.5.0
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r stackl/application/requirements_rest.txt
-      - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
+          python_version: ${{ matrix.python-version }}
+          poetry_version: 1.0.9
+          working_directory: ./stackl/core
+          args: install
+      - name: run pylint
+        uses: abatilo/actions-poetry@v1.5.0
+        with:
+          python_version: ${{ matrix.python-version }}
+          poetry_version: 1.0.9
+          working_directory: ./stackl/core
+          args: run pylint core
 
-  stackl-worker:
-    name: "Python ${{ matrix.python-version }}-stackl-worker"
+  stackl-agent:
+    name: "Python ${{ matrix.python-version }}-stackl-agent"
     runs-on: [ubuntu-18.04]
     env:
-      USING_COVERAGE: '3.6,3.8'
+      USING_COVERAGE: '3.7'
 
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "pypy3"]
+        python-version: ["3.7"]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - name: Install
+        uses: abatilo/actions-poetry@v1.5.0
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r stackl/application/requirements_worker.txt
-      - run: listf=$(find stackl -name "*.py" | grep -v application/protos) && pylint $listf
-
-  stackl-docker-agent:
-    name: "Python ${{ matrix.python-version }}-stackl-docker-agent"
-    runs-on: [ubuntu-18.04]
-    env:
-      USING_COVERAGE: '3.6,3.8'
-
-    strategy:
-      matrix:
-        python-version: ["3.6", "3.7", "3.8", "pypy3"]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+          python_version: ${{ matrix.python-version }}
+          poetry_version: 1.0.9
+          working_directory: ./stackl/agent
+          args: install
+      - name: Run pylint
+        uses: abatilo/actions-poetry@v1.5.0
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r stackl/agents/grpc_base/requirements.txt
-      - run: listf=$(find stackl/agents/docker_agent -name "*.py") && pylint $listf
-
-  stackl-kubernetes-agent:
-    name: "Python ${{ matrix.python-version }}-stackl-kubernetes-agent"
-    runs-on: [ubuntu-18.04]
-    env:
-      USING_COVERAGE: '3.6,3.8'
-
-    strategy:
-      matrix:
-        python-version: ["3.6", "3.7", "3.8", "pypy3"]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r stackl/agents/grpc_base/requirements.txt
-      - run: listf=$(find stackl/agents/kubernetes_agent -name "*.py") && pylint $listf
-
-  stackl-websocket-agent:
-    name: "Python ${{ matrix.python-version }}-stackl-websocket-agent"
-    runs-on: [ubuntu-18.04]
-    env:
-      USING_COVERAGE: '3.6,3.8'
-
-    strategy:
-      matrix:
-        python-version: ["3.6", "3.7", "3.8", "pypy3"]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-      - run: pip install pylint==2.4.4 && pip install -r stackl/agents/grpc_base/requirements.txt
-      - run: listf=$(find stackl/agents/websocket_agent -name "*.py") && pylint $listf
+          python_version: ${{ matrix.python-version }}
+          poetry_version: 1.0.9
+          working_directory: ./stackl/agent
+          args: run pylint agent
