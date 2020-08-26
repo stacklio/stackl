@@ -23,8 +23,8 @@ api_client = stackl_client.ApiClient(configuration=configuration)
 stack_instances_api = stackl_client.StackInstancesApi(
     api_client=api_client)
 
-if 'STACK_INSTANCE_NAME' in os.environ:
-    stack_instance = stack_instances_api.get_stack_instance(os.environ['STACK_INSTANCE_NAME'])
+if "STACKL_INSTANCE" in os.environ:
+    stack_instance = stack_instances_api.get_stack_instance(os.environ['STACKL_INSTANCE'])
     ready = False
     while not ready:
         for status in stack_instance.status:
@@ -34,6 +34,7 @@ if 'STACK_INSTANCE_NAME' in os.environ:
             elif status.status == "in_progress":
                 print(f"Stack instance {stack_instance.name}: service {status.service} on functional-requirement {status.functional_requirement} not ready, still waiting")
                 time.sleep(5)
+                stack_instance = stack_instances_api.get_stack_instance(os.environ['STACKL_INSTANCE'])
                 ready = False
                 break
             else:
@@ -41,5 +42,5 @@ if 'STACK_INSTANCE_NAME' in os.environ:
                     f"Stack instance {stack_instance.name}: service {status.service} on functional-requirement {status.functional_requirement} ready")
                 ready = True
 else:
-    print("STACK_INSTANCE_NAME NOT SET")
+    print("STACKL_INSTANCE NOT SET")
     exit(1)

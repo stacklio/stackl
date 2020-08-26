@@ -1,14 +1,13 @@
+import json
 from os import environ
 from typing import List
 
-import yaml
-
-from .base_handler import Handler
-from agent.kubernetes.secrets.base64_secret_handler import Base64SecretHandler
-from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.ansible_output import AnsibleOutput
+from agent.kubernetes.secrets.base64_secret_handler import Base64SecretHandler
+from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
 
+from .base_handler import Handler
 from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
 stackl_plugin = """
@@ -308,6 +307,7 @@ class Invocation():
         self.tool = "ansible"
         self.action = "create"
 """
+
     def __init__(self, invoc):
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
@@ -344,7 +344,7 @@ class Invocation():
                 "conjur_addr": self._secret_handler._conjur_appliance_url,
                 "conjur_account": self._secret_handler._conjur_account,
                 "conjur_token_path":
-                self._secret_handler._conjur_authn_token_file,
+                    self._secret_handler._conjur_authn_token_file,
                 "conjur_verify": self._secret_handler._conjur_verify
             }
         else:
@@ -369,7 +369,7 @@ class Invocation():
             "mount_path": "/opt/ansible/playbooks/inventory/stackl.yml",
             "sub_path": "stackl.yml",
             "data": {
-                "stackl.yml": yaml.dump(stackl_inv)
+                "stackl.yml": json.dumps(stackl_inv)
             }
         }, {
             "name": "stackl-plugin",

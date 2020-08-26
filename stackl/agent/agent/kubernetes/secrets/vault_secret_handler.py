@@ -13,6 +13,7 @@ auto_auth {
     sink "file" {
         config = {
             path = "%s"
+            mode = 0755
         }
     }
 }
@@ -47,7 +48,7 @@ class VaultSecretHandler(SecretHandler):
         self._invoc = invoc
         self._secret_format = secret_format.lower()
         self._pid_file = "/home/vault/pidfile"
-        self._vault_token_path = "/home/vault/.vault-token"
+        self._vault_token_path = "/tmp/vault/.vault-token"
         self._stack_instance = stack_instance
         self._destination = f"/tmp/secrets/secret.{self._secret_format}"
         self._volumes = [{
@@ -64,7 +65,7 @@ class VaultSecretHandler(SecretHandler):
         }, {
             "name": "vault-token",
             "type": "empty_dir",
-            "mount_path": "/home/vault"
+            "mount_path": "/tmp/vault"
         }]
         if self.terraform_backend_enabled:
             self._volumes.append({

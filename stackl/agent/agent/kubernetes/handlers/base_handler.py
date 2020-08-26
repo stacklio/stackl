@@ -249,7 +249,7 @@ class Handler(ABC):
         self._api_instance_core = client.CoreV1Api(
             client.ApiClient(self._configuration))
         configuration = stackl_client.Configuration()
-        configuration.host = "http://" + os.environ['STACKL_HOST']
+        configuration.host = os.environ['STACKL_HOST']
         api_client = stackl_client.ApiClient(configuration=configuration)
         self._stack_instance_api = stackl_client.StackInstancesApi(
             api_client=api_client)
