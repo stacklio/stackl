@@ -65,6 +65,8 @@ class StackHandler(Handler):
                     infra_target].cloud_provider
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
+
+                fr_params = {}
                 for fr in svc_doc.functional_requirements:
                     stack_instance_status = StackInstanceStatus(
                         functional_requirement=fr,
@@ -75,12 +77,13 @@ class StackHandler(Handler):
                     stack_instance_statuses.append(stack_instance_status)
                     fr_doc = self.document_manager.get_functional_requirement(
                         fr)
-                    merged_capabilities = {
-                        **capabilities_of_target,
-                        **fr_doc.params,
-                        **svc_doc.params
-                    }
+                    fr_params = {**fr_params, **fr_doc.params}
                     merged_secrets = {**merged_secrets, **fr_doc.secrets}
+                merged_capabilities = {
+                    **capabilities_of_target,
+                    **fr_params,
+                    **svc_doc.params
+                }
                 service_definition.provisioning_parameters = {
                     **merged_capabilities,
                     **service_definition.opa_outputs,
@@ -136,6 +139,7 @@ class StackHandler(Handler):
                     service_definition.infrastructure_target].agent
 
                 merged_secrets = {**secrets_of_target, **svc_doc.secrets}
+                fr_params = {}
                 for fr in svc_doc.functional_requirements:
                     if not item.disable_invocation:
                         stack_instance_status = StackInstanceStatus(
@@ -148,12 +152,13 @@ class StackHandler(Handler):
                         stack_instance_statuses.append(stack_instance_status)
                     fr_doc = self.document_manager.get_functional_requirement(
                         fr)
-                    merged_capabilities = {
-                        **capabilities_of_target,
-                        **fr_doc.params,
-                        **svc_doc.params
-                    }
+                    fr_params = {**fr_params, **fr_doc.params}
                     merged_secrets = {**merged_secrets, **fr_doc.secrets}
+                merged_capabilities = {
+                    **capabilities_of_target,
+                    **fr_params,
+                    **svc_doc.params
+                }
                 service_definition.provisioning_parameters = {
                     **merged_capabilities,
                     **opa_outputs,
