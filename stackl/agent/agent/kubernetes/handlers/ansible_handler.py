@@ -6,7 +6,6 @@ from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.ansible_output import AnsibleOutput
 from agent.kubernetes.secrets.base64_secret_handler import Base64SecretHandler
 from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
-
 from .base_handler import Handler
 from ..secrets.conjur_secret_handler import ConjurSecretHandler
 

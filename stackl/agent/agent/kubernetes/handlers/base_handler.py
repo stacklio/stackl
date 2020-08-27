@@ -11,6 +11,7 @@ from agent.kubernetes.outputs.output import Output
 from agent.kubernetes.secrets.conjur_secret_handler import ConjurSecretHandler
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from agent import config as agent_config
 
 
 def create_job_object(name: str,
@@ -234,22 +235,18 @@ def create_cm(name: str, namespace: str, data: dict) -> client.V1ConfigMap:
 
 class Handler(ABC):
     def __init__(self, invoc):
-        if 'STACKL_HOST' not in os.environ:
-            raise EnvironmentError(
-                'Environment variable STACKL_HOST is not set.' +
-                str(os.environ))
         if 'KUBERNETES_SERVICE_HOST' in os.environ:
             config.load_incluster_config()
         else:
             config.load_kube_config()
-        logging.getLogger().setLevel(os.environ.get("LOGLEVEL", "INFO"))
+        logging.getLogger().setLevel(agent_config.settings.loglevel)
         self._configuration = client.Configuration()
         self._api_instance = client.BatchV1Api(
             client.ApiClient(self._configuration))
         self._api_instance_core = client.CoreV1Api(
             client.ApiClient(self._configuration))
         configuration = stackl_client.Configuration()
-        configuration.host = os.environ['STACKL_HOST']
+        configuration.host = agent_config.settings.stackl_host
         api_client = stackl_client.ApiClient(configuration=configuration)
         self._stack_instance_api = stackl_client.StackInstancesApi(
             api_client=api_client)
@@ -267,8 +264,8 @@ class Handler(ABC):
         self._env_list = {}
         self._volumes = []
         self._init_containers = []
-        self.stackl_namespace = os.environ['STACKL_NAMESPACE']
-        self.service_account = os.environ['SERVICE_ACCOUNT']
+        self.stackl_namespace = agent_config.settings.stackl_namespace
+        self.service_account = agent_config.settings.service_account
 
     def wait_for_job(self, job_pod_name: str, namespace: str):
         while True:

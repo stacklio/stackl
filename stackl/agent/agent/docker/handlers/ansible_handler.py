@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+from agent import config
 from ..configurator_handler import ConfiguratorHandler
 
 
@@ -9,7 +10,7 @@ class AnsibleHandler(ConfiguratorHandler):
                            service):
         with open('/tmp/stackl.yml', 'w') as inventory:
             inventory.write('plugin: stackl\nhost: http://' +
-                            os.environ['STACKL_HOST'] + '\nstack_instance: ' +
+                            config.settings.stackl_host + '\nstack_instance: ' +
                             stack_instance)
         command_string = "docker run"
         command_string += " --name " + name
@@ -20,7 +21,7 @@ class AnsibleHandler(ConfiguratorHandler):
         command_string += " ansible-playbook main.yml -i stackl.yml"
         command_string += " -e stackl_stack_instance=" + stack_instance
         command_string += " -e stackl_service=" + service
-        command_string += " -e stackl_host=" + os.environ['STACKL_HOST']
+        command_string += " -e stackl_host=" + config.settings.stackl_host
         return command_string
 
     # TODO Implement this

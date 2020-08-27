@@ -1,20 +1,18 @@
 import json
-import logging
 
 import redis
-
-from .datastore import DataStore
 from core.enums.stackl_codes import StatusCode
-from core.utils.general_utils import get_config_key
-
 from loguru import logger
+
+from core import config
+from .datastore import DataStore
 
 
 class RedisStore(DataStore):
     def __init__(self):
         super(RedisStore, self).__init__()
-        self.redis = redis.Redis(host=get_config_key("REDIS_HOST"),
-                                 port=6379,
+        self.redis = redis.Redis(host=config.settings.stackl_redis_host,
+                                 port=config.settings.stackl_redis_port,
                                  db=0)
 
     def get(self, **keys):

@@ -1,17 +1,18 @@
 import asyncio
-import os
 from dataclasses import dataclass
 
+from arq.connections import RedisSettings
+
+from agent import config
 from agent.docker.docker_tool_factory import DockerToolFactory
 from agent.kubernetes.kubernetes_tool_factory import KubernetesToolFactory
 from agent.mock.mock_tool_factory import MockToolFactory
-from arq.connections import RedisSettings
 
-if os.environ.get("AGENT_TYPE", None) == "kubernetes":
+if config.settings.agent_type == "kubernetes":
     tool_factory = KubernetesToolFactory()
-elif os.environ.get("AGENT_TYPE", None) == "docker":
+elif config.settings.agent_type == "docker":
     tool_factory = DockerToolFactory()
-elif os.environ.get("AGENT_TYPE", None) == "mock":
+elif config.settings.agent_type == "mock":
     tool_factory = MockToolFactory()
 
 
@@ -25,6 +26,7 @@ class Invocation:
     before_command: str
     image: str
     tool: str
+
 
 async def run_in_executor(func, *args):
     loop = asyncio.get_event_loop()
@@ -51,6 +53,6 @@ async def invoke_automation(ctx, invoc):
 
 class AgentSettings:
     functions = [invoke_automation]
-    queue_name = os.environ["AGENT_NAME"]
-    redis_settings = RedisSettings(host=os.environ["REDIS_HOST"],
-                                   port=os.environ.get("REDIS_PORT", 6379))
+    queue_name = config.settings.agent_name
+    redis_settings = RedisSettings(host=config.settings.redis_host,
+                                   port=config.settings.redis_port)

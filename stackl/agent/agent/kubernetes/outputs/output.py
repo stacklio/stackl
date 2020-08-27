@@ -4,12 +4,14 @@ from kubernetes import client
 from typing import List
 from json import dumps
 
+from agent import config
+
 
 class Output:
     def __init__(self, functional_requirement, stackl_instance_name: str):
         self.stack_instance = None
         self.output_file = ''
-        self.stackl_host = f'{os.environ["STACKL_HOST"]}'
+        self.stackl_host = config.settings.stackl_host
         self.stackl_cli_image = 'stacklio/stackl-cli:v0.2.2dev'
         self.stackl_cli_command = ['/bin/bash', '-c']
         self._functional_requirement = functional_requirement

@@ -1,14 +1,12 @@
-import logging
-
-from core.utils.general_utils import get_config_key
-from core.utils.stackl_singleton import Singleton
-
 from loguru import logger
+
+from core import config
+from core.utils.stackl_singleton import Singleton
 
 
 class DataStoreFactory(metaclass=Singleton):
     def __init__(self):
-        self.store_type = get_config_key('STORE')
+        self.store_type = config.settings.stackl_store
 
         logger.info(
             f"[DataStoreFactory] Creating config store with type: {self.store_type}"
@@ -17,13 +15,11 @@ class DataStoreFactory(metaclass=Singleton):
             from .redis_store import RedisStore
             self.store = RedisStore()
         elif self.store_type == "LFS" or self.store_type == "LocalFileSystemStore":
-            lfs_path = get_config_key('DATASTORE_PATH')
+            lfs_path = config.settings.stackl_datastore_path
             from .local_file_system_store import LocalFileSystemStore
             self.store = LocalFileSystemStore(lfs_path)
         else:  # assume LFS
-            lfs_path = get_config_key('DATASTORE_PATH')
-            from .local_file_system_store import LocalFileSystemStore
-            self.store = LocalFileSystemStore(lfs_path)
+            logger.error("Invalid datastore setting")
 
     def get_store(self):
         return self.store

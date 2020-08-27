@@ -3,16 +3,16 @@ import json
 import requests
 from loguru import logger
 
+from core import config
 from core.models.configs.policy_template_model import PolicyTemplate
 from core.models.configs.stack_application_template_model import StackApplicationTemplate
 from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
 from core.models.items.service_model import Service
-from core.utils.general_utils import get_config_key
 
 
 class OPABroker:
     def __init__(self):
-        self.opa_host = "http://{}".format(get_config_key("OPA_HOST"))
+        self.opa_host = config.settings.stackl_opa_host
         self.manager_factory = None
         self.document_manager = None
 
@@ -131,14 +131,14 @@ class OPABroker:
         for target in sit_targets:
             target_data = {
                 "resources":
-                sit_doc.infrastructure_capabilities[target].resources,
+                    sit_doc.infrastructure_capabilities[target].resources,
                 "packages":
-                sit_doc.infrastructure_capabilities[target].packages,
+                    sit_doc.infrastructure_capabilities[target].packages,
                 "tags":
-                sit_doc.infrastructure_capabilities[target].tags,
+                    sit_doc.infrastructure_capabilities[target].tags,
                 "params":
-                sit_doc.infrastructure_capabilities[target].
-                provisioning_parameters
+                    sit_doc.infrastructure_capabilities[target].
+                        provisioning_parameters
             }
             targets_as_data[target] = target_data
         logger.debug(
@@ -201,9 +201,9 @@ class OPABroker:
             target_data = {
                 "id": target,
                 "resources":
-                sit_doc.infrastructure_capabilities[target].resources,
+                    sit_doc.infrastructure_capabilities[target].resources,
                 "packages":
-                sit_doc.infrastructure_capabilities[target].packages
+                    sit_doc.infrastructure_capabilities[target].packages
             }
             targets_as_data.append(target_data)
         logger.debug(
