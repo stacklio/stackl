@@ -17,3 +17,4 @@ class FunctionalRequirement(BaseDocument):
     type = "functional_requirement"
     invocation: Dict[str, Invocation]
     outputs: dict = {}
+    outputs_format: str = "json"

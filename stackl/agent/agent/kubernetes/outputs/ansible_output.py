@@ -19,6 +19,6 @@ class AnsibleOutput(Output):
             echo "Waiting for automation output to appear" &&\
             while [[ ! -s "{self.output_file}" ]]; do sleep 2; done;\
             cat {self.output_file} && \
-            convert_json_from_spec -f ansible --doc {self.output_file} --spec {self._spec_mount["mount_path"]}/spec.json --output {self.output_file} && \
+            convert_json_from_spec -f {self._functional_requirement.outputs_format} --doc {self.output_file} --spec {self._spec_mount["mount_path"]}/spec.json --output {self.output_file} && \
             stackl connect {self.stackl_host} && \
             stackl update instance {self.stackl_instance_name} -p "$(cat {self.output_file})" -d'
