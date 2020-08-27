@@ -3,6 +3,7 @@ import os
 from arq import create_pool
 from arq.connections import RedisSettings
 
+from core import config
 from core.manager.document_manager import DocumentManager
 from core.manager.snapshot_manager import SnapshotManager
 from core.manager.stack_manager import StackManager
@@ -26,5 +27,5 @@ def get_stack_manager():
 
 async def get_redis():
     return await create_pool(
-        RedisSettings(host=os.environ["REDIS_HOST"],
-                      port=os.environ.get("REDIS_PORT", 6379)))
+        RedisSettings(host=config.settings.stackl_redis_host,
+                      port=config.settings.stackl_redis_port))

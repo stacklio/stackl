@@ -1,9 +1,7 @@
-import os
 import subprocess
 
-import requests
-
 from ..configurator_handler import ConfiguratorHandler
+from ... import config
 
 
 class TerraformHandler(ConfiguratorHandler):
@@ -12,7 +10,7 @@ class TerraformHandler(ConfiguratorHandler):
         command_string = "docker run"
         command_string += " -e TF_VAR_stackl_stack_instance=" + stack_instance
         command_string += " -e TF_VAR_stackl_service=" + service
-        command_string += " -e TF_VAR_stackl_host=" + os.environ['STACKL_HOST']
+        command_string += " -e TF_VAR_stackl_host=" + config.settings.stackl_host
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
         command_string += " " + container_image
@@ -23,12 +21,12 @@ class TerraformHandler(ConfiguratorHandler):
         command_string = "docker run"
         command_string += " -e TF_VAR_stackl_stack_instance=" + stack_instance
         command_string += " -e TF_VAR_stackl_service=" + service
-        command_string += " -e TF_VAR_stackl_host=" + os.environ['STACKL_HOST']
+        command_string += " -e TF_VAR_stackl_host=" + config.settings.stackl_host
         command_string += " --name " + name
         command_string += " --network stackl_bridge"
         command_string += " " + container_image
-        command_string += " " + "/bin/sh -c 'terraform init -backend-config=address=http://" + os.environ[
-            'STACKL_HOST'] + "/terraform/" + stack_instance + " && terraform destroy --auto-approve'"
+        command_string += " " + "/bin/sh -c 'terraform init -backend-config=address=" + config.settings.stackl_host +\
+                          "/terraform/" + stack_instance + " && terraform destroy --auto-approve'"
         return command_string
 
     def handle(self, invocation, action):
