@@ -12,7 +12,7 @@ class Output:
         self.stack_instance = None
         self.output_file = ''
         self.stackl_host = config.settings.stackl_host
-        self.stackl_cli_image = 'stacklio/stackl-cli:v0.2.2dev'
+        self.stackl_cli_image = 'stacklio/stackl-cli:v0.2.2'
         self.stackl_cli_command = ['/bin/bash', '-c']
         self._functional_requirement = functional_requirement
         self._env_list = {}

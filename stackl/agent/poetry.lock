@@ -321,7 +321,7 @@ description = "STACKL"
 name = "stackl-client"
 optional = false
 python-versions = "*"
-version = "0.2.0"
+version = "0.2.2"
 
 [package.dependencies]
 certifi = "*"
@@ -595,7 +595,7 @@ six = [
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 stackl-client = [
-    {file = "stackl-client-0.2.0.tar.gz", hash = "sha256:6d17bd3677ffc6baf9fded68c73a5693a444773843875c8b23eef2d9c904b269"},
+    {file = "stackl-client-0.2.2.tar.gz", hash = "sha256:4729e0d2f423b098fb9e2d1527669ac03525855096b39c53e26404ea6780f128"},
 ]
 toml = [
     {file = "toml-0.10.1-py2.py3-none-any.whl", hash = "sha256:bda89d5935c2eac546d648028b9901107a595863cb36bae0c73ac804a9b4ce88"},

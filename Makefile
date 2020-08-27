@@ -12,7 +12,7 @@ DOCKER_IMAGE_REDIS=stacklio/redis
 
 OPA_VERSION=v0.21.1
 REDIS_VERSION=5.0.3
-VERSIONTAG=0.2.2dev
+VERSIONTAG=0.2.2
 
 
 ######################################################
