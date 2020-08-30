@@ -312,8 +312,8 @@ class Invocation():
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
                                                   "yaml")
         if self._functional_requirement_obj.outputs:
-            self._output = AnsibleOutput(self._functional_requirement_obj,
-                                         self._invoc.stack_instance)
+            self._output = AnsibleOutput(self._service, self._functional_requirement_obj,
+                                         self._invoc.stack_instance, self._invoc.infrastructure_target, self.hostname)
         self._env_list = {
             "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory",
             "ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED": "True"
@@ -410,13 +410,19 @@ class Invocation():
             self._command_args[
                 0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
         elif self._output:
-            pattern = self._service + "_" + str(self.index)
+            if self.hostname is not None:
+                pattern = self.hostname
+            else:
+                pattern = self._service + "_" + str(self.index)
             self._command_args[
                 0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} '
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '
         else:
-            pattern = self._service + "_" + str(self.index)
+            if self.hostname is not None:
+                pattern = self.hostname
+            else:
+                pattern = self._service + "_" + str(self.index)
             self._command_args[
                 0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
 

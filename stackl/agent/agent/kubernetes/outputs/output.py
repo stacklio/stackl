@@ -1,20 +1,22 @@
-import os
 from abc import abstractmethod
-from kubernetes import client
-from typing import List
 from json import dumps
+from typing import List
+
+from kubernetes import client
 
 from agent import config
 
 
 class Output:
-    def __init__(self, functional_requirement, stackl_instance_name: str):
+    def __init__(self, service, functional_requirement, stackl_instance_name: str, infrastructure_target: str):
         self.stack_instance = None
         self.output_file = ''
         self.stackl_host = config.settings.stackl_host
-        self.stackl_cli_image = 'stacklio/stackl-cli:v0.2.2'
+        self.stackl_cli_image = config.settings.stackl_cli_image
         self.stackl_cli_command = ['/bin/bash', '-c']
-        self._functional_requirement = functional_requirement
+        self.service = service
+        self.functional_requirement = functional_requirement
+        self.infrastructure_target = infrastructure_target
         self._env_list = {}
         self.stackl_instance_name = stackl_instance_name
         self._spec_mount = {
@@ -22,7 +24,7 @@ class Output:
             "type": "config_map",
             "mount_path": "/mnt/stackl/spec",
             "data": {
-                "spec.json": dumps(self._functional_requirement.outputs)
+                "spec.json": dumps(self.functional_requirement.outputs)
             }
         }
         self._volumes = [self._spec_mount]

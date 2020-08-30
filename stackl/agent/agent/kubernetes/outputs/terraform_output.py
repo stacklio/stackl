@@ -2,10 +2,9 @@ from .output import Output
 
 
 class TerraformOutput(Output):
-    def __init__(self, functional_requirement, stackl_instance_name: str,
+    def __init__(self, service, functional_requirement, stackl_instance_name: str,
                  infrastructure_target: str):
-        self.infrastructure_target = infrastructure_target
-        super().__init__(functional_requirement, stackl_instance_name)
+        super().__init__(service, functional_requirement, stackl_instance_name, infrastructure_target)
         self.output_file = '/mnt/terraform/output/result.json'
         self._command_args = f'&& terraform show -json > {self.output_file} && ls -lh {self.output_file}'
 
@@ -27,5 +26,5 @@ class TerraformOutput(Output):
             export outputs="$(cat {self.output_file})" && \
             echo "outputs is $outputs" && \
             stackl connect {self.stackl_host} && \
-            stackl update instance {self.stackl_instance_name} -p "$outputs" -p \'{{\"infrastructure_target\": \"{self.infrastructure_target}\"}}\' -d && \
+            stackl update instance {self.stackl_instance_name} -p "$outputs" -s {self.service} -i {self.infrastructure_target} && \
             stackl get instance {self.stackl_instance_name} -o yaml '

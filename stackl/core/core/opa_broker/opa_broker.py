@@ -31,7 +31,7 @@ class OPABroker:
                                 policy_rule="default",
                                 data=None):
         logger.debug(
-            f"[OPABroker] ask_opa_policy_decision. For policy_package '{policy_package}' and policy_rule '{policy_rule}'' and data '{data}'"
+            f"[OPABroker] ask_opa_policy_decision. For policy_package '{policy_package}' and policy_rule '{policy_rule}'' and data '{json.dumps(data)}'"
         )
         # create input to hand to OPA
         input_dict = {"input": data}

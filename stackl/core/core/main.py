@@ -8,7 +8,7 @@ from loguru import logger
 
 from .routers import functional_requirements_router, infrastructure_base_router, policy_templates_router, \
     snapshots_router, stack_instances_router, services_router, stack_application_templates_router, \
-    stack_infrastructure_templates_router, about_router
+    stack_infrastructure_templates_router, about_router, outputs_router
 
 logger.info(
     "___________________ STARTING STACKL API SERVER ____________________")
@@ -17,7 +17,7 @@ logger.info(
 app = FastAPI(
     title="STACKL",
     description="stackl",
-    version="0.2.2"
+    version="0.2.3dev"
 )
 
 app.include_router(infrastructure_base_router.router,
@@ -44,6 +44,7 @@ app.include_router(stack_application_templates_router.router,
 app.include_router(stack_infrastructure_templates_router.router,
                    prefix="/stack_infrastructure_templates",
                    tags=["stack_infrastructure_templates"])
+app.include_router(outputs_router.router, prefix="/outputs", tags=["outputs"])
 app.include_router(about_router.router, prefix="/about", tags=["about"])
 
 

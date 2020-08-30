@@ -50,6 +50,7 @@ async def create_job_for_agent(stack_instance,
                 invoc['stack_instance'] = stack_instance.name
                 invoc['tool'] = fr_doc.invocation[cloud_provider].tool
                 invoc['service'] = service_name
+                invoc["hostname"] = service_definition.hostname
 
                 logger.debug("Appending job")
                 job = await redis.enqueue_job(

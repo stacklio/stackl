@@ -1,7 +1,8 @@
 import json
-from .base_handler import Handler
-from agent.kubernetes.outputs.terraform_output import TerraformOutput
+
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
+from agent.kubernetes.outputs.terraform_output import TerraformOutput
+from .base_handler import Handler
 from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
 
@@ -21,13 +22,15 @@ class Invocation():
         self.tool = "terraform"
         self.action = "create"
 """
+
     def __init__(self, invoc):
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
                                                   "json")
         self._command = ["/bin/sh", "-c"]
         if self._functional_requirement_obj.outputs:
-            self._output = TerraformOutput(self._functional_requirement_obj,
+            self._output = TerraformOutput(self._service,
+                                           self._functional_requirement_obj,
                                            self._invoc.stack_instance,
                                            self._invoc.infrastructure_target)
         """ Volumes is an array containing dicts that define Kubernetes volumes
@@ -75,9 +78,9 @@ class Invocation():
                 0] += f'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
         else:
             command_args[0] += f'terraform init'
-        if self._secret_handler and self._secret_handler.terraform_backend_enabled:
-            command_args[
-                0] += f' -backend-config=key={self._stack_instance.name}'
+        # if self._secret_handler and self._secret_handler.terraform_backend_enabled:
+        #     command_args[
+        #         0] += f' -backend-config=key={self._stack_instance.name}'
         command_args[
             0] += f' && terraform apply -auto-approve -var-file {self.variables_file}'
 

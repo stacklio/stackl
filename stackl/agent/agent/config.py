@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     conjur_verify: str = "True"
 
     # Outputs
-    stackl_cli_image: str = "stacklio/stackl-cli:v0.2.2"
+    stackl_cli_image: str = "stacklio/stackl-cli:v0.2.3dev"
 
 
 settings = Settings()

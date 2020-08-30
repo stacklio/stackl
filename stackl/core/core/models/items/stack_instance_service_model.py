@@ -8,8 +8,10 @@ class StackInstanceService(BaseModel):
     provisioning_parameters: Dict[str, Any] = None
     cloud_provider: str = "generic"
     secrets: Dict[str, Any] = None
+    hostname: str = None
     resources: Dict[str, str] = None
     agent: str = ""
     opa_outputs: Dict[str, Any] = {}
+    outputs: Dict[str, Any] = {}
     packages: List[str] = None
     tags: Dict[str, str] = None

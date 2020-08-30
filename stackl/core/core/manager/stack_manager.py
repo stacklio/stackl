@@ -1,10 +1,19 @@
+from typing import Dict, Any
+
 from loguru import logger
+from pydantic.main import BaseModel
 
 from core.handler.stack_handler import StackHandler
 from core.opa_broker.opa_broker_factory import OPABrokerFactory
 from .document_manager import DocumentManager
 from .manager import Manager
 
+
+class OutputsUpdate(BaseModel):
+    stack_instance: str
+    service: str
+    infrastructure_target: str
+    outputs: Dict[str, Any]
 
 class StackManager(Manager):
     def __init__(self):
@@ -14,6 +23,11 @@ class StackManager(Manager):
         self.opa_broker = opa_broker_factory.get_opa_broker()
 
         self.document_manager = DocumentManager()
+
+    def add_outputs(self, outputs_update: OutputsUpdate):
+        handler = StackHandler(self.document_manager, self.opa_broker)
+        stack_instance = handler.add_outputs(outputs_update)
+        return stack_instance
 
     def process_stack_request(self, instance_data, stack_action):
         # create new object with the action and document in it
@@ -84,3 +98,5 @@ class StackManager(Manager):
         elif stack_action == "delete":
             return stack_instance_exists
         return False, ""
+
+

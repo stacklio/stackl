@@ -33,9 +33,9 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-        self, item, opa_decision,
-        stack_infrastructure_template: StackInfrastructureTemplate,
-        opa_service_params):
+            self, item, opa_decision,
+            stack_infrastructure_template: StackInfrastructureTemplate,
+            opa_service_params):
         stack_instance_doc = StackInstance(
             name=item.stack_instance_name,
             stack_infrastructure_template=item.stack_infrastructure_template,
@@ -90,6 +90,8 @@ class StackHandler(Handler):
                     **item.params,
                     **item.service_params.get(svc, {})
                 }
+                if "stackl_hostname" in service_definition.provisioning_parameters:
+                    service_definition.hostname = service_definition.provisioning_parameters["stackl_hostname"]
                 service_definition.secrets = {**merged_secrets, **item.secrets}
                 service_definition.agent = agent
                 service_definition.cloud_provider = cloud_provider
@@ -131,7 +133,7 @@ class StackHandler(Handler):
                 svc_doc = self.document_manager.get_service(svc)
                 capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.
-                    infrastructure_target].provisioning_parameters
+                        infrastructure_target].provisioning_parameters
                 secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
                     service_definition.infrastructure_target].secrets
                 opa_outputs = service_definition.opa_outputs
@@ -146,7 +148,7 @@ class StackHandler(Handler):
                             functional_requirement=fr,
                             service=svc,
                             infrastructure_target=service_definition.
-                            infrastructure_target,
+                                infrastructure_target,
                             status="in_progress",
                             error_message="")
                         stack_instance_statuses.append(stack_instance_status)
@@ -169,9 +171,25 @@ class StackHandler(Handler):
                     **merged_secrets,
                     **stack_instance.instance_secrets
                 }
+                if "stackl_hostname" in service_definition.provisioning_parameters:
+                    service_definition.hostname = service_definition.provisioning_parameters["stackl_hostname"]
                 service_definition.agent = agent
                 stack_instance.services[svc][count] = service_definition
         stack_instance.status = stack_instance_statuses
+        return stack_instance
+
+    def add_outputs(self, outputs_update):
+        logger.debug("Adding outputs to stack_instance")
+        stack_instance = self.document_manager.get_stack_instance(outputs_update.stack_instance)
+        service = stack_instance.services[outputs_update.service]
+        for service_definition in service:
+            if service_definition.infrastructure_target == outputs_update.infrastructure_target:
+                service_definition.outputs = {**service_definition.outputs, **outputs_update.outputs}
+                service_definition.provisioning_parameters = {**service_definition.provisioning_parameters,
+                                                              **service_definition.outputs}
+                if "stackl_hostname" in service_definition.outputs:
+                    service_definition.hostname = service_definition.outputs["stackl_hostname"]
+
         return stack_instance
 
     def _handle_create(self, item):
@@ -204,7 +222,7 @@ class StackHandler(Handler):
             policy = self.document_manager.get_policy_template(policy_name)
             for policy_params in attributes:
                 new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                      policy)
+                                                      policy, item.params)
 
                 if not new_result['fulfilled']:
                     logger.error(
@@ -305,14 +323,14 @@ class StackHandler(Handler):
                     if tt['target'] == t:
                         new_targets.append(t)
                     for output in outputs:
-                        opa_service_params[service][t][output] = tt[output]
+                        opa_service_params[service][tt['target']][output] = tt[output]
             elif t in new_result['targets']:
                 new_targets.append(t)
         service_targets[service] = new_targets
 
-    def evaluate_sat_policy(self, attributes, opa_data, policy):
-        policy_input = {}
-        policy_input["parameters"] = attributes
+    def evaluate_sat_policy(self, attributes, opa_data, policy, user_params):
+        policy_input = {"parameters": attributes}
+        policy_input["user_parameters"] = user_params
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
         self.opa_broker.add_policy(policy.name, policy.policy)
@@ -328,7 +346,7 @@ class StackHandler(Handler):
     def evaluate_orchestration_policy(self, opa_data):
         logger.debug(
             "[StackHandler] _handle_create. performing opa query with data: {0}"
-            .format(opa_data))
+                .format(opa_data))
 
         opa_result = self.opa_broker.ask_opa_policy_decision(
             "orchestration", "solutions", opa_data)
@@ -359,20 +377,20 @@ class StackHandler(Handler):
         if update == "no":
             logger.debug(
                 "[StackHandler] _update_infr_capabilities. update is '{0}', returning."
-                .format(update))
+                    .format(update))
             return stack_infr_template
         elif update == "auto":
             # TODO Implement. update (partly) when and if necessary: nothing is there yet or some time out value occured
             logger.debug(
                 "[StackHandler] _update_infr_capabilities. update is '{0}', evaluating condition."
-                .format(update))
+                    .format(update))
             if all((len(prev_infr_capabilities[prev_infr_capability]) > 3)
                    for prev_infr_capability in prev_infr_capabilities):
                 return stack_infr_template
 
         logger.debug(
             "[StackHandler] _update_infr_capabilities. update is '{0}', doing update."
-            .format(update))
+                .format(update))
         infr_targets_capabilities = {}
         for infr_target in infr_targets:
             environment = self.document_manager.get_environment(
@@ -423,14 +441,14 @@ class StackHandler(Handler):
                 [environment.name, location.name, zone.name])
             infr_targets_capabilities[
                 infr_target_key] = StackInfrastructureTarget(
-                    provisioning_parameters=infr_target_capability,
-                    tags=infr_target_tags,
-                    packages=infr_target_packages,
-                    resources=infr_target_resources,
-                    secrets=infr_target_secrets,
-                    policies=infr_target_policies,
-                    agent=infr_target_agent,
-                    cloud_provider=infr_target_cloud_provider)
+                provisioning_parameters=infr_target_capability,
+                tags=infr_target_tags,
+                packages=infr_target_packages,
+                resources=infr_target_resources,
+                secrets=infr_target_secrets,
+                policies=infr_target_policies,
+                agent=infr_target_agent,
+                cloud_provider=infr_target_cloud_provider)
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())

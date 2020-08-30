@@ -26,6 +26,7 @@ class Invocation:
     before_command: str
     image: str
     tool: str
+    hostname: str
 
 
 async def run_in_executor(func, *args):

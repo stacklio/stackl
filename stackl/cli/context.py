@@ -29,6 +29,7 @@ class StacklContext(object):
                     api_client=self.api_client)
                 self.snapshot_api = stackl_client.SnapshotsApi(
                     api_client=self.api_client)
+                self.outputs_api = stackl_client.OutputsApi(api_client=self.api_client)
         except FileNotFoundError:
             click.echo(
                 "Config file not found, run `stackl connect` first")
