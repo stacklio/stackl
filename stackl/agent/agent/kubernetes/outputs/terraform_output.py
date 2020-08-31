@@ -26,5 +26,5 @@ class TerraformOutput(Output):
             export outputs="$(cat {self.output_file})" && \
             echo "outputs is $outputs" && \
             stackl connect {self.stackl_host} && \
-            stackl update instance {self.stackl_instance_name} -p "$outputs" -s {self.service} -i {self.infrastructure_target} && \
+            stackl update outputs {self.stackl_instance_name} -p "$outputs" -s {self.service} -i {self.infrastructure_target} && \
             stackl get instance {self.stackl_instance_name} -o yaml '

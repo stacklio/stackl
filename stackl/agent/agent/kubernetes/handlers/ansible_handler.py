@@ -240,9 +240,13 @@ class InventoryModule(BaseInventoryPlugin):
                                                 item, key, value)
                     else:
                         self.inventory.add_group(service)
-                        self.inventory.add_host(host=service + "_" +
-                                                str(index),
-                                                group=service)
+                        if service_definition.hostname is None:
+                            self.inventory.add_host(host=service + "_" +
+                                                    str(index),
+                                                    group=service)
+                        else:
+                            self.inventory.add_host(host=service_definition.hostname,
+                            group=service)
                         self.inventory.set_variable(
                             service, "infrastructure_target",
                             service_definition.infrastructure_target)
