@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from typing import List
 
 from arq.connections import RedisSettings
 
@@ -26,7 +27,7 @@ class Invocation:
     before_command: str
     image: str
     tool: str
-    hostname: str
+    hosts: List
 
 
 async def run_in_executor(func, *args):
