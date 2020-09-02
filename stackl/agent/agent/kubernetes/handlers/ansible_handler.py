@@ -240,12 +240,12 @@ class InventoryModule(BaseInventoryPlugin):
                                                 item, key, value)
                     else:
                         self.inventory.add_group(service)
-                        if service_definition.hostname is None:
+                        if service_definition.hosts is None:
                             self.inventory.add_host(host=service + "_" +
                                                     str(index),
                                                     group=service)
                         else:
-                            self.inventory.add_host(host=service_definition.hostname,
+                            self.inventory.add_host(host=service_definition.hosts,
                             group=service)
                         self.inventory.set_variable(
                             service, "infrastructure_target",
@@ -317,7 +317,7 @@ class Invocation():
                                                   "yaml")
         if self._functional_requirement_obj.outputs:
             self._output = AnsibleOutput(self._service, self._functional_requirement_obj,
-                                         self._invoc.stack_instance, self._invoc.infrastructure_target, self.hostname)
+                                         self._invoc.stack_instance, self._invoc.infrastructure_target, self.hosts)
         self._env_list = {
             "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory",
             "ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED": "True"
@@ -414,8 +414,8 @@ class Invocation():
             self._command_args[
                 0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
         elif self._output:
-            if self.hostname is not None:
-                pattern = self.hostname
+            if self.hosts is not None:
+                pattern = ",".join(self.hosts)
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[
@@ -423,8 +423,8 @@ class Invocation():
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '
         else:
-            if self.hostname is not None:
-                pattern = self.hostname
+            if self.hosts is not None:
+                pattern = ",".join(self.hosts)
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[

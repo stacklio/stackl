@@ -254,7 +254,7 @@ class Handler(ABC):
             api_client=api_client)
         self._invoc = invoc
         self._service = self._invoc.service
-        self.hostname = self._invoc.hostname
+        self.hosts = self._invoc.hosts
         self._functional_requirement = self._invoc.functional_requirement
         self._functional_requirement_obj = self._stack_fr_api.get_functional_requirement_by_name(
             self._functional_requirement)
@@ -272,7 +272,6 @@ class Handler(ABC):
         while True:
             sleep(5)
             api_response = self._api_instance_core.read_namespaced_pod_status(job_pod_name, namespace)
-            print(api_response)
             for cs in api_response.status.container_statuses:
                 if cs.name == "jobcontainer" and cs.state.terminated is not None:
                     if cs.state.terminated.reason == "Error":
