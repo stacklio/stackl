@@ -193,6 +193,7 @@ class StackHandler(Handler):
                     stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
                     service_definition.hosts = []
                     if "instances" in service_definition.provisioning_parameters:
+                        service_definition.provisioning_parameters['machine_names'] = []
                         for i in range(service_definition.provisioning_parameters["instances"]):
                             replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count+1)) \
                                 .replace('{hi}',
