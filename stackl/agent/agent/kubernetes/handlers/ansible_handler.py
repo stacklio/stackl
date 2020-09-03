@@ -73,6 +73,8 @@ import base64
 import requests
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
+from ansible.module_utils._text import to_native
+from ansible.module_utils._text import to_text
 from collections import defaultdict
 
 
@@ -92,19 +94,17 @@ def check_groups(stackl_groups, stackl_inventory_groups, host_list):
 
 def create_groups(hosts, stackl_inventory_groups):
     groups = defaultdict(list)
+    print(f"stackl_inventory_groups: {stackl_inventory_groups}")
     for item in stackl_inventory_groups:
         for tag in item["tags"]:
             for index in range(item["count"]):
-                for target, host_list in hosts.items():
-                    try:
-                        host = stackl_client.HostTarget(target=target,
-                                                        host=host_list[index])
-                    except IndexError as e:
-                        print(e)
-                        exit(1)
-                    groups[tag].append(host)
-        for target in hosts:
-            del hosts[target][0:item["count"]]
+                try:
+                    host = hosts[index]
+                except IndexError as e:
+                    print(e)
+                    exit(1)
+                groups[tag].append(host)
+        del hosts[0:item["count"]]
     return groups
 
 
@@ -170,110 +170,111 @@ class InventoryModule(BaseInventoryPlugin):
     def parse(self, inventory, loader, path, cache):
         super(InventoryModule, self).parse(inventory, loader, path, cache)
         self._read_config_data(path)
-        try:
-            self.plugin = self.get_option('plugin')
-            configuration = stackl_client.Configuration()
-            configuration.host = self.get_option("host")
-            api_client = stackl_client.ApiClient(configuration=configuration)
-            api_instance = stackl_client.StackInstancesApi(
-                api_client=api_client)
-            stack_instance_name = self.get_option("stack_instance")
-            stack_instance = api_instance.get_stack_instance(
-                stack_instance_name)
-            for service, si_service in stack_instance.services.items():
-                for index, service_definition in enumerate(si_service):
-                    # self.inventory.add_host(host=service + "_" + str(index),
-                    #                         group=service)
-                    # self.inventory.set_variable(
-                    #     service, "infrastructure_target",
-                    #     service_definition.infrastructure_target)
-                    if hasattr(
-                            stack_instance, "hosts"
-                    ) and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
-                        if not check_groups(
-                                stack_instance.groups,
-                                service_definition.provisioning_parameters[
-                                    'stackl_inventory_groups'],
-                                stack_instance.hosts):
-                            stack_instance.groups = create_groups(
-                                stack_instance.hosts,
-                                service_definition.provisioning_parameters[
-                                    'stackl_inventory_groups'])
-                            stack_update = stackl_client.StackInstanceUpdate(
-                                stack_instance_name=stack_instance.name,
-                                params={
-                                    "stackl_groups": stack_instance.groups
-                                },
-                                disable_invocation=True)
-                            api_instance.put_stack_instance(stack_update)
-                        for item, value in stack_instance.groups.items():
-                            for group in value:
-                                if group.target == service_definition.infrastructure_target:
-                                    self.inventory.add_group(item)
-                                    self.inventory.add_host(host=group.host,
-                                                            group=item)
-                                    for key, value in service_definition.provisioning_parameters.items(
-                                    ):
+        # try:
+        self.plugin = self.get_option('plugin')
+        configuration = stackl_client.Configuration()
+        configuration.host = self.get_option("host")
+        api_client = stackl_client.ApiClient(configuration=configuration)
+        api_instance = stackl_client.StackInstancesApi(
+            api_client=api_client)
+        stack_instance_name = self.get_option("stack_instance")
+        stack_instance = api_instance.get_stack_instance(
+            stack_instance_name)
+        print("deruit")
+        for service, si_service in stack_instance.services.items():
+            for index, service_definition in enumerate(si_service):
+                # self.inventory.add_host(host=service + "_" + str(index),
+                #                         group=service)
+                # self.inventory.set_variable(
+                #     service, "infrastructure_target",
+                #     service_definition.infrastructure_target)
+                if hasattr(
+                        service_definition, "hosts"
+                ) and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
+                    print(f"serv def: {service}")
+                    if not check_groups(
+                            stack_instance.groups,
+                            service_definition.provisioning_parameters[
+                                'stackl_inventory_groups'],
+                            service_definition.hosts):
+                        print("derin")
+                        stack_instance.groups = create_groups(
+                            service_definition.hosts,
+                            service_definition.provisioning_parameters[
+                                'stackl_inventory_groups'])
+                        print(f"stackl groupkes: {stack_instance.groups}")
+                        stack_update = stackl_client.StackInstanceUpdate(
+                            stack_instance_name=stack_instance.name,
+                            params={
+                                "stackl_groups": stack_instance.groups
+                            },
+                            disable_invocation=True)
+                        api_instance.put_stack_instance(stack_update)
+                    for item, value in stack_instance.groups.items():
+                        print(f"grpupkes: {stack_instance.groups}")
+                        for group in value:
+                            if group.target == service_definition.infrastructure_target:
+                                self.inventory.add_group(item)
+                                self.inventory.add_host(host=group.host,
+                                                        group=item)
+                                for key, value in service_definition.provisioning_parameters.items(
+                                ):
+                                    self.inventory.set_variable(
+                                        item, key, value)
+                                if hasattr(service_definition, "secrets"):
+                                    if self.get_option(
+                                            "secret_handler") == "vault":
+                                        secrets = get_vault_secrets(
+                                            service_definition,
+                                            self.get_option("vault_addr"),
+                                            self.get_option(
+                                                "vault_token_path"))
+                                    elif self.get_option(
+                                            "secret_handler") == "base64":
+                                        secrets = get_base64_secrets(
+                                            service_definition)
+                                    elif self.get_option("secret_handler") == "conjur":
+                                        secrets = get_conjur_secrets(
+                                            service_definition,
+                                            self.get_option("conjur_addr"),
+                                            self.get_option("conjur_account"),
+                                            self.get_option("conjur_token_path"),
+                                            self.get_option("conjur_verify"))
+                                    for key, value in secrets.items():
                                         self.inventory.set_variable(
                                             item, key, value)
-                                    if hasattr(service_definition, "secrets"):
-                                        if self.get_option(
-                                                "secret_handler") == "vault":
-                                            secrets = get_vault_secrets(
-                                                service_definition,
-                                                self.get_option("vault_addr"),
-                                                self.get_option(
-                                                    "vault_token_path"))
-                                        elif self.get_option(
-                                                "secret_handler") == "base64":
-                                            secrets = get_base64_secrets(
-                                                service_definition)
-                                        elif self.get_option("secret_handler") == "conjur":
-                                            secrets = get_conjur_secrets(
-                                                service_definition,
-                                                self.get_option("conjur_addr"),
-                                                self.get_option("conjur_account"),
-                                                self.get_option("conjur_token_path"),
-                                                self.get_option("conjur_verify"))
-                                        for key, value in secrets.items():
-                                            self.inventory.set_variable(
-                                                item, key, value)
-                    else:
-                        self.inventory.add_group(service)
-                        if service_definition.hosts is None:
-                            self.inventory.add_host(host=service + "_" +
-                                                    str(index),
-                                                    group=service)
-                        else:
-                            self.inventory.add_host(host=service_definition.hosts,
-                            group=service)
-                        self.inventory.set_variable(
-                            service, "infrastructure_target",
-                            service_definition.infrastructure_target)
-                        for key, value in service_definition.provisioning_parameters.items(
-                        ):
-                            self.inventory.set_variable(service, key, value)
-                        if hasattr(service_definition, "secrets"):
-                            if self.get_option("secret_handler") == "vault":
-                                secrets = get_vault_secrets(
-                                    service_definition,
-                                    self.get_option("vault_addr"),
-                                    self.get_option("vault_token_path"))
-                            elif self.get_option("secret_handler") == "base64":
-                                secrets = get_base64_secrets(
-                                    service_definition)
-                            elif self.get_option("secret_handler") == "conjur":
-                                secrets = get_conjur_secrets(
-                                    service_definition,
-                                    self.get_option("conjur_addr"),
-                                    self.get_option("conjur_account"),
-                                    self.get_option("conjur_token_path"),
-                                    self.get_option("conjur_verify"))
-                            for key, value in secrets.items():
-                                self.inventory.set_variable(
-                                    service, key, value)
-        except Exception as e:
-            raise AnsibleError(format(e))
+                else:
+                    self.inventory.add_group(service)
+                    self.inventory.add_host(host=service + "_" +
+                                            str(index),
+                                            group=service)
+                    self.inventory.set_variable(
+                        service, "infrastructure_target",
+                        service_definition.infrastructure_target)
+                    for key, value in service_definition.provisioning_parameters.items(
+                    ):
+                        self.inventory.set_variable(service, key, value)
+                    if hasattr(service_definition, "secrets"):
+                        if self.get_option("secret_handler") == "vault":
+                            secrets = get_vault_secrets(
+                                service_definition,
+                                self.get_option("vault_addr"),
+                                self.get_option("vault_token_path"))
+                        elif self.get_option("secret_handler") == "base64":
+                            secrets = get_base64_secrets(
+                                service_definition)
+                        elif self.get_option("secret_handler") == "conjur":
+                            secrets = get_conjur_secrets(
+                                service_definition,
+                                self.get_option("conjur_addr"),
+                                self.get_option("conjur_account"),
+                                self.get_option("conjur_token_path"),
+                                self.get_option("conjur_verify"))
+                        for key, value in secrets.items():
+                            self.inventory.set_variable(
+                                service, key, value)
+        # except Exception as e:
+        #     raise AnsibleError('Something happened, this was original exception: %s' % to_native(e))
 """
 
 playbook_include_role = """
