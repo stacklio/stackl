@@ -321,7 +321,7 @@ description = "STACKL"
 name = "stackl-client"
 optional = false
 python-versions = "*"
-version = "0.2.3"
+version = "0.2.4dev"
 
 [package.dependencies]
 certifi = "*"

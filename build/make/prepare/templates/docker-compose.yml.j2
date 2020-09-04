@@ -6,7 +6,7 @@ networks:
 services:
   stackl-core:
     restart: always
-    image: stacklio/stackl-core:v0.2.3
+    image: stacklio/stackl-core:v0.2.4
     depends_on:
       - stackl-redis
     networks:
@@ -47,7 +47,7 @@ services:
       - stackl_bridge
   stackl-agent:
     restart: always
-    image: stacklio/stackl-agent:v0.2.3
+    image: stacklio/stackl-agent:v0.2.4
     volumes:
       - /tmp:/tmp
     depends_on:
