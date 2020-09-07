@@ -15,9 +15,10 @@ def update(ctx):
 @click.option('-p', '--params', default=[], multiple=True)
 @click.option('-s', '--secrets', default="{}")
 @click.option('-d', '--disable-invocation', is_flag=True)
+@click.option('-r', '--replicas', default="{}")
 @click.argument('instance-name')
 @pass_stackl_context
-def instance(stackl_context: StacklContext, params, secrets,
+def instance(stackl_context: StacklContext, params, secrets, replicas,
              disable_invocation, instance_name):
     final_params = {}
     for item in params:
@@ -25,7 +26,8 @@ def instance(stackl_context: StacklContext, params, secrets,
     invocation = stackl_client.StackInstanceUpdate(
         stack_instance_name=instance_name,
         params=final_params,
-        secrets=json.loads(secrets))
+        secrets=json.loads(secrets),
+        replicas=json.loads(replicas))
     if disable_invocation:
         invocation.disable_invocation = True
     res = stackl_context.stack_instances_api.put_stack_instance(invocation)

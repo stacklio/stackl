@@ -51,66 +51,9 @@ class StackHandler(Handler):
             service_definitions = []
             for infra_target in targets:
                 infra_target_counter = 1
-                service_definition = StackInstanceService()
-                service_definition.infrastructure_target = infra_target
-
-                service_definition.opa_outputs = opa_service_params[svc][
-                    infra_target]
-                capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target].provisioning_parameters
-                secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target].secrets
-                agent = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target].agent
-                cloud_provider = stack_infrastructure_template.infrastructure_capabilities[
-                    infra_target].cloud_provider
-
-                merged_secrets = {**secrets_of_target, **svc_doc.secrets}
-
-                fr_params = {}
-                for fr in svc_doc.functional_requirements:
-                    stack_instance_status = StackInstanceStatus(
-                        functional_requirement=fr,
-                        service=svc,
-                        infrastructure_target=infra_target,
-                        status="in_progress",
-                        error_message="")
-                    stack_instance_statuses.append(stack_instance_status)
-                    fr_doc = self.document_manager.get_functional_requirement(
-                        fr)
-                    fr_params = {**fr_params, **fr_doc.params}
-                    merged_secrets = {**merged_secrets, **fr_doc.secrets}
-                merged_capabilities = {
-                    **capabilities_of_target,
-                    **fr_params,
-                    **svc_doc.params
-                }
-                service_definition.provisioning_parameters = {
-                    **merged_capabilities,
-                    **service_definition.opa_outputs,
-                    **item.params,
-                    **item.service_params.get(svc, {})
-                }
-                if "stackl_hostname" in service_definition.provisioning_parameters:
-                    stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
-                    service_definition.hosts = []
-                    if "instances" in service_definition.provisioning_parameters:
-                        service_definition.provisioning_parameters['machine_names'] = []
-                        for i in range(service_definition.provisioning_parameters["instances"]):
-                            replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(infra_target_counter)) \
-                                .replace('{hi}',
-                                         "{:02d}".format(
-                                             i+1))
-                            service_definition.hosts.append(replaced_hostname)
-                            service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
-                    else:
-                        replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(infra_target_counter)) \
-                            .replace('{hi}', "01")
-                        service_definition.hosts.append(replaced_hostname)
-                        service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
-                service_definition.secrets = {**merged_secrets, **item.secrets}
-                service_definition.agent = agent
-                service_definition.cloud_provider = cloud_provider
+                service_definition = self.add_service_definition(infra_target, infra_target_counter, item,
+                                                                 opa_service_params, stack_infrastructure_template,
+                                                                 stack_instance_statuses, svc, svc_doc)
                 service_definitions.append(service_definition)
                 infra_target_counter += 1
             services[svc] = service_definitions
@@ -118,7 +61,68 @@ class StackHandler(Handler):
         stack_instance_doc.status = stack_instance_statuses
         return stack_instance_doc
 
-    def _update_stack_instance(self, stack_instance: StackInstance, item):
+    def add_service_definition(self, infra_target, infra_target_counter, item, opa_service_params,
+                               stack_infrastructure_template, stack_instance_statuses, svc, svc_doc):
+        service_definition = StackInstanceService()
+        service_definition.infrastructure_target = infra_target
+        service_definition.opa_outputs = opa_service_params[svc][
+            infra_target]
+        capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
+            infra_target].provisioning_parameters
+        secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
+            infra_target].secrets
+        agent = stack_infrastructure_template.infrastructure_capabilities[
+            infra_target].agent
+        cloud_provider = stack_infrastructure_template.infrastructure_capabilities[
+            infra_target].cloud_provider
+        merged_secrets = {**secrets_of_target, **svc_doc.secrets}
+        fr_params = {}
+        for fr in svc_doc.functional_requirements:
+            stack_instance_status = StackInstanceStatus(
+                functional_requirement=fr,
+                service=svc,
+                infrastructure_target=infra_target,
+                status="in_progress",
+                error_message="")
+            stack_instance_statuses.append(stack_instance_status)
+            fr_doc = self.document_manager.get_functional_requirement(
+                fr)
+            fr_params = {**fr_params, **fr_doc.params}
+            merged_secrets = {**merged_secrets, **fr_doc.secrets}
+        merged_capabilities = {
+            **capabilities_of_target,
+            **fr_params,
+            **svc_doc.params
+        }
+        service_definition.provisioning_parameters = {
+            **merged_capabilities,
+            **service_definition.opa_outputs,
+            **item.params,
+            **item.service_params.get(svc, {})
+        }
+        if "stackl_hostname" in service_definition.provisioning_parameters:
+            stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
+            service_definition.hosts = []
+            if "instances" in service_definition.provisioning_parameters:
+                service_definition.provisioning_parameters['machine_names'] = []
+                for i in range(service_definition.provisioning_parameters["instances"]):
+                    replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(infra_target_counter)) \
+                        .replace('{hi}',
+                                 "{:02d}".format(
+                                     i + 1))
+                    service_definition.hosts.append(replaced_hostname)
+                    service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+            else:
+                replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(infra_target_counter)) \
+                    .replace('{hi}', "01")
+                service_definition.hosts.append(replaced_hostname)
+                service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+        service_definition.secrets = {**merged_secrets, **item.secrets}
+        service_definition.agent = agent
+        service_definition.cloud_provider = cloud_provider
+        return service_definition
+
+    def _update_stack_instance(self, stack_instance: StackInstance, item, opa_service_params, service_targets):
         """This method takes a stack instance and an item which contains the extra parameters and secrets"""
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
@@ -136,82 +140,101 @@ class StackHandler(Handler):
             **stack_instance.service_params,
             **item.service_params
         }
-        logger.debug(f"item params: {item.params}")
-        if "stackl_hosts" in item.params:
-            stack_instance.hosts[item.params[
-                "infrastructure_target"]] = item.params["stackl_hosts"]
 
         if "stackl_groups" in item.params:
             stack_instance.groups = item.params["stackl_groups"]
 
         stack_instance_statuses = []
         for svc, service_definitions in stack_instance.services.items():
+            svc_doc = self.document_manager.get_service(svc)
             for count, service_definition in enumerate(service_definitions):
-                svc_doc = self.document_manager.get_service(svc)
-                capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    service_definition.
-                        infrastructure_target].provisioning_parameters
-                secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
-                    service_definition.infrastructure_target].secrets
-                opa_outputs = service_definition.opa_outputs
-                agent = stack_infrastructure_template.infrastructure_capabilities[
-                    service_definition.infrastructure_target].agent
+                if service_targets and not service_definition.infrastructure_target in \
+                                           service_targets["result"]["services"][svc]:
+                    return "Update not possible. Target in service definition not in service_targets"
+                service_definition = self.update_service_definition(count, item, opa_service_params,
+                                                                    service_definition,
+                                                                    stack_infrastructure_template, stack_instance,
+                                                                    stack_instance_statuses, svc)
 
-                merged_secrets = {**secrets_of_target, **svc_doc.secrets}
-                fr_params = {}
-                for fr in svc_doc.functional_requirements:
-                    if not item.disable_invocation:
-                        stack_instance_status = StackInstanceStatus(
-                            functional_requirement=fr,
-                            service=svc,
-                            infrastructure_target=service_definition.
-                                infrastructure_target,
-                            status="in_progress",
-                            error_message="")
-                        stack_instance_statuses.append(stack_instance_status)
-                    fr_doc = self.document_manager.get_functional_requirement(
-                        fr)
-                    fr_params = {**fr_params, **fr_doc.params}
-                    merged_secrets = {**merged_secrets, **fr_doc.secrets}
-                merged_capabilities = {
-                    **capabilities_of_target,
-                    **fr_params,
-                    **svc_doc.params
-                }
-                service_definition.provisioning_parameters = {
-                    **merged_capabilities,
-                    **opa_outputs,
-                    **stack_instance.instance_params,
-                    **stack_instance.service_params.get(svc, {})
-                }
-                service_definition.secrets = {
-                    **merged_secrets,
-                    **stack_instance.instance_secrets
-                }
-                if "stackl_hostname" in service_definition.provisioning_parameters:
-                    service_definition.provisioning_parameters['machine_names']: []
-                    stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
-                    service_definition.hosts = []
-                    if "instances" in service_definition.provisioning_parameters:
-                        service_definition.provisioning_parameters['machine_names'] = []
-                        for i in range(service_definition.provisioning_parameters["instances"]):
-                            replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count+1)) \
-                                .replace('{hi}',
-                                         "{:02d}".format(
-                                             i+1))
-                            service_definition.hosts.append(replaced_hostname)
-                            service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
-                    else:
-                        replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count+1)) \
-                            .replace('{hi}', "01")
-                        service_definition.hosts.append(replaced_hostname)
-                        service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+                stack_instance.services[svc][count] = service_definition
+            if service_targets:
+                if len(service_targets["result"]["services"][svc]) > len(service_definitions):
+                    start_index = len(service_targets["result"]["services"][svc]) - len(service_definitions)
+                    for i in range(start_index, len(service_targets["result"]["services"][svc])):
+                        service_definition = self.add_service_definition(service_targets["result"]["services"][svc][i],
+                                                                         i + 1, item,
+                                                                         opa_service_params,
+                                                                         stack_infrastructure_template,
+                                                                         stack_instance_statuses, svc, svc_doc)
+                        service_definitions.append(service_definition)
 
-            service_definition.agent = agent
-            stack_instance.services[svc][count] = service_definition
         stack_instance.status = stack_instance_statuses
         return stack_instance
 
+    def update_service_definition(self, count, item, opa_service_params, service_definition,
+                                  stack_infrastructure_template, stack_instance, stack_instance_statuses, svc):
+        svc_doc = self.document_manager.get_service(svc)
+        capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
+            service_definition.
+                infrastructure_target].provisioning_parameters
+        secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
+            service_definition.infrastructure_target].secrets
+        service_definition.opa_outputs = opa_service_params[svc][
+            service_definition.infrastructure_target]
+        opa_outputs = service_definition.opa_outputs
+        agent = stack_infrastructure_template.infrastructure_capabilities[
+            service_definition.infrastructure_target].agent
+        merged_secrets = {**secrets_of_target, **svc_doc.secrets}
+        fr_params = {}
+        for fr in svc_doc.functional_requirements:
+            if not item.disable_invocation:
+                stack_instance_status = StackInstanceStatus(
+                    functional_requirement=fr,
+                    service=svc,
+                    infrastructure_target=service_definition.
+                        infrastructure_target,
+                    status="in_progress",
+                    error_message="")
+                stack_instance_statuses.append(stack_instance_status)
+            fr_doc = self.document_manager.get_functional_requirement(
+                fr)
+            fr_params = {**fr_params, **fr_doc.params}
+            merged_secrets = {**merged_secrets, **fr_doc.secrets}
+        merged_capabilities = {
+            **capabilities_of_target,
+            **fr_params,
+            **svc_doc.params
+        }
+        service_definition.provisioning_parameters = {
+            **merged_capabilities,
+            **opa_outputs,
+            **stack_instance.instance_params,
+            **stack_instance.service_params.get(svc, {})
+        }
+        service_definition.secrets = {
+            **merged_secrets,
+            **stack_instance.instance_secrets
+        }
+        service_definition.agent = agent
+        if "stackl_hostname" in service_definition.provisioning_parameters:
+            service_definition.provisioning_parameters['machine_names']: []
+            stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
+            service_definition.hosts = []
+            if "instances" in service_definition.provisioning_parameters:
+                service_definition.provisioning_parameters['machine_names'] = []
+                for i in range(service_definition.provisioning_parameters["instances"]):
+                    replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count + 1)) \
+                        .replace('{hi}',
+                                 "{:02d}".format(
+                                     i + 1))
+                    service_definition.hosts.append(replaced_hostname)
+                    service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+            else:
+                replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count + 1)) \
+                    .replace('{hi}', "01")
+                service_definition.hosts.append(replaced_hostname)
+                service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+        return service_definition
 
     def add_outputs(self, outputs_update):
         logger.debug("Adding outputs to stack_instance")
@@ -226,7 +249,6 @@ class StackHandler(Handler):
                     service_definition.hostname = service_definition.outputs["stackl_hostname"]
 
         return stack_instance
-
 
     def _handle_create(self, item):
         logger.debug(
@@ -295,7 +317,6 @@ class StackHandler(Handler):
             item, service_targets['result']['services'], stack_infr,
             opa_service_params), service_targets['result']['services']
 
-
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr,
                               item_params):
         infringment_messages = []
@@ -323,7 +344,6 @@ class StackHandler(Handler):
                     infringment_messages.extend(opa_result['result'])
         return infringment_messages
 
-
     def evaluate_replica_policy(self, item, service_targets):
         parameters = {}
         services_just_one = {}
@@ -346,7 +366,6 @@ class StackHandler(Handler):
         )
         return service_targets
 
-
     def process_service_targets(self,
                                 attributes,
                                 new_result,
@@ -367,7 +386,6 @@ class StackHandler(Handler):
                 new_targets.append(t)
         service_targets[service] = new_targets
 
-
     def evaluate_sat_policy(self, attributes, opa_data, policy, user_params, replicas):
         policy_input = {"parameters": attributes}
         policy_input["user_parameters"] = user_params
@@ -384,7 +402,6 @@ class StackHandler(Handler):
         new_result = new_solution['result']
         return new_result
 
-
     def evaluate_orchestration_policy(self, opa_data):
         logger.debug(
             "[StackHandler] _handle_create. performing opa query with data: {0}"
@@ -397,7 +414,6 @@ class StackHandler(Handler):
         opa_solution = opa_result['result']
         return opa_solution
 
-
     def transform_opa_data(self, item, stack_app_template, stack_infr):
         sit_as_opa_data = self.opa_broker.convert_sit_to_opa_data(stack_infr)
         services = []
@@ -409,7 +425,6 @@ class StackHandler(Handler):
         required_tags["required_tags"] = item.tags
         opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
         return opa_data
-
 
     def _update_infr_capabilities(
             self,
@@ -500,7 +515,6 @@ class StackHandler(Handler):
             stack_infr_template)
         return stack_infr_template
 
-
     def _handle_update(self, item):
         logger.debug(
             f"[StackHandler] _handle_update received with item: '{item}'")
@@ -511,9 +525,53 @@ class StackHandler(Handler):
             stack_instance = self.document_manager.get_stack_instance(
                 item.stack_instance_name)
 
-        stack_instance = self._update_stack_instance(stack_instance, item)
-        return stack_instance, 200
+        stack_application_template = self.document_manager.get_stack_application_template(
+            stack_instance.stack_application_template)
+        stack_infrastructure_template = self.document_manager.get_stack_infrastructure_template(
+            stack_instance.stack_infrastructure_template)
 
+        # Transform to OPA format
+        opa_data = self.transform_opa_data(item, stack_application_template,
+                                           stack_infrastructure_template)
+
+        opa_solution = self.evaluate_orchestration_policy(opa_data)
+
+        if not opa_solution['fulfilled']:
+            logger.error(
+                f"[StackHandler]: Opa result message: {opa_solution['msg']}")
+            return None, opa_solution['msg']
+
+        service_targets = opa_solution['services']
+
+        opa_service_params = tree()
+        # Verify the SAT policies
+        for policy_name, attributes in stack_application_template.policies.items():
+            policy = self.document_manager.get_policy_template(policy_name)
+            for policy_params in attributes:
+                new_result = self.evaluate_sat_policy(policy_params, opa_data,
+                                                      policy, {**stack_instance.instance_params, **item.params},
+                                                      item.replicas)
+
+                if not new_result['fulfilled']:
+                    logger.error(
+                        f"[StackHandler]: Opa result message: {new_result['msg']}"
+                    )
+                    return None, new_result['msg']
+
+                self.process_service_targets(policy_params,
+                                             new_result,
+                                             service_targets,
+                                             opa_service_params,
+                                             outputs=policy.outputs)
+        if item.replicas != {}:
+            service_targets = self.evaluate_replica_policy(item, service_targets)
+        else:
+            service_targets = None
+
+        stack_instance = self._update_stack_instance(stack_instance, item, opa_service_params, service_targets)
+        if isinstance(stack_instance, str):
+            return None, stack_instance
+        return stack_instance, "Stack instance updating"
 
     def _handle_delete(self, item):
         logger.debug(

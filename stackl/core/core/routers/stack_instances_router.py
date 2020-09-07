@@ -41,6 +41,8 @@ class StackInstanceUpdate(BaseModel):
     service_params: Dict[str, Dict[str, Any]] = {}
     stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
+    tags: Dict[str, str] = {}
+    replicas: Dict[str, int] = {}
     disable_invocation: bool = False
 
     class Config:
@@ -126,7 +128,7 @@ async def put_stack_instance(
         background_tasks.add_task(create_job_for_agent, stack_instance,
                                   "update", document_manager, redis)
 
-    return {"result": "stack instance updating"}
+    return return_result
 
 
 @router.delete('/{name}')
