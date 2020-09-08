@@ -279,6 +279,7 @@ class InventoryModule(BaseInventoryPlugin):
 
 playbook_include_role = """
 - hosts: "{{ pattern }}"
+  serial: "{{ serial }}"
   gather_facts: no
   tasks:
     - include_role:
@@ -411,6 +412,9 @@ class Invocation():
         self._command_args = [
             'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
         ]
+        serial = 10
+        if 'ansible_serial' in self.provisioning_parameters:
+            serial = self.provisioning_parameters['ansible_serial']
         if "ansible_playbook_path" in self.provisioning_parameters:
             self._command_args[
                 0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
@@ -420,7 +424,7 @@ class Invocation():
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[
-                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} '
+                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} -e serial={serial} '
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '
         else:
