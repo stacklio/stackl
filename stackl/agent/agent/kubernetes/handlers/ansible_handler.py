@@ -71,6 +71,7 @@ import hvac
 import stackl_client
 import base64
 import requests
+import logging
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.module_utils._text import to_native
@@ -167,10 +168,20 @@ class InventoryModule(BaseInventoryPlugin):
                 valid = True
         return valid
 
+    def verify_stackl_client(self):
+        r = requests.get(f'{self.get_option("host")}/openapi.json')
+        stackl_version = r.json()['info']['version']
+        stackl_client_version = stackl_client.__version__
+        if stackl_client_version != stackl_version:
+            logging.warn(
+                "stackl-client version is not equal to Stackl version. This may cause issues."
+            )
+
     def parse(self, inventory, loader, path, cache):
         super(InventoryModule, self).parse(inventory, loader, path, cache)
         self._read_config_data(path)
         try:
+            self.verify_stackl_client()
             self.plugin = self.get_option('plugin')
             configuration = stackl_client.Configuration()
             configuration.host = self.get_option("host")
