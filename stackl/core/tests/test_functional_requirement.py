@@ -18,18 +18,21 @@ functional_requirement = {
     'invocation': {
         'generic': {
             'description': 'test',
+            'before_command': None,
             'tool': 'test',
             'image': 'test',
             'as_group': False
         },
         'aws': {
             'description': 'test',
+            'before_command': None,
             'tool': 'test',
             'image': 'test',
             'as_group': False
         }
     },
-    'outputs': {}
+    'outputs': {},
+    'outputs_format': "json"
 }
 
 functional_requirement_update = functional_requirement.copy()
@@ -38,12 +41,14 @@ functional_requirement_update['params'] = {"update": "update"}
 functional_requirement_update['invocation'] = {
     "generic": {
         "description": "update",
+        "before_command": None,
         "image": "update",
         "tool": "update",
         "as_group": False
     },
     "aws": {
         "description": "update",
+        "before_command": None,
         "image": "update",
         "tool": "update",
         "as_group": False

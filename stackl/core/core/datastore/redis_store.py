@@ -11,9 +11,15 @@ from .datastore import DataStore
 class RedisStore(DataStore):
     def __init__(self):
         super(RedisStore, self).__init__()
-        self.redis = redis.Redis(host=config.settings.stackl_redis_host,
-                                 port=config.settings.stackl_redis_port,
-                                 db=0)
+        if config.settings.stackl_redis_type == "fake":
+            logger.info("Using fake client")
+            from redislite import Redis
+            self.redis = Redis()
+        else:
+            self.redis = redis.Redis(host=config.settings.stackl_redis_host,
+                                     port=config.settings.stackl_redis_port,
+                                     db=0)
+
 
     def get(self, **keys):
         document_key = keys.get("category") + '/' + keys.get(

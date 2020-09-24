@@ -18,6 +18,7 @@ uvicorn = "^0.11.5"
 loguru = "^0.5.1"
 redis = "^3.5.3"
 arq = "^0.19"
+redislite = "^5.0.165407"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.3"
