@@ -101,22 +101,11 @@ class StackHandler(Handler):
             **item.service_params.get(svc, {})
         }
         if "stackl_hostname" in service_definition.provisioning_parameters:
-            stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
-            service_definition.hosts = []
-            if "instances" in service_definition.provisioning_parameters:
-                service_definition.provisioning_parameters['machine_names'] = []
-                for i in range(service_definition.provisioning_parameters["instances"]):
-                    replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(infra_target_counter)) \
-                        .replace('{hi}',
-                                 "{:02d}".format(
-                                     i + 1))
-                    service_definition.hosts.append(replaced_hostname)
-                    service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
-            else:
-                replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(infra_target_counter)) \
-                    .replace('{hi}', "01")
-                service_definition.hosts.append(replaced_hostname)
-                service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+            service_definition.template_hosts(
+                service_definition.provisioning_parameters["stackl_hostname"],
+                service_definition.provisioning_parameters.get("instances", None),
+                infra_target_counter)
+
         service_definition.secrets = {**merged_secrets, **item.secrets}
         service_definition.agent = agent
         service_definition.cloud_provider = cloud_provider
@@ -217,23 +206,10 @@ class StackHandler(Handler):
         }
         service_definition.agent = agent
         if "stackl_hostname" in service_definition.provisioning_parameters:
-            service_definition.provisioning_parameters['machine_names']: []
-            stackl_hostname = service_definition.provisioning_parameters["stackl_hostname"]
-            service_definition.hosts = []
-            if "instances" in service_definition.provisioning_parameters:
-                service_definition.provisioning_parameters['machine_names'] = []
-                for i in range(service_definition.provisioning_parameters["instances"]):
-                    replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count + 1)) \
-                        .replace('{hi}',
-                                 "{:02d}".format(
-                                     i + 1))
-                    service_definition.hosts.append(replaced_hostname)
-                    service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
-            else:
-                replaced_hostname = stackl_hostname.replace('{ri}', "{:02d}".format(count + 1)) \
-                    .replace('{hi}', "01")
-                service_definition.hosts.append(replaced_hostname)
-                service_definition.provisioning_parameters['machine_names'].append(replaced_hostname)
+            service_definition.template_hosts(
+                service_definition.provisioning_parameters["stackl_hostname"],
+                service_definition.provisioning_parameters.get("instances", None),
+                count + 1)
         return service_definition
 
     def add_outputs(self, outputs_update):

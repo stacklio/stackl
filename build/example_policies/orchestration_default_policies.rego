@@ -14,7 +14,14 @@ solutions = {"fulfilled": true, "services": result} {
 }
 
 else = {"fulfilled": false, "msg": msg} {
-	msg := "Couldn't find a target for each service"
+	result := {s: targets |
+		service := input.services[s]
+		targets := targets_for_service(service)
+	}
+
+	services_no_targets := { svc | tgt = result[svc]; tgt == []}
+
+	msg := sprintf("Couldn't find a target for services %v", [services_no_targets])
 }
 
 #Rule: get basic suitable infrastructure target for the service

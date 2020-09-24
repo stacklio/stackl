@@ -27,6 +27,7 @@ policy_template = {
     "name": "hasparams",
     "type": "policy_template",
     "inputs": ["params"],
+    "outputs": None,
     "policy": policy
 }
 
