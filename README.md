@@ -3,8 +3,7 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 [![](https://img.shields.io/docker/cloud/build/stacklio/stackl-cli?label=docker%20build%20stackl-cli)](https://hub.docker.com/repository/docker/stacklio/stackl-cli/) 
 ![](https://github.com/stacklio/stackl/workflows/Upload%20Python%20Package/badge.svg) [![](https://img.shields.io/pypi/v/stackl-cli.svg?label=PyPI%20stackl-cli)](https://pypi.python.org/pypi/stackl-cli/)  
-[![](https://img.shields.io/docker/cloud/build/stacklio/stackl-core?label=docker%20build%20stackl-core)](https://hub.docker.com/repository/docker/stacklio/stackl-core/) 
-[![](https://img.shields.io/docker/cloud/build/stacklio/stackl-agent?label=docker%20build%20stackl-agent)](https://hub.docker.com/repository/docker/stacklio/stackl-agent/)
+[![quay image stackl-cli](https://quay.io/repository/stackl/stackl-cli/status "quay image stackl-cli")](https://quay.io/repository/stackl/stackl-cli)
 
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
 STACKL supports the autonomous configuration, coordination, and management of applications and IT infrastructure by:
