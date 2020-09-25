@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-349
 
 
 ENV PYTHONFAULTHANDLER=1 \
@@ -11,7 +11,7 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.0.9
 
 # System deps:
-RUN microdnf install -y python38 && \
+RUN microdnf install -y python38 gcc python3-devel make && \
     pip3 install --no-cache-dir "poetry==$POETRY_VERSION"&& \
     microdnf clean all
 

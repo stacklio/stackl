@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-345
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-349
 
 COPY CentOS-AppStream.repo /etc/yum.repos.d/CentOS-AppStream.repo
 COPY RPM-GPG-KEY-centosofficial /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
