@@ -1,9 +1,10 @@
 # STACKL
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
-[![](https://img.shields.io/docker/cloud/build/stacklio/stackl-cli?label=docker%20build%20stackl-cli)](https://hub.docker.com/repository/docker/stacklio/stackl-cli/) ![](https://github.com/stacklio/stackl/workflows/Upload%20Python%20Package/badge.svg) [![](https://img.shields.io/pypi/v/stackl-cli.svg?label=PyPI%20stackl-cli)](https://pypi.python.org/pypi/stackl-cli/) 
- [![](https://github.com/stacklio/stackl/workflows/.github/workflows/pylint.yml/badge.svg)](https://github.com/stacklio/stackl/actions?query=workflow%3A.github%2Fworkflows%2Fpylint.yml) [![](https://img.shields.io/docker/cloud/build/stacklio/stackl-rest?label=docker%20build%20stackl-rest)](https://hub.docker.com/repository/docker/stacklio/stackl-rest/) [![](https://img.shields.io/docker/cloud/build/stacklio/stackl-worker?label=docker%20build%20stackl-worker)](https://hub.docker.com/repository/docker/stacklio/grpc-base/)
- [![](https://img.shields.io/docker/cloud/build/stacklio/stackl-docker-agent?label=docker%20build%20stackl-docker-agent)](https://hub.docker.com/repository/docker/stacklio/stackl-docker-agent/) [![](https://img.shields.io/docker/cloud/build/stacklio/stackl-kubernetes-agent?label=docker%20build%20stackl-kubernetes-agent)]((https://hub.docker.com/repository/docker/stacklio/stackl-kubernetes-agent/)) [![](https://img.shields.io/docker/cloud/build/stacklio/grpc-base?label=docker%20build%20grpb-base)](https://hub.docker.com/repository/docker/stacklio/grpc-base/)
+![](https://github.com/stacklio/stackl/workflows/Upload%20Python%20Package/badge.svg) [![](https://img.shields.io/pypi/v/stackl-cli.svg?label=PyPI%20stackl-cli)](https://pypi.python.org/pypi/stackl-cli/)  
+[![quay image stackl-cli](https://quay.io/repository/stackl/stackl-cli/status "quay image stackl-cli")](https://quay.io/repository/stackl/stackl-cli)
+[![quay image stackl-core](https://quay.io/repository/stackl/stackl-core/status "quay image stackl-core")](https://quay.io/repository/stackl/stackl-core)
+[![quay image stackl-agent](https://quay.io/repository/stackl/stackl-agent/status "quay image stackl-agent")](https://quay.io/repository/stackl/stackl-agent)
 
 
 **STACKL** is an open-source software platform that enables users to flexibly model, describe, and automate their application orchestration.
