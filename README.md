@@ -86,6 +86,13 @@ Please also read the [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
 For a list of changes, see [Changelog](CHANGELOG.md).
 For the releases, see [Github Releases](https://github.com/stacklio/stackl/releases).
 
+## Security
+
+### Reporting Security Vulnerabilities
+
+Please report vulnerabilities by email to [stackl-security](mailto:stackl-security@stackl.io).
+We will send a confirmation message to acknowledge that we have received the report and we will inform you once the issue has been investigated.
+
 ## License
 
 The code in this project is licensed under the [GLPv3](LICENSE) license.
