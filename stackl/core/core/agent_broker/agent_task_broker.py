@@ -11,7 +11,7 @@ async def create_job_for_agent(stack_instance,
                                action,
                                document_manager,
                                redis,
-                               first_run=True):
+                               first_run=True, force_delete=False):
     logger.debug(
         f"[AgentTaskBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
     )
@@ -72,11 +72,11 @@ async def create_job_for_agent(stack_instance,
 
             if not success:
                 logger.debug("Not all fr's succeeded, stopping execution")
-                return
+                break
 
             logger.debug(f"tasks executed")
 
-    if success and action == "delete":
+    if action == "delete" and (success or force_delete):
         document_manager.delete_stack_instance(stack_instance.name)
     elif not success and first_run:
         snapshot_document = get_snapshot_manager().restore_latest_snapshot(

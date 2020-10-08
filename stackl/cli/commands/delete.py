@@ -11,10 +11,11 @@ def delete(ctx):
 
 @delete.command()
 @click.argument('instance-name')
+@click.option('--force', default=False, is_flag=True)
 @pass_stackl_context
-def instance(stackl_context: StacklContext, instance_name):
+def instance(stackl_context: StacklContext, instance_name, force):
     res = stackl_context.stack_instances_api.delete_stack_instance(
-        instance_name)
+        instance_name, force=force)
     click.echo(res)
 
 

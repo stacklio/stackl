@@ -135,12 +135,12 @@ async def put_stack_instance(
 def delete_stack_instance(
     name: str,
     background_tasks: BackgroundTasks,
+    force: bool = False,
     document_manager: DocumentManager = Depends(get_document_manager),
     redis=Depends(get_redis)):
     """Delete a stack instance with a specific name"""
     stack_instance = document_manager.get_stack_instance(name)
-
     background_tasks.add_task(create_job_for_agent, stack_instance, "delete",
-                              document_manager, redis)
+                              document_manager, redis, force_delete=force)
 
     return {"result": f"Deleting stack instance {name}"}
