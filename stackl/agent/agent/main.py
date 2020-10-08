@@ -56,5 +56,6 @@ async def invoke_automation(ctx, invoc):
 class AgentSettings:
     functions = [invoke_automation]
     queue_name = config.settings.agent_name
+    max_jobs = config.settings.max_jobs
     redis_settings = RedisSettings(host=config.settings.redis_host,
                                    port=config.settings.redis_port)

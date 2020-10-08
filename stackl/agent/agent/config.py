@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     secret_handler: str = "base64"
     loglevel: str = "INFO"
+    max_jobs: int = 10
 
     # Kubernetes Handler
     stackl_namespace: str = None
