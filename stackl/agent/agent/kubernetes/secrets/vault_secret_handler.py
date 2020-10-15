@@ -20,6 +20,7 @@ auto_auth {
 
 template {
   destination = "%s"
+  error_on_missing_key = true
   contents = <<EOH
 %s
 EOH
@@ -77,7 +78,7 @@ class VaultSecretHandler(SecretHandler):
             "name":
             "vault-agent",
             "image":
-            "vault",
+            "vault:latest",
             "args": [
                 "agent", "-config=/etc/vault-config/vault-agent-config.hcl",
                 "-exit-after-auth"

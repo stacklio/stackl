@@ -9,7 +9,7 @@ python = "^3.7"
 kubernetes = "^11.0.0"
 pyyaml = "^5.3.1"
 arq = "^0.19"
-stackl-client = "0.2.5dev"
+stackl-client = "0.2.4"
 pydantic = "^1.6.1"
 
 [tool.poetry.dev-dependencies]
