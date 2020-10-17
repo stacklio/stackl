@@ -57,6 +57,7 @@ def show_progress_bar(stackl_context, instance_name):
     stack_instance = stackl_context.stack_instances_api.get_stack_instance(instance_name)
     with click.progressbar(length=len(stack_instance.status),
                            label='Stack Instance Status') as bar:
+        bar.update(0)
         ready = False
         while not ready:
             for status in stack_instance.status:
@@ -68,7 +69,7 @@ def show_progress_bar(stackl_context, instance_name):
                     time.sleep(1)
                     stack_instance = stackl_context.stack_instances_api.get_stack_instance(instance_name)
                     ready = False
-                    bar.update(1)
                     break
                 else:
+                    bar.update(1)
                     ready = True
