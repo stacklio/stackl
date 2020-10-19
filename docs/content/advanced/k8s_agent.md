@@ -61,6 +61,102 @@ Using `stackl-cli`, an Ansible role can be executed using the following command:
 stackl create instance --stack-application-template <sat_name> --stack-infrastructure-template <sit_name> <stack_instance_name>
 ```
 
+## Ansible execution
+
+By default, Ansible is executed [ad-hoc](https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html). The following command is used:
+
+```bash
+ansible [pattern] -m [module] -a "[module options] -i [inventory]"
+```
+
+With:
+
+| Key | Value |
+|-----|-------|
+| pattern | The hosts to target for the execution of the playbook. If no hosts are provided, Stackl will pick the name of the service as a host. |
+| module | `include_role`. Used to include the role written in the image used by the Stackl job. |
+| module options | Options for the module used, in this case `include_role`. The name of the role it tries to include is the name of the functional requirement, so make sure the functional requirement and the Ansible role have the same name. |
+| inventory | Stackl dynamic inventory script used to gather variables from Stackl and secret from a secret handler. |
+
+### Playbook execution
+
+To execute a playbook with the Ansible handler, add a playbook to the OCI image and add a variable called `ansible_playbook_path` to the stack instance.
+
+For example:
+
+```yaml
+---
+- name: update web servers
+  hosts: localhost
+  connection: local
+
+  tasks:
+  - name: ensure apache is at the latest version
+    debug:
+      msg: installing latest apache version
+
+  - name: write the apache config file
+    debug:
+      msg: writing apache version
+
+- name: update db servers
+  hosts: localhost
+  connection: local
+
+  tasks:
+  - name: ensure postgresql is at the latest version
+    debug:
+      msg: installing latest postgresql version
+  - name: ensure that postgresql is started
+    debug:
+      msg: start postgresql service
+```
+
+To execute this playbook, add `ansible_playbook_path` to the stack instance. This can be done either by adding the variable to the instance itself or to any other document used by the instance (for example the functional requirment).
+
+```yaml
+category: configs
+description: example-playbook
+invocation:
+  generic:
+    description: Example playbook
+    image: stacklio/example-playbook:v1.0.0
+    tool: ansible
+name: example-playbook
+params:
+  ansible_playbook_path: /opt/ansible/playbook.yml
+type: functional_requirement
+```
+
+Creating a stack instance using this functional requirement will execute the playbook. Example logs:
+
+```bash
+PLAY [update web servers] ******************************************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [ensure apache is at the latest version] **********************************
+ok: [localhost] => {
+    "msg": "installing latest apache version"
+}
+TASK [write the apache config file] ********************************************
+ok: [localhost] => {
+    "msg": "writing apache version"
+}
+PLAY [update db servers] *******************************************************
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+TASK [ensure postgresql is at the latest version] ******************************
+ok: [localhost] => {
+    "msg": "installing latest postgresql version"
+}
+TASK [ensure that postgresql is started] ***************************************
+ok: [localhost] => {
+    "msg": "start postgresql service"
+}
+PLAY RECAP *********************************************************************
+localhost                  : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
 ## Terraform handler
 
 The Terraform handler is used to execute Terraform plans using Stackl.
