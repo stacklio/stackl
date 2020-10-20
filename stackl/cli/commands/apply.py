@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 import stackl_client
 import yaml
+from sys import exit
 from context import StacklContext
 from mergedeep import merge
 
@@ -107,3 +108,4 @@ def upload_files(directory, stackl_context):
                 click.echo(
                     f"Failed to apply {stackl_doc['name']} with type {stackl_doc['type']}: {e.body}"
                 )
+                exit(1)
