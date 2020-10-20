@@ -2,6 +2,7 @@ import asyncio
 
 from loguru import logger
 
+from core import config
 from core.manager.stackl_manager import get_snapshot_manager
 from core.models.items.stack_instance_model import StackInstance
 from core.models.items.stack_instance_status_model import StackInstanceStatus
@@ -76,9 +77,10 @@ async def create_job_for_agent(stack_instance,
 
             logger.debug(f"tasks executed")
 
+    logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
     if action == "delete" and (success or force_delete):
         document_manager.delete_stack_instance(stack_instance.name)
-    elif not success and first_run:
+    elif not success and first_run and config.settings.rollback_enabled:
         snapshot_document = get_snapshot_manager().restore_latest_snapshot(
             "stack_instance", stack_instance.name)
         stack_instance = StackInstance.parse_obj(snapshot_document["snapshot"])
