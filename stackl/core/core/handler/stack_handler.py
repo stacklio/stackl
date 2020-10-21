@@ -330,23 +330,24 @@ class StackHandler(Handler):
 
         opa_service_params = tree()
         # Verify the SAT policies
-        for policy_name, attributes in stack_app_template.policies.items():
-            policy = self.document_manager.get_policy_template(policy_name)
-            for policy_params in attributes:
-                new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                      policy, item.params, item.replicas)
+        if stack_app_template.policies:
+            for policy_name, attributes in stack_app_template.policies.items():
+                policy = self.document_manager.get_policy_template(policy_name)
+                for policy_params in attributes:
+                    new_result = self.evaluate_sat_policy(policy_params, opa_data,
+                                                          policy, item.params, item.replicas)
 
-                if not new_result['fulfilled']:
-                    logger.error(
-                        f"[StackHandler]: Opa result message: {new_result['msg']}"
-                    )
-                    return None, new_result['msg']
+                    if not new_result['fulfilled']:
+                        logger.error(
+                            f"[StackHandler]: Opa result message: {new_result['msg']}"
+                        )
+                        return None, new_result['msg']
 
-                process_service_targets(policy_params,
-                                        new_result,
-                                        service_targets,
-                                        opa_service_params,
-                                        outputs=policy.outputs)
+                    process_service_targets(policy_params,
+                                            new_result,
+                                            service_targets,
+                                            opa_service_params,
+                                            outputs=policy.outputs)
 
         service_targets = self.evaluate_replica_policy(item, service_targets)
         if not service_targets['result']['fulfilled']:
@@ -595,28 +596,25 @@ class StackHandler(Handler):
 
         opa_service_params = tree()
         # Verify the SAT policies
-        for policy_name, attributes in stack_application_template.policies.items():
-            policy = self.document_manager.get_policy_template(policy_name)
-            for policy_params in attributes:
-                new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                      policy,
-                                                      {
-                                                          **stack_instance.instance_params,
-                                                          **item.params
-                                                      },
-                                                      item.replicas)
+        if stack_application_template.policies:
+            for policy_name, attributes in stack_application_template.policies.items():
+                policy = self.document_manager.get_policy_template(policy_name)
+                for policy_params in attributes:
+                    new_result = self.evaluate_sat_policy(policy_params, opa_data,
+                                                          policy, {**stack_instance.instance_params, **item.params},
+                                                          item.replicas)
 
-                if not new_result['fulfilled']:
-                    logger.error(
-                        f"[StackHandler]: Opa result message: {new_result['msg']}"
-                    )
-                    return None, new_result['msg']
+                    if not new_result['fulfilled']:
+                        logger.error(
+                            f"[StackHandler]: Opa result message: {new_result['msg']}"
+                        )
+                        return None, new_result['msg']
 
-                process_service_targets(policy_params,
-                                        new_result,
-                                        service_targets,
-                                        opa_service_params,
-                                        outputs=policy.outputs)
+                    process_service_targets(policy_params,
+                                            new_result,
+                                            service_targets,
+                                            opa_service_params,
+                                            outputs=policy.outputs)
         if item.replicas != {}:
             service_targets = self.evaluate_replica_policy(item, service_targets)
         else:
