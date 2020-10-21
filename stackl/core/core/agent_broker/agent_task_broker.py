@@ -9,7 +9,6 @@ from loguru import logger
 from core import config
 from core.manager.stackl_manager import get_snapshot_manager
 from core.models.items.stack_instance_model import StackInstance
-from core.models.items.stack_instance_status_model import StackInstanceStatus
 
 
 async def create_job_for_agent(stack_instance,
@@ -61,7 +60,7 @@ async def create_job_for_agent(stack_instance,
                     _queue_name=service_definition.agent)
                 fr_jobs.append(asyncio.create_task(job.result(timeout=7200)))
 
-                if fr_doc.invocation[cloud_provider].as_group:
+                if fr_doc.as_group:
                     logger.debug("running as group")
                     break
 
@@ -95,27 +94,20 @@ async def create_job_for_agent(stack_instance,
 async def update_status(automation_result, document_manager, stack_instance):
     """Updates the status of a functional requirement in a stack instance"""
     stack_instance = document_manager.get_stack_instance(stack_instance.name)
-    stack_instance_status = StackInstanceStatus()
-    stack_instance_status.service = automation_result["service"]
-    stack_instance_status.functional_requirement = automation_result[
-        "functional_requirement"]
-    stack_instance_status.infrastructure_target = automation_result[
-        "infrastructure_target"]
-    if 'error_message' in automation_result:
-        error_message = automation_result["error_message"]
-    else:
-        error_message = ""
-    stack_instance_status.status = automation_result["status"]
-    stack_instance_status.error_message = error_message
-    changed = False
-    for i, status in enumerate(stack_instance.status):
+    for status in stack_instance.status:
         if status.functional_requirement == automation_result[
-            "functional_requirement"] and status.infrastructure_target == automation_result[
-            "infrastructure_target"] and status.service == automation_result[
-            "service"]:
-            stack_instance.status[i] = stack_instance_status
-            changed = True
+            "functional_requirement"] and automation_result[
+            "infrastructure_target"] in status.infrastructure_target \
+                and status.service == automation_result["service"]:
+            status.service = automation_result["service"]
+            status.functional_requirement = automation_result[
+                "functional_requirement"]
+            if 'error_message' in automation_result:
+                error_message = automation_result["error_message"]
+            else:
+                error_message = ""
+            status.status = automation_result["status"]
+            status.error_message = error_message
             break
-    if not changed:
-        stack_instance.status.append(stack_instance_status)
+
     document_manager.write_stack_instance(stack_instance)
