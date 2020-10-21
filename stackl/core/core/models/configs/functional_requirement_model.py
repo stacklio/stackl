@@ -14,7 +14,6 @@ class Invocation(BaseModel):
     tool: str
     image: str
     before_command: str = None
-    as_group: bool = False
 
 
 class FunctionalRequirement(BaseDocument):
@@ -23,3 +22,4 @@ class FunctionalRequirement(BaseDocument):
     invocation: Dict[str, Invocation]
     outputs: dict = {}
     outputs_format: str = "json"
+    as_group: bool = False

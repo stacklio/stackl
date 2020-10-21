@@ -120,17 +120,35 @@ class StackHandler(Handler):
         merged_secrets = {**secrets_of_target, **svc_doc.secrets}
         fr_params = {}
         for fr in svc_doc.functional_requirements:
-            stack_instance_status = StackInstanceStatus(
-                functional_requirement=fr,
-                service=svc,
-                infrastructure_target=infra_target,
-                status="in_progress",
-                error_message="")
-            stack_instance_statuses.append(stack_instance_status)
             fr_doc = self.document_manager.get_functional_requirement(
                 fr)
             fr_params = {**fr_params, **fr_doc.params}
             merged_secrets = {**merged_secrets, **fr_doc.secrets}
+            if fr_doc.as_group:
+                # First check if the status is already available in the stack instance statuses
+                status_already_available = False
+                for stack_instance_status in stack_instance_statuses:
+                    if stack_instance_status.service == svc and stack_instance_status.functional_requirement == fr:
+                        status_already_available = True
+                        # status found, add the infra target
+                        stack_instance_status.infrastructure_target += f",{infra_target}"
+                        break
+                if not status_already_available:
+                    stack_instance_status = StackInstanceStatus(
+                        functional_requirement=fr,
+                        service=svc,
+                        infrastructure_target=infra_target,
+                        status="in_progress",
+                        error_message="")
+                    stack_instance_statuses.append(stack_instance_status)
+            else:
+                stack_instance_status = StackInstanceStatus(
+                    functional_requirement=fr,
+                    service=svc,
+                    infrastructure_target=infra_target,
+                    status="in_progress",
+                    error_message="")
+                stack_instance_statuses.append(stack_instance_status)
         merged_capabilities = {
             **capabilities_of_target,
             **fr_params,

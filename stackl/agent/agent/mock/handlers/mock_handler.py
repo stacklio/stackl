@@ -20,4 +20,4 @@ class MockHandler(ConfiguratorHandler):
         )
         time.sleep(5)
         print("fake provisioning done")
-        return 1, "mock fake"
+        return 0, "mock fake"
