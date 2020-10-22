@@ -1,27 +1,33 @@
+"""
+Redis datastore module
+"""
 import json
 
 import redis
-from core.enums.stackl_codes import StatusCode
 from loguru import logger
+from redislite import Redis
 
 from core import config
+from core.enums.stackl_codes import StatusCode
 from .datastore import DataStore
 
 
 class RedisStore(DataStore):
+    """Implementation of Redis datastore"""
+
     def __init__(self):
-        super(RedisStore, self).__init__()
+        super().__init__()
         if config.settings.stackl_redis_type == "fake":
             logger.info("Using fake client")
-            from redislite import Redis
+
             self.redis = Redis()
         else:
             self.redis = redis.Redis(host=config.settings.stackl_redis_host,
                                      port=config.settings.stackl_redis_port,
                                      db=0)
 
-
     def get(self, **keys):
+        """Gets a document from a redis instance"""
         document_key = keys.get("category") + '/' + keys.get(
             "type") + '/' + keys.get("name")
         logger.debug(f"[RedisStore] get on key '{document_key}'")
@@ -37,10 +43,11 @@ class RedisStore(DataStore):
         logger.debug(f"[RedisStore] StoreResponse for get: {response}")
         return response
 
-    def get_all(self, category, type, wildcard_prefix=""):
-        document_key = f"{category}/{type}/{wildcard_prefix}*"
+    def get_all(self, category, document_type, wildcard_prefix=""):
+        """Gets all documents of a type from a Redis"""
+        document_key = f"{category}/{document_type}/{wildcard_prefix}*"
         logger.debug(
-            f"[RedisStore] get_all in '{document_key}' for type '{type}'")
+            f"[RedisStore] get_all in '{document_key}' for type '{document_type}'")
         content = []
         for key in self.redis.scan_iter(document_key):
             content.append(json.loads(self.redis.get(key)))
@@ -49,10 +56,11 @@ class RedisStore(DataStore):
         logger.debug(f"[RedisStore] StoreResponse for get: {response}")
         return response
 
-    def get_history(self, category, type, name):
-        document_key = category + '/' + type + '/' + name
+    def get_history(self, category, document_type, name):
+        """Gets the snapshots of document from Redis"""
+        document_key = category + '/' + document_type + '/' + name
         logger.debug(
-            f"[RedisStore] get_history in '{document_key}' for type '{type}'")
+            f"[RedisStore] get_history in '{document_key}' for type '{document_type}'")
         content = []
         for key in self.redis.scan_iter(document_key):
             content.append(json.loads(self.redis.get(key)))
@@ -62,6 +70,7 @@ class RedisStore(DataStore):
         return response
 
     def put(self, file):
+        """Puts a document in Redis"""
         document_key = file.get("category") + '/' + file.get(
             "type") + '/' + file["name"]
         logger.debug(f"[RedisStore] put on '{document_key}' with file {file}")
@@ -73,6 +82,7 @@ class RedisStore(DataStore):
         return response
 
     def delete(self, **keys):
+        """Deletes a document in Redis"""
         document_key = keys.get("category") + '/' + keys.get(
             "type") + '/' + keys.get("name")
         self.redis.delete(document_key)

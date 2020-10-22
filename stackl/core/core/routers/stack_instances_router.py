@@ -1,8 +1,12 @@
+"""
+Endpoint used for creating, updating, reading and deleting stack instances
+"""
+
 from typing import Dict, Any, List
 
 from fastapi import APIRouter, HTTPException, Depends
 from loguru import logger
-from pydantic import BaseModel  # pylint: disable=E0611 #pylint error
+from pydantic import BaseModel
 from starlette.background import BackgroundTasks
 
 from core.agent_broker.agent_task_broker import create_job_for_agent
@@ -15,6 +19,9 @@ router = APIRouter()
 
 
 class StackInstanceInvocation(BaseModel):
+    """
+    Possible options for creating a Stack Instance
+    """
     params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}
     tags: Dict[str, str] = {}
@@ -24,19 +31,11 @@ class StackInstanceInvocation(BaseModel):
     secrets: Dict[str, Any] = {}
     replicas: Dict[str, int] = {}
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "params": {},
-                "secrets": {},
-                "stack_infrastructure_template": "stackl",
-                "stack_application_template": "web",
-                "name": "default_test_instance"
-            }
-        }
-
 
 class StackInstanceUpdate(BaseModel):
+    """
+    Options for updating a Stack Instance
+    """
     params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}
     stack_instance_name: str = "default_test_instance"
@@ -45,24 +44,16 @@ class StackInstanceUpdate(BaseModel):
     replicas: Dict[str, int] = {}
     disable_invocation: bool = False
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "params": {},
-                "secrets": {},
-                "stack_instance_name": "default_test_instance"
-            }
-        }
-
 
 class StackCreateResult(BaseModel):
+    """StackCreateResult Model"""
     result: str
 
 
 @router.get('/{name}', response_model=StackInstance)
 def get_stack_instance(
-    name: str,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        name: str,
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns a stack instance with a specific name"""
     logger.info(
         f"[StackInstancesName GET] Getting document for stack instance '{name}'"
@@ -75,8 +66,8 @@ def get_stack_instance(
 
 @router.get('', response_model=List[StackInstance])
 def get_stack_instances(
-    name: str = "",
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        name: str = "",
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns all stack instances that contain optional name"""
     logger.info(
         f"[StackInstancesAll GET] Returning all stack instances that contain optional name '{name}'"
@@ -87,11 +78,11 @@ def get_stack_instances(
 
 @router.post('')
 async def post_stack_instance(
-    background_tasks: BackgroundTasks,
-    stack_instance_invocation: StackInstanceInvocation,
-    document_manager: DocumentManager = Depends(get_document_manager),
-    stack_manager: StackManager = Depends(get_stack_manager),
-    redis=Depends(get_redis)):
+        background_tasks: BackgroundTasks,
+        stack_instance_invocation: StackInstanceInvocation,
+        document_manager: DocumentManager = Depends(get_document_manager),
+        stack_manager: StackManager = Depends(get_stack_manager),
+        redis=Depends(get_redis)):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
     (stack_instance, return_result) = stack_manager.process_stack_request(
@@ -108,12 +99,14 @@ async def post_stack_instance(
 
 @router.put('')
 async def put_stack_instance(
-    background_tasks: BackgroundTasks,
-    stack_instance_update: StackInstanceUpdate,
-    document_manager: DocumentManager = Depends(get_document_manager),
-    stack_manager: StackManager = Depends(get_stack_manager),
-    redis=Depends(get_redis)):
-    """Update a stack instance with the given name from a stack application template and stack infrastructure template, creating a new one if it does not yet exist"""
+        background_tasks: BackgroundTasks,
+        stack_instance_update: StackInstanceUpdate,
+        document_manager: DocumentManager = Depends(get_document_manager),
+        stack_manager: StackManager = Depends(get_stack_manager),
+        redis=Depends(get_redis)):
+    """
+    Updates a stack instance by using a StackInstanceUpdate object
+    """
     logger.info("[StackInstances PUT] Received PUT request")
 
     (stack_instance, return_result) = stack_manager.process_stack_request(
@@ -133,11 +126,11 @@ async def put_stack_instance(
 
 @router.delete('/{name}')
 def delete_stack_instance(
-    name: str,
-    background_tasks: BackgroundTasks,
-    force: bool = False,
-    document_manager: DocumentManager = Depends(get_document_manager),
-    redis=Depends(get_redis)):
+        name: str,
+        background_tasks: BackgroundTasks,
+        force: bool = False,
+        document_manager: DocumentManager = Depends(get_document_manager),
+        redis=Depends(get_redis)):
     """Delete a stack instance with a specific name"""
     stack_instance = document_manager.get_stack_instance(name)
     background_tasks.add_task(create_job_for_agent, stack_instance, "delete",

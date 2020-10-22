@@ -1,31 +1,15 @@
-from typing import Any, List
+"""
+Base document model module
+"""
 
-from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
+from pydantic import BaseModel
 
 
 class BaseDocument(BaseModel):
+    """BaseDocument used by stackl documents"""
     name: str
     category: str
     description = "Base Document"
     type: str
-    params: dict = {}  #TODO This should not be a part of a base document but atm the system relies on it
-    secrets: dict = {} #TODO This should not be a part of a base document but atm the system relies on it
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "stack_instance_document_example",
-                "description":
-                "an example of a document, using the stack_instance type",
-                "stack_infrastructure_template": "Not applicable",
-                "stack_application_template": "Not applicable",
-                "category": "items",
-                "type": "stack_instance"
-            }
-        }
-
-
-class CollectionDocument(BaseModel):
-    name: str
-    description = "CollectionDocument"
-    type: str
-    documents: List[Any]
+    params: dict = {}
+    secrets: dict = {}

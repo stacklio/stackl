@@ -1,24 +1,31 @@
-import logging
+"""
+Endpoint used for CRUD of infrastructure base documents
+These include:
+* Environments
+* Locations
+* Zones
+"""
+
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from core.models.configs.infrastructure_base_document import InfrastructureBaseDocument
+from loguru import logger
 
 from core.manager.document_manager import DocumentManager
 from core.manager.stackl_manager import get_document_manager
+from core.models.configs.infrastructure_base_document import InfrastructureBaseDocument
 
-from loguru import logger
 router = APIRouter()
 
 
 @router.get('/{infrastructure_base_type}',
             response_model=List[InfrastructureBaseDocument])
 def get_infrastructure_base_by_type(
-    infrastructure_base_type: str,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        infrastructure_base_type: str,
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns a specific infrastructure_base document with a type and name"""
     logger.info(
-        f"[CollectionDocumentByType GET] API COLLECT request with type_name '{infrastructure_base_type}'"
+        f"API COLLECT request with type_name '{infrastructure_base_type}'"
     )
     if infrastructure_base_type == "environment":
         infrastructure_documents = document_manager.get_environments()
@@ -37,12 +44,13 @@ def get_infrastructure_base_by_type(
 @router.get('/{infrastructure_base_type}/{infrastructure_base_name}',
             response_model=InfrastructureBaseDocument)
 def get_infrastructure_base_by_type_and_name(
-    infrastructure_base_type: str,
-    infrastructure_base_name: str,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        infrastructure_base_type: str,
+        infrastructure_base_name: str,
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns a specific infrastructure_base document with a type and name"""
     logger.info(
-        f"[DocumentByTypeAndName GET] API GET request for type '{infrastructure_base_type}' and document '{infrastructure_base_name}'"
+        f"GET request for type '{infrastructure_base_type}' and \
+          document '{infrastructure_base_name}'"
     )
     if infrastructure_base_type == "environment":
         infrastructure_document = document_manager.get_environment(
@@ -66,11 +74,14 @@ def get_infrastructure_base_by_type_and_name(
 
 @router.post('', response_model=InfrastructureBaseDocument)
 def post_infrastructure_base(
-    infrastructure_base_document: InfrastructureBaseDocument,
-    document_manager: DocumentManager = Depends(get_document_manager)):
-    """Create the infrastructure_base document with a specific type and an optional name given in the payload"""
+        infrastructure_base_document: InfrastructureBaseDocument,
+        document_manager: DocumentManager = Depends(get_document_manager)):
+    """
+    Create the infrastructure_base document with a specific type and an
+    optional name given in the payload
+    """
     logger.info(
-        f"[PostDocument] Receiver POST request with data: {infrastructure_base_document}"
+        f"POST request with data: {infrastructure_base_document}"
     )
 
     infrastructure_document = document_manager.write_base_document(
@@ -81,9 +92,12 @@ def post_infrastructure_base(
 
 @router.put('', response_model=InfrastructureBaseDocument)
 def put_infrastructure_base(
-    infrastructure_base_document: InfrastructureBaseDocument,
-    document_manager: DocumentManager = Depends(get_document_manager)):
-    """UPDATES the infrastructure_base document with a specific type and an optional name given in the payload"""
+        infrastructure_base_document: InfrastructureBaseDocument,
+        document_manager: DocumentManager = Depends(get_document_manager)):
+    """
+    Updates the infrastructure_base document with a specific type
+    and an optional name given in the payload
+    """
     infrastructure_document = document_manager.write_base_document(
         infrastructure_base_document)
 
@@ -93,13 +107,17 @@ def put_infrastructure_base(
 @router.delete('/{infrastructure_base_type}/{infrastructure_base_name}',
                status_code=200)
 def delete_infrastructure_base(
-    infrastructure_base_type: str,
-    infrastructure_base_name: str,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        infrastructure_base_type: str,
+        infrastructure_base_name: str,
+        document_manager: DocumentManager = Depends(get_document_manager)):
+    """
+    Delete an infrastructure base document by name and type
+    Type is environment, location or zone
+    """
     document_manager.delete_base_document(infrastructure_base_type,
                                           infrastructure_base_name)
 
     return {
         "result":
-        f"deleted {infrastructure_base_type} {infrastructure_base_name}"
+            f"deleted {infrastructure_base_type} {infrastructure_base_name}"
     }

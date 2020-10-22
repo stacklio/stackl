@@ -1,4 +1,6 @@
-#!/usr/local/bin/python
+"""
+Main entrypoint for stackl core
+"""
 
 import uvicorn
 from fastapi import FastAPI
@@ -6,8 +8,9 @@ from fastapi.routing import APIRoute
 # Logger stuff
 from loguru import logger
 
-from .routers import functional_requirements_router, infrastructure_base_router, policy_templates_router, \
-    snapshots_router, stack_instances_router, services_router, stack_application_templates_router, \
+from .routers import functional_requirements_router, infrastructure_base_router, \
+    policy_templates_router, snapshots_router, stack_instances_router, \
+    services_router, stack_application_templates_router, \
     stack_infrastructure_templates_router, about_router, outputs_router
 
 logger.info(

@@ -1,3 +1,6 @@
+"""
+StackInstance model
+"""
 from typing import Dict, Any, List
 
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylin
@@ -7,11 +10,17 @@ from .stack_instance_status_model import StackInstanceStatus
 
 
 class HostTarget(BaseModel):
+    """
+    HostTarget model
+    """
     host: str
     target: str
 
 
 class StackInstance(BaseModel):
+    """
+    StackInstance model
+    """
     name: str
     type = "stack_instance"
     deleted: bool = False

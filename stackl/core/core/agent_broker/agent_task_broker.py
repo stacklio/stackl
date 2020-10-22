@@ -1,3 +1,7 @@
+"""
+Module for handling the delivery and results of automation jobs
+"""
+
 import asyncio
 
 from loguru import logger
@@ -13,20 +17,17 @@ async def create_job_for_agent(stack_instance,
                                document_manager,
                                redis,
                                first_run=True, force_delete=False):
+    """creates jobs and puts them on the right agent queue"""
     logger.debug(
-        f"[AgentTaskBroker] create_job_for_agent. For stack_instance '{stack_instance}' and action '{action}'"
+        f"For stack_instance '{stack_instance}' and action '{action}'"
     )
     success = True
     sat = document_manager.get_stack_application_template(
         stack_instance.stack_application_template)
     for service_name in sat.services:
-        logger.debug(f"[AgentTaskBroker] service name: '{service_name}")
         service_doc = document_manager.get_document(type="service",
                                                     name=service_name)
-        logger.debug(f"[AgentTaskBroker] service doc: '{service_doc}")
 
-        # infrastructure target and agent are the same for each service, make sure we use the same agent for
-        # each invocation of a service
         functional_requirements = service_doc["functional_requirements"]
         if action == "delete":
             functional_requirements = reversed(functional_requirements)
@@ -39,7 +40,7 @@ async def create_job_for_agent(stack_instance,
                 cloud_provider = service_definition.cloud_provider
 
                 logger.debug(
-                    f"[AgentTaskBroker] create_job_for_agent. Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
+                    f"Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
                 )
                 invoc = {}
                 invoc['action'] = action
@@ -75,7 +76,7 @@ async def create_job_for_agent(stack_instance,
                 logger.debug("Not all fr's succeeded, stopping execution")
                 break
 
-            logger.debug(f"tasks executed")
+            logger.debug("tasks executed")
 
     logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
     if action == "delete" and (success or force_delete):
@@ -92,6 +93,7 @@ async def create_job_for_agent(stack_instance,
 
 
 async def update_status(automation_result, document_manager, stack_instance):
+    """Updates the status of a functional requirement in a stack instance"""
     stack_instance = document_manager.get_stack_instance(stack_instance.name)
     stack_instance_status = StackInstanceStatus()
     stack_instance_status.service = automation_result["service"]
@@ -108,9 +110,9 @@ async def update_status(automation_result, document_manager, stack_instance):
     changed = False
     for i, status in enumerate(stack_instance.status):
         if status.functional_requirement == automation_result[
-                "functional_requirement"] and status.infrastructure_target == automation_result[
-                    "infrastructure_target"] and status.service == automation_result[
-                        "service"]:
+            "functional_requirement"] and status.infrastructure_target == automation_result[
+            "infrastructure_target"] and status.service == automation_result[
+            "service"]:
             stack_instance.status[i] = stack_instance_status
             changed = True
             break
