@@ -28,7 +28,11 @@ pylint = "^2.6.0"
 variable-rgx = "[a-z0-9_]{1,30}$"
 max-args = 9
 max-locals = 25
-disable = ["too-few-public-methods", "no-name-in-module", "too-many-public-methods"]
+disable = ["too-few-public-methods",
+            "no-name-in-module",
+            "too-many-public-methods",
+            "unsupported-assignment-operation",
+            "unsubscriptable-object"]
 
 [tool.pylint."SIMILARITIES"]
 ignore-imports = "yes"
