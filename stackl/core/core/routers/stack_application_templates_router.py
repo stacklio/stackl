@@ -1,21 +1,25 @@
+"""
+Endpoint for CRUD operations on Stack Application Templates
+"""
+
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
-from core.models.configs.stack_application_template_model import StackApplicationTemplate
 
 from core.manager.document_manager import DocumentManager
 from core.manager.stackl_manager import get_document_manager
+from core.models.configs.stack_application_template_model import StackApplicationTemplate
 
 router = APIRouter()
 
 
 @router.get('', response_model=List[StackApplicationTemplate])
 def get_stack_application_templates(
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns all functional requirements with a specific type"""
     logger.info(
-        f"[CollectionDocumentByType GET] API COLLECT request with type_name 'stack_application_templates'"
+        "GET request with type_name 'stack_application_templates'"
     )
     sats = document_manager.get_stack_application_templates()
     return sats
@@ -23,11 +27,11 @@ def get_stack_application_templates(
 
 @router.get('/{name}', response_model=StackApplicationTemplate)
 def get_stack_application_template_by_name(
-    name: str,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        name: str,
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns a functional requirement"""
     logger.info(
-        f"[DocumentByTypeAndName GET] API GET request for type 'stack_application_template' and document '{name}'"
+        f"GET request for type 'stack_application_template' and document '{name}'"
     )
     sat = document_manager.get_stack_application_template(name)
     if not sat:
@@ -37,8 +41,8 @@ def get_stack_application_template_by_name(
 
 @router.post('', response_model=StackApplicationTemplate)
 def post_stack_application_template(
-    sat: StackApplicationTemplate,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        sat: StackApplicationTemplate,
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Create the document with a specific type and an optional name given in the payload"""
     logger.info(f"[PostDocument] Receiver POST request with data: {sat}")
 
@@ -49,8 +53,8 @@ def post_stack_application_template(
 
 @router.put('', response_model=StackApplicationTemplate)
 def put_stack_application_template(
-    sat: StackApplicationTemplate,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        sat: StackApplicationTemplate,
+        document_manager: DocumentManager = Depends(get_document_manager)):
     """Create the document with a specific type and an optional name given in the payload"""
     document_manager.write_stack_application_template(sat)
 
@@ -59,7 +63,8 @@ def put_stack_application_template(
 
 @router.delete('/{name}')
 def delete_stack_application_template(
-    name: str,
-    document_manager: DocumentManager = Depends(get_document_manager)):
+        name: str,
+        document_manager: DocumentManager = Depends(get_document_manager)):
+    """Delete a stack application template by name"""
     document_manager.delete_stack_application_template(name)
     return {"result": "Deleted SAT"}

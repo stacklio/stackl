@@ -1,3 +1,7 @@
+"""
+Module containing all logic for creating and updating Stack instances
+"""
+
 from collections import OrderedDict
 
 from loguru import logger
@@ -10,16 +14,46 @@ from core.models.items.stack_instance_service_model import StackInstanceService
 from core.models.items.stack_instance_status_model import StackInstanceStatus
 from core.utils.general_utils import get_timestamp, tree
 from .handler import Handler
+from ..opa_broker.opa_broker import convert_sit_to_opa_data
+
+
+def process_service_targets(attributes,
+                            new_result,
+                            service_targets,
+                            opa_service_params,
+                            outputs=None):
+    """
+    This function makes sure only targets chosen by the policies will be
+    considered when creating a stack instance
+    """
+    service = attributes['service']
+    st = service_targets[service]
+    new_targets = []
+    for t in st:
+        if outputs is not None:
+            for tt in new_result['targets']:
+                if tt['target'] == t:
+                    new_targets.append(t)
+                for output in outputs:
+                    opa_service_params[service][tt['target']][output] = tt[output]
+        elif t in new_result['targets']:
+            new_targets.append(t)
+    service_targets[service] = new_targets
 
 
 class StackHandler(Handler):
+    """Handler responsible for all actions on Stack Instances"""
+
     def __init__(self, document_manager, opa_broker):
-        super(StackHandler, self).__init__()
+        super().__init__()
         self.document_manager = document_manager
         self.opa_broker = opa_broker
         self.opa_broker.document_manager = self.document_manager
 
     def handle(self, item):
+        """
+        Handle logic of the action
+        """
         action = item['action']
         if action == 'create':
             logger.debug("[StackHandler] handle. Received create task")
@@ -36,6 +70,9 @@ class StackHandler(Handler):
             self, item, opa_decision,
             stack_infrastructure_template: StackInfrastructureTemplate,
             opa_service_params):
+        """
+        function for creating the stack instance object
+        """
         stack_instance_doc = StackInstance(
             name=item.stack_instance_name,
             stack_infrastructure_template=item.stack_infrastructure_template,
@@ -51,9 +88,10 @@ class StackHandler(Handler):
             service_definitions = []
             for infra_target in targets:
                 infra_target_counter = 1
-                service_definition = self.add_service_definition(infra_target, infra_target_counter, item,
-                                                                 opa_service_params, stack_infrastructure_template,
-                                                                 stack_instance_statuses, svc, svc_doc)
+                service_definition = self.add_service_definition(
+                    infra_target, infra_target_counter, item,
+                    opa_service_params, stack_infrastructure_template,
+                    stack_instance_statuses, svc, svc_doc)
                 service_definitions.append(service_definition)
                 infra_target_counter += 1
             services[svc] = service_definitions
@@ -62,7 +100,11 @@ class StackHandler(Handler):
         return stack_instance_doc
 
     def add_service_definition(self, infra_target, infra_target_counter, item, opa_service_params,
-                               stack_infrastructure_template, stack_instance_statuses, svc, svc_doc):
+                               stack_infrastructure_template, stack_instance_statuses, svc,
+                               svc_doc):
+        """
+        Function for adding a service_definition item to a stack_instance
+        """
         service_definition = StackInstanceService()
         service_definition.infrastructure_target = infra_target
         service_definition.opa_outputs = opa_service_params[svc][
@@ -111,8 +153,12 @@ class StackHandler(Handler):
         service_definition.cloud_provider = cloud_provider
         return service_definition
 
-    def _update_stack_instance(self, stack_instance: StackInstance, item, opa_service_params, service_targets):
-        """This method takes a stack instance and an item which contains the extra parameters and secrets"""
+    def _update_stack_instance(self, stack_instance: StackInstance, item,
+                               opa_service_params, service_targets):
+        """
+        This method takes a stack instance and an item
+        which contains the extra parameters and secrets
+        """
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
         stack_infrastructure_template = self._update_infr_capabilities(
@@ -139,33 +185,37 @@ class StackHandler(Handler):
             for count, service_definition in enumerate(service_definitions):
                 if service_targets and not service_definition.infrastructure_target in \
                                            service_targets["result"]["services"][svc]:
-                    return "Update not possible. Target in service definition not in service_targets"
-                service_definition = self.update_service_definition(count, item, opa_service_params,
-                                                                    service_definition,
-                                                                    stack_infrastructure_template, stack_instance,
-                                                                    stack_instance_statuses, svc)
+                    return "Update impossible. Target in service definition not in service_targets"
+                service_definition = self.update_service_definition(
+                    count, item, opa_service_params,
+                    service_definition,
+                    stack_infrastructure_template, stack_instance,
+                    stack_instance_statuses, svc)
 
                 stack_instance.services[svc][count] = service_definition
             if service_targets:
                 if len(service_targets["result"]["services"][svc]) > len(service_definitions):
-                    start_index = len(service_targets["result"]["services"][svc]) - len(service_definitions)
+                    start_index = len(service_targets["result"]["services"][svc]) \
+                                  - len(service_definitions)
                     for i in range(start_index, len(service_targets["result"]["services"][svc])):
-                        service_definition = self.add_service_definition(service_targets["result"]["services"][svc][i],
-                                                                         i + 1, item,
-                                                                         opa_service_params,
-                                                                         stack_infrastructure_template,
-                                                                         stack_instance_statuses, svc, svc_doc)
+                        service_definition = self.add_service_definition(
+                            service_targets["result"]["services"][svc][i],
+                            i + 1, item,
+                            opa_service_params,
+                            stack_infrastructure_template,
+                            stack_instance_statuses, svc, svc_doc)
                         service_definitions.append(service_definition)
 
         stack_instance.status = stack_instance_statuses
         return stack_instance
 
     def update_service_definition(self, count, item, opa_service_params, service_definition,
-                                  stack_infrastructure_template, stack_instance, stack_instance_statuses, svc):
+                                  stack_infrastructure_template, stack_instance,
+                                  stack_instance_statuses, svc):
+        """Updates a service definition object within a stack instance"""
         svc_doc = self.document_manager.get_service(svc)
         capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
-            service_definition.
-                infrastructure_target].provisioning_parameters
+            service_definition.infrastructure_target].provisioning_parameters
         secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
             service_definition.infrastructure_target].secrets
         service_definition.opa_outputs = opa_service_params[svc][
@@ -180,8 +230,7 @@ class StackHandler(Handler):
                 stack_instance_status = StackInstanceStatus(
                     functional_requirement=fr,
                     service=svc,
-                    infrastructure_target=service_definition.
-                        infrastructure_target,
+                    infrastructure_target=service_definition.infrastructure_target,
                     status="in_progress",
                     error_message="")
                 stack_instance_statuses.append(stack_instance_status)
@@ -213,20 +262,31 @@ class StackHandler(Handler):
         return service_definition
 
     def add_outputs(self, outputs_update):
+        """
+        Adds outputs on the right service definition of a stack instance
+        """
         logger.debug("Adding outputs to stack_instance")
         stack_instance = self.document_manager.get_stack_instance(outputs_update.stack_instance)
         service = stack_instance.services[outputs_update.service]
         for service_definition in service:
             if service_definition.infrastructure_target == outputs_update.infrastructure_target:
-                service_definition.outputs = {**service_definition.outputs, **outputs_update.outputs}
-                service_definition.provisioning_parameters = {**service_definition.provisioning_parameters,
-                                                              **service_definition.outputs}
+                service_definition.outputs = {
+                    **service_definition.outputs,
+                    **outputs_update.outputs
+                }
+                service_definition.provisioning_parameters = {
+                    **service_definition.provisioning_parameters,
+                    **service_definition.outputs
+                }
                 if "stackl_hostname" in service_definition.outputs:
                     service_definition.hostname = service_definition.outputs["stackl_hostname"]
 
         return stack_instance
 
     def _handle_create(self, item):
+        """
+        Handles the create action of a stack instance
+        """
         logger.debug(
             "[StackHandler] _handle_create received with item: {0}".format(
                 item))
@@ -264,16 +324,16 @@ class StackHandler(Handler):
                     )
                     return None, new_result['msg']
 
-                self.process_service_targets(policy_params,
-                                             new_result,
-                                             service_targets,
-                                             opa_service_params,
-                                             outputs=policy.outputs)
+                process_service_targets(policy_params,
+                                        new_result,
+                                        service_targets,
+                                        opa_service_params,
+                                        outputs=policy.outputs)
 
         service_targets = self.evaluate_replica_policy(item, service_targets)
         if not service_targets['result']['fulfilled']:
             logger.error(
-                f"[StackHandler] _handle_create. replica_policy not satisfied: {service_targets['result']['msg']}"
+                f"replica_policy not satisfied: {service_targets['result']['msg']}"
             )
             return None, service_targets['result']['msg']
 
@@ -284,7 +344,7 @@ class StackHandler(Handler):
 
         if infringment_messages:
             logger.error(
-                f"[StackHandler] _handle_create. sit policies not satisfied {infringment_messages}"
+                f"sit policies not satisfied {infringment_messages}"
             )
             message = "\n".join([x['msg'] for x in infringment_messages])
             return None, message
@@ -295,8 +355,11 @@ class StackHandler(Handler):
 
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr,
                               item_params):
+        """
+        Evaluates the SIT policies using the OPA broker
+        """
         infringment_messages = []
-        for service, targets in service_targets['result']['services'].items():
+        for _, targets in service_targets['result']['services'].items():
             for t in targets:
                 policies = stack_infr.infrastructure_capabilities[t].policies
 
@@ -321,6 +384,9 @@ class StackHandler(Handler):
         return infringment_messages
 
     def evaluate_replica_policy(self, item, service_targets):
+        """
+        Evaluates the replica policy
+        """
         parameters = {}
         services_just_one = {}
         for svc in service_targets:
@@ -338,34 +404,18 @@ class StackHandler(Handler):
         service_targets = self.opa_broker.ask_opa_policy_decision(
             "replicas", "solutions", replica_input)
         logger.debug(
-            f"[StackHandler] _handle_create. opa_result for replicas policy: {service_targets['result']}"
+            f"opa_result for replicas policy: {service_targets['result']}"
         )
         return service_targets
 
-    def process_service_targets(self,
-                                attributes,
-                                new_result,
-                                service_targets,
-                                opa_service_params,
-                                outputs=None):
-        service = attributes['service']
-        st = service_targets[service]
-        new_targets = []
-        for t in st:
-            if outputs is not None:
-                for tt in new_result['targets']:
-                    if tt['target'] == t:
-                        new_targets.append(t)
-                    for output in outputs:
-                        opa_service_params[service][tt['target']][output] = tt[output]
-            elif t in new_result['targets']:
-                new_targets.append(t)
-        service_targets[service] = new_targets
-
     def evaluate_sat_policy(self, attributes, opa_data, policy, user_params, replicas):
-        policy_input = {"parameters": attributes}
-        policy_input["user_parameters"] = user_params
-        policy_input["replicas"] = replicas
+        """
+        Evaluates the Stack Application Template policies using OPA
+        Returns the possible targets
+        """
+        policy_input = {"parameters": attributes,
+                        "user_parameters": user_params,
+                        "replicas": replicas}
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
         self.opa_broker.add_policy(policy.name, policy.policy)
@@ -373,25 +423,33 @@ class StackHandler(Handler):
         new_solution = self.opa_broker.ask_opa_policy_decision(
             policy.name, "solutions", opa_data_with_inputs)
         logger.debug(
-            f"[StackHandler] _handle_create. opa_result for policy {policy.name}: {new_solution['result']}"
+            f"opa_result for policy {policy.name}: {new_solution['result']}"
         )
         new_result = new_solution['result']
         return new_result
 
     def evaluate_orchestration_policy(self, opa_data):
+        """
+        Evaluates the default orchestration policy
+        """
         logger.debug(
             "[StackHandler] _handle_create. performing opa query with data: {0}"
                 .format(opa_data))
 
         opa_result = self.opa_broker.ask_opa_policy_decision(
             "orchestration", "solutions", opa_data)
-        logger.debug("[StackHandler] _handle_create. opa_result: {0}".format(
+        logger.debug("opa_result: {0}".format(
             opa_result['result']))
         opa_solution = opa_result['result']
         return opa_solution
 
     def transform_opa_data(self, item, stack_app_template, stack_infr):
-        sit_as_opa_data = self.opa_broker.convert_sit_to_opa_data(stack_infr)
+        """
+        Transforms the SAT en SIT data to a format that OPA understands
+        and adds extra needed data so OPA can evaluate more complicated
+        policies
+        """
+        sit_as_opa_data = convert_sit_to_opa_data(stack_infr)
         services = []
         for s in stack_app_template.services:
             services.append(self.document_manager.get_service(s))
@@ -406,22 +464,17 @@ class StackHandler(Handler):
             self,
             stack_infr_template,
             update="auto") -> StackInfrastructureTemplate:
+        """
+        Merges the data from environment, location and zone and saves
+        it in the stack infrastructure template
+        """
         infr_targets = stack_infr_template.infrastructure_targets
-        prev_infr_capabilities = stack_infr_template.infrastructure_capabilities
 
         if update == "no":
             logger.debug(
                 "[StackHandler] _update_infr_capabilities. update is '{0}', returning."
                     .format(update))
             return stack_infr_template
-        elif update == "auto":
-            # TODO Implement. update (partly) when and if necessary: nothing is there yet or some time out value occured
-            logger.debug(
-                "[StackHandler] _update_infr_capabilities. update is '{0}', evaluating condition."
-                    .format(update))
-            if all((len(prev_infr_capabilities[prev_infr_capability]) > 3)
-                   for prev_infr_capability in prev_infr_capabilities):
-                return stack_infr_template
 
         logger.debug(
             "[StackHandler] _update_infr_capabilities. update is '{0}', doing update."
@@ -492,6 +545,9 @@ class StackHandler(Handler):
         return stack_infr_template
 
     def _handle_update(self, item):
+        """
+        Handle the update action of a stack instance
+        """
         logger.debug(
             f"[StackHandler] _handle_update received with item: '{item}'")
         if "name" in item:
@@ -525,7 +581,11 @@ class StackHandler(Handler):
             policy = self.document_manager.get_policy_template(policy_name)
             for policy_params in attributes:
                 new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                      policy, {**stack_instance.instance_params, **item.params},
+                                                      policy,
+                                                      {
+                                                          **stack_instance.instance_params,
+                                                          **item.params
+                                                      },
                                                       item.replicas)
 
                 if not new_result['fulfilled']:
@@ -534,22 +594,26 @@ class StackHandler(Handler):
                     )
                     return None, new_result['msg']
 
-                self.process_service_targets(policy_params,
-                                             new_result,
-                                             service_targets,
-                                             opa_service_params,
-                                             outputs=policy.outputs)
+                process_service_targets(policy_params,
+                                        new_result,
+                                        service_targets,
+                                        opa_service_params,
+                                        outputs=policy.outputs)
         if item.replicas != {}:
             service_targets = self.evaluate_replica_policy(item, service_targets)
         else:
             service_targets = None
 
-        stack_instance = self._update_stack_instance(stack_instance, item, opa_service_params, service_targets)
+        stack_instance = self._update_stack_instance(stack_instance, item,
+                                                     opa_service_params, service_targets)
         if isinstance(stack_instance, str):
             return None, stack_instance
         return stack_instance, "Stack instance updating"
 
     def _handle_delete(self, item):
+        """
+        Handles the delete action of a stack instance
+        """
         logger.debug(
             f"[StackHandler] _handle_delete received with item: '{item}'")
         if "name" in item:

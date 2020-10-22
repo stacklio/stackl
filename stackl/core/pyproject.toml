@@ -24,6 +24,18 @@ redislite = "^5.0.165407"
 pytest = "^5.4.3"
 pylint = "^2.6.0"
 
+[tool.pylint."MESSAGES CONTROL"]
+variable-rgx = "[a-z0-9_]{1,30}$"
+max-args = 9
+max-locals = 25
+disable = ["too-few-public-methods",
+            "no-name-in-module",
+            "too-many-public-methods",
+            "unsupported-assignment-operation",
+            "unsubscriptable-object"]
+
+[tool.pylint."SIMILARITIES"]
+ignore-imports = "yes"
 
 [build-system]
 requires = ["poetry>=0.12"]

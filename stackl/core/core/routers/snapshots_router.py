@@ -1,3 +1,7 @@
+"""
+Endpoint for CRUD operations on snapshots
+"""
+
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,10 +20,11 @@ router = APIRouter()
 
 @router.get('/{name}', response_model=Snapshot)
 def get_snapshot(
-    name: str,
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+        name: str,
+        snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+    """Get a snapshot from the store"""
     logger.info(
-        f"[GetSnapSHOT GET] API GET request for snapshot of doc with '{name}'")
+        f"GET request for snapshot of doc with '{name}'")
     snapshot = snapshot_manager.get_snapshot(name)
     if not snapshot:
         raise HTTPException(status_code=404, detail="Snapshot not found")
@@ -28,12 +33,12 @@ def get_snapshot(
 
 @router.get('/{type_name}/{name}', response_model=List[Snapshot])
 def get_snapshots(
-    type_name: str,
-    name: str,
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+        type_name: str,
+        name: str,
+        snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
     """Returns the snapshots of a specific stackl object"""
     logger.info(
-        f"[GetSnapSHOT GET] API GET request for snapshot of doc with type '{type_name}' and '{name}'"
+        f"GET request for snapshot of doc with type '{type_name}' and '{name}'"
     )
 
     snapshots = snapshot_manager.get_snapshots(type_name, name)
@@ -43,12 +48,15 @@ def get_snapshots(
 
 @router.post('/restore/{name}')
 def restore_snapshot(
-    name: str,
-    background_tasks: BackgroundTasks,
-    document_manager: DocumentManager = Depends(get_document_manager),
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager),
-    redis=Depends(get_redis)):
-    """Restore the latest or optionally the given number most recent snapshot of the doc with the given type_name and name """
+        name: str,
+        background_tasks: BackgroundTasks,
+        document_manager: DocumentManager = Depends(get_document_manager),
+        snapshot_manager: SnapshotManager = Depends(get_snapshot_manager),
+        redis=Depends(get_redis)):
+    """
+    Restore the latest or optionally the given number most recent snapshot
+    of the doc with the given type_name and name
+    """
     logger.info(
         f"[RestoreSnapshot POST] API POST request for doc with '{name}'")
 
@@ -59,18 +67,18 @@ def restore_snapshot(
         background_tasks.add_task(create_job_for_agent, stack_instance,
                                   "update", document_manager, redis)
         return {"result": "stack instance restored, restoring in progress"}
-    else:
-        return {"result": "snapshot restored"}
+
+    return {"result": f"snapshot {name} restored"}
 
 
 @router.post('/restore/{type_name}/{name}')
 def restore_latest_snapshot(
-    name: str,
-    type_name: str,
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+        name: str,
+        type_name: str,
+        snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
     """Restore the latest snapshot with given type and name of document"""
     logger.info(
-        f"[RestoreSnapshot POST] API POST request for doc with '{name}'")
+        f"POST request for doc with '{name}'")
 
     result = snapshot_manager.restore_latest_snapshot(type_name, name)
 
@@ -79,12 +87,12 @@ def restore_latest_snapshot(
 
 @router.post('/{type_name}/{name}')
 def create_snapshot(
-    type_name: str,
-    name: str,
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+        type_name: str,
+        name: str,
+        snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
     """Create a snapshot for the doc with the given type_name and name """
     logger.info(
-        f"[CreateSnapshot POST] API POST request for snapshot of doc with type_name '{type_name}' and '{name}'"
+        f"POST request for snapshot of doc with type_name '{type_name}' and '{name}'"
     )
 
     snapshot = snapshot_manager.create_snapshot(type_name, name)
@@ -93,9 +101,12 @@ def create_snapshot(
 
 @router.delete('/{name}')
 def delete_snapshot(
-    name: str,
-    snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
-    """Delete the latest or optionally the given number most recent snapshot of the doc with the given type_name and name """
+        name: str,
+        snapshot_manager: SnapshotManager = Depends(get_snapshot_manager)):
+    """
+    Delete the latest or optionally the given number most recent snapshot
+    of the doc with the given type_name and name
+    """
     logger.info(
         f"[DeleteSnapshot DEL] API DEL request for snapshot of doc with name: '{name}'"
     )
