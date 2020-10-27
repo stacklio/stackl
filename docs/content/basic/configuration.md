@@ -8,6 +8,7 @@ expirydate: 2030-01-01 00:00:00 +0000
 draft: false
 tags: []
 ---
+This page gives an overview of all the configuration options, they can be set by using the environment variable in the core or agent component of stackl.
 
 ## Stackl Core Configuration table
 
@@ -22,7 +23,6 @@ The following environment variables can be set for the stackl-core:
 | `STACKL_REDIS_HOST` | The host where redis is running| localhost |
 | `STACKL_REDIS_PORT` | The port of the running redis instance | 6379 |
 | `STACKL_OPA_HOST` | Hostname of the OPA instance | http://localhost:8181 |
-
 
 ## Stackl Agent Configuration table
 
