@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     agent_type: str = "mock"
     redis_host: str = "localhost"
     redis_port: int = 6379
+    redis_password: str = None
     secret_handler: str = "base64"
     loglevel: str = "INFO"
     max_jobs: int = 10

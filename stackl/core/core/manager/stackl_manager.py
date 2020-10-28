@@ -31,4 +31,5 @@ async def get_redis():
     """Returns a Redis from the pool"""
     return await create_pool(
         RedisSettings(host=config.settings.stackl_redis_host,
-                      port=config.settings.stackl_redis_port))
+                      port=config.settings.stackl_redis_port,
+                      password=config.settings.stackl_redis_password))

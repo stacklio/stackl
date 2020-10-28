@@ -58,4 +58,5 @@ class AgentSettings:
     queue_name = config.settings.agent_name
     max_jobs = config.settings.max_jobs
     redis_settings = RedisSettings(host=config.settings.redis_host,
-                                   port=config.settings.redis_port)
+                                   port=config.settings.redis_port,
+                                   password=config.settings.redis_password)

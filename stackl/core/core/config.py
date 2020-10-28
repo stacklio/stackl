@@ -12,6 +12,7 @@ class Settings(BaseSettings): # pylint: disable=too-few-public-methods
     stackl_datastore_path: str = "/lfs-store"
     stackl_redis_type: str = "real"
     stackl_redis_host: str = "localhost"
+    stackl_redis_password: str = None
     stackl_redis_port: int = 6379
     stackl_opa_host: str = "http://localhost:8181"
     rollback_enabled: bool = False
