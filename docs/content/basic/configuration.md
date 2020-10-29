@@ -23,6 +23,7 @@ The following environment variables can be set for the stackl-core:
 | `STACKL_REDIS_PORT` | The port of the running redis instance | 6379 |
 | `STACKL_REDIS_PASSWORD` | Password of the redis instance |  |
 | `STACKL_OPA_HOST` | Hostname of the OPA instance | http://localhost:8181 |
+| `ELASTIC_APM_ENABLED` | Use this to enable the Elastic APM middleware, configuration can be done by using environment variables, for more information: [APM config](https://www.elastic.co/guide/en/apm/agent/python/current/configuration.html) | False |
 
 
 ## Stackl Agent Configuration table
