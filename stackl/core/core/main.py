@@ -7,11 +7,13 @@ except ImportError:
     import importlib_metadata as metadata
 
 import uvicorn
+from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 # Logger stuff
 from loguru import logger
 
+from core import config
 from .routers import functional_requirements_router, infrastructure_base_router, \
     policy_templates_router, snapshots_router, stack_instances_router, \
     services_router, stack_application_templates_router, \
@@ -26,6 +28,11 @@ app = FastAPI(
     description="stackl",
     version=metadata.version('core')
 )
+
+if config.settings.elastic_apm_enabled:
+    logger.debug("Elastic APM Enabled")
+    apm = make_apm_client(config={})
+    app.add_middleware(ElasticAPM, client=apm)
 
 app.include_router(infrastructure_base_router.router,
                    prefix="/infrastructure_base",
