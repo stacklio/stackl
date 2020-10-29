@@ -1,3 +1,8 @@
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
+
 from pydantic import BaseSettings
 
 
@@ -33,7 +38,7 @@ class Settings(BaseSettings):
     conjur_verify: str = "True"
 
     # Outputs
-    stackl_cli_image: str = "stacklio/stackl-cli:v0.2.5dev"
+    stackl_cli_image: str = f"stacklio/stackl-cli:v{metadata.version('agent')}"
 
 
 settings = Settings()
