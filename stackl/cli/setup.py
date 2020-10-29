@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.2.5dev"
+__version__ = "0.2.5"
 
 setup(
     name='stackl-cli',
