@@ -93,14 +93,17 @@ def check_groups(stackl_groups, stackl_inventory_groups, host_list):
     return True
 
 
-def create_groups(hosts, stackl_inventory_groups):
+def create_groups(hosts, stackl_inventory_groups, infrastructure_target):
     groups = defaultdict(list)
     print(f"stackl_inventory_groups: {stackl_inventory_groups}")
     for item in stackl_inventory_groups:
         for tag in item["tags"]:
             for index in range(item["count"]):
                 try:
-                    host = hosts[index]
+                    host = {
+                        "host": hosts[index],
+                        "target": infrastructure_target
+                    }
                 except IndexError as e:
                     print(e)
                     exit(1)
@@ -204,7 +207,8 @@ class InventoryModule(BaseInventoryPlugin):
                             stack_instance.groups = create_groups(
                                 service_definition.hosts,
                                 service_definition.provisioning_parameters[
-                                    'stackl_inventory_groups'])
+                                    'stackl_inventory_groups'],
+                                service_definition.infrastructure_target)
                             stack_update = stackl_client.StackInstanceUpdate(
                                 stack_instance_name=stack_instance.name,
                                 params={
@@ -215,7 +219,7 @@ class InventoryModule(BaseInventoryPlugin):
                         for item, value in stack_instance.groups.items():
                             self.inventory.add_group(item)
                             for group in value:
-                                self.inventory.add_host(host=group, group=item)
+                                self.inventory.add_host(host=group['host'], group=item)
                                 for key, value in service_definition.provisioning_parameters.items(
                                 ):
                                     self.inventory.set_variable(
@@ -251,8 +255,8 @@ class InventoryModule(BaseInventoryPlugin):
                                 self.inventory.add_host(host=h, group=service)
                         else:
                             self.inventory.add_host(host=service + "_" +
-                                                str(index),
-                                                group=service)
+                                                    str(index),
+                                                    group=service)
                         self.inventory.set_variable(
                             service, "infrastructure_target",
                             service_definition.infrastructure_target)
