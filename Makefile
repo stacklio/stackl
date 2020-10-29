@@ -2,7 +2,7 @@
 # Use of this source code is governed by an GPLv3
 # license that can be found in the LICENSE file.
 
-CONTAINER_ENGINE = $(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null)
+CONTAINER_ENGINE=$(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null)
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
 DOCKER_IMAGE_CORE=stacklio/stackl-core
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
@@ -10,10 +10,12 @@ DOCKER_IMAGE_CLI=stacklio/stackl-cli
 DOCKER_IMAGE_OPA=stacklio/opa
 DOCKER_IMAGE_REDIS=stacklio/redis
 
+CORE_VERSION=v$(shell sed -n 's/.*version = "\([^"]*\)".*/\1/p' stackl/core/pyproject.toml)
+AGENT_VERSION=v$(shell sed -n 's/.*version = "\([^"]*\)".*/\1/p' stackl/agent/pyproject.toml)
+CLI_VERSION=v$(shell sed -n 's/.*__version__ = "\([^"]*\)".*/\1/p' stackl/cli/setup.py)
 OPA_VERSION=v0.21.1
-REDIS_VERSION=5.0.3
-VERSIONTAG=0.2.5dev
-
+REDIS_VERSION=v5.0.3
+PREPARE_VERSION=latest
 
 ######################################################
 #
@@ -30,22 +32,22 @@ docs-%:
 .PHONY: build_prepare
 build_prepare:
 	@echo "Building prepare image"
-	cd build/make/prepare; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_PREPARE):v$(VERSIONTAG) .
+	cd build/make/prepare; ${CONTAINER_ENGINE} build -t $(DOCKER_IMAGE_PREPARE):$(PREPARE_VERSION) --build-arg CORE_VERSION=$(CORE_VERSION) --build-arg AGENT_VERSION=$(AGENT_VERSION) .
 
 .PHONY: build_core
 build_core:
 	@echo "Building stackl core"
-	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t $(DOCKER_IMAGE_CORE):v$(VERSIONTAG) .
+	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t $(DOCKER_IMAGE_CORE):$(CORE_VERSION) .
 
 .PHONY: build_agent
 build_agent:
 	@echo "Building agent "
-	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):v$(VERSIONTAG) .
+	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t $(DOCKER_IMAGE_AGENT):$(AGENT_VERSION) .
 
 .PHONY: build_stackl_cli
 build_stackl_cli:
 	@echo "Building stackl-cli"
-	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):v$(VERSIONTAG) stackl/cli
+	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t $(DOCKER_IMAGE_CLI):$(CLI_VERSION) stackl/cli
 
 .PHONY: build_opa
 build_opa:
@@ -55,27 +57,27 @@ build_opa:
 .PHONY: build_redis
 build_redis:
 	@echo "Building redis"
-	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):v$(REDIS_VERSION) stackl/redis
+	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(REDIS_VERSION) stackl/redis
 
 .PHONY: push_prepare
 push_prepare:
 	@echo "Pushing prepare"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_PREPARE):v$(VERSIONTAG)
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_PREPARE):$(PREPARE_VERSION)
 
 .PHONY: push_core
 push_core:
 	@echo "Pushing core"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_CORE):v$(VERSIONTAG)
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_CORE):$(CORE_VERSION)
 
 .PHONY: push_agent
 push_agent:
 	@echo "Pushing agent"
-	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):v$(VERSIONTAG)
+	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):$(AGENT_VERSION)
 
 .PHONY: prepare
 prepare:
 	@echo "Creating docker-compose"
-	${CONTAINER_ENGINE} run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input $(DOCKER_IMAGE_PREPARE):v$(VERSIONTAG) --conf /input/stackl.yml
+	${CONTAINER_ENGINE} run -v `pwd`/build/make/prepare/templates:/templates -v `pwd`/build/make/dev:/output -v `pwd`/build/make:/input $(DOCKER_IMAGE_PREPARE):$(PREPARE_VERSION) --conf /input/stackl.yml
 	@echo "Created docker-compose file in build/make/dev"
 
 .PHONY: start
@@ -115,7 +117,7 @@ skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 
 .PHONY: openapi
 openapi:
-	openapi-generator generate -i http://localhost:8000/openapi.json -g python -t build/openapi-generator --package-name stackl_client --additional-properties=packageVersion=${VERSIONTAG} -o /tmp/stackl-client
+	openapi-generator generate -i http://localhost:8000/openapi.json -g python -t build/openapi-generator --package-name stackl_client --additional-properties=packageVersion=${CORE_VERSION} -o /tmp/stackl-client
 	pip3 install /tmp/stackl-client
 
 .PHONY: stackl_cli

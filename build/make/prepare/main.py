@@ -1,3 +1,5 @@
+import os
+
 import click
 import yaml
 from jinja2 import Environment, FileSystemLoader
@@ -17,6 +19,9 @@ def parse_yaml_config(config_file_path):
     config_dict = {}
     with open(config_file_path) as f:
         configs = yaml.load(f, Loader=yaml.FullLoader)
+
+    config_dict['core_version'] = os.environ.get('CORE_VERSION', "latest")
+    config_dict['agent_version'] = os.environ.get('AGENT_VERSION', "latest")
 
     http_config = configs.get('http') or {}
     config_dict['http_port'] = http_config.get('port', 80)

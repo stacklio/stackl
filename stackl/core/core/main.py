@@ -1,6 +1,10 @@
 """
 Main entrypoint for stackl core
 """
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
 
 import uvicorn
 from fastapi import FastAPI
@@ -20,7 +24,7 @@ logger.info(
 app = FastAPI(
     title="STACKL",
     description="stackl",
-    version="0.2.5dev"
+    version=metadata.version('core')
 )
 
 app.include_router(infrastructure_base_router.router,
