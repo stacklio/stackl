@@ -15,7 +15,7 @@ The following environment variables can be set for the stackl-core:
 
 | Parameter | Description | Default |
 |------------|------|------|
-| `LOGLEVEL` | Set the loglevel | INFO |
+| `LOG_LEVEL` | Set the loglevel | INFO |
 | `STACKL_STORE` | Set the type of stackl store options: Redis/LFS | Redis |
 | `STACKL_DATASTORE_PATH` | Path where to safe the stackl documents, only used when `STACKL_STORE` is `LFS` | /lfs-store |
 | `STACKL_REDIS_TYPE` | Set the redis type, only change this to `false` for testing | real |
