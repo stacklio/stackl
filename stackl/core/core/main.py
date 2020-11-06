@@ -6,28 +6,37 @@ try:
 except ImportError:
     import importlib_metadata as metadata
 
+import logging
+import sys
+
 import uvicorn
-from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
+from elasticapm.contrib.starlette import ElasticAPM, make_apm_client
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 # Logger stuff
 from loguru import logger
 
 from core import config
-from .routers import functional_requirements_router, infrastructure_base_router, \
-    policy_templates_router, snapshots_router, stack_instances_router, \
-    services_router, stack_application_templates_router, \
-    stack_infrastructure_templates_router, about_router, outputs_router
+
+from .routers import (about_router, functional_requirements_router,
+                      infrastructure_base_router, outputs_router,
+                      policy_templates_router, services_router,
+                      snapshots_router, stack_application_templates_router,
+                      stack_infrastructure_templates_router,
+                      stack_instances_router)
+
+logging.getLogger().handlers = [config.InterceptHandler()]
+logging.getLogger("uvicorn.access").handlers = [config.InterceptHandler()]
+
+logger.configure(handlers=[{"sink": sys.stderr, "level": config.settings.log_level}])
 
 logger.info(
     "___________________ STARTING STACKL API SERVER ____________________")
 
 # Add routes
-app = FastAPI(
-    title="STACKL",
-    description="stackl",
-    version=metadata.version('core')
-)
+app = FastAPI(title="STACKL",
+              description="stackl",
+              version=metadata.version('core'))
 
 if config.settings.elastic_apm_enabled:
     logger.debug("Elastic APM Enabled")
