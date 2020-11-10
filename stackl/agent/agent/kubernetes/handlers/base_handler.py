@@ -30,7 +30,7 @@ def create_job_object(name: str,
                       ttl_seconds_after_finished: int = 600,
                       restart_policy: str = "Never",
                       backoff_limit: int = 0,
-                      active_deadline_seconds: int = 3600
+                      active_deadline_seconds: int = 3600, 
                       service_account: str = "stackl-agent-stackl-agent",
                       labels={},
                       env_from: List[Dict] = None) -> client.V1Job:
