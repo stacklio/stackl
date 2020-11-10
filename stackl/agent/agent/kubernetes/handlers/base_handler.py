@@ -30,6 +30,7 @@ def create_job_object(name: str,
                       ttl_seconds_after_finished: int = 600,
                       restart_policy: str = "Never",
                       backoff_limit: int = 0,
+                      active_deadline_seconds: int = 3600
                       service_account: str = "stackl-agent-stackl-agent",
                       labels={},
                       env_from: List[Dict] = None) -> client.V1Job:
@@ -67,6 +68,8 @@ def create_job_object(name: str,
     :type restart_policy: str, optional
     :param backoff_limit: Retries after failure, defaults to 0
     :type backoff_limit: int, optional
+    :param active_deadline_seconds: Timeout on a job, defaults to 3600 seconds
+    :type active_deadline_seconds: int, optional
     :param service_account: Kubernetes service account, defaults to "stackl-agent-stackl-agent"
     :type service_account: str, optional
     :param labels: metadata labels, defaults to {}
@@ -206,7 +209,8 @@ def create_job_object(name: str,
     body.spec = client.V1JobSpec(
         ttl_seconds_after_finished=ttl_seconds_after_finished,
         template=template.template,
-        backoff_limit=backoff_limit)
+        backoff_limit=backoff_limit,
+        active_deadline_seconds=active_deadline_seconds)
 
     return body, cms
 
