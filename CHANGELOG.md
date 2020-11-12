@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2020-11-12
+
+### Fixed
+
+- Fix update infra capabilities, so updates won't fail because policies did not have all the data (#176)
+- Use loguru for uvicorn logs (#173)
+
 ## [0.2.5] - 2020-10-29
 
 ### Added
@@ -35,5 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add reporting policies
 - Add codeql-analysis
 
-[unreleased]: https://github.com/stacklio/stackl/compare/v0.2.5...HEAD
+[unreleased]: https://github.com/stacklio/stackl/compare/v0.2.6...HEAD
+[0.2.6]: https://github.com/stacklio/stackl/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/stacklio/stackl/compare/v0.2.4...v0.2.5
