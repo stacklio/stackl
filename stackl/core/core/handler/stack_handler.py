@@ -588,9 +588,11 @@ class StackHandler(Handler):
         stack_infrastructure_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
 
+        stack_infr = self._update_infr_capabilities(stack_infrastructure_template, "yes")
+
         # Transform to OPA format
         opa_data = self.transform_opa_data(item, stack_application_template,
-                                           stack_infrastructure_template)
+                                           stack_infr)
 
         opa_solution = self.evaluate_orchestration_policy(opa_data)
 
