@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "core"
-version = "0.2.5dev"
+version = "0.2.6"
 description = ""
 authors = ["Frederic <frederic.vanreet@icloud.com>"]
 
@@ -19,11 +19,27 @@ loguru = "^0.5.1"
 redis = "^3.5.3"
 arq = "^0.19"
 redislite = "^5.0.165407"
+elastic-apm = "^5.9.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.3"
 pylint = "^2.6.0"
 
+[tool.pylint."MESSAGES CONTROL"]
+variable-rgx = "[a-z0-9_]{1,30}$"
+max-args = 9
+max-locals = 25
+disable = ["too-few-public-methods",
+            "no-name-in-module",
+            "too-many-public-methods",
+            "unsupported-assignment-operation",
+            "unsubscriptable-object"]
+
+[tool.pylint."SIMILARITIES"]
+ignore-imports = "yes"
+
+[tool.isort]
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
 
 [build-system]
 requires = ["poetry>=0.12"]

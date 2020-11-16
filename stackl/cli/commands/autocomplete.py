@@ -1,8 +1,12 @@
+import time
+
+import click
 from context import StacklContext
 
 
 def get_stackl_context():
     return StacklContext()
+
 
 def get_stack_instances(ctx, args, incomplete):
     stack_instances = get_stackl_context().stack_instances_api.get_stack_instances()
@@ -47,3 +51,25 @@ def get_functional_requirements(ctx, args, incomplete):
 def get_policy_templates(ctx, args, incomplete):
     pts = get_stackl_context().policy_templates_api.get_policy_templates()
     return [pt.name for pt in pts if pt.name.startswith(incomplete)]
+
+
+def show_progress_bar(stackl_context, instance_name):
+    stack_instance = stackl_context.stack_instances_api.get_stack_instance(instance_name)
+    with click.progressbar(length=len(stack_instance.status),
+                           label='Stack Instance Status') as bar:
+        bar.update(0)
+        ready = False
+        while not ready:
+            for status in stack_instance.status:
+                if status.status == "FAILED":
+                    click.echo(
+                        f"Stack instance {stack_instance.name}: service {status.service} on functional-requirement {status.functional_requirement} failed!")
+                    exit(1)
+                elif status.status == "in_progress":
+                    time.sleep(1)
+                    stack_instance = stackl_context.stack_instances_api.get_stack_instance(instance_name)
+                    ready = False
+                    break
+                else:
+                    bar.update(1)
+                    ready = True

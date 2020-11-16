@@ -1,3 +1,7 @@
+"""
+Endpoint for services
+"""
+
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,7 +19,7 @@ def get_services(
     document_manager: DocumentManager = Depends(get_document_manager)):
     """Returns all functional requirements with a specific type"""
     logger.info(
-        f"[CollectionDocumentByType GET] API COLLECT request with type_name 'service'"
+        "API COLLECT request with type_name 'service'"
     )
     services = document_manager.get_services()
     return services
@@ -59,5 +63,6 @@ def put_service(
 def delete_service(
     name: str,
     document_manager: DocumentManager = Depends(get_document_manager)):
+    """Delete a service document by name"""
     document_manager.delete_service(name)
     return {"result": "deleted service"}

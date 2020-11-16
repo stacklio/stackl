@@ -21,16 +21,15 @@ functional_requirement = {
             'before_command': None,
             'tool': 'test',
             'image': 'test',
-            'as_group': False
         },
         'aws': {
             'description': 'test',
             'before_command': None,
             'tool': 'test',
             'image': 'test',
-            'as_group': False
         }
     },
+    'as_group': False,
     'outputs': {},
     'outputs_format': "json"
 }
@@ -43,15 +42,13 @@ functional_requirement_update['invocation'] = {
         "description": "update",
         "before_command": None,
         "image": "update",
-        "tool": "update",
-        "as_group": False
+        "tool": "update"
     },
     "aws": {
         "description": "update",
         "before_command": None,
         "image": "update",
-        "tool": "update",
-        "as_group": False
+        "tool": "update"
     }
 }
 

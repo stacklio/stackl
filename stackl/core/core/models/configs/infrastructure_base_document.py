@@ -1,9 +1,13 @@
+"""
+Module containing InfrastructureBaseDocument
+"""
 from typing import List
 
-from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
+from pydantic import BaseModel
 
 
 class InfrastructureBaseDocument(BaseModel):
+    """Class for Environment, Location and Zone"""
     name: str
     category: str
     description = "Base Document"

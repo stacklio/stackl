@@ -1,4 +1,10 @@
+"""
+Singleton module
+"""
+
+
 class Singleton(type):
+    """Singleton class implementation"""
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

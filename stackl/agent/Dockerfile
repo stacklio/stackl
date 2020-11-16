@@ -18,14 +18,10 @@ RUN microdnf install -y python38 && \
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 
-COPY stackl/agent/poetry.lock stackl/agent/pyproject.toml /app/
-
+COPY stackl/agent/. /app
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
-
-# Creating folders, and files for a project:
-COPY stackl/agent/. /app
 
 CMD ["arq", "agent.main.AgentSettings"]

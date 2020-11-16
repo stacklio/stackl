@@ -11,7 +11,8 @@
 
 {{ end }}
 
-{{ if (ne ($scratch.Get "sectionsForVersion") nil) and (gt (len ($scratch.Get "sectionsForVersion")) 0) }}
+{{ if ($scratch.Get "sectionsForVersion") }}
+{{ if (gt (len ($scratch.Get "sectionsForVersion")) 0) }}
 
 <hr class="docs-nav-hr"/>
 
@@ -21,6 +22,7 @@
 
 {{ range ($scratch.Get "sectionsForVersion") }}
 {{ partial "docs/sidenav-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
+{{ end }}
 {{ end }}
 
 {{ end }}

@@ -1,3 +1,6 @@
+"""
+Module for snapshot manager
+"""
 import time
 
 from loguru import logger
@@ -9,21 +12,23 @@ from .manager import Manager
 
 
 class SnapshotManager(Manager):
+    """Snapshot manager class"""
+
     def __init__(self):
-        super(SnapshotManager, self).__init__()
+        super().__init__()
         self.document_manager = DocumentManager()
 
-    def rollback_task(self, task):
-        pass
-
     def get_snapshot(self, name):
+        """
+        Gets a snapshot from the store
+        """
         result = self.document_manager.get_document(type="snapshot", name=name)
-
         return result
 
     def get_snapshots(self, type_doc, name_doc):
+        """Get all snapshots from a document"""
         logger.debug(
-            f"[SnapshotManager] get_snapshot. Get the snapshots for doc with type '{type_doc}' and name '{name_doc}'"
+            f"Get the snapshots for doc with type '{type_doc}' and name '{name_doc}'"
         )
         iter_key = f"{type_doc}_{name_doc}"
         results = self.document_manager.get_snapshots("snapshot", iter_key)
@@ -31,8 +36,9 @@ class SnapshotManager(Manager):
         return results
 
     def create_snapshot(self, type_name, name):
+        """Create a snapshot from a document"""
         logger.debug(
-            f"[SnapshotManager] create_snapshot. Creating snapshot for document with type '{type_name}' and name '{name}'"
+            f"Creating snapshot for document with type '{type_name}' and name '{name}'"
         )
         snapshot_document = {}
         document = self.document_manager.get_document(type=type_name,
@@ -52,22 +58,23 @@ class SnapshotManager(Manager):
         return result
 
     def restore_snapshot(self, snapshot_name):
+        """Restore a snapshot"""
         logger.debug(
             f"[SnapshotManager] snapshot_to_restore. name doc: '{snapshot_name}'"
         )
         snapshot_document = self.get_snapshot(snapshot_name)
         logger.debug(
-            f"[SnapshotManager] snapshot_to_restore. Snapshot to restore to: '{snapshot_document}'"
+            f"Snapshot to restore to: '{snapshot_document}'"
         )
         if snapshot_document == {}:
             return StatusCode.NOT_FOUND
         self.document_manager.write_document(snapshot_document['snapshot'],
-                                             overwrite=True,
-                                             make_snapshot=False)
+                                             overwrite=True)
 
         return snapshot_document
 
     def restore_latest_snapshot(self, type_doc, name_doc):
+        """Restore the most recent snapshot of a document"""
         snapshots = self.get_snapshots(type_doc, name_doc)
         latest_snapshot = {"time": 0}
         for snapshot in snapshots:
@@ -77,13 +84,12 @@ class SnapshotManager(Manager):
         return self.restore_snapshot(latest_snapshot['name'])
 
     def delete_snapshot(self, name_doc_to_delete):
+        """Delete a snapshot by name"""
         logger.debug(
-            f"[SnapshotManager] snapshot_to_delete. name doc to delete:  '{name_doc_to_delete}'"
+            f"name doc to delete:  '{name_doc_to_delete}'"
         )
         snapshot_document = self.get_snapshot(name_doc_to_delete)
         logger.debug(
             f"[SnapshotManager] snapshot_to_delete. Snapshot to delete: '{snapshot_document}'"
         )
-        result = self.document_manager.delete_snapshot(
-            name=snapshot_document['name'])
-        return result
+        self.document_manager.delete_snapshot(name=snapshot_document['name'])

@@ -2,6 +2,7 @@ import json
 
 import click
 import stackl_client
+from commands.autocomplete import show_progress_bar
 from context import pass_stackl_context, StacklContext
 
 
@@ -16,9 +17,10 @@ def update(ctx):
 @click.option('-s', '--secrets', default="{}")
 @click.option('-d', '--disable-invocation', is_flag=True)
 @click.option('-r', '--replicas', default="{}")
+@click.option('-s', '--show-progress', default=False, is_flag=True)
 @click.argument('instance-name')
 @pass_stackl_context
-def instance(stackl_context: StacklContext, params, secrets, replicas,
+def instance(stackl_context: StacklContext, params, secrets, replicas, show_progress,
              disable_invocation, instance_name):
     final_params = {}
     for item in params:
@@ -32,6 +34,8 @@ def instance(stackl_context: StacklContext, params, secrets, replicas,
         invocation.disable_invocation = True
     res = stackl_context.stack_instances_api.put_stack_instance(invocation)
     click.echo(res)
+    if show_progress:
+        show_progress_bar(stackl_context, instance_name)
 
 
 @update.command()

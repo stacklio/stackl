@@ -9,46 +9,65 @@ draft: false
 tags: []
 ---
 
-## Docker Configuration table
+## Stackl Core Configuration table
 
-The following parameters control the STACKL Docker compose deployment in [docker-compose.yml](https://github.com/stacklio/stackl/tree/master/build/example_docker/docker-compose.yaml).
-
-| Parameter | Description | Default |
-|------------|------|------|
-| `LOGLEVEL` | Set the loglevel | INFO |
-| `HOST_MACHINE` | Set the host machine name | stackl-agent |
-| `STACKL_AGENT_BROKER` | Set the agent broker type  | Local |
-| `STACKL_AGENT_HOST` | Set the agent host and port | stackl-agent:50051 |
-| `STACKL_HOST` | Set the STACKL host and port | stackl-rest:80 |
-| `STACKL_MESSAGE_CHANNEL` | Set the task message channel type | Redis |
-| `STACKL_REDIS_HOST` | Set the Redis host | stackl-redis |
-| `STACKL_REDISSENTINELHOST` | Set the Redis sentinel host | stackl-redis |
-| `STACKL_STORE` | Set the store type | LFS |
-| `STACKL_TASK_BROKER` | Set the task broker type | Custom |
-
-## Helm Configuration table
-
-The following parameters control the STACKL Helm deployment in [values.yaml](https://github.com/stacklio/stackl/tree/master/build/helm/values.yaml).
+The following environment variables can be set for the stackl-core:
 
 | Parameter | Description | Default |
 |------------|------|------|
-| `mode` | Set the deployment mode  | prod |
-| `image.pullPolicy` | Set the pull policy for all deployments  | Always |
-| `datastore.type` | Set the type of the datastore to use | LFS |
-| `task_broker.type` | Set the task broker type | Custom |
-| `message_channel.type` | Set the message channel type | Redis |
-| `agent_broker.type` | Set the agent_broker type | grpc |
-| `stacklrest.image` | Set the image to use for the stackl rest api | stacklio/stackl-rest |
-| `stacklrest.name` | Set the name of stackl-rest | stackl-rest |
-| `stacklrest.hostname` | Hostname of stackl-rest | stackl.local |
-| `stacklrest.replicaCount` | Replicas of stackl-rest | 1 |
-| `stacklworker.image` | Set the image to use for stackl-worker | stacklio/stackl-worker |
-| `stacklworker.name`| Set the name for stackl-worker | stackl-worker |
-| `stacklworker.replicaCount` | Replicas for stackl-worker | 1 |
-| `stacklredis.image` | Set the image for redis | redis:5.0.5 |
-| `stacklredis.name` | Set the name for redis | stackl-redis |
-| `stacklredis.replicaCount` | Replicas for stackl-redis | 1 |
-| `stacklagent.image` | Set the mage to use for stackl-agent | stacklio/stackl-agent |
-| `stacklagent.name` | Set the name for stackl-agent | stackl-agent |
-| `stacklagent.replicaCount` | Replicas for stackl-agent | 1 |
-| `imagePullSecrets` | Set the name of image pull secrets to be used by deployments | [name: dome-nexus] |
+| `LOG_LEVEL` | Set the loglevel | INFO |
+| `STACKL_STORE` | Set the type of stackl store options: Redis/LFS | Redis |
+| `STACKL_DATASTORE_PATH` | Path where to safe the stackl documents, only used when `STACKL_STORE` is `LFS` | /lfs-store |
+| `STACKL_REDIS_TYPE` | Set the redis type, only change this to `false` for testing | real |
+| `STACKL_REDIS_HOST` | The host where redis is running| localhost |
+| `STACKL_REDIS_PORT` | The port of the running redis instance | 6379 |
+| `STACKL_REDIS_PASSWORD` | Password of the redis instance |  |
+| `STACKL_OPA_HOST` | Hostname of the OPA instance | http://localhost:8181 |
+| `ELASTIC_APM_ENABLED` | Use this to enable the Elastic APM middleware, configuration can be done by using environment variables, for more information: [APM config](https://www.elastic.co/guide/en/apm/agent/python/current/configuration.html) | False |
+
+
+## Stackl Agent Configuration table
+
+The following environment variables can be set for the stackl-agent:
+
+### General Settings
+
+| Parameter | Description | Default |
+|------------|------|------|
+| `STACKL_HOST` | Host where stackl is running | http://localhost:8000 |
+| `AGENT_NAME` | Name of the agent | common |
+| `AGENT_TYPE` | Type that will be used for executing jobs, choices: kubernetes, docker, mock | mock |
+| `REDIS_HOST` | Host of the stackl redis instance | localhost |
+| `REDIS_PORT` | Port of the stackl redis instance | 6379 |
+| `REDIS_PASSWORD` | Password of the redis instance |  |
+| `SECRET_HANDLER` | The secret handler to use, choices: base64, vault, conjur | base64 |
+| `LOGLEVEL` | The loglevel for the agent, Choices: DEBUG, INFO, ERROR, WARN | INFO |
+| `STACKL_CLI_IMAGE` | The image used for sending outputs back to stackl | stacklio/stackl-cli |
+
+### Kubernetes Handler
+
+| Parameter | Description | Default |
+|------------|------|------|
+| `STACKL_NAMESPACE` | The namespace where automation jobs will be ran  | |
+| `SERVICE_ACCOUNT` | The kubernetes service account that will be used for jobs | |
+
+### Vault Secret Handler
+
+| Parameter | Description | Default |
+|------------|------|------|
+| `VAULT_ROLE` | vault role to be used by vault-agent | |
+| `VAULT_ADDR` | hostname/ip where vault is running | |
+| `VAULT_MOUNT_POINT` | The kubernetes auth method vault path, for more information: https://www.vaultproject.io/docs/auth/kubernetes#authentication | |
+
+### Conjur Secret Handler
+
+| Parameter | Description | Default |
+|------------|------|------|
+| `AUTHENTICATOR_CLIENT_CONTAINER_NAME` | The Conjur container name | |
+| `CONJUR_APPLIANCE_URL` | Url of the Conjur appliance | |
+| `CONJUR_AUTHN_TOKEN_FILE` | Filename where the token will be saved | |
+| `CONJUR_AUTHN_URL` | The Conjur authentication URL | |
+| `CONJUR_AUTHN_LOGIN` | Authn login path in Conjur | |
+| `CONJUR_SSL_CONFIG_MAP` | Configmap where the SSL cert is | |
+| `CONJUR_SSL_CONFIG_MAP_KEY` | Key in the configmap of the SSL cert | |
+| `CONJUR_VERIFY` | Verify Ssl, Choices: True, False | |

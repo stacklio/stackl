@@ -1,3 +1,7 @@
+"""
+Endpoint for retrieving metadata from Stackl
+"""
+
 from fastapi import APIRouter
 
 from core.utils.general_utils import get_hostname as utils_hostname

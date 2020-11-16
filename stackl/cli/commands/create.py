@@ -1,8 +1,9 @@
 import json
+import time
 
 import click
 import stackl_client
-
+from commands.autocomplete import show_progress_bar
 from context import pass_stackl_context, StacklContext
 
 
@@ -12,17 +13,17 @@ def create(ctx):
     ctx.obj = StacklContext()
 
 
-
 @create.command()
 @click.option('--stack-infrastructure-template')
 @click.option('--stack-application-template')
 @click.option('-p', '--params', default=[], multiple=True)
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
+@click.option('-s', '--show-progress', default=False, is_flag=True)
 @click.argument('instance-name')
 @pass_stackl_context
 def instance(stackl_context: StacklContext, stack_infrastructure_template,
-             stack_application_template, params, tags, replicas,
+             stack_application_template, params, tags, replicas, show_progress,
              instance_name):
     final_params = {}
     for item in params:
@@ -36,6 +37,9 @@ def instance(stackl_context: StacklContext, stack_infrastructure_template,
         tags=json.loads(tags))
     res = stackl_context.stack_instances_api.post_stack_instance(invocation)
     click.echo(res)
+    if show_progress:
+        show_progress_bar(stackl_context, instance_name)
+
 
 
 @create.command()

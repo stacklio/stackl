@@ -1,9 +1,11 @@
 import json
 from pathlib import Path
+from sys import exit
 
 import click
 import stackl_client
 import yaml
+from commands.autocomplete import show_progress_bar
 from context import StacklContext
 from mergedeep import merge
 
@@ -16,20 +18,21 @@ from mergedeep import merge
 @click.option('-r', '--replicas', default="{}")
 @click.option('-s', '--secrets', default="{}")
 @click.option('-e', '--service-params', default="{}")
+@click.option('-s', '--show-progress', default=False, is_flag=True)
 @click.argument('instance-name', required=False)
 def apply(directory, config_file, params, tags, secrets,
-          service_params, replicas, instance_name):
+          service_params, replicas, instance_name, show_progress):
     stackl_context = StacklContext()
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:
         apply_stack_instance(config_file, params, tags, secrets,
                              service_params, replicas, stackl_context,
-                             instance_name)
+                             instance_name, show_progress)
 
 
 def apply_stack_instance(config_file, params, tags, secrets, service_params,
-                         replicas, stackl_context, instance_name):
+                         replicas, stackl_context, instance_name, show_progress):
     final_params = {}
     for item in params:
         final_params = {**final_params, **json.loads(item)}
@@ -65,6 +68,9 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
             invocation)
 
     click.echo(res)
+
+    if show_progress:
+        show_progress_bar(stackl_context, instance_name)
 
 
 def upload_files(directory, stackl_context):
@@ -107,3 +113,4 @@ def upload_files(directory, stackl_context):
                 click.echo(
                     f"Failed to apply {stackl_doc['name']} with type {stackl_doc['type']}: {e.body}"
                 )
+                exit(1)
