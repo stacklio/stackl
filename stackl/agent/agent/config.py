@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     secret_handler: str = "base64"
     loglevel: str = "INFO"
     max_jobs: int = 10
+    job_timeout: int = 3660
 
     # Kubernetes Handler
     stackl_namespace: str = None
