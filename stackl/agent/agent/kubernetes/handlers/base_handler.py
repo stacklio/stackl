@@ -27,7 +27,7 @@ def create_job_object(name: str,
                       container_name: str = "jobcontainer",
                       api_version: str = "batch/v1",
                       image_pull_policy: str = "Always",
-                      ttl_seconds_after_finished: int = 600,
+                      ttl_seconds_after_finished: int = 3600,
                       restart_policy: str = "Never",
                       backoff_limit: int = 0,
                       service_account: str = "stackl-agent-stackl-agent",
@@ -268,18 +268,32 @@ class Handler(ABC):
         self.stackl_namespace = agent_config.settings.stackl_namespace
         self.service_account = agent_config.settings.service_account
 
+    def check_container_status(self, container_status):
+        if container_status.state.terminated is not None:
+            if container_status.state.terminated.reason == "Error":
+                return True, "failed"
+        if container_status.state.waiting is not None:
+            if container_status.state.waiting.reason == "ErrImagePull" or container_status.state.waiting.reason == "ImagePullBackOff":
+                return True, "Image for this functional requirement can not be found"
+        return False, ""
+
     def wait_for_job(self, job_pod_name: str, namespace: str):
         while True:
             sleep(5)
-            api_response = self._api_instance_core.read_namespaced_pod_status(job_pod_name, namespace)
+            api_response = self._api_instance_core.read_namespaced_pod_status(
+                job_pod_name, namespace)
+            # Check init container statuses
+            for init_cs in api_response.status.init_container_statuses:
+                error, msg = self.check_container_status(init_cs)
+                if error:
+                    return False, msg, init_cs.name
+            # Check container statuses
             for cs in api_response.status.container_statuses:
-                if cs.name == "jobcontainer" and cs.state.terminated is not None:
-                    if cs.state.terminated.reason == "Error":
-                        return False, "failed"
-                    return True, ""
-                if cs.name == "jobcontainer" and cs.state.waiting is not None:
-                    if cs.state.waiting.reason == "ErrImagePull" or cs.state.waiting.reason == "ImagePullBackOff":
-                        return False, "Image for this functional requirement can not be found"
+                error, msg = self.check_container_status(cs)
+                if error:
+                    return False, msg, cs.name
+                if cs.state.waiting is None and cs.state.running is None and cs.state.terminated is not None and cs.state.terminated.reason == 'Completed' and cs.name == "jobcontainer":
+                    return True, "", cs.name
 
     def handle(self):
         logging.info(f"Invocation: {self._invoc}")
@@ -293,7 +307,7 @@ class Handler(ABC):
             "stackl.io/stack-instance": self._invoc.stack_instance,
             "stackl.io/service": self._invoc.service,
             "stackl.io/functional-requirement":
-                self._invoc.functional_requirement
+            self._invoc.functional_requirement
         }
         body, cms = create_job_object(name=name,
                                       container_image=container_image,
@@ -323,8 +337,8 @@ class Handler(ABC):
         job_pods = self._api_instance_core.list_namespaced_pod(
             self.stackl_namespace,
             label_selector=f"job-name={created_job.metadata.name}")
-        job_succeeded, job_status = self.wait_for_job(job_pods.items[0].metadata.name,
-                                                      self.stackl_namespace)
+        job_succeeded, job_status, job_container_name = self.wait_for_job(
+            job_pods.items[0].metadata.name, self.stackl_namespace)
 
         if job_succeeded:
             print("job succeeded")
@@ -345,7 +359,9 @@ class Handler(ABC):
             print("job failed")
             if job_status == "failed":
                 error_msg = self._api_instance_core.read_namespaced_pod_log(
-                    job_pods.items[0].metadata.name, self.stackl_namespace, container="jobcontainer")
+                    job_pods.items[0].metadata.name,
+                    self.stackl_namespace,
+                    container=job_container_name)
             else:
                 error_msg = job_status
             return 1, error_msg

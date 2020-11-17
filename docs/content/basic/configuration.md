@@ -43,6 +43,8 @@ The following environment variables can be set for the stackl-agent:
 | `SECRET_HANDLER` | The secret handler to use, choices: base64, vault, conjur | base64 |
 | `LOGLEVEL` | The loglevel for the agent, Choices: DEBUG, INFO, ERROR, WARN | INFO |
 | `STACKL_CLI_IMAGE` | The image used for sending outputs back to stackl | stacklio/stackl-cli |
+| `MAX_JOBS` | The maximum amount of jobs that can be run in parallel | 10 |
+| `JOB_TIMEOUT` | Time until a job times out. When this timeout is exceeded, the status of a kubernetes job is not tracked anymore | 3660 |
 
 ### Kubernetes Handler
 
