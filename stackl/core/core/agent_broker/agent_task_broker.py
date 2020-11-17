@@ -15,11 +15,12 @@ async def create_job_for_agent(stack_instance,
                                action,
                                document_manager,
                                redis,
-                               first_run=True, force_delete=False):
+                               first_run=True,
+                               force_delete=False):
     """creates jobs and puts them on the right agent queue"""
     logger.debug(
-        f"For stack_instance '{stack_instance}' and action '{action}'"
-    )
+        f"For stack_instance '{stack_instance}' and action '{action}'")
+
     success = True
     sat = document_manager.get_stack_application_template(
         stack_instance.stack_application_template)

@@ -7,14 +7,17 @@ from collections import OrderedDict
 from loguru import logger
 
 from core.enums.stackl_codes import StatusCode
-from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
-from core.models.items.stack_infrastructure_target_model import StackInfrastructureTarget
+from core.models.configs.stack_infrastructure_template_model import \
+    StackInfrastructureTemplate
+from core.models.items.stack_infrastructure_target_model import \
+    StackInfrastructureTarget
 from core.models.items.stack_instance_model import StackInstance
 from core.models.items.stack_instance_service_model import StackInstanceService
 from core.models.items.stack_instance_status_model import StackInstanceStatus
 from core.utils.general_utils import get_timestamp, tree
-from .handler import Handler
+
 from ..opa_broker.opa_broker import convert_sit_to_opa_data
+from .handler import Handler
 
 
 def process_service_targets(attributes,
@@ -35,7 +38,8 @@ def process_service_targets(attributes,
                 if tt['target'] == t:
                     new_targets.append(t)
                 for output in outputs:
-                    opa_service_params[service][tt['target']][output] = tt[output]
+                    opa_service_params[service][
+                        tt['target']][output] = tt[output]
         elif t in new_result['targets']:
             new_targets.append(t)
     service_targets[service] = new_targets
@@ -43,7 +47,6 @@ def process_service_targets(attributes,
 
 class StackHandler(Handler):
     """Handler responsible for all actions on Stack Instances"""
-
     def __init__(self, document_manager, opa_broker):
         super().__init__()
         self.document_manager = document_manager
@@ -67,9 +70,9 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-            self, item, opa_decision,
-            stack_infrastructure_template: StackInfrastructureTemplate,
-            opa_service_params):
+        self, item, opa_decision,
+        stack_infrastructure_template: StackInfrastructureTemplate,
+        opa_service_params):
         """
         function for creating the stack instance object
         """
@@ -99,16 +102,16 @@ class StackHandler(Handler):
         stack_instance_doc.status = stack_instance_statuses
         return stack_instance_doc
 
-    def add_service_definition(self, infra_target, infra_target_counter, item, opa_service_params,
-                               stack_infrastructure_template, stack_instance_statuses, svc,
-                               svc_doc):
+    def add_service_definition(self, infra_target, infra_target_counter, item,
+                               opa_service_params,
+                               stack_infrastructure_template,
+                               stack_instance_statuses, svc, svc_doc):
         """
         Function for adding a service_definition item to a stack_instance
         """
         service_definition = StackInstanceService()
         service_definition.infrastructure_target = infra_target
-        service_definition.opa_outputs = opa_service_params[svc][
-            infra_target]
+        service_definition.opa_outputs = opa_service_params[svc][infra_target]
         capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
             infra_target].provisioning_parameters
         secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[
@@ -120,15 +123,15 @@ class StackHandler(Handler):
         merged_secrets = {**secrets_of_target, **svc_doc.secrets}
         fr_params = {}
         for fr in svc_doc.functional_requirements:
-            fr_doc = self.document_manager.get_functional_requirement(
-                fr)
+            fr_doc = self.document_manager.get_functional_requirement(fr)
             fr_params = {**fr_params, **fr_doc.params}
             merged_secrets = {**merged_secrets, **fr_doc.secrets}
             if fr_doc.as_group:
                 # First check if the status is already available in the stack instance statuses
                 status_already_available = False
                 for stack_instance_status in stack_instance_statuses:
-                    if stack_instance_status.service == svc and stack_instance_status.functional_requirement == fr:
+                    if stack_instance_status.service == svc and \
+                        stack_instance_status.functional_requirement == fr:
                         status_already_available = True
                         # status found, add the infra target
                         stack_instance_status.infrastructure_target += f",{infra_target}"
@@ -163,8 +166,8 @@ class StackHandler(Handler):
         if "stackl_hostname" in service_definition.provisioning_parameters:
             service_definition.template_hosts(
                 service_definition.provisioning_parameters["stackl_hostname"],
-                service_definition.provisioning_parameters.get("instances", None),
-                infra_target_counter)
+                service_definition.provisioning_parameters.get(
+                    "instances", None), infra_target_counter)
 
         service_definition.secrets = {**merged_secrets, **item.secrets}
         service_definition.agent = agent
@@ -205,21 +208,22 @@ class StackHandler(Handler):
                                            service_targets["result"]["services"][svc]:
                     return "Update impossible. Target in service definition not in service_targets"
                 service_definition = self.update_service_definition(
-                    count, item, opa_service_params,
-                    service_definition,
+                    count, item, opa_service_params, service_definition,
                     stack_infrastructure_template, stack_instance,
                     stack_instance_statuses, svc)
 
                 stack_instance.services[svc][count] = service_definition
             if service_targets:
-                if len(service_targets["result"]["services"][svc]) > len(service_definitions):
+                if len(service_targets["result"]["services"][svc]) > len(
+                        service_definitions):
                     start_index = len(service_targets["result"]["services"][svc]) \
                                   - len(service_definitions)
-                    for i in range(start_index, len(service_targets["result"]["services"][svc])):
+                    for i in range(
+                            start_index,
+                            len(service_targets["result"]["services"][svc])):
                         service_definition = self.add_service_definition(
                             service_targets["result"]["services"][svc][i],
-                            i + 1, item,
-                            opa_service_params,
+                            i + 1, item, opa_service_params,
                             stack_infrastructure_template,
                             stack_instance_statuses, svc, svc_doc)
                         service_definitions.append(service_definition)
@@ -227,9 +231,11 @@ class StackHandler(Handler):
         stack_instance.status = stack_instance_statuses
         return stack_instance
 
-    def update_service_definition(self, count, item, opa_service_params, service_definition,
-                                  stack_infrastructure_template, stack_instance,
-                                  stack_instance_statuses, svc):
+    def update_service_definition(self, count, item, opa_service_params,
+                                  service_definition,
+                                  stack_infrastructure_template,
+                                  stack_instance, stack_instance_statuses,
+                                  svc):
         """Updates a service definition object within a stack instance"""
         svc_doc = self.document_manager.get_service(svc)
         capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
@@ -248,12 +254,12 @@ class StackHandler(Handler):
                 stack_instance_status = StackInstanceStatus(
                     functional_requirement=fr,
                     service=svc,
-                    infrastructure_target=service_definition.infrastructure_target,
+                    infrastructure_target=service_definition.
+                    infrastructure_target,
                     status="in_progress",
                     error_message="")
                 stack_instance_statuses.append(stack_instance_status)
-            fr_doc = self.document_manager.get_functional_requirement(
-                fr)
+            fr_doc = self.document_manager.get_functional_requirement(fr)
             fr_params = {**fr_params, **fr_doc.params}
             merged_secrets = {**merged_secrets, **fr_doc.secrets}
         merged_capabilities = {
@@ -275,8 +281,8 @@ class StackHandler(Handler):
         if "stackl_hostname" in service_definition.provisioning_parameters:
             service_definition.template_hosts(
                 service_definition.provisioning_parameters["stackl_hostname"],
-                service_definition.provisioning_parameters.get("instances", None),
-                count + 1)
+                service_definition.provisioning_parameters.get(
+                    "instances", None), count + 1)
         return service_definition
 
     def add_outputs(self, outputs_update):
@@ -284,7 +290,8 @@ class StackHandler(Handler):
         Adds outputs on the right service definition of a stack instance
         """
         logger.debug("Adding outputs to stack_instance")
-        stack_instance = self.document_manager.get_stack_instance(outputs_update.stack_instance)
+        stack_instance = self.document_manager.get_stack_instance(
+            outputs_update.stack_instance)
         service = stack_instance.services[outputs_update.service]
         for service_definition in service:
             if service_definition.infrastructure_target == outputs_update.infrastructure_target:
@@ -297,7 +304,8 @@ class StackHandler(Handler):
                     **service_definition.outputs
                 }
                 if "stackl_hostname" in service_definition.outputs:
-                    service_definition.hostname = service_definition.outputs["stackl_hostname"]
+                    service_definition.hostname = service_definition.outputs[
+                        "stackl_hostname"]
 
         return stack_instance
 
@@ -334,8 +342,9 @@ class StackHandler(Handler):
             for policy_name, attributes in stack_app_template.policies.items():
                 policy = self.document_manager.get_policy_template(policy_name)
                 for policy_params in attributes:
-                    new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                          policy, item.params, item.replicas)
+                    new_result = self.evaluate_sat_policy(
+                        policy_params, opa_data, policy, item.params,
+                        item.replicas)
 
                     if not new_result['fulfilled']:
                         logger.error(
@@ -362,9 +371,7 @@ class StackHandler(Handler):
             opa_data, service_targets, stack_infr, item.params)
 
         if infringment_messages:
-            logger.error(
-                f"sit policies not satisfied {infringment_messages}"
-            )
+            logger.error(f"sit policies not satisfied {infringment_messages}")
             message = "\n".join([x['msg'] for x in infringment_messages])
             return None, message
 
@@ -423,18 +430,20 @@ class StackHandler(Handler):
         service_targets = self.opa_broker.ask_opa_policy_decision(
             "replicas", "solutions", replica_input)
         logger.debug(
-            f"opa_result for replicas policy: {service_targets['result']}"
-        )
+            f"opa_result for replicas policy: {service_targets['result']}")
         return service_targets
 
-    def evaluate_sat_policy(self, attributes, opa_data, policy, user_params, replicas):
+    def evaluate_sat_policy(self, attributes, opa_data, policy, user_params,
+                            replicas):
         """
         Evaluates the Stack Application Template policies using OPA
         Returns the possible targets
         """
-        policy_input = {"parameters": attributes,
-                        "user_parameters": user_params,
-                        "replicas": replicas}
+        policy_input = {
+            "parameters": attributes,
+            "user_parameters": user_params,
+            "replicas": replicas
+        }
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
         self.opa_broker.add_policy(policy.name, policy.policy)
@@ -442,8 +451,7 @@ class StackHandler(Handler):
         new_solution = self.opa_broker.ask_opa_policy_decision(
             policy.name, "solutions", opa_data_with_inputs)
         logger.debug(
-            f"opa_result for policy {policy.name}: {new_solution['result']}"
-        )
+            f"opa_result for policy {policy.name}: {new_solution['result']}")
         new_result = new_solution['result']
         return new_result
 
@@ -453,12 +461,11 @@ class StackHandler(Handler):
         """
         logger.debug(
             "[StackHandler] _handle_create. performing opa query with data: {0}"
-                .format(opa_data))
+            .format(opa_data))
 
         opa_result = self.opa_broker.ask_opa_policy_decision(
             "orchestration", "solutions", opa_data)
-        logger.debug("opa_result: {0}".format(
-            opa_result['result']))
+        logger.debug("opa_result: {0}".format(opa_result['result']))
         opa_solution = opa_result['result']
         return opa_solution
 
@@ -492,12 +499,12 @@ class StackHandler(Handler):
         if update == "no":
             logger.debug(
                 "[StackHandler] _update_infr_capabilities. update is '{0}', returning."
-                    .format(update))
+                .format(update))
             return stack_infr_template
 
         logger.debug(
             "[StackHandler] _update_infr_capabilities. update is '{0}', doing update."
-                .format(update))
+            .format(update))
         infr_targets_capabilities = {}
         for infr_target in infr_targets:
             environment = self.document_manager.get_environment(
@@ -548,14 +555,14 @@ class StackHandler(Handler):
                 [environment.name, location.name, zone.name])
             infr_targets_capabilities[
                 infr_target_key] = StackInfrastructureTarget(
-                provisioning_parameters=infr_target_capability,
-                tags=infr_target_tags,
-                packages=infr_target_packages,
-                resources=infr_target_resources,
-                secrets=infr_target_secrets,
-                policies=infr_target_policies,
-                agent=infr_target_agent,
-                cloud_provider=infr_target_cloud_provider)
+                    provisioning_parameters=infr_target_capability,
+                    tags=infr_target_tags,
+                    packages=infr_target_packages,
+                    resources=infr_target_resources,
+                    secrets=infr_target_secrets,
+                    policies=infr_target_policies,
+                    agent=infr_target_agent,
+                    cloud_provider=infr_target_cloud_provider)
         stack_infr_template.infrastructure_capabilities = infr_targets_capabilities
         stack_infr_template.description = "SIT updated at {}".format(
             get_timestamp())
@@ -581,9 +588,11 @@ class StackHandler(Handler):
         stack_infrastructure_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
 
+        stack_infr = self._update_infr_capabilities(stack_infrastructure_template, "yes")
+
         # Transform to OPA format
         opa_data = self.transform_opa_data(item, stack_application_template,
-                                           stack_infrastructure_template)
+                                           stack_infr)
 
         opa_solution = self.evaluate_orchestration_policy(opa_data)
 
@@ -597,12 +606,15 @@ class StackHandler(Handler):
         opa_service_params = tree()
         # Verify the SAT policies
         if stack_application_template.policies:
-            for policy_name, attributes in stack_application_template.policies.items():
+            for policy_name, attributes in stack_application_template.policies.items(
+            ):
                 policy = self.document_manager.get_policy_template(policy_name)
                 for policy_params in attributes:
-                    new_result = self.evaluate_sat_policy(policy_params, opa_data,
-                                                          policy, {**stack_instance.instance_params, **item.params},
-                                                          item.replicas)
+                    new_result = self.evaluate_sat_policy(
+                        policy_params, opa_data, policy, {
+                            **stack_instance.instance_params,
+                            **item.params
+                        }, item.replicas)
 
                     if not new_result['fulfilled']:
                         logger.error(
@@ -616,12 +628,14 @@ class StackHandler(Handler):
                                             opa_service_params,
                                             outputs=policy.outputs)
         if item.replicas != {}:
-            service_targets = self.evaluate_replica_policy(item, service_targets)
+            service_targets = self.evaluate_replica_policy(
+                item, service_targets)
         else:
             service_targets = None
 
         stack_instance = self._update_stack_instance(stack_instance, item,
-                                                     opa_service_params, service_targets)
+                                                     opa_service_params,
+                                                     service_targets)
         if isinstance(stack_instance, str):
             return None, stack_instance
         return stack_instance, "Stack instance updating"

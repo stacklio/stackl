@@ -1,13 +1,16 @@
 """Module containing all methods for interacting with OPA"""
 
 import json
+from typing import List
 
 import requests
 from loguru import logger
 
 from core import config
-from core.models.configs.stack_application_template_model import StackApplicationTemplate
-from core.models.configs.stack_infrastructure_template_model import StackInfrastructureTemplate
+from core.models.configs.stack_application_template_model import \
+    StackApplicationTemplate
+from core.models.configs.stack_infrastructure_template_model import \
+    StackInfrastructureTemplate
 from core.models.items.service_model import Service
 
 
@@ -21,14 +24,13 @@ def convert_sit_to_opa_data(sit_doc: StackInfrastructureTemplate):
     for target in sit_targets:
         target_data = {
             "resources":
-                sit_doc.infrastructure_capabilities[target].resources,
+            sit_doc.infrastructure_capabilities[target].resources,
             "packages":
-                sit_doc.infrastructure_capabilities[target].packages,
+            sit_doc.infrastructure_capabilities[target].packages,
             "tags":
-                sit_doc.infrastructure_capabilities[target].tags,
+            sit_doc.infrastructure_capabilities[target].tags,
             "params":
-                sit_doc.infrastructure_capabilities[target].
-                    provisioning_parameters
+            sit_doc.infrastructure_capabilities[target].provisioning_parameters
         }
         targets_as_data[target] = target_data
     logger.debug(
@@ -39,7 +41,6 @@ def convert_sit_to_opa_data(sit_doc: StackInfrastructureTemplate):
 
 class OPABroker:
     """Class responsible for all communication between Stackl and OPA"""
-
     def __init__(self):
         self.opa_host = config.settings.stackl_opa_host
         self.manager_factory = None
@@ -64,8 +65,7 @@ class OPABroker:
         """Asks for a policy evaluation and returns result"""
         logger.debug(
             f"For policy_package '{policy_package}' and policy_rule '{policy_rule}' \
-            and data '{json.dumps(data)}'"
-        )
+            and data '{json.dumps(data)}'")
         # create input to hand to OPA
         input_dict = {"input": data}
         try:
@@ -81,9 +81,7 @@ class OPABroker:
             )
             return {}
         response_as_json = response.json()
-        logger.debug(
-            f"response: {response_as_json}"
-        )
+        logger.debug(f"response: {response_as_json}")
         return response_as_json
 
     def get_opa_policies(self):
@@ -112,7 +110,7 @@ class OPABroker:
         return result
 
     def convert_sat_to_opa_data(self, sat_doc: StackApplicationTemplate,
-                                services: [Service]):
+                                services: List[Service]):
         """Converts SAT to data for OPA policy evaluation"""
         logger.debug(
             f"[OPABroker] convert_sat_to_opa_data. For sat_doc '{sat_doc}'")

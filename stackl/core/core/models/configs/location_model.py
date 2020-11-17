@@ -1,5 +1,5 @@
 """Module for Stackl Location"""
-from .infrastructure_base_document import InfrastructureBaseDocument
+from core.models.configs.infrastructure_base_document import InfrastructureBaseDocument
 
 
 class Location(InfrastructureBaseDocument):
