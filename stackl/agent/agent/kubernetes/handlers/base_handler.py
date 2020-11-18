@@ -30,6 +30,7 @@ def create_job_object(name: str,
                       ttl_seconds_after_finished: int = 3600,
                       restart_policy: str = "Never",
                       backoff_limit: int = 0,
+                      active_deadline_seconds: int = 3600, 
                       service_account: str = "stackl-agent-stackl-agent",
                       labels={},
                       env_from: List[Dict] = None) -> client.V1Job:
@@ -67,6 +68,8 @@ def create_job_object(name: str,
     :type restart_policy: str, optional
     :param backoff_limit: Retries after failure, defaults to 0
     :type backoff_limit: int, optional
+    :param active_deadline_seconds: Timeout on a job, defaults to 3600 seconds
+    :type active_deadline_seconds: int, optional
     :param service_account: Kubernetes service account, defaults to "stackl-agent-stackl-agent"
     :type service_account: str, optional
     :param labels: metadata labels, defaults to {}
@@ -206,7 +209,8 @@ def create_job_object(name: str,
     body.spec = client.V1JobSpec(
         ttl_seconds_after_finished=ttl_seconds_after_finished,
         template=template.template,
-        backoff_limit=backoff_limit)
+        backoff_limit=backoff_limit,
+        active_deadline_seconds=active_deadline_seconds)
 
     return body, cms
 
@@ -277,9 +281,20 @@ class Handler(ABC):
                 return True, "Image for this functional requirement can not be found"
         return False, ""
 
-    def wait_for_job(self, job_pod_name: str, namespace: str):
+    def check_job_status(self, job):
+        if job.status.conditions is not None and job.status.active is None and job.status.succeeded is None:
+            for condition in job.status.conditions:
+                if condition.type == 'Failed' and condition.reason == 'DeadlineExceeded':
+                    return True, condition.message
+        return False, ""
+
+    def wait_for_job(self, job_pod_name: str, namespace: str, job):
         while True:
             sleep(5)
+            job = self._api_instance.read_namespaced_job(job.metadata.name, namespace)
+            error, msg = self.check_job_status(job)
+            if error:
+                return False, msg, None
             api_response = self._api_instance_core.read_namespaced_pod_status(
                 job_pod_name, namespace)
             # Check init container statuses
@@ -338,7 +353,7 @@ class Handler(ABC):
             self.stackl_namespace,
             label_selector=f"job-name={created_job.metadata.name}")
         job_succeeded, job_status, job_container_name = self.wait_for_job(
-            job_pods.items[0].metadata.name, self.stackl_namespace)
+            job_pods.items[0].metadata.name, self.stackl_namespace, created_job)
 
         if job_succeeded:
             print("job succeeded")
