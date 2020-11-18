@@ -281,9 +281,20 @@ class Handler(ABC):
                 return True, "Image for this functional requirement can not be found"
         return False, ""
 
-    def wait_for_job(self, job_pod_name: str, namespace: str):
+    def check_job_status(self, job):
+        if job.status.conditions is not None and job.status.active is None and job.status.succeeded is None:
+            for condition in job.status.conditions:
+                if condition.type == 'Failed' and condition.reason == 'DeadlineExceeded':
+                    return True, condition.message
+        return False, ""
+
+    def wait_for_job(self, job_pod_name: str, namespace: str, job):
         while True:
             sleep(5)
+            job = self._api_instance.read_namespaced_job(job.metadata.name, namespace)
+            error, msg = self.check_job_status(job)
+            if error:
+                return False, msg, None
             api_response = self._api_instance_core.read_namespaced_pod_status(
                 job_pod_name, namespace)
             # Check init container statuses
@@ -342,7 +353,7 @@ class Handler(ABC):
             self.stackl_namespace,
             label_selector=f"job-name={created_job.metadata.name}")
         job_succeeded, job_status, job_container_name = self.wait_for_job(
-            job_pods.items[0].metadata.name, self.stackl_namespace)
+            job_pods.items[0].metadata.name, self.stackl_namespace, created_job)
 
         if job_succeeded:
             print("job succeeded")
