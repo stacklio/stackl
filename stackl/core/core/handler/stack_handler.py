@@ -85,11 +85,11 @@ class StackHandler(Handler):
         stack_instance_doc.instance_secrets = item.secrets
         services = OrderedDict()
         stack_instance_statuses = []
-        for svc, targets in opa_decision.items():
+        for svc, opa_result in opa_decision.items():
             # if a svc doesnt have a result raise an error cause we cant resolve it
-            svc_doc = self.document_manager.get_service(svc)
+            svc_doc = self.document_manager.get_service(opa_result['service'])
             service_definitions = []
-            for infra_target in targets:
+            for infra_target in opa_result['targets']:
                 infra_target_counter = 1
                 service_definition = self.add_service_definition(
                     infra_target, infra_target_counter, item,
@@ -110,6 +110,7 @@ class StackHandler(Handler):
         Function for adding a service_definition item to a stack_instance
         """
         service_definition = StackInstanceService()
+        service_definition.service = svc_doc.name
         service_definition.infrastructure_target = infra_target
         service_definition.opa_outputs = opa_service_params[svc][infra_target]
         capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
@@ -201,6 +202,7 @@ class StackHandler(Handler):
             stack_instance.groups = item.params["stackl_groups"]
 
         stack_instance_statuses = []
+        logger.debug(f"stack_instance: {stack_instance}")
         for svc, service_definitions in stack_instance.services.items():
             svc_doc = self.document_manager.get_service(svc)
             for count, service_definition in enumerate(service_definitions):
@@ -222,7 +224,7 @@ class StackHandler(Handler):
                             start_index,
                             len(service_targets["result"]["services"][svc])):
                         service_definition = self.add_service_definition(
-                            service_targets["result"]["services"][svc][i],
+                            service_targets["result"]["services"][svc]["targets"][i],
                             i + 1, item, opa_service_params,
                             stack_infrastructure_template,
                             stack_instance_statuses, svc, svc_doc)
@@ -359,6 +361,7 @@ class StackHandler(Handler):
                                             outputs=policy.outputs)
 
         service_targets = self.evaluate_replica_policy(item, service_targets)
+        
         if not service_targets['result']['fulfilled']:
             logger.error(
                 f"replica_policy not satisfied: {service_targets['result']['msg']}"
@@ -385,8 +388,31 @@ class StackHandler(Handler):
         Evaluates the SIT policies using the OPA broker
         """
         infringment_messages = []
-        for _, targets in service_targets['result']['services'].items():
-            for t in targets:
+        # {
+        #   "services": {
+        #     "service-name": {
+        #       "targets": [
+            #       "aws.ireland.vmw-vcenter-02",
+            #       "aws.ireland.vmw-vcenter-01",
+            #       "vsphere.brussels.vmw-vcenter-01",
+            #       "aws.denmark.vmw-vcenter-02"
+        #       ],
+        #       "service": "service"}, 
+        #     "windows": [
+        #       "vsphere.brussels.vmw-vcenter-01",
+        #       "aws.ireland.vmw-vcenter-01"
+        #     ]
+        #   },
+        #   "parameters": {
+        #     "exclusive": false,
+        #     "services": {
+        #       "ubuntu":  1,
+        #       "windows": 2
+        #     }
+        #   }
+        # }
+        for _, service_definition in service_targets['result']['services'].items():
+            for t in service_definition['targets']:
                 policies = stack_infr.infrastructure_capabilities[t].policies
 
                 for policy_name, policy_attributes in policies.items():
@@ -429,8 +455,9 @@ class StackHandler(Handler):
         # And verify it
         service_targets = self.opa_broker.ask_opa_policy_decision(
             "replicas", "solutions", replica_input)
+        
         logger.debug(
-            f"opa_result for replicas policy: {service_targets['result']}")
+            f"opa_result for replicas policy: {service_targets}")
         return service_targets
 
     def evaluate_sat_policy(self, attributes, opa_data, policy, user_params,
@@ -477,8 +504,10 @@ class StackHandler(Handler):
         """
         sit_as_opa_data = convert_sit_to_opa_data(stack_infr)
         services = []
-        for s in stack_app_template.services:
-            services.append(self.document_manager.get_service(s))
+        for service in stack_app_template.services:
+            services.append({
+                'name': service.name,
+                'service': self.document_manager.get_service(service.service)})
         sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(
             stack_app_template, services)
         required_tags = {}

@@ -24,9 +24,9 @@ async def create_job_for_agent(stack_instance,
     success = True
     sat = document_manager.get_stack_application_template(
         stack_instance.stack_application_template)
-    for service_name in sat.services:
+    for service in sat.services:
         service_doc = document_manager.get_document(type="service",
-                                                    name=service_name)
+                                                    name=service.name)
 
         functional_requirements = service_doc["functional_requirements"]
         if action == "delete":
@@ -35,7 +35,7 @@ async def create_job_for_agent(stack_instance,
         for fr in functional_requirements:
             fr_doc = document_manager.get_functional_requirement(fr)
             fr_jobs = []
-            for service_definition in stack_instance.services[service_name]:
+            for service_definition in stack_instance.services[service.service]:
                 infrastructure_target = service_definition.infrastructure_target
                 cloud_provider = service_definition.cloud_provider
 
@@ -51,7 +51,7 @@ async def create_job_for_agent(stack_instance,
                 invoc['infrastructure_target'] = infrastructure_target
                 invoc['stack_instance'] = stack_instance.name
                 invoc['tool'] = fr_doc.invocation[cloud_provider].tool
-                invoc['service'] = service_name
+                invoc['service'] = service.service
                 invoc["hosts"] = service_definition.hosts
 
                 logger.debug("Appending job")
