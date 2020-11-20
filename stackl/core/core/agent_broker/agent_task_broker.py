@@ -22,22 +22,20 @@ async def create_job_for_agent(stack_instance,
         f"For stack_instance '{stack_instance}' and action '{action}'")
 
     success = True
-    sat = document_manager.get_stack_application_template(
-        stack_instance.stack_application_template)
-    for service in sat.services:
-        service_doc = document_manager.get_document(type="service",
-                                                    name=service.name)
+    for _, services in stack_instance.services.items():
+        for service in services:
+            service_doc = document_manager.get_document(type="service",
+                                                        name=service.service)
 
-        functional_requirements = service_doc["functional_requirements"]
-        if action == "delete":
-            functional_requirements = reversed(functional_requirements)
+            functional_requirements = service_doc["functional_requirements"]
+            if action == "delete":
+                functional_requirements = reversed(functional_requirements)
 
-        for fr in functional_requirements:
-            fr_doc = document_manager.get_functional_requirement(fr)
-            fr_jobs = []
-            for service_definition in stack_instance.services[service.service]:
-                infrastructure_target = service_definition.infrastructure_target
-                cloud_provider = service_definition.cloud_provider
+            for fr in functional_requirements:
+                fr_doc = document_manager.get_functional_requirement(fr)
+                fr_jobs = []
+                infrastructure_target = service.infrastructure_target
+                cloud_provider = service.cloud_provider
 
                 logger.debug(
                     f"Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
@@ -52,31 +50,31 @@ async def create_job_for_agent(stack_instance,
                 invoc['stack_instance'] = stack_instance.name
                 invoc['tool'] = fr_doc.invocation[cloud_provider].tool
                 invoc['service'] = service.service
-                invoc["hosts"] = service_definition.hosts
+                invoc["hosts"] = service.hosts
 
                 logger.debug("Appending job")
                 job = await redis.enqueue_job(
                     "invoke_automation",
                     invoc,
-                    _queue_name=service_definition.agent)
+                    _queue_name=service.agent)
                 fr_jobs.append(asyncio.create_task(job.result(timeout=7200)))
 
                 if fr_doc.as_group:
                     logger.debug("running as group")
                     break
 
-            for fr_job in asyncio.as_completed(fr_jobs):
-                automation_result = await fr_job
-                await update_status(automation_result, document_manager,
-                                    stack_instance)
-                if automation_result["status"] == "FAILED":
-                    success = False
+                for fr_job in asyncio.as_completed(fr_jobs):
+                    automation_result = await fr_job
+                    await update_status(automation_result, document_manager,
+                                        stack_instance)
+                    if automation_result["status"] == "FAILED":
+                        success = False
 
-            if not success:
-                logger.debug("Not all fr's succeeded, stopping execution")
-                break
+                if not success:
+                    logger.debug("Not all fr's succeeded, stopping execution")
+                    break
 
-            logger.debug("tasks executed")
+                logger.debug("tasks executed")
 
     logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
     if action == "delete" and (success or force_delete):

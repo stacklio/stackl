@@ -129,7 +129,8 @@ class OPABroker:
             service_data = {
                 "functional_requirements": frs,
                 "resource_requirements": service['service'].resource_requirements,
-                "params": params
+                "params": params,
+                "service": service['service'].name
             }
             services_as_data[service['name']] = service_data
         logger.debug(

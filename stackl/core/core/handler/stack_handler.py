@@ -181,6 +181,8 @@ class StackHandler(Handler):
         This method takes a stack instance and an item
         which contains the extra parameters and secrets
         """
+        # Check stack instance diff
+        self._check_difference()
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
         stack_infrastructure_template = self._update_infr_capabilities(
