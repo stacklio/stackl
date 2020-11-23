@@ -22,7 +22,7 @@ async def create_job_for_agent(stack_instance,
         f"For stack_instance '{stack_instance}' and action '{action}'")
 
     success = True
-    for _, services in stack_instance.services.items():
+    for service_name, services in stack_instance.services.items():
         for service in services:
             service_doc = document_manager.get_document(type="service",
                                                         name=service.service)
@@ -49,7 +49,7 @@ async def create_job_for_agent(stack_instance,
                 invoc['infrastructure_target'] = infrastructure_target
                 invoc['stack_instance'] = stack_instance.name
                 invoc['tool'] = fr_doc.invocation[cloud_provider].tool
-                invoc['service'] = service.service
+                invoc['service'] = service_name
                 invoc["hosts"] = service.hosts
 
                 logger.debug("Appending job")

@@ -390,29 +390,6 @@ class StackHandler(Handler):
         Evaluates the SIT policies using the OPA broker
         """
         infringment_messages = []
-        # {
-        #   "services": {
-        #     "service-name": {
-        #       "targets": [
-            #       "aws.ireland.vmw-vcenter-02",
-            #       "aws.ireland.vmw-vcenter-01",
-            #       "vsphere.brussels.vmw-vcenter-01",
-            #       "aws.denmark.vmw-vcenter-02"
-        #       ],
-        #       "service": "service"}, 
-        #     "windows": [
-        #       "vsphere.brussels.vmw-vcenter-01",
-        #       "aws.ireland.vmw-vcenter-01"
-        #     ]
-        #   },
-        #   "parameters": {
-        #     "exclusive": false,
-        #     "services": {
-        #       "ubuntu":  1,
-        #       "windows": 2
-        #     }
-        #   }
-        # }
         for _, service_definition in service_targets['result']['services'].items():
             for t in service_definition['targets']:
                 policies = stack_infr.infrastructure_capabilities[t].policies
