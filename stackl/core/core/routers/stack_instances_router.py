@@ -61,6 +61,7 @@ async def post_stack_instance(
         redis=Depends(get_redis)):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
+    logger.debug(f"stack_instance_invocation: {stack_instance_invocation}")
     (stack_instance, return_result) = stack_manager.process_stack_request(
         stack_instance_invocation, "create")
     if stack_instance is None:

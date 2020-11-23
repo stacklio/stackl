@@ -1,6 +1,9 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from pydantic import BaseModel
+
+from core.models.configs.stack_application_template_model import \
+    StackApplicationTemplateService
 
 
 class StackInstanceInvocation(BaseModel):
@@ -15,6 +18,7 @@ class StackInstanceInvocation(BaseModel):
     stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
     replicas: Dict[str, int] = {}
+    services: List[StackApplicationTemplateService] = []
 
 
 class StackInstanceUpdate(BaseModel):

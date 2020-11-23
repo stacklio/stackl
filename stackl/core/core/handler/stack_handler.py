@@ -329,8 +329,9 @@ class StackHandler(Handler):
 
         # Transform to OPA format
         opa_data = self.transform_opa_data(item, stack_app_template,
-                                           stack_infr)
+                                           stack_infr, item.services)
 
+        # Evaluate orchestration policy
         opa_solution = self.evaluate_orchestration_policy(opa_data)
 
         if not opa_solution['fulfilled']:
@@ -475,7 +476,7 @@ class StackHandler(Handler):
         opa_solution = opa_result['result']
         return opa_solution
 
-    def transform_opa_data(self, item, stack_app_template, stack_infr):
+    def transform_opa_data(self, item, stack_app_template, stack_infr, extra_services):
         """
         Transforms the SAT en SIT data to a format that OPA understands
         and adds extra needed data so OPA can evaluate more complicated
@@ -487,6 +488,11 @@ class StackHandler(Handler):
             services.append({
                 'name': service.name,
                 'service': self.document_manager.get_service(service.service)})
+        for service in extra_services:
+            services.append({
+                'name': service.name,
+                'service': self.document_manager.get_service(service.service)})
+        logger.debug(f"Services transformed for OPA data: {services}")
         sat_as_opa_data = self.opa_broker.convert_sat_to_opa_data(
             stack_app_template, services)
         required_tags = {}
