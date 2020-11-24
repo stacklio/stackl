@@ -9,7 +9,7 @@ from loguru import logger
 from pydantic import BaseModel
 from starlette.background import BackgroundTasks
 
-from core.agent_broker.agent_task_broker import create_job_for_agent
+from core.agent_broker.agent_task_broker import create_job_for_agent, create_job_per_service
 from core.manager.document_manager import DocumentManager
 from core.manager.stack_manager import StackManager
 from core.manager.stackl_manager import (get_document_manager, get_redis,
@@ -69,7 +69,7 @@ async def post_stack_instance(
 
     document_manager.write_stack_instance(stack_instance)
     # Perform invocations
-    background_tasks.add_task(create_job_for_agent, stack_instance, "create",
+    background_tasks.add_task(create_job_per_service, stack_instance, "create",
                               document_manager, redis)
     return return_result
 
@@ -85,7 +85,9 @@ async def put_stack_instance(
     Updates a stack instance by using a StackInstanceUpdate object
     """
     logger.info("[StackInstances PUT] Received PUT request")
-
+    logger.debug(f"stack_instance_update: {stack_instance_update}")
+    to_be_deleted = stack_manager.check_delete_services(stack_instance_update)
+    logger.debug(f"to be deleted: {to_be_deleted}")
     (stack_instance, return_result) = stack_manager.process_stack_request(
         stack_instance_update, "update")
     if stack_instance is None:
@@ -95,6 +97,9 @@ async def put_stack_instance(
 
     # Perform invocations
     if not stack_instance_update.disable_invocation:
+        for service in to_be_deleted:
+            background_tasks.add_task(create_job_per_service, service,
+                                  document_manager, "delete", redis, stack_instance)
         background_tasks.add_task(create_job_for_agent, stack_instance,
                                   "update", document_manager, redis)
 

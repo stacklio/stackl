@@ -22,8 +22,28 @@ async def create_job_for_agent(stack_instance,
         f"For stack_instance '{stack_instance}' and action '{action}'")
 
     success = True
-    for service_name, services in stack_instance.services.items():
-        for service in services:
+    await create_job_per_service(stack_instance.services, document_manager,
+                                 action, redis, stack_instance)
+
+    logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
+    if action == "delete" and (success or force_delete):
+        document_manager.delete_stack_instance(stack_instance.name)
+    elif not success and first_run and config.settings.rollback_enabled:
+        snapshot_document = get_snapshot_manager().restore_latest_snapshot(
+            "stack_instance", stack_instance.name)
+        stack_instance = StackInstance.parse_obj(snapshot_document["snapshot"])
+        await create_job_for_agent(stack_instance,
+                                   action,
+                                   document_manager,
+                                   redis,
+                                   first_run=False)
+
+
+async def create_job_per_service(services, document_manager, action, redis,
+                                 stack_instance):
+    success = True
+    for service_name, service_list in services.items():
+        for service in service_list:
             service_doc = document_manager.get_document(type="service",
                                                         name=service.service)
 
@@ -53,10 +73,9 @@ async def create_job_for_agent(stack_instance,
                 invoc["hosts"] = service.hosts
 
                 logger.debug("Appending job")
-                job = await redis.enqueue_job(
-                    "invoke_automation",
-                    invoc,
-                    _queue_name=service.agent)
+                job = await redis.enqueue_job("invoke_automation",
+                                              invoc,
+                                              _queue_name=service.agent)
                 fr_jobs.append(asyncio.create_task(job.result(timeout=7200)))
 
                 if fr_doc.as_group:
@@ -75,19 +94,6 @@ async def create_job_for_agent(stack_instance,
                     break
 
                 logger.debug("tasks executed")
-
-    logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
-    if action == "delete" and (success or force_delete):
-        document_manager.delete_stack_instance(stack_instance.name)
-    elif not success and first_run and config.settings.rollback_enabled:
-        snapshot_document = get_snapshot_manager().restore_latest_snapshot(
-            "stack_instance", stack_instance.name)
-        stack_instance = StackInstance.parse_obj(snapshot_document["snapshot"])
-        await create_job_for_agent(stack_instance,
-                                   action,
-                                   document_manager,
-                                   redis,
-                                   first_run=False)
 
 
 async def update_status(automation_result, document_manager, stack_instance):

@@ -32,3 +32,4 @@ class StackInstanceUpdate(BaseModel):
     tags: Dict[str, str] = {}
     replicas: Dict[str, int] = {}
     disable_invocation: bool = False
+    services: List[StackApplicationTemplateService] = []
