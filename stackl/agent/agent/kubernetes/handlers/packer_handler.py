@@ -1,3 +1,6 @@
+"""
+Module for Packer automation through stackl
+"""
 from json import dumps
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
@@ -7,6 +10,9 @@ from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
 
 class PackerHandler(Handler):
+    """
+    Class used for preparing everything for starting packer
+    """
     def __init__(self, invoc):
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
@@ -53,11 +59,11 @@ class PackerHandler(Handler):
             command_args[0] += f"{self._invoc.before_command}  && "
 
         command_args[
-            0] += f"packer build -force -var-file /tmp/variables/variables.json"
+            0] += "packer build -force -var-file /tmp/variables/variables.json"
 
         if self._secret_handler and not isinstance(self._secret_handler,
                                                    ConjurSecretHandler):
-            command_args[0] += f' -var-file /tmp/secrets/secret.json'
+            command_args[0] += ' -var-file /tmp/secrets/secret.json'
         elif isinstance(self._secret_handler, ConjurSecretHandler):
             command_args[0] = command_args[0].replace(
                 "&&",

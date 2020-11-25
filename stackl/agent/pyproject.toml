@@ -23,3 +23,7 @@ start-agent = "agent.main:start"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.pylint."MESSAGES CONTROL"]
+variable-rgx = "[a-z0-9_]{1,30}$"
+disable = ["too-few-public-methods"]

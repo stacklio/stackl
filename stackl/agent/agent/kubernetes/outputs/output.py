@@ -1,14 +1,19 @@
-from abc import abstractmethod
+"""
+Module for generic output logic
+"""
 from json import dumps
 from typing import List
 
-from kubernetes import client
-
 from agent import config
+from kubernetes import client
 
 
 class Output:
-    def __init__(self, service, functional_requirement, stackl_instance_name: str, infrastructure_target: str):
+    """
+    Superclass for outputs
+    """
+    def __init__(self, service, functional_requirement,
+                 stackl_instance_name: str, infrastructure_target: str):
         self.stack_instance = None
         self.output_file = ''
         self.stackl_host = config.settings.stackl_host
@@ -32,6 +37,9 @@ class Output:
 
     @property
     def stackl_cli_command_args(self):
+        """
+        Default command for the output container, can be overwritten by subclass
+        """
         return f'\
             echo "Waiting for automation output to appear" &&\
             while [[ ! -s "{self.output_file}" ]]; do sleep 2; done;\
@@ -51,7 +59,6 @@ class Output:
                                   args=[self.stackl_cli_command_args])
 
     @property
-    @abstractmethod
     def containers(self) -> List[client.V1Container]:
         containers = [self.stackl_container]
         return containers

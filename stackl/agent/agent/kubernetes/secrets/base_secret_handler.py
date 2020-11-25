@@ -1,9 +1,15 @@
+"""
+Module for the abstract SecretHandler class
+"""
 from abc import ABC
 
 from stackl_client import StackInstance
 
 
 class SecretHandler(ABC):
+    """
+    Abstract class which can be used as a helper when implementing a new secret handler
+    """
     def __init__(self, invoc, stack_instance: StackInstance,
                  secret_format: str):
         self.terraform_backend_enabled = False

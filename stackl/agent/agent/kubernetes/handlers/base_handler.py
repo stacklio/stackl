@@ -30,7 +30,7 @@ def create_job_object(name: str,
                       ttl_seconds_after_finished: int = 3600,
                       restart_policy: str = "Never",
                       backoff_limit: int = 0,
-                      active_deadline_seconds: int = 3600, 
+                      active_deadline_seconds: int = 3600,
                       service_account: str = "stackl-agent-stackl-agent",
                       labels={},
                       env_from: List[Dict] = None) -> client.V1Job:
@@ -277,12 +277,14 @@ class Handler(ABC):
             if container_status.state.terminated.reason == "Error":
                 return True, "failed"
         if container_status.state.waiting is not None:
-            if container_status.state.waiting.reason == "ErrImagePull" or container_status.state.waiting.reason == "ImagePullBackOff":
+            if container_status.state.waiting.reason == "ErrImagePull" \
+                or container_status.state.waiting.reason == "ImagePullBackOff":
                 return True, "Image for this functional requirement can not be found"
         return False, ""
 
     def check_job_status(self, job):
-        if job.status.conditions is not None and job.status.active is None and job.status.succeeded is None:
+        if job.status.conditions is not None and \
+            job.status.active is None and job.status.succeeded is None:
             for condition in job.status.conditions:
                 if condition.type == 'Failed' and condition.reason == 'DeadlineExceeded':
                     return True, condition.message
@@ -291,7 +293,8 @@ class Handler(ABC):
     def wait_for_job(self, job_pod_name: str, namespace: str, job):
         while True:
             sleep(5)
-            job = self._api_instance.read_namespaced_job(job.metadata.name, namespace)
+            job = self._api_instance.read_namespaced_job(
+                job.metadata.name, namespace)
             error, msg = self.check_job_status(job)
             if error:
                 return False, msg, None
@@ -307,7 +310,11 @@ class Handler(ABC):
                 error, msg = self.check_container_status(cs)
                 if error:
                     return False, msg, cs.name
-                if cs.state.waiting is None and cs.state.running is None and cs.state.terminated is not None and cs.state.terminated.reason == 'Completed' and cs.name == "jobcontainer":
+                if cs.state.waiting is None and \
+                    cs.state.running is None and  \
+                    cs.state.terminated is not None and \
+                    cs.state.terminated.reason == 'Completed' and \
+                    cs.name == "jobcontainer":
                     return True, "", cs.name
 
     def handle(self):
@@ -353,7 +360,8 @@ class Handler(ABC):
             self.stackl_namespace,
             label_selector=f"job-name={created_job.metadata.name}")
         job_succeeded, job_status, job_container_name = self.wait_for_job(
-            job_pods.items[0].metadata.name, self.stackl_namespace, created_job)
+            job_pods.items[0].metadata.name, self.stackl_namespace,
+            created_job)
 
         if job_succeeded:
             print("job succeeded")

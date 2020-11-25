@@ -1,7 +1,13 @@
+"""
+This module handles returning outputs in packer from the agent to Stackl
+"""
 from .output import Output
 
 
 class PackerOutput(Output):
+    """
+    Class for handling outputs in Packer
+    """
     def __init__(self, functional_requirement, stackl_instance_name: str):
         super().__init__(functional_requirement, stackl_instance_name)
 

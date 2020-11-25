@@ -1,19 +1,23 @@
+"""
+Module used for MockHandler
+"""
+
 import time
 
-from ..configurator_handler import ConfiguratorHandler
 
+class MockHandler:
+    """
+    Mockhandler will implement the create and delete commands, but won't actually do anything
 
-class MockHandler(ConfiguratorHandler):
+    It will just fake provision something
+    """
     def __init__(self, invoc):
         self._invoc = invoc
 
-    def create_job_command(self, handle_obj):
-        return None
-
-    def create_delete_command(self, handle_obj):
-        return None
-
     def handle(self):
+        """
+        Handles the execution, in this case nothing will happen
+        """
         print(self._invoc)
         print(
             "This is a fake handler, nothing is actually provisioned, sleeping 5 seconds"

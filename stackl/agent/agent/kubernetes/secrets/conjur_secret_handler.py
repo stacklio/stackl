@@ -1,9 +1,15 @@
+"""
+Module containing all logic for retrieving secrets from Conjur
+"""
 import json
 
 from .base_secret_handler import SecretHandler
 
 
 class ConjurSecretHandler(SecretHandler):
+    """
+    Implementation of a SecretHandler using Conjur
+    """
     def __init__(self, invoc, stack_instance, secret_format,
                  authenticator_client_container_name, conjur_appliance_url,
                  conjur_account, conjur_authn_token_file, conjur_authn_url,
@@ -29,7 +35,7 @@ class ConjurSecretHandler(SecretHandler):
             'mount_path': '/tmp/conjur',
             'type': 'config_map',
             'data': {
-                'secrets.yml': self.format_secrets_yaml()
+                'secrets.yml': self._format_secrets_yaml()
             }
         },{
             'name': 'terraform-backend',
@@ -67,7 +73,7 @@ class ConjurSecretHandler(SecretHandler):
             }
         }
 
-    def format_secrets_yaml(self):
+    def _format_secrets_yaml(self):
         yaml_string = ""
         for k, v in self.secrets.items():
             yaml_string += f"{k}: {v}\n"

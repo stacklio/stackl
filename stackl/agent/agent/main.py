@@ -1,3 +1,7 @@
+"""
+Entrypoint for Stackl Agent
+"""
+
 import asyncio
 from dataclasses import dataclass
 from typing import List
@@ -5,20 +9,22 @@ from typing import List
 from arq.connections import RedisSettings
 
 from agent import config
-from agent.docker.docker_tool_factory import DockerToolFactory
 from agent.kubernetes.kubernetes_tool_factory import KubernetesToolFactory
 from agent.mock.mock_tool_factory import MockToolFactory
 
 if config.settings.agent_type == "kubernetes":
     tool_factory = KubernetesToolFactory()
-elif config.settings.agent_type == "docker":
-    tool_factory = DockerToolFactory()
 elif config.settings.agent_type == "mock":
     tool_factory = MockToolFactory()
 
 
 @dataclass(frozen=True)
 class Invocation:
+    # pylint: disable=too-many-instance-attributes
+    # Normal to have more because all the data is needed
+    """
+    Invocation class with all fields needed for deploying a stack instance
+    """
     action: str
     functional_requirement: str
     service: str
@@ -31,11 +37,18 @@ class Invocation:
 
 
 async def run_in_executor(func, *args):
+    """
+    Helper function for async automations
+    """
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, func, *args)
 
 
 async def invoke_automation(ctx, invoc):
+    # pylint: disable=unused-argument
+    """
+    Method that will handle invocations from Stackl Core
+    """
     print(invoc)
     invocation = Invocation(**invoc)
     handler = tool_factory.get_handler(invocation)
@@ -54,6 +67,9 @@ async def invoke_automation(ctx, invoc):
 
 
 class AgentSettings:
+    """
+    Settings used by arq, for more info see: https://arq-docs.helpmanual.io/
+    """
     functions = [invoke_automation]
     queue_name = config.settings.agent_name
     job_timeout = config.settings.job_timeout
