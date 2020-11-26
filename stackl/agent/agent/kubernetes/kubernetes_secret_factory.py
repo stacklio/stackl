@@ -1,6 +1,7 @@
 """
 Module for everything related to secret handlers for kubernetes
 """
+from agent.kubernetes.secrets.base_secret_handler import SecretHandler
 from .. import config
 from .secrets.base64_secret_handler import Base64SecretHandler
 from .secrets.conjur_secret_handler import ConjurSecretHandler
@@ -10,7 +11,7 @@ from .secrets.vault_secret_handler import VaultSecretHandler
 def setup_conjur_secret_handler(invoc, stack_instance, secret_format):
     """
     function to retrieve conjur settings from configuration
-    and 
+    and
     initialize the ConjurSecretHandler object
     """
     authenticator_client_container = config.settings.authenticator_client_container_name
@@ -30,7 +31,7 @@ def setup_conjur_secret_handler(invoc, stack_instance, secret_format):
                                conjur_ssl_config_map_key, conjur_verify)
 
 
-def get_secret_handler(invoc, stack_instance, secret_format):
+def get_secret_handler(invoc, stack_instance, secret_format) -> SecretHandler:
     """
     This function returns a secret handler based on the configuration settings of the agent.
     """

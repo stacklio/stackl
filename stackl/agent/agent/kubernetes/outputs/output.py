@@ -4,18 +4,19 @@ Module for generic output logic
 from json import dumps
 from typing import List
 
-from agent import config
 from kubernetes import client
+from agent import config
 
 
 class Output:
+    # pylint: disable=too-many-instance-attributes
     """
     Superclass for outputs
     """
     def __init__(self, service, functional_requirement,
                  stackl_instance_name: str, infrastructure_target: str):
-        self.stack_instance = None
         self.output_file = ''
+        self._command_args = ''
         self.stackl_host = config.settings.stackl_host
         self.stackl_cli_image = config.settings.stackl_cli_image
         self.stackl_cli_command = ['/bin/bash', '-c']
@@ -50,31 +51,47 @@ class Output:
 
     @property
     def stackl_container(self):
+        """
+        Returns the kubernetes container object for outputs
+        """
         return client.V1Container(name='stackl-output',
                                   image=self.stackl_cli_image,
-                                  env=self.env,
-                                  volume_mounts=self.volume_mounts,
                                   image_pull_policy='Always',
                                   command=self.stackl_cli_command,
                                   args=[self.stackl_cli_command_args])
 
     @property
     def containers(self) -> List[client.V1Container]:
+        """
+        Get all containers used for outputs
+        """
         containers = [self.stackl_container]
         return containers
 
     @property
     def command_args(self) -> str:
+        """
+        Returns the command ran in the output container
+        """
         return self._command_args
 
     @property
     def spec_mount(self):
+        """
+        Returns the specifications of volume mounts
+        """
         return self._spec_mount
 
     @property
     def env_list(self):
+        """
+        Returns a list of environment variables
+        """
         return self._env_list
 
     @property
     def volumes(self):
+        """
+        Returns volumes used by outputs
+        """
         return self._volumes

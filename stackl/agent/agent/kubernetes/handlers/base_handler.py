@@ -1,3 +1,6 @@
+"""
+This module contains all methods and classes for creating resources in kubernetes
+"""
 import logging
 import os
 import random
@@ -7,11 +10,40 @@ from time import sleep
 from typing import Dict, List
 
 import stackl_client
-from agent.kubernetes.outputs.output import Output
-from agent.kubernetes.secrets.conjur_secret_handler import ConjurSecretHandler
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+
 from agent import config as agent_config
+from agent.kubernetes.outputs.output import Output
+from agent.kubernetes.secrets.conjur_secret_handler import ConjurSecretHandler
+
+
+def check_container_status(container_status):
+    """
+    Checks the status of the job containers
+    Returns a tuple with a boolean and a string
+    True if failed, False if succeeded
+    """
+    if container_status.state.terminated is not None:
+        if container_status.state.terminated.reason == "Error":
+            return True, "failed"
+    if container_status.state.waiting is not None:
+        if container_status.state.waiting.reason == "ErrImagePull" \
+            or container_status.state.waiting.reason == "ImagePullBackOff":
+            return True, "Image for this functional requirement can not be found"
+    return False, ""
+
+
+def check_job_status(job):
+    """
+    Checks the status of the job, returning False if done
+    """
+    if job.status.conditions is not None and \
+        job.status.active is None and job.status.succeeded is None:
+        for condition in job.status.conditions:
+            if condition.type == 'Failed' and condition.reason == 'DeadlineExceeded':
+                return True, condition.message
+    return False, ""
 
 
 def create_job_object(name: str,
@@ -32,8 +64,8 @@ def create_job_object(name: str,
                       backoff_limit: int = 0,
                       active_deadline_seconds: int = 3600,
                       service_account: str = "stackl-agent-stackl-agent",
-                      labels={},
-                      env_from: List[Dict] = None) -> client.V1Job:
+                      labels=None) -> client.V1Job:
+    # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
     """Creates a Job object using the Kubernetes client
 
     :param name: Job name affix
@@ -216,6 +248,9 @@ def create_job_object(name: str,
 
 
 def id_generator(size=12, chars=ascii_lowercase + digits):
+    """
+    Generates a random id
+    """
     return ''.join(random.choice(chars) for _ in range(size))
 
 
@@ -238,6 +273,11 @@ def create_cm(name: str, namespace: str, data: dict) -> client.V1ConfigMap:
 
 
 class Handler(ABC):
+    # pylint: disable=too-many-instance-attributes
+    """
+    Base handler class used by the subclasses of the different automation tools
+    to provision resources through kubernetes
+    """
     def __init__(self, invoc):
         if 'KUBERNETES_SERVICE_HOST' in os.environ:
             config.load_incluster_config()
@@ -271,43 +311,29 @@ class Handler(ABC):
         self._init_containers = []
         self.stackl_namespace = agent_config.settings.stackl_namespace
         self.service_account = agent_config.settings.service_account
-
-    def check_container_status(self, container_status):
-        if container_status.state.terminated is not None:
-            if container_status.state.terminated.reason == "Error":
-                return True, "failed"
-        if container_status.state.waiting is not None:
-            if container_status.state.waiting.reason == "ErrImagePull" \
-                or container_status.state.waiting.reason == "ImagePullBackOff":
-                return True, "Image for this functional requirement can not be found"
-        return False, ""
-
-    def check_job_status(self, job):
-        if job.status.conditions is not None and \
-            job.status.active is None and job.status.succeeded is None:
-            for condition in job.status.conditions:
-                if condition.type == 'Failed' and condition.reason == 'DeadlineExceeded':
-                    return True, condition.message
-        return False, ""
+        self._secret_handler = None
 
     def wait_for_job(self, job_pod_name: str, namespace: str, job):
+        """
+        This method polls every 5 seconds to see if the job is ready
+        """
         while True:
             sleep(5)
             job = self._api_instance.read_namespaced_job(
                 job.metadata.name, namespace)
-            error, msg = self.check_job_status(job)
+            error, msg = check_job_status(job)
             if error:
                 return False, msg, None
             api_response = self._api_instance_core.read_namespaced_pod_status(
                 job_pod_name, namespace)
             # Check init container statuses
             for init_cs in api_response.status.init_container_statuses:
-                error, msg = self.check_container_status(init_cs)
+                error, msg = check_container_status(init_cs)
                 if error:
                     return False, msg, init_cs.name
             # Check container statuses
             for cs in api_response.status.container_statuses:
-                error, msg = self.check_container_status(cs)
+                error, msg = check_container_status(cs)
                 if error:
                     return False, msg, cs.name
                 if cs.state.waiting is None and \
@@ -318,6 +344,9 @@ class Handler(ABC):
                     return True, "", cs.name
 
     def handle(self):
+        """
+        Entrypoint for handling
+        """
         logging.info(f"Invocation: {self._invoc}")
         logging.info(f"Action: {self._invoc.action}")
 
@@ -378,30 +407,39 @@ class Handler(ABC):
                     f"Exception when calling BatchV1Api->delete_namespaced_job: {e}\n"
                 )
             return 0, ""
+
+        print("job failed")
+        if job_status == "failed":
+            error_msg = self._api_instance_core.read_namespaced_pod_log(
+                job_pods.items[0].metadata.name,
+                self.stackl_namespace,
+                container=job_container_name)
         else:
-            print("job failed")
-            if job_status == "failed":
-                error_msg = self._api_instance_core.read_namespaced_pod_log(
-                    job_pods.items[0].metadata.name,
-                    self.stackl_namespace,
-                    container=job_container_name)
-            else:
-                error_msg = job_status
-            return 1, error_msg
+            error_msg = job_status
+        return 1, error_msg
 
     @property
     def index(self):
+        """
+        Returns the index of the service definition of the current
+        infrastructure target?
+        """
         index = 0
         for service_definition in self._stack_instance.services[self._service]:
             if service_definition.infrastructure_target == self._invoc.infrastructure_target:
                 return index
             index += 1
+        return None
 
     @property
     def provisioning_parameters(self):
+        """
+        Get all provisioning parameters for the current invocation
+        """
         for service_definition in self._stack_instance.services[self._service]:
             if service_definition.infrastructure_target == self._invoc.infrastructure_target:
                 return service_definition.provisioning_parameters
+        return None
 
     @property
     def env_list(self) -> dict:
@@ -448,18 +486,6 @@ class Handler(ABC):
             init_containers += self._output.init_containers
         return init_containers
 
-    @property
-    def env_from(self) -> list:
-        """Returns the combined env_from from the Handler, SecretHandler, Output
-
-        :return: env_from
-        :rtype: list
-        """
-        env_from = self._env_from
-        if self.secret_handler:
-            env_from.update(self.secret_handler._env_from)
-        return env_from
-
     @env_list.setter
     def env_list(self, value):
         self._env_list = value
@@ -470,6 +496,9 @@ class Handler(ABC):
 
     @property
     def command(self):
+        """
+        Gets the command
+        """
         return self._command
 
     @command.setter
@@ -478,10 +507,14 @@ class Handler(ABC):
 
     @property
     def command_args(self):
+        """
+        Gets the command args for create or delete
+        """
         if self._invoc.action == "create" or self._invoc.action == "update":
             return self.create_command_args
         if self._invoc.action == "delete":
             return self.delete_command_args
+        return None
 
     @command_args.setter
     def command_args(self, value):
@@ -489,20 +522,26 @@ class Handler(ABC):
 
     @property
     def secret_handler(self):
+        """
+        Returns the secret handler
+        """
         return self._secret_handler
 
     @property
-    def __isabstractmethod__(self):
-        return any(
-            getattr(f, '__isabstractmethod__', False)
-            for f in (self.wait_for_job, self.handle, self.get_k8s_objects,
-                      self.action))
-
-    @property
     def create_command_args(self) -> List[str]:
+        """
+        returns the command args to be run in the container
+        """
         if isinstance(self.secret_handler, ConjurSecretHandler):
             return [
                 "summon --provider summon-conjur -f /tmp/conjur/secrets.yml "
             ]
-        else:
-            return [""]
+        return [""]
+
+    @property
+    def delete_command_args(self) -> List[str]:
+        """
+        returns the command args to be run in the container
+        for deleting
+        """
+        return [""]

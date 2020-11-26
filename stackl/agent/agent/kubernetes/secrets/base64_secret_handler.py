@@ -4,6 +4,7 @@ Module for Base64 Secret Handler
 import base64
 import json
 import logging
+import os
 
 import yaml
 from stackl_client import StackInstance
@@ -28,6 +29,12 @@ class Base64SecretHandler(SecretHandler):
                 self._provisioning_secrets(self._secret_format)
             }
         }]
+        self.stackl_inv = {
+            "plugin": "stackl",
+            "host": os.environ['STACKL_HOST'],
+            "stack_instance": self._invoc.stack_instance,
+            "secret_handler": "base64"
+        }
 
     def _provisioning_secrets(self, secret_format: str):
         secrets = self.secrets

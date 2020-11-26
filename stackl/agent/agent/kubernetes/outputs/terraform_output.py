@@ -14,7 +14,8 @@ class TerraformOutput(Output):
         super().__init__(service, functional_requirement, stackl_instance_name,
                          infrastructure_target)
         self.output_file = '/mnt/terraform/output/result.json'
-        self._command_args = f'&& terraform show -json > {self.output_file} && ls -lh {self.output_file}'
+        self._command_args = f'&& terraform show -json > {self.output_file} \
+                                && ls -lh {self.output_file}'
 
         self._env_list = {"TF_IN_AUTOMATION": "1"}
         self._volumes.append({

@@ -2,6 +2,7 @@
 Module containing all logic for retrieving secrets from Hashicorp Vault
 """
 
+import os
 from .base_secret_handler import SecretHandler
 
 VAULT_AGENT_CONFIG = """
@@ -43,11 +44,15 @@ EOH
 
 
 class VaultSecretHandler(SecretHandler):
+    # pylint: disable=too-many-instance-attributes
+    # We just need a lot of fields for vault
     """
     Implementation of a secrethandler using Hashicorp Vault
     """
     def __init__(self, invoc, stack_instance, vault_addr: str,
                  secret_format: str, vault_role: str, vault_mount_point: str):
+        # pylint: disable=too-many-arguments
+        # We just need more than 5 for vault
         super().__init__(invoc, stack_instance, secret_format)
         self._vault_role = vault_role
         self._vault_addr = vault_addr
@@ -92,6 +97,14 @@ class VaultSecretHandler(SecretHandler):
             ]
         }]
         self._env_list = {"VAULT_ADDR": self._vault_addr}
+        self.stackl_inv = {
+            "plugin": "stackl",
+            "host": os.environ['STACKL_HOST'],
+            "stack_instance": self._invoc.stack_instance,
+            "vault_token_path": self._vault_token_path,
+            "vault_addr": self._vault_addr,
+            "secret_handler": "vault"
+        }
 
     def _format_template(self):
         content_string = ""
