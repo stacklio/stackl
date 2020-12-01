@@ -22,7 +22,7 @@ async def create_job_for_agent(stack_instance,
         f"For stack_instance '{stack_instance}' and action '{action}'")
 
     success = True
-    await create_job_per_service(stack_instance.services, document_manager,
+    success = await create_job_per_service(stack_instance.services, document_manager,
                                  action, redis, stack_instance)
 
     logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
@@ -40,7 +40,7 @@ async def create_job_for_agent(stack_instance,
 
 
 async def create_job_per_service(services, document_manager, action, redis,
-                                 stack_instance):
+                                 stack_instance, to_be_deleted=None):
     success = True
     for service_name, service_list in services.items():
         for service in service_list:
@@ -85,7 +85,7 @@ async def create_job_per_service(services, document_manager, action, redis,
                 for fr_job in asyncio.as_completed(fr_jobs):
                     automation_result = await fr_job
                     await update_status(automation_result, document_manager,
-                                        stack_instance)
+                                        stack_instance, action, to_be_deleted)
                     if automation_result["status"] == "FAILED":
                         success = False
 
@@ -94,9 +94,11 @@ async def create_job_per_service(services, document_manager, action, redis,
                     break
 
                 logger.debug("tasks executed")
+    
+    return success
 
 
-async def update_status(automation_result, document_manager, stack_instance):
+async def update_status(automation_result, document_manager, stack_instance, action, to_be_deleted=None):
     """Updates the status of a functional requirement in a stack instance"""
     stack_instance = document_manager.get_stack_instance(stack_instance.name)
     for status in stack_instance.status:
@@ -114,5 +116,13 @@ async def update_status(automation_result, document_manager, stack_instance):
             status.status = automation_result["status"]
             status.error_message = error_message
             break
+    
+    if action == "delete":
+        delete_services(to_be_deleted, stack_instance)
 
     document_manager.write_stack_instance(stack_instance)
+
+def delete_services(to_be_deleted, stack_instance):
+    for service in to_be_deleted:
+        for key, _ in service.items():
+            del stack_instance.services[key]

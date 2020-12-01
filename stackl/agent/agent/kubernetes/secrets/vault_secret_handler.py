@@ -78,7 +78,7 @@ class VaultSecretHandler(SecretHandler):
             "name":
             "vault-agent",
             "image":
-            "vault:latest",
+            "nexus-dockerext.dome.dev/vault:latest",
             "args": [
                 "agent", "-config=/etc/vault-config/vault-agent-config.hcl",
                 "-exit-after-auth"

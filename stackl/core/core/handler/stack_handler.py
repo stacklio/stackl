@@ -199,7 +199,6 @@ class StackHandler(Handler):
         This method takes a stack instance and an item
         which contains the extra parameters and secrets
         """
-        to_be_deleted = self.check_difference(item)
         logger.debug(f"opa_service_params: {opa_service_params}")
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
@@ -217,11 +216,6 @@ class StackHandler(Handler):
             **stack_instance.service_params,
             **item.service_params
         }
-
-        logger.debug(f"de servickes: {stack_instance.services}")
-        for service in to_be_deleted:
-            for key, _ in service.items():
-                del stack_instance.services[key]
 
         if "stackl_groups" in item.params:
             stack_instance.groups = item.params["stackl_groups"]
