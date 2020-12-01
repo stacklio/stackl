@@ -1,4 +1,4 @@
-![STACKL](docs/website/public/img/logos/logo.png)
+![STACKL](docs/website/static/img/logos/logo.png)
 
 # STACKL
 
