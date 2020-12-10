@@ -23,3 +23,12 @@ start-agent = "agent.main:start"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.pylint."MESSAGES CONTROL"]
+variable-rgx = "[a-z0-9_]{1,30}$"
+max-attributes = 12
+max-args = 7
+disable = ["too-few-public-methods", "logging-fstring-interpolation", "pointless-string-statement"]
+
+[tool.isort]
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']

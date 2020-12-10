@@ -1,15 +1,16 @@
+"""
+Module for handling invocation with Ansible
+"""
 import json
-from os import environ
+
 from typing import List
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.ansible_output import AnsibleOutput
-from agent.kubernetes.secrets.base64_secret_handler import Base64SecretHandler
-from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
-from .base_handler import Handler
-from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
-stackl_plugin = """
+from .base_handler import Handler
+
+STACKL_PLUGIN = """
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 DOCUMENTATION = '''
@@ -287,7 +288,7 @@ class InventoryModule(BaseInventoryPlugin):
                                to_native(e))
 """
 
-playbook_include_role = """
+PLAYBOOK_INCLUDE_ROLE = """
 - hosts: "{{ pattern }}"
   serial: "{{ serial }}"
   gather_facts: no
@@ -308,9 +309,6 @@ playbook_include_role = """
 
 class AnsibleHandler(Handler):
     """Handler for functional requirements using the 'ansible' tool
-
-    :param invoc: Invocation parameters received by grpc, the exact fields can be found at [stackl/agents/grpc_base/protos/agent_pb2.py](stackl/agents/grpc_base/protos/agent_pb2.py)
-    :type invoc: Invocation instance with attributes
 Example invoc:
 class Invocation():
     def __init__(self):
@@ -322,53 +320,20 @@ class Invocation():
         self.tool = "ansible"
         self.action = "create"
 """
-
     def __init__(self, invoc):
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
                                                   "yaml")
         if self._functional_requirement_obj.outputs:
-            self._output = AnsibleOutput(self._service, self._functional_requirement_obj,
-                                         self._invoc.stack_instance, self._invoc.infrastructure_target, self.hosts)
+            self._output = AnsibleOutput(self._service,
+                                         self._functional_requirement_obj,
+                                         self._invoc.stack_instance,
+                                         self._invoc.infrastructure_target,
+                                         self.hosts)
         self._env_list = {
             "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory",
             "ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED": "True"
         }
-        if isinstance(self._secret_handler, VaultSecretHandler):
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "vault_token_path": self._secret_handler._vault_token_path,
-                "vault_addr": self._secret_handler._vault_addr,
-                "secret_handler": "vault"
-            }
-        elif isinstance(self._secret_handler, Base64SecretHandler):
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "secret_handler": "base64"
-            }
-        elif isinstance(self._secret_handler, ConjurSecretHandler):
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "secret_handler": "conjur",
-                "conjur_addr": self._secret_handler._conjur_appliance_url,
-                "conjur_account": self._secret_handler._conjur_account,
-                "conjur_token_path":
-                    self._secret_handler._conjur_authn_token_file,
-                "conjur_verify": self._secret_handler._conjur_verify
-            }
-        else:
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "secret_handler": "none"
-            }
         """ Volumes is an array containing dicts that define Kubernetes volumes
         volume = {
             name: affix for volume name, str
@@ -384,7 +349,7 @@ class Invocation():
             "mount_path": "/opt/ansible/playbooks/inventory/stackl.yml",
             "sub_path": "stackl.yml",
             "data": {
-                "stackl.yml": json.dumps(stackl_inv)
+                "stackl.yml": json.dumps(self._secret_handler.stackl_inv)
             }
         }, {
             "name": "stackl-plugin",
@@ -392,14 +357,14 @@ class Invocation():
             "mount_path": "/opt/ansible/plugins/inventory/stackl.py",
             "sub_path": "stackl.py",
             "data": {
-                "stackl.py": stackl_plugin
+                "stackl.py": STACKL_PLUGIN
             }
         }, {
             "name": "stackl-playbook",
             "type": "config_map",
             "mount_path": "/opt/ansible/playbooks/stackl/",
             "data": {
-                "playbook-role.yml": playbook_include_role
+                "playbook-role.yml": PLAYBOOK_INCLUDE_ROLE
             }
         }]
         # If any outputs are defined in the functional requirement set in base_handler
@@ -420,21 +385,28 @@ class Invocation():
         :rtype: List[str]
         """
         self._command_args = [
-            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
+            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} \
+            user:${HOME}:/sbin/nologin" >> /etc/passwd'
         ]
         serial = 10
         if 'ansible_serial' in self.provisioning_parameters:
             serial = self.provisioning_parameters['ansible_serial']
         if "ansible_playbook_path" in self.provisioning_parameters:
-            self._command_args[
-                0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+            self._command_args[0] += f' && ansible-playbook \
+                        {self.provisioning_parameters["ansible_playbook_path"]} \
+                        -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+
         elif self._output:
             if self.hosts is not None:
                 pattern = ",".join(self.hosts)
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[
-                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} -e serial={serial} '
+                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml \
+                        -e ansible_role={self._functional_requirement} \
+                        -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} \
+                        -e serial={serial} '
+
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '
         else:
@@ -443,7 +415,9 @@ class Invocation():
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[
-                0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
+                0] += f' && ansible {pattern} -m include_role -v \
+                        -i /opt/ansible/playbooks/inventory/stackl.yml \
+                        -a name={self._functional_requirement}'
 
         return self._command_args
 
