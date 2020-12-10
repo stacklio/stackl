@@ -2,7 +2,6 @@
 Endpoint used for creating, updating, reading and deleting stack instances
 """
 
-from copy import deepcopy
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,6 +11,7 @@ from starlette.background import BackgroundTasks
 
 from core.agent_broker.agent_task_broker import (create_job_for_agent,
                                                  create_job_per_service)
+from core.handler.stack_handler import delete_services
 from core.manager.document_manager import DocumentManager
 from core.manager.stack_manager import StackManager
 from core.manager.stackl_manager import (get_document_manager, get_redis,
@@ -102,7 +102,9 @@ async def put_stack_instance(
             background_tasks.add_task(create_job_per_service, service,
                                       document_manager, "delete", redis,
                                       stack_instance, to_be_deleted)
-        background_tasks.add_task(create_job_for_agent, stack_instance,
+        copy_stack_instance = stack_instance.copy(deep=True)
+        delete_services(to_be_deleted, copy_stack_instance)
+        background_tasks.add_task(create_job_for_agent, copy_stack_instance,
                                   "update", document_manager, redis)
 
     document_manager.write_stack_instance(stack_instance)

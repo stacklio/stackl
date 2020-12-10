@@ -46,6 +46,11 @@ def process_service_targets(attributes,
     service_targets[service] = new_targets
 
 
+def delete_services(to_be_deleted, stack_instance):
+    for service in to_be_deleted:
+        for key, _ in service.items():
+            del stack_instance.services[key]
+
 class StackHandler(Handler):
     """Handler responsible for all actions on Stack Instances"""
     def __init__(self, document_manager, opa_broker):
@@ -236,9 +241,9 @@ class StackHandler(Handler):
                 svc_doc = self.document_manager.get_service(
                     service_definition.service)
                 # Disable this check for now
-                # if svc in service_targets and not service_definition.infrastructure_target in \
-                #                            service_targets[svc]['targets']:
-                #     return "Update impossible. Target in service definition not in service_targets"
+                if svc in service_targets and not service_definition.infrastructure_target in \
+                                           service_targets[svc]['targets']:
+                    return "Update impossible. Target in service definition not in service_targets"
                 service_definition = self.update_service_definition(
                     count, item, opa_service_params, service_definition,
                     stack_infrastructure_template, stack_instance,

@@ -7,6 +7,7 @@ import asyncio
 from loguru import logger
 
 from core import config
+from core.handler.stack_handler import delete_services
 from core.manager.stackl_manager import get_snapshot_manager
 from core.models.items.stack_instance_model import StackInstance
 
@@ -22,10 +23,12 @@ async def create_job_for_agent(stack_instance,
         f"For stack_instance '{stack_instance}' and action '{action}'")
 
     success = True
-    success = await create_job_per_service(stack_instance.services, document_manager,
-                                 action, redis, stack_instance)
+    success = await create_job_per_service(stack_instance.services,
+                                           document_manager, action, redis,
+                                           stack_instance)
 
     logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
+    logger.debug(f"actie: {action} en success: {success}")
     if action == "delete" and (success or force_delete):
         document_manager.delete_stack_instance(stack_instance.name)
     elif not success and first_run and config.settings.rollback_enabled:
@@ -39,8 +42,12 @@ async def create_job_for_agent(stack_instance,
                                    first_run=False)
 
 
-async def create_job_per_service(services, document_manager, action, redis,
-                                 stack_instance, to_be_deleted=None):
+async def create_job_per_service(services,
+                                 document_manager,
+                                 action,
+                                 redis,
+                                 stack_instance,
+                                 to_be_deleted=None):
     success = True
     for service_name, service_list in services.items():
         for service in service_list:
@@ -94,13 +101,18 @@ async def create_job_per_service(services, document_manager, action, redis,
                     break
 
                 logger.debug("tasks executed")
-    
+
     return success
 
 
-async def update_status(automation_result, document_manager, stack_instance, action, to_be_deleted=None):
+async def update_status(automation_result,
+                        document_manager,
+                        stack_instance,
+                        action,
+                        to_be_deleted=None):
     """Updates the status of a functional requirement in a stack instance"""
     stack_instance = document_manager.get_stack_instance(stack_instance.name)
+    status_to_be_deleted = None
     for status in stack_instance.status:
         if status.functional_requirement == automation_result[
             "functional_requirement"] and automation_result[
@@ -113,16 +125,16 @@ async def update_status(automation_result, document_manager, stack_instance, act
                 error_message = automation_result["error_message"]
             else:
                 error_message = ""
+            if action == "delete" and automation_result["status"] == "READY":
+                status_to_be_deleted = status
             status.status = automation_result["status"]
             status.error_message = error_message
             break
-    
+
     if action == "delete":
-        delete_services(to_be_deleted, stack_instance)
+        if status_to_be_deleted:
+            stack_instance.status.remove(status_to_be_deleted)
+        if to_be_deleted:
+            delete_services(to_be_deleted, stack_instance)
 
     document_manager.write_stack_instance(stack_instance)
-
-def delete_services(to_be_deleted, stack_instance):
-    for service in to_be_deleted:
-        for key, _ in service.items():
-            del stack_instance.services[key]
