@@ -27,8 +27,6 @@ async def create_job_for_agent(stack_instance,
                                            document_manager, action, redis,
                                            stack_instance)
 
-    logger.debug(f"rollback_enabled: {config.settings.rollback_enabled}")
-    logger.debug(f"actie: {action} en success: {success}")
     if action == "delete" and (success or force_delete):
         document_manager.delete_stack_instance(stack_instance.name)
     elif not success and first_run and config.settings.rollback_enabled:
