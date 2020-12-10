@@ -52,7 +52,11 @@ async def invoke_automation(ctx, invoc):
     print(invoc)
     invocation = Invocation(**invoc)
     handler = tool_factory.get_handler(invocation)
-    result, error_message = await run_in_executor(handler.handle)
+    try:
+        result, error_message = await run_in_executor(handler.handle)
+    except asyncio.TimeoutError:
+        result = 1
+        error_message = "timeout in invoked job"
     print(result)
     print(error_message)
     automation_result = invoc
