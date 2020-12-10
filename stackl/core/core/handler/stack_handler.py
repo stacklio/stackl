@@ -33,7 +33,7 @@ def process_service_targets(attributes,
     service = attributes['service']
     st = service_targets[service]
     new_targets = []
-    for t in st:
+    for t in st['targets']:
         if outputs is not None:
             for tt in new_result['targets']:
                 if tt['target'] == t:
@@ -43,13 +43,14 @@ def process_service_targets(attributes,
                         tt['target']][output] = tt[output]
         elif t in new_result['targets']:
             new_targets.append(t)
-    service_targets[service] = new_targets
+    service_targets[service]['targets'] = new_targets
 
 
 def delete_services(to_be_deleted, stack_instance):
     for service in to_be_deleted:
         for key, _ in service.items():
             del stack_instance.services[key]
+
 
 class StackHandler(Handler):
     """Handler responsible for all actions on Stack Instances"""
@@ -76,9 +77,9 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-            self, item, opa_decision,
-            stack_infrastructure_template: StackInfrastructureTemplate,
-            opa_service_params):
+        self, item, opa_decision,
+        stack_infrastructure_template: StackInfrastructureTemplate,
+        opa_service_params):
         """
         function for creating the stack instance object
         """
