@@ -210,7 +210,6 @@ class StackHandler(Handler):
         This method takes a stack instance and an item
         which contains the extra parameters and secrets
         """
-        logger.debug(f"opa_service_params: {opa_service_params}")
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
         stack_infrastructure_template = self._update_infr_capabilities(
@@ -232,9 +231,6 @@ class StackHandler(Handler):
             stack_instance.groups = item.params["stackl_groups"]
 
         stack_instance_statuses = []
-        # service_targets can be an error from OPA
-        logger.debug(f"service_targets: {service_targets}")
-        logger.debug(f"stack_instance: {stack_instance}")
         new_service_definitions = {}
         for svc, service_definitions in stack_instance.services.items():
             for count, service_definition in enumerate(service_definitions):
@@ -297,8 +293,6 @@ class StackHandler(Handler):
                                   stack_instance, stack_instance_statuses, svc,
                                   svc_doc):
         """Updates a service definition object within a stack instance"""
-        logger.debug(f"svc: {svc}")
-        logger.debug(f"svc_doc: {svc_doc}")
         capabilities_of_target = stack_infrastructure_template.infrastructure_capabilities[
             service_definition.infrastructure_target].provisioning_parameters
         secrets_of_target = stack_infrastructure_template.infrastructure_capabilities[

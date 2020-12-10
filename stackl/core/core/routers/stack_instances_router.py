@@ -64,7 +64,6 @@ async def post_stack_instance(
     redis=Depends(get_redis)):
     """Creates a stack instance with a specific name"""
     logger.info("[StackInstances POST] Received POST request")
-    logger.debug(f"stack_instance_invocation: {stack_instance_invocation}")
     (stack_instance, return_result) = stack_manager.process_stack_request(
         stack_instance_invocation, "create")
     if stack_instance is None:
@@ -88,9 +87,7 @@ async def put_stack_instance(
     Updates a stack instance by using a StackInstanceUpdate object
     """
     logger.info("[StackInstances PUT] Received PUT request")
-    logger.debug(f"stack_instance_update: {stack_instance_update}")
     to_be_deleted = stack_manager.check_delete_services(stack_instance_update)
-    logger.debug(f"to be deleted: {to_be_deleted}")
     (stack_instance, return_result) = stack_manager.process_stack_request(
         stack_instance_update, "update")
     if stack_instance is None:
