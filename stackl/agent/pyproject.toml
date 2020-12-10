@@ -11,6 +11,7 @@ pyyaml = "^5.3.1"
 arq = "^0.19"
 stackl-client = "0.2.5"
 pydantic = "^1.6.1"
+importlib-metadata = "^1.6.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"

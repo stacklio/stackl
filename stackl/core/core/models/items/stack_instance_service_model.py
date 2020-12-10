@@ -29,6 +29,7 @@ class StackInstanceService(BaseModel):
     outputs: Dict[str, Any] = {}
     packages: List[str] = None
     tags: Dict[str, str] = None
+    service: str = None
 
     def template_hosts(self, stackl_hostname, instances, infra_target_counter):
         """Templates the host field in a stack instance"""

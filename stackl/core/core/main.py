@@ -17,6 +17,7 @@ from fastapi.routing import APIRoute
 from loguru import logger
 
 from core import config
+from core.migrations.upgrade2to3 import upgrade
 
 from .routers import (about_router, functional_requirements_router,
                       infrastructure_base_router, outputs_router,
@@ -37,6 +38,9 @@ logger.info(
 app = FastAPI(title="STACKL",
               description="stackl",
               version=metadata.version('core'))
+
+# Migrations
+upgrade()
 
 if config.settings.elastic_apm_enabled:
     logger.debug("Elastic APM Enabled")
