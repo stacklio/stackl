@@ -1,15 +1,16 @@
+"""
+Module for handling invocation with Ansible
+"""
 import json
-from os import environ
+
 from typing import List
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.ansible_output import AnsibleOutput
-from agent.kubernetes.secrets.base64_secret_handler import Base64SecretHandler
-from agent.kubernetes.secrets.vault_secret_handler import VaultSecretHandler
-from .base_handler import Handler
-from ..secrets.conjur_secret_handler import ConjurSecretHandler
 
-stackl_plugin = """
+from .base_handler import Handler
+
+STACKL_PLUGIN = """
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 DOCUMENTATION = '''
@@ -93,14 +94,17 @@ def check_groups(stackl_groups, stackl_inventory_groups, host_list):
     return True
 
 
-def create_groups(hosts, stackl_inventory_groups):
+def create_groups(hosts, stackl_inventory_groups, infrastructure_target):
     groups = defaultdict(list)
     print(f"stackl_inventory_groups: {stackl_inventory_groups}")
     for item in stackl_inventory_groups:
         for tag in item["tags"]:
             for index in range(item["count"]):
                 try:
-                    host = hosts[index]
+                    host = {
+                        "host": hosts[index],
+                        "target": infrastructure_target
+                    }
                 except IndexError as e:
                     print(e)
                     exit(1)
@@ -193,11 +197,6 @@ class InventoryModule(BaseInventoryPlugin):
                 stack_instance_name)
             for service, si_service in stack_instance.services.items():
                 for index, service_definition in enumerate(si_service):
-                    # self.inventory.add_host(host=service + "_" + str(index),
-                    #                         group=service)
-                    # self.inventory.set_variable(
-                    #     service, "infrastructure_target",
-                    #     service_definition.infrastructure_target)
                     if hasattr(
                             service_definition, "hosts"
                     ) and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
@@ -209,7 +208,8 @@ class InventoryModule(BaseInventoryPlugin):
                             stack_instance.groups = create_groups(
                                 service_definition.hosts,
                                 service_definition.provisioning_parameters[
-                                    'stackl_inventory_groups'])
+                                    'stackl_inventory_groups'],
+                                service_definition.infrastructure_target)
                             stack_update = stackl_client.StackInstanceUpdate(
                                 stack_instance_name=stack_instance.name,
                                 params={
@@ -218,46 +218,46 @@ class InventoryModule(BaseInventoryPlugin):
                                 disable_invocation=True)
                             api_instance.put_stack_instance(stack_update)
                         for item, value in stack_instance.groups.items():
+                            self.inventory.add_group(item)
                             for group in value:
-                                if group.target == service_definition.infrastructure_target:
-                                    self.inventory.add_group(item)
-                                    self.inventory.add_host(host=group.host,
-                                                            group=item)
-                                    for key, value in service_definition.provisioning_parameters.items(
-                                    ):
+                                self.inventory.add_host(host=group['host'], group=item)
+                                for key, value in service_definition.provisioning_parameters.items(
+                                ):
+                                    self.inventory.set_variable(
+                                        item, key, value)
+                                if hasattr(service_definition, "secrets"):
+                                    if self.get_option(
+                                            "secret_handler") == "vault":
+                                        secrets = get_vault_secrets(
+                                            service_definition,
+                                            self.get_option("vault_addr"),
+                                            self.get_option(
+                                                "vault_token_path"))
+                                    elif self.get_option(
+                                            "secret_handler") == "base64":
+                                        secrets = get_base64_secrets(
+                                            service_definition)
+                                    elif self.get_option(
+                                            "secret_handler") == "conjur":
+                                        secrets = get_conjur_secrets(
+                                            service_definition,
+                                            self.get_option("conjur_addr"),
+                                            self.get_option("conjur_account"),
+                                            self.get_option(
+                                                "conjur_token_path"),
+                                            self.get_option("conjur_verify"))
+                                    for key, value in secrets.items():
                                         self.inventory.set_variable(
                                             item, key, value)
-                                    if hasattr(service_definition, "secrets"):
-                                        if self.get_option(
-                                                "secret_handler") == "vault":
-                                            secrets = get_vault_secrets(
-                                                service_definition,
-                                                self.get_option("vault_addr"),
-                                                self.get_option(
-                                                    "vault_token_path"))
-                                        elif self.get_option(
-                                                "secret_handler") == "base64":
-                                            secrets = get_base64_secrets(
-                                                service_definition)
-                                        elif self.get_option(
-                                                "secret_handler") == "conjur":
-                                            secrets = get_conjur_secrets(
-                                                service_definition,
-                                                self.get_option("conjur_addr"),
-                                                self.get_option(
-                                                    "conjur_account"),
-                                                self.get_option(
-                                                    "conjur_token_path"),
-                                                self.get_option(
-                                                    "conjur_verify"))
-                                        for key, value in secrets.items():
-                                            self.inventory.set_variable(
-                                                item, key, value)
                     else:
                         self.inventory.add_group(service)
                         if service_definition.hosts:
                             for h in service_definition.hosts:
                                 self.inventory.add_host(host=h, group=service)
+                        else:
+                            self.inventory.add_host(host=service + "_" +
+                                                    str(index),
+                                                    group=service)
                         self.inventory.set_variable(
                             service, "infrastructure_target",
                             service_definition.infrastructure_target)
@@ -288,7 +288,7 @@ class InventoryModule(BaseInventoryPlugin):
                                to_native(e))
 """
 
-playbook_include_role = """
+PLAYBOOK_INCLUDE_ROLE = """
 - hosts: "{{ pattern }}"
   serial: "{{ serial }}"
   gather_facts: no
@@ -309,9 +309,6 @@ playbook_include_role = """
 
 class AnsibleHandler(Handler):
     """Handler for functional requirements using the 'ansible' tool
-
-    :param invoc: Invocation parameters received by grpc, the exact fields can be found at [stackl/agents/grpc_base/protos/agent_pb2.py](stackl/agents/grpc_base/protos/agent_pb2.py)
-    :type invoc: Invocation instance with attributes
 Example invoc:
 class Invocation():
     def __init__(self):
@@ -323,53 +320,20 @@ class Invocation():
         self.tool = "ansible"
         self.action = "create"
 """
-
     def __init__(self, invoc):
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
                                                   "yaml")
         if self._functional_requirement_obj.outputs:
-            self._output = AnsibleOutput(self._service, self._functional_requirement_obj,
-                                         self._invoc.stack_instance, self._invoc.infrastructure_target, self.hosts)
+            self._output = AnsibleOutput(self._service,
+                                         self._functional_requirement_obj,
+                                         self._invoc.stack_instance,
+                                         self._invoc.infrastructure_target,
+                                         self.hosts)
         self._env_list = {
             "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory",
             "ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED": "True"
         }
-        if isinstance(self._secret_handler, VaultSecretHandler):
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "vault_token_path": self._secret_handler._vault_token_path,
-                "vault_addr": self._secret_handler._vault_addr,
-                "secret_handler": "vault"
-            }
-        elif isinstance(self._secret_handler, Base64SecretHandler):
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "secret_handler": "base64"
-            }
-        elif isinstance(self._secret_handler, ConjurSecretHandler):
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "secret_handler": "conjur",
-                "conjur_addr": self._secret_handler._conjur_appliance_url,
-                "conjur_account": self._secret_handler._conjur_account,
-                "conjur_token_path":
-                    self._secret_handler._conjur_authn_token_file,
-                "conjur_verify": self._secret_handler._conjur_verify
-            }
-        else:
-            stackl_inv = {
-                "plugin": "stackl",
-                "host": environ['STACKL_HOST'],
-                "stack_instance": self._invoc.stack_instance,
-                "secret_handler": "none"
-            }
         """ Volumes is an array containing dicts that define Kubernetes volumes
         volume = {
             name: affix for volume name, str
@@ -385,7 +349,7 @@ class Invocation():
             "mount_path": "/opt/ansible/playbooks/inventory/stackl.yml",
             "sub_path": "stackl.yml",
             "data": {
-                "stackl.yml": json.dumps(stackl_inv)
+                "stackl.yml": json.dumps(self._secret_handler.stackl_inv)
             }
         }, {
             "name": "stackl-plugin",
@@ -393,14 +357,14 @@ class Invocation():
             "mount_path": "/opt/ansible/plugins/inventory/stackl.py",
             "sub_path": "stackl.py",
             "data": {
-                "stackl.py": stackl_plugin
+                "stackl.py": STACKL_PLUGIN
             }
         }, {
             "name": "stackl-playbook",
             "type": "config_map",
             "mount_path": "/opt/ansible/playbooks/stackl/",
             "data": {
-                "playbook-role.yml": playbook_include_role
+                "playbook-role.yml": PLAYBOOK_INCLUDE_ROLE
             }
         }]
         # If any outputs are defined in the functional requirement set in base_handler
@@ -421,21 +385,28 @@ class Invocation():
         :rtype: List[str]
         """
         self._command_args = [
-            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} user:${HOME}:/sbin/nologin" >> /etc/passwd'
+            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} \
+            user:${HOME}:/sbin/nologin" >> /etc/passwd'
         ]
         serial = 10
         if 'ansible_serial' in self.provisioning_parameters:
             serial = self.provisioning_parameters['ansible_serial']
         if "ansible_playbook_path" in self.provisioning_parameters:
-            self._command_args[
-                0] += f' && ansible-playbook {self.provisioning_parameters["ansible_playbook_path"]} -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+            self._command_args[0] += f' && ansible-playbook \
+                        {self.provisioning_parameters["ansible_playbook_path"]} \
+                        -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+
         elif self._output:
             if self.hosts is not None:
                 pattern = ",".join(self.hosts)
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[
-                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml -e ansible_role={self._functional_requirement} -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} -e serial={serial} '
+                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml \
+                        -e ansible_role={self._functional_requirement} \
+                        -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} \
+                        -e serial={serial} '
+
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '
         else:
@@ -444,7 +415,9 @@ class Invocation():
             else:
                 pattern = self._service + "_" + str(self.index)
             self._command_args[
-                0] += f' && ansible {pattern} -m include_role -v -i /opt/ansible/playbooks/inventory/stackl.yml -a name={self._functional_requirement}'
+                0] += f' && ansible {pattern} -m include_role -v \
+                        -i /opt/ansible/playbooks/inventory/stackl.yml \
+                        -a name={self._functional_requirement}'
 
         return self._command_args
 

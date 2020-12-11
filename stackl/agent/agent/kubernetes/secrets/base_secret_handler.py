@@ -1,9 +1,15 @@
+"""
+Module for the abstract SecretHandler class
+"""
 from abc import ABC
 
 from stackl_client import StackInstance
 
 
 class SecretHandler(ABC):
+    """
+    Abstract class which can be used as a helper when implementing a new secret handler
+    """
     def __init__(self, invoc, stack_instance: StackInstance,
                  secret_format: str):
         self.terraform_backend_enabled = False
@@ -16,18 +22,19 @@ class SecretHandler(ABC):
 
     @property
     def secrets(self):
+        """
+        Get all secrets
+        """
         for service_definition in self._stack_instance.services[self._service]:
             if service_definition.infrastructure_target == self._invoc.infrastructure_target:
                 return service_definition.secrets
-
-    @property
-    def params(self):
-        for service_definition in self._stack_instance.services[self._service]:
-            if service_definition.infrastructure_target == self._invoc.infrastructure_target:
-                return service_definition.provisioning_parameters
+        return None
 
     @property
     def init_containers(self):
+        """
+        return all init containers used by secret handler
+        """
         return self._init_containers
 
     @init_containers.setter
@@ -36,6 +43,9 @@ class SecretHandler(ABC):
 
     @property
     def env_list(self):
+        """
+        Returns the list of environment variables
+        """
         return self._env_list
 
     @env_list.setter
@@ -44,6 +54,9 @@ class SecretHandler(ABC):
 
     @property
     def volumes(self):
+        """
+        Returns all volumes (configmaps, pvs, etc...)
+        """
         return self._volumes
 
     @volumes.setter

@@ -6,7 +6,7 @@ networks:
 services:
   stackl-core:
     restart: always
-    image: stacklio/stackl-core:v0.2.5dev
+    image: stacklio/stackl-core:{{ core_version }}
     depends_on:
       - stackl-redis
     networks:
@@ -16,7 +16,7 @@ services:
       - {{ datastore_lfs_volume }}:/lfs_store/
 {% endif %}
     ports:
-      - {{http_port}}:8080
+      - {{http_port}}:8000
     environment:  
       - STACKL_STORE={{ datastore_type }}
       - STACKL_TASK_BROKER={{ task_broker_type }}
@@ -47,7 +47,7 @@ services:
       - stackl_bridge
   stackl-agent:
     restart: always
-    image: stacklio/stackl-agent:v0.2.5dev
+    image: stacklio/stackl-agent:{{ agent_version }}
     volumes:
       - /tmp:/tmp
     depends_on:

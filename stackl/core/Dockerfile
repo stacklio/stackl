@@ -11,7 +11,7 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.0.9
 
 # System deps:
-RUN microdnf install -y python38 gcc python3-devel make && \
+RUN microdnf install -y python38 gcc python38-devel make && \
     pip3 install --no-cache-dir "poetry==$POETRY_VERSION"&& \
     microdnf clean all
 
@@ -26,15 +26,12 @@ RUN chmod +x /start-reload.sh
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
 
-COPY stackl/core/poetry.lock stackl/core/pyproject.toml /app/
+COPY stackl/core/. /app
+ENV PYTHONPATH=/app
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
-
-# Creating folders, and files for a project:
-COPY stackl/core/. /app
-ENV PYTHONPATH=/app
 
 EXPOSE 8080
 

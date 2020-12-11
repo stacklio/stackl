@@ -1,16 +1,30 @@
+"""
+Module for all configuration options of agent
+"""
+
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
+
 from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    """
+    Settings class for agent
+    """
     # General settings
     stackl_host: str = "http://localhost:8000"
     agent_name: str = "common"
     agent_type: str = "mock"
     redis_host: str = "localhost"
     redis_port: int = 6379
+    redis_password: str = None
     secret_handler: str = "base64"
     loglevel: str = "INFO"
     max_jobs: int = 10
+    job_timeout: int = 3660
 
     # Kubernetes Handler
     stackl_namespace: str = None
@@ -33,7 +47,7 @@ class Settings(BaseSettings):
     conjur_verify: str = "True"
 
     # Outputs
-    stackl_cli_image: str = "stacklio/stackl-cli:v0.2.5dev"
+    stackl_cli_image: str = f"stacklio/stackl-cli:v{metadata.version('agent')}"
 
 
 settings = Settings()

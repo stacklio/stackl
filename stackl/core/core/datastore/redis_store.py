@@ -24,6 +24,7 @@ class RedisStore(DataStore):
         else:
             self.redis = redis.Redis(host=config.settings.stackl_redis_host,
                                      port=config.settings.stackl_redis_port,
+                                     password=config.settings.stackl_redis_password,
                                      db=0)
 
     def get(self, **keys):

@@ -1,28 +1,29 @@
+"""
+Module for Terraform automation through stackl
+"""
 import json
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.terraform_output import TerraformOutput
-from .base_handler import Handler
+
 from ..secrets.conjur_secret_handler import ConjurSecretHandler
+from .base_handler import Handler
 
 
 class TerraformHandler(Handler):
-    """Handler for functional requirements using the 'terraform' tool
-
-    :param invoc: Invocation parameters received by grpc, the exact fields can be found at [stackl/agents/grpc_base/protos/agent_pb2.py](stackl/agents/grpc_base/protos/agent_pb2.py)
-    :type invoc: Invocation instance with attributes
-Example invoc:
-class Invocation():
-    def __init__(self):
-        self.image = "tf_vm_vmw_win"
-        self.infrastructure_target = "vsphere.brussels.vmw-vcenter-01"
-        self.stack_instance = "instance-1"
-        self.service = "windows2019"
-        self.functional_requirement = "windows2019"
-        self.tool = "terraform"
-        self.action = "create"
-"""
-
+    """
+    Handler for functional requirements using the 'terraform' tool
+    Example invoc:
+    class Invocation():
+        def __init__(self):
+            self.image = "tf_vm_vmw_win"
+            self.infrastructure_target = "vsphere.brussels.vmw-vcenter-01"
+            self.stack_instance = "instance-1"
+            self.service = "windows2019"
+            self.functional_requirement = "windows2019"
+            self.tool = "terraform"
+            self.action = "create"
+    """
     def __init__(self, invoc):
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
@@ -33,8 +34,9 @@ class Invocation():
                                            self._functional_requirement_obj,
                                            self._invoc.stack_instance,
                                            self._invoc.infrastructure_target)
-        """ Volumes is an array containing dicts that define Kubernetes volumes
-        volume = {
+        """
+        Volumes is an array containing dicts that define Kubernetes volumes
+        {
             name: affix for volume name, str
             type: 'config_map' or 'empty_dir', str
             data: dict with keys for files and values with strings, dict
@@ -49,6 +51,9 @@ class Invocation():
 
     @property
     def variables_volume_mount(self):
+        """
+        Returns the config map definition used for the variables
+        """
         return {
             "name": "variables",
             "type": "config_map",
@@ -75,9 +80,9 @@ class Invocation():
         command_args = super().create_command_args
         if self._secret_handler.terraform_backend_enabled:
             command_args[
-                0] += f'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
+                0] += 'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
         else:
-            command_args[0] += f'terraform init'
+            command_args[0] += 'terraform init'
         # if self._secret_handler and self._secret_handler.terraform_backend_enabled:
         #     command_args[
         #         0] += f' -backend-config=key={self._stack_instance.name}'
@@ -88,23 +93,24 @@ class Invocation():
                                                    ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
         elif isinstance(self._secret_handler, ConjurSecretHandler):
-            command_args[0] = command_args[0].replace(
-                "&&",
-                "&& summon --provider summon-conjur -f /tmp/conjur/secrets.yml"
-            )
+            command_args[0] = ConjurSecretHandler.add_extra_commands(
+                command_args[0])
         if self._output:
             command_args[0] += f' {self._output.command_args}'
         return command_args
 
     @property
     def delete_command_args(self) -> list:
+        """
+        Constructs the delete command to destroy resources with terraform
+        """
         command_args = []
         if self._secret_handler.terraform_backend_enabled:
             command_args.append(
-                f'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
+                'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
             )
         else:
-            command_args.append(f'terraform init')
+            command_args.append('terraform init')
 
         command_args[
             0] += f' && terraform destroy -auto-approve -var-file {self.variables_file}'
@@ -113,10 +119,8 @@ class Invocation():
                                                    ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
         elif isinstance(self._secret_handler, ConjurSecretHandler):
-            command_args[0] = command_args[0].replace(
-                "&&",
-                "&& summon --provider summon-conjur -f /tmp/conjur/secrets.yml"
-            )
+            command_args[0] = ConjurSecretHandler.add_extra_commands(
+                command_args[0])
         if self._output:
             command_args[0] += f' {self._output.command_args}'
         return command_args
