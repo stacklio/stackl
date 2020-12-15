@@ -3,6 +3,9 @@
 {{ $basic       := where $allDocs ".Params.kind" "eq" "basic" }}
 {{ $documents      := where $allDocs ".Params.kind" "eq" "documents" }}
 {{ $advanced      := where $allDocs ".Params.kind" "eq" "advanced" }}
+{{ $supportedtools      := where $allDocs ".Params.kind" "eq" "supported-tools" }}
+{{ $policies      := where $allDocs ".Params.kind" "eq" "policies" }}
+{{ $installation      := where $allDocs ".Params.kind" "eq" "installation" }}
 {{ $modules    := where $allDocs ".Params.kind" "eq" "modules" }}
 {{ $tutorials  := where $allDocs ".Params.kind" "eq" "tutorial" }}
 {{ $operations := where $allDocs ".Params.kind" "eq" "operations" }}
@@ -35,12 +38,18 @@
 {{ partial "docs/sidenav-link.html" (dict "ctx" . "pageUrl" $pageUrl "version" $version) }}
 {{ end }}
 
+{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Installation" "section" $installation "pageUrl" $pageUrl "version" $version ) }}
+
 {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Documents" "section" $documents "pageUrl" $pageUrl "version" $version ) }}
+
+{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Supported Tools" "section" $supportedtools "pageUrl" $pageUrl "version" $version ) }}
 
 {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Advanced" "section" $advanced "pageUrl" $pageUrl "version" $version ) }}
 
 {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Modules" "section" $modules "pageUrl" $pageUrl "version" $version ) }}
 
 {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Operations" "section" $operations "pageUrl" $pageUrl "version" $version ) }}
+
+{{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Policy Evaluation" "section" $policies "pageUrl" $pageUrl "version" $version ) }}
 
 {{ partial "docs/sidenav-section.html" ( dict "ctx" . "sectionTitle" "Miscellaneous" "section" $misc "pageUrl" $pageUrl "version" $version ) }}

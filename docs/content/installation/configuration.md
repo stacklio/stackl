@@ -1,6 +1,6 @@
 ---
 title: Configuration
-kind: basic
+kind: installation
 weight: 4
 date: 2020-02-17 01:00:00 +0100
 publishdate: 2020-02-01 00:00:00 +0000
@@ -73,3 +73,7 @@ The following environment variables can be set for the stackl-agent:
 | `CONJUR_SSL_CONFIG_MAP` | Configmap where the SSL cert is | |
 | `CONJUR_SSL_CONFIG_MAP_KEY` | Key in the configmap of the SSL cert | |
 | `CONJUR_VERIFY` | Verify Ssl, Choices: True, False | |
+
+## References
+
+- [Stackl Helm repository](https://github.com/stacklio/stackl-helm)
