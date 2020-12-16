@@ -77,9 +77,9 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-        self, item, opa_decision,
-        stack_infrastructure_template: StackInfrastructureTemplate,
-        opa_service_params):
+            self, item, opa_decision,
+            stack_infrastructure_template: StackInfrastructureTemplate,
+            opa_service_params):
         """
         function for creating the stack instance object
         """
@@ -233,11 +233,12 @@ class StackHandler(Handler):
 
         stack_instance_statuses = []
         new_service_definitions = {}
-        for svc, service_definitions in stack_instance.services.items():
+        # Create copy because we are looping over it and changing things
+        stack_instances_services_copy = stack_instance.services.copy()
+        for svc, service_definitions in stack_instances_services_copy.items():
             for count, service_definition in enumerate(service_definitions):
                 svc_doc = self.document_manager.get_service(
                     service_definition.service)
-                # Disable this check for now
                 if svc in service_targets and not service_definition.infrastructure_target in \
                                            service_targets[svc]['targets']:
                     return "Update impossible. Target in service definition not in service_targets"
@@ -247,18 +248,6 @@ class StackHandler(Handler):
                     stack_instance_statuses, svc, svc_doc)
 
                 stack_instance.services[svc][count] = service_definition
-
-                for service in item.services:
-                    if service.name not in stack_instance.services:
-                        svc_doc = self.document_manager.get_service(
-                            service.service)
-                        service_definition = self.add_service_definition(
-                            service_targets[svc]["targets"][0], 0, item,
-                            opa_service_params, stack_infrastructure_template,
-                            stack_instance_statuses, service.name, svc_doc)
-                        new_service_definitions[service.name] = [
-                            service_definition
-                        ]
 
             # Check if replica count increased
             if svc in item.replicas and item.replicas[svc] > len(
@@ -279,6 +268,15 @@ class StackHandler(Handler):
                     if not svc in new_service_definitions:
                         new_service_definitions[svc] = []
                     new_service_definitions[svc].append(service_definition)
+
+        for service in item.services:
+            if service.name not in stack_instance.services:
+                svc_doc = self.document_manager.get_service(service.service)
+                service_definition = self.add_service_definition(
+                    service_targets[service.name]["targets"][0], 0, item,
+                    opa_service_params, stack_infrastructure_template,
+                    stack_instance_statuses, service.name, svc_doc)
+                new_service_definitions[service.name] = [service_definition]
 
         stack_instance.services = {
             **stack_instance.services,
