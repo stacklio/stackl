@@ -34,6 +34,8 @@ class Invocation:
     image: str
     tool: str
     hosts: List
+    playbook_path: str = None
+    serial: int = 10
 
 
 async def run_in_executor(func, *args):
