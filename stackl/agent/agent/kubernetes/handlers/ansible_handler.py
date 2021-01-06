@@ -388,12 +388,10 @@ class Invocation():
             'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} \
             user:${HOME}:/sbin/nologin" >> /etc/passwd'
         ]
-        serial = 10
-        if 'ansible_serial' in self.provisioning_parameters:
-            serial = self.provisioning_parameters['ansible_serial']
-        if "ansible_playbook_path" in self.provisioning_parameters:
+
+        if self._invoc.playbook_path:
             self._command_args[0] += f' && ansible-playbook \
-                        {self.provisioning_parameters["ansible_playbook_path"]} \
+                        {self._invoc.playbook_path} \
                         -v -i /opt/ansible/playbooks/inventory/stackl.yml'
 
         elif self._output:
@@ -405,7 +403,7 @@ class Invocation():
                 0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml \
                         -e ansible_role={self._functional_requirement} \
                         -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} \
-                        -e serial={serial} '
+                        -e serial={self._invoc.serial} '
 
             self._command_args[
                 0] += f'-e outputs_path={self._output.output_file} '

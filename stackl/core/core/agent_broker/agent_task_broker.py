@@ -65,6 +65,7 @@ async def create_job_per_service(services,
                 logger.debug(
                     f"Retrieved fr '{fr_doc}' from service_doc '{service_doc}'"
                 )
+
                 invoc = {}
                 invoc['action'] = action
                 invoc['functional_requirement'] = fr
@@ -73,7 +74,18 @@ async def create_job_per_service(services,
                     cloud_provider].before_command
                 invoc['infrastructure_target'] = infrastructure_target
                 invoc['stack_instance'] = stack_instance.name
-                invoc['tool'] = fr_doc.invocation[cloud_provider].tool
+
+                tool = fr_doc.invocation[cloud_provider].tool
+                invoc['tool'] = tool
+                if tool.lower() == "ansible":
+                    if fr_doc.invocation[
+                            cloud_provider].playbook_path is not None:
+                        invoc['playbook_path'] = fr_doc.invocation[
+                            cloud_provider].playbook_path
+                    if fr_doc.invocation[cloud_provider].serial is not None:
+                        invoc['serial'] = fr_doc.invocation[
+                            cloud_provider].serial
+
                 invoc['service'] = service_name
                 invoc["hosts"] = service.hosts
 
