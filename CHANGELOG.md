@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2021-01-07
+
+### Fixed
+
+- Fixed timeout issues for asyncio jobs
+
+### Added
+
+- Ability to add a multitude of the same services to a single stack instance
+- Added an active deadline for Stackl jobs
+- Vault init container will fail when a secret does not exist
+- Counter for hostname feature
+
+### Changed
+
+- Documentation Layout changed
+- Moved `ansible_playbook_path` to the invocation instead of the provisioning parameters
+- Stackl agent code refactored
+
 ## [0.2.6] - 2020-11-12
 
 ### Fixed
@@ -42,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add reporting policies
 - Add codeql-analysis
 
-[unreleased]: https://github.com/stacklio/stackl/compare/v0.2.6...HEAD
+[unreleased]: https://github.com/stacklio/stackl/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/stacklio/stackl/compare/v0.2.6...v0.3.0
 [0.2.6]: https://github.com/stacklio/stackl/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/stacklio/stackl/compare/v0.2.4...v0.2.5
