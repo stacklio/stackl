@@ -126,7 +126,7 @@ Here all variables are placed under host `example_service_0`. `example_service` 
 
 ### Playbook execution
 
-To execute a playbook with the Ansible handler, add a playbook to the OCI image and add a variable called `ansible_playbook_path` to the Stack Instance.
+To execute a playbook with the Ansible handler, add a playbook to the OCI image and add a variable called `playbook_path` to the `invocation` dict of the functional requirement.
 
 For example:
 
@@ -158,7 +158,7 @@ For example:
       msg: start postgresql service
 ```
 
-To execute this playbook, add `ansible_playbook_path` to the stack instance. This can be done either by adding the variable to the instance itself or to any other document used by the instance (for example the functional requirment).
+To execute this playbook, add `playbook_path` to the functional requirement.
 
 ```yaml
 category: configs
@@ -168,9 +168,9 @@ invocation:
     description: Example playbook
     image: stacklio/example-playbook:v1.0.0
     tool: ansible
+    playbook_path: /opt/ansible/playbook.yml
 name: example-playbook
-params:
-  ansible_playbook_path: /opt/ansible/playbook.yml
+params: {}
 type: functional_requirement
 ```
 
