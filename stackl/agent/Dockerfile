@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.2-349
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.3-230
 
 ENV PYTHONFAULTHANDLER=1 \
   MODULE_NAME="agent.main" \
@@ -12,8 +12,8 @@ ENV PYTHONFAULTHANDLER=1 \
 
 # System deps:
 RUN microdnf install -y python38 && \
-    pip3 install --no-cache-dir "poetry==$POETRY_VERSION" && \
-    microdnf clean all
+  pip3 install --no-cache-dir "poetry==$POETRY_VERSION" && \
+  microdnf clean all
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
