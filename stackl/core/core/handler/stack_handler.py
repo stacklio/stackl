@@ -90,6 +90,7 @@ class StackHandler(Handler):
         stack_instance_doc.instance_params = item.params
         stack_instance_doc.service_params = item.service_params
         stack_instance_doc.instance_secrets = item.secrets
+        stack_instance_doc.service_secrets = item.service_secrets
         services = OrderedDict()
         stack_instance_statuses = []
         for svc, opa_result in opa_decision.items():
@@ -177,7 +178,11 @@ class StackHandler(Handler):
                 service_definition.provisioning_parameters.get(
                     "instances", None), infra_target_counter)
 
-        service_definition.secrets = {**merged_secrets, **item.secrets}
+        service_definition.secrets = {
+            **merged_secrets,
+            **item.secrets,
+            **item.service_secrets.get(svc, {})
+        }
         service_definition.agent = agent
         service_definition.cloud_provider = cloud_provider
         return service_definition
@@ -226,6 +231,10 @@ class StackHandler(Handler):
         stack_instance.service_params = {
             **stack_instance.service_params,
             **item.service_params
+        }
+        stack_instance.service_secrets = {
+            **stack_instance.service_secrets,
+            **item.service_secrets
         }
 
         if "stackl_groups" in item.params:
@@ -329,7 +338,8 @@ class StackHandler(Handler):
         }
         service_definition.secrets = {
             **merged_secrets,
-            **stack_instance.instance_secrets
+            **stack_instance.instance_secrets,
+            **stack_instance.service_secrets.get(svc, {})
         }
         service_definition.agent = agent
         if "stackl_hostname" in service_definition.provisioning_parameters:

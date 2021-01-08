@@ -18,22 +18,25 @@ from mergedeep import merge
 @click.option('-r', '--replicas', default="{}")
 @click.option('-s', '--secrets', default="{}")
 @click.option('-e', '--service-params', default="{}")
+@click.option('--service-secrets', default="{}")
 @click.option('--services', default=[])
 @click.option('-s', '--show-progress', default=False, is_flag=True)
 @click.argument('instance-name', required=False)
-def apply(directory, config_file, params, tags, secrets,
-          service_params, replicas, services, instance_name, show_progress):
+def apply(directory, config_file, params, tags, secrets, service_params,
+          service_secrets, replicas, services, instance_name, show_progress):
     stackl_context = StacklContext()
     if instance_name is None:
         upload_files(directory, stackl_context)
     else:
         apply_stack_instance(config_file, params, tags, secrets,
-                             service_params, replicas, services, stackl_context,
-                             instance_name, show_progress)
+                             service_params, service_secrets, replicas,
+                             services, stackl_context, instance_name,
+                             show_progress)
 
 
 def apply_stack_instance(config_file, params, tags, secrets, service_params,
-                         replicas, services, stackl_context, instance_name, show_progress):
+                         service_secrets, replicas, services, stackl_context,
+                         instance_name, show_progress):
     final_params = {}
     for item in params:
         final_params = {**final_params, **json.loads(item)}
@@ -47,6 +50,9 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     service_params = json.loads(service_params)
     if "service_params" in config_doc:
         service_params = merge(config_doc['service_params'], service_params)
+    service_secrets = json.loads(service_secrets)
+    if "service_secrets" in config_doc:
+        service_secrets = merge(config_doc['service_secrets'], service_secrets)
     if "secrets" in config_doc:
         secrets = {**config_doc['secrets'], **secrets}
     if "tags" in config_doc:
@@ -61,6 +67,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         params=final_params,
         replicas=replicas,
         service_params=service_params,
+        service_secrets=service_secrets,
         secrets=secrets,
         services=services,
         tags=tags)
