@@ -332,16 +332,17 @@ class Handler(ABC):
                 if error:
                     return False, msg, init_cs.name
             # Check container statuses
+            containers_ready = True
             for cs in api_response.status.container_statuses:
                 error, msg = check_container_status(cs)
                 if error:
                     return False, msg, cs.name
-                if cs.state.waiting is None and \
-                    cs.state.running is None and  \
-                    cs.state.terminated is not None and \
-                    cs.state.terminated.reason == 'Completed' and \
-                    cs.name == "jobcontainer":
-                    return True, "", cs.name
+                if cs.state.terminated is not None or \
+                    cs.state.terminated.reason != 'Completed':
+                    containers_ready = False
+            if containers_ready:
+                return True, "", None
+
 
     def handle(self):
         """
