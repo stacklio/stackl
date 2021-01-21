@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "core"
-version = "0.3.1dev"
+version = "0.3.1"
 description = ""
 authors = ["Frederic <frederic.vanreet@icloud.com>"]
 
