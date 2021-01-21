@@ -35,19 +35,7 @@ class StackInstanceService(BaseModel):
 
     def template_hosts(self, stackl_hostname, instances, infra_target_counter):
         """Templates the host field in a stack instance"""
-        print(f"stackl_hostname: {stackl_hostname}")
-        print(f"instances: {instances}")
-        print(f"infra_target_counter: {infra_target_counter}")
-        print(f"self.hosts: {self.hosts}")
-        print(f"self.provisioning_parameters: {self.provisioning_parameters}")
-        print(f"self: {self}")
-        # stackl_hostname: testje-{hi}
-        # instances: 1
-        # infra_target_counter: 1
-        # self.hosts: ['testje-02']
-        # self.provisioning_parameters: {'environment': 'development', 'domain_letters': 'dev', 'ansible_connection': 'local', 'namespace': 'old-stack-instance', 'infoblox_enabled': False, 'istio_enabled': False, 'hostname': 'postgres', 'app': 'postgres', 'microservice_port': 5432, 'image_name': 'nexus-dockerext.dome.dev/postgres', 'image_tag': 'latest', 'stackl_hostname': 'testje-{hi}', 'instances': 1, 'env': {'POSTGRES_PASSWORD': 'demo-password'}, 'livenessprobe_path': '', 'readinessprobe_path': ''}
         # Clear previous machine names
-        # self: infrastructure_target='development.nossegem.k8s' provisioning_parameters={'environment': 'development', 'domain_letters': 'dev', 'ansible_connection': 'local', 'namespace': 'old-stack-instance', 'infoblox_enabled': False, 'istio_enabled': False, 'hostname': 'postgres', 'app': 'postgres', 'microservice_port': 5432, 'image_name': 'nexus-dockerext.dome.dev/postgres', 'image_tag': 'latest', 'stackl_hostname': 'testje-{hi}', 'instances': 2, 'env': {'POSTGRES_PASSWORD': 'demo-password'}, 'livenessprobe_path': '', 'readinessprobe_path': ''} cloud_provider='generic' secrets=None hosts=None resources=None service='postgres' agent='' opa_outputs=defaultdict(<function tree at 0x7fa17e37bd90>, {}) outputs={} packages=None tags=None
         if not self.hosts:
             self.hosts = []
         if instances is None:
