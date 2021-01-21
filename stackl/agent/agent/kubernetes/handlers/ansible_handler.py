@@ -96,7 +96,6 @@ def check_groups(stackl_groups, stackl_inventory_groups, host_list):
 
 def create_groups(hosts, stackl_inventory_groups, infrastructure_target):
     groups = defaultdict(list)
-    print(f"stackl_inventory_groups: {stackl_inventory_groups}")
     for item in stackl_inventory_groups:
         for tag in item["tags"]:
             for index in range(item["count"]):
@@ -220,7 +219,8 @@ class InventoryModule(BaseInventoryPlugin):
                         for item, value in stack_instance.groups.items():
                             self.inventory.add_group(item)
                             for group in value:
-                                self.inventory.add_host(host=group['host'], group=item)
+                                self.inventory.add_host(host=group.host,
+                                                        group=item)
                                 for key, value in service_definition.provisioning_parameters.items(
                                 ):
                                     self.inventory.set_variable(
@@ -312,7 +312,7 @@ class AnsibleHandler(Handler):
 Example invoc:
 class Invocation():
     def __init__(self):
-        self.image = "tf_vm_vmw_win"
+        self.image = "ansible_example"
         self.infrastructure_target = "vsphere.brussels.vmw-vcenter-01"
         self.stack_instance = "instance-1"
         self.service = "windows2019"
