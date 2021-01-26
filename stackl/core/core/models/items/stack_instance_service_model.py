@@ -44,6 +44,10 @@ class StackInstanceService(BaseModel):
             counter_match = re.match(r'.*{ *counter\((\w+) *, *(\d+) *\) *}.*',
                                      stackl_hostname)
             new_instances = instances - len(self.hosts)
+            if "vmnameliteral" in self.provisioning_parameters:
+                vmnameliteral = self.provisioning_parameters['vmnameliteral']
+            if "bmv_vm_name" in self.provisioning_parameters:
+                bmv_vm_name = self.provisioning_parameters['bmv_vm_name']
             for i in range(len(self.hosts), new_instances):
                 replaced_hostname = stackl_hostname
                 if counter_match:
@@ -55,6 +59,14 @@ class StackInstanceService(BaseModel):
                         value = redis.incr(variable_name, default_counter)
                     replaced_hostname = re.sub(r'{ *counter\(\w+ *, \d+ *\) *}',
                                              str(value), stackl_hostname)
+                    if "vmnameliteral" in self.provisioning_parameters:
+                        replaced_vmnameliteral = re.sub(r'{ *counter\(\w+ *, \d+ *\) *}',
+                                                str(value), vmnameliteral)
+                        self.provisioning_parameters['vmnameliteral'] = replaced_vmnameliteral
+                    if "bmv_vm_name" in self.provisioning_parameters:
+                        replaced_bmv_vm_name = re.sub(r'{ *counter\(\w+ *, \d+ *\) *}',
+                                                str(value), bmv_vm_name)
+                        self.provisioning_parameters['vmnameliteral'] = replaced_bmv_vm_name
                 replaced_hostname = replaced_hostname \
                     .replace('{ri}', "{:02d}".format(infra_target_counter)) \
                     .replace('{hi}', "{:02d}".format(i + 1))
