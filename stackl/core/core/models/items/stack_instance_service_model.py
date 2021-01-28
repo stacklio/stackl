@@ -60,3 +60,7 @@ class StackInstanceService(BaseModel):
                     .replace('{hi}', "{:02d}".format(i + 1))
                 self.hosts.append(replaced_hostname)
         self.provisioning_parameters['machine_names'] = self.hosts
+        if "opa_bmv_vm_name" in self.opa_outputs and "opa_vmnameliteral" in self.opa_outputs:
+            machine_name = self.hosts[0].split(".")
+            self.provisioning_parameters['bmv_vm_name'] = machine_name[0]
+            self.provisioning_parameters['vmnameliteral'] = machine_name[0]

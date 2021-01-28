@@ -216,6 +216,8 @@ class InventoryModule(BaseInventoryPlugin):
                                 },
                                 disable_invocation=True)
                             api_instance.put_stack_instance(stack_update)
+                            stack_instance = api_instance.get_stack_instance(
+                                stack_instance_name)
                         for item, value in stack_instance.groups.items():
                             self.inventory.add_group(item)
                             for group in value:
