@@ -33,5 +33,3 @@ Any backend data storage system can be used so long as an interface is made.
 The interface needs to provide two things: (1) ensure that the data is converted to a JSON-format for STACKL to work with and store and (2) that STACKL can uniformly access the data, translating its data access to the real data access in the underlying system.
 Currently, STACKL implements a local file system and Redis as datastores.
 Future targets can be CouchDB, S3, MongoDB, YugabyteDB, and so on.
-
-See [Datestore Interface]({{< ref "../modules/datastore_interface.md" >}}) for information about the available modules and how to create your own.

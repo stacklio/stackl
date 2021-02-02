@@ -1,6 +1,6 @@
 ---
 title: Deployment
-kind: basic
+kind: installation
 weight: 3
 date: 2020-02-17 01:00:00 +0100
 publishdate: 2020-02-01 00:00:00 +0000

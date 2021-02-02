@@ -1,6 +1,11 @@
+"""
+Module containing all logic for retrieving secrets from Hashicorp Vault
+"""
+
+import os
 from .base_secret_handler import SecretHandler
 
-vault_agent_config = """
+VAULT_AGENT_CONFIG = """
 exit_after_auth = false
 pid_file = "%s"
 auto_auth {
@@ -27,7 +32,7 @@ EOH
 }
 """
 
-extra_template = """
+EXTRA_TEMPLATE = """
 
 template {
   destination = "%s"
@@ -39,8 +44,15 @@ EOH
 
 
 class VaultSecretHandler(SecretHandler):
+    # pylint: disable=too-many-instance-attributes
+    # We just need a lot of fields for vault
+    """
+    Implementation of a secrethandler using Hashicorp Vault
+    """
     def __init__(self, invoc, stack_instance, vault_addr: str,
                  secret_format: str, vault_role: str, vault_mount_point: str):
+        # pylint: disable=too-many-arguments
+        # We just need more than 5 for vault
         super().__init__(invoc, stack_instance, secret_format)
         self._vault_role = vault_role
         self._vault_addr = vault_addr
@@ -85,26 +97,36 @@ class VaultSecretHandler(SecretHandler):
             ]
         }]
         self._env_list = {"VAULT_ADDR": self._vault_addr}
+        self.stackl_inv = {
+            "plugin": "stackl",
+            "host": os.environ['STACKL_HOST'],
+            "stack_instance": self._invoc.stack_instance,
+            "vault_token_path": self._vault_token_path,
+            "vault_addr": self._vault_addr,
+            "secret_handler": "vault"
+        }
 
     def _format_template(self):
         content_string = ""
         if "backend_secret_path" in self.secrets:
             self.terraform_backend_enabled = True
             backend_secret_path = self.secrets['backend_secret_path']
-        for index, (key, value) in enumerate(self.secrets.items()):
-            content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}{{ scratch.MapSet "secrets" $key $value }}{{ end }}{{ end }}""" % value
+        for _, (_, value) in enumerate(self.secrets.items()):
+            content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}
+            {{ scratch.MapSet "secrets" $key $value }}{{ end }}{{ end }}""" % value
         if self._secret_format == "json":
             content_string += '{{ scratch.Get "secrets" | toJSON }}'
         elif self._secret_format == "yaml":
             content_string += '{{ scratch.Get "secrets" | toYAML }}'
         elif self._secret_format == "toml":
             content_string += '{{ scratch.Get "secrets" | toTOML }}'
-        va_config = vault_agent_config % (
+        va_config = VAULT_AGENT_CONFIG % (
             self._pid_file, self._vault_mount_point, self._vault_role,
             self._vault_token_path, self._destination, content_string)
         if self.terraform_backend_enabled:
-            content_string = """{{ with secret "%s" }}{{ .Data.data | toJSON }}{{ end }}""" % backend_secret_path
-            va_config += extra_template % ("/tmp/backend/backend.tf.json",
+            content_string = """{{ with secret "%s" }}{{ .Data.data | toJSON }}{{ end }}""" \
+                                % backend_secret_path
+            va_config += EXTRA_TEMPLATE % ("/tmp/backend/backend.tf.json",
                                            content_string)
 
         return va_config

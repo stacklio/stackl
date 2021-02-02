@@ -1,3 +1,7 @@
+"""
+Module for all configuration options of agent
+"""
+
 try:
     from importlib import metadata
 except ImportError:
@@ -7,6 +11,9 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    """
+    Settings class for agent
+    """
     # General settings
     stackl_host: str = "http://localhost:8000"
     agent_name: str = "common"

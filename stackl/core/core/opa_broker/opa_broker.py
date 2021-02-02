@@ -118,8 +118,8 @@ class OPABroker:
         sat_as_opa_data = {"services": services_as_data}
         for service in services:
             frs = {}
-            params = service.params
-            for fr in service.functional_requirements:
+            params = service['service'].params
+            for fr in service['service'].functional_requirements:
                 fr_doc = self.document_manager.get_functional_requirement(fr)
                 frs[fr] = {
                     key: value.dict()
@@ -128,10 +128,11 @@ class OPABroker:
                 params = {**params, **fr_doc.params}
             service_data = {
                 "functional_requirements": frs,
-                "resource_requirements": service.resource_requirements,
-                "params": params
+                "resource_requirements": service['service'].resource_requirements,
+                "params": params,
+                "service": service['service'].name
             }
-            services_as_data[service.name] = service_data
+            services_as_data[service['name']] = service_data
         logger.debug(
             f"[OPABroker] convert_sat_to_opa_data. sat_as_opa_data '{sat_as_opa_data}'"
         )

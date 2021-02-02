@@ -1,16 +1,22 @@
-from abc import abstractmethod
+"""
+Module for generic output logic
+"""
 from json import dumps
 from typing import List
 
 from kubernetes import client
-
 from agent import config
 
 
 class Output:
-    def __init__(self, service, functional_requirement, stackl_instance_name: str, infrastructure_target: str):
-        self.stack_instance = None
+    # pylint: disable=too-many-instance-attributes
+    """
+    Superclass for outputs
+    """
+    def __init__(self, service, functional_requirement,
+                 stackl_instance_name: str, infrastructure_target: str):
         self.output_file = ''
+        self._command_args = ''
         self.stackl_host = config.settings.stackl_host
         self.stackl_cli_image = config.settings.stackl_cli_image
         self.stackl_cli_command = ['/bin/bash', '-c']
@@ -32,6 +38,9 @@ class Output:
 
     @property
     def stackl_cli_command_args(self):
+        """
+        Default command for the output container, can be overwritten by subclass
+        """
         return f'\
             echo "Waiting for automation output to appear" &&\
             while [[ ! -s "{self.output_file}" ]]; do sleep 2; done;\
@@ -42,6 +51,9 @@ class Output:
 
     @property
     def stackl_container(self):
+        """
+        Returns the kubernetes container object for outputs
+        """
         return client.V1Container(name='stackl-output',
                                   image=self.stackl_cli_image,
                                   env=self.env,
@@ -51,23 +63,37 @@ class Output:
                                   args=[self.stackl_cli_command_args])
 
     @property
-    @abstractmethod
     def containers(self) -> List[client.V1Container]:
+        """
+        Get all containers used for outputs
+        """
         containers = [self.stackl_container]
         return containers
 
     @property
     def command_args(self) -> str:
+        """
+        Returns the command ran in the output container
+        """
         return self._command_args
 
     @property
     def spec_mount(self):
+        """
+        Returns the specifications of volume mounts
+        """
         return self._spec_mount
 
     @property
     def env_list(self):
+        """
+        Returns a list of environment variables
+        """
         return self._env_list
 
     @property
     def volumes(self):
+        """
+        Returns volumes used by outputs
+        """
         return self._volumes

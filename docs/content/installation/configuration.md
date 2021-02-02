@@ -1,6 +1,6 @@
 ---
 title: Configuration
-kind: basic
+kind: installation
 weight: 4
 date: 2020-02-17 01:00:00 +0100
 publishdate: 2020-02-01 00:00:00 +0000
@@ -8,6 +8,7 @@ expirydate: 2030-01-01 00:00:00 +0000
 draft: false
 tags: []
 ---
+This page gives an overview of all the configuration options, they can be set by using the environment variable in the core or agent component of stackl.
 
 ## Stackl Core Configuration table
 
@@ -24,7 +25,6 @@ The following environment variables can be set for the stackl-core:
 | `STACKL_REDIS_PASSWORD` | Password of the redis instance |  |
 | `STACKL_OPA_HOST` | Hostname of the OPA instance | http://localhost:8181 |
 | `ELASTIC_APM_ENABLED` | Use this to enable the Elastic APM middleware, configuration can be done by using environment variables, for more information: [APM config](https://www.elastic.co/guide/en/apm/agent/python/current/configuration.html) | False |
-
 
 ## Stackl Agent Configuration table
 
@@ -73,3 +73,7 @@ The following environment variables can be set for the stackl-agent:
 | `CONJUR_SSL_CONFIG_MAP` | Configmap where the SSL cert is | |
 | `CONJUR_SSL_CONFIG_MAP_KEY` | Key in the configmap of the SSL cert | |
 | `CONJUR_VERIFY` | Verify Ssl, Choices: True, False | |
+
+## References
+
+- [Stackl Helm repository](https://github.com/stacklio/stackl-helm)

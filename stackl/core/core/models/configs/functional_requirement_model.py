@@ -14,6 +14,8 @@ class Invocation(BaseModel):
     tool: str
     image: str
     before_command: str = None
+    playbook_path: str = None
+    serial: int = None
 
 
 class FunctionalRequirement(BaseDocument):

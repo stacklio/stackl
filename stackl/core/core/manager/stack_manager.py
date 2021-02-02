@@ -37,6 +37,10 @@ class StackManager(Manager):
         stack_instance = handler.add_outputs(outputs_update)
         return stack_instance
 
+    def check_delete_services(self, instance_data):
+        handler = StackHandler(self.document_manager, self.opa_broker)
+        return handler.check_difference(instance_data)
+
     def process_stack_request(self, instance_data, stack_action):
         """prepares a create, update or delete of a stack instance"""
         # create new object with the action and document in it

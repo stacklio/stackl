@@ -59,6 +59,37 @@ build_redis:
 	@echo "Building redis"
 	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(REDIS_VERSION) stackl/redis
 
+.PHONY: build_prepare_dev
+build_prepare_dev:
+	@echo "Building prepare image"
+	cd build/make/prepare; ${CONTAINER_ENGINE} build -t ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_PREPARE):$(PREPARE_VERSION) --build-arg CORE_VERSION=$(CORE_VERSION) --build-arg AGENT_VERSION=$(AGENT_VERSION) .
+
+.PHONY: build_core_dev
+build_core_dev:
+	@echo "Building stackl core"
+	${CONTAINER_ENGINE} build -f stackl/core/Dockerfile -t ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_CORE):$(CORE_VERSION) .
+
+.PHONY: build_agent_dev
+build_agent_dev:
+	@echo "Building agent "
+	${CONTAINER_ENGINE} build -f stackl/agent/Dockerfile -t ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_AGENT):$(AGENT_VERSION) .
+
+.PHONY: build_stackl_cli_dev
+build_stackl_cli_dev:
+	@echo "Building stackl-cli"
+	${CONTAINER_ENGINE} build -f stackl/cli/Dockerfile -t ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_CLI):$(CLI_VERSION) stackl/cli
+
+.PHONY: build_opa_dev
+build_opa_dev:
+	@echo "Building opa"
+	${CONTAINER_ENGINE} build -f stackl/opa/Dockerfile --build-arg "OPA_VERSION=${OPA_VERSION}" -t ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_OPA):$(OPA_VERSION) stackl/opa
+
+.PHONY: build_redis_dev
+build_redis_dev:
+	@echo "Building redis"
+	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_REDIS):$(REDIS_VERSION) stackl/redis
+
+
 .PHONY: push_prepare
 push_prepare:
 	@echo "Pushing prepare"
@@ -73,6 +104,21 @@ push_core:
 push_agent:
 	@echo "Pushing agent"
 	${CONTAINER_ENGINE} push $(DOCKER_IMAGE_AGENT):$(AGENT_VERSION)
+
+.PHONY: push_prepare_dev
+push_prepare_dev:
+	@echo "Pushing prepare DEV"
+	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_PREPARE):$(PREPARE_VERSION)
+
+.PHONY: push_core_dev
+push_core_dev:
+	@echo "Pushing core DEV"
+	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_CORE):$(CORE_VERSION)
+
+.PHONY: push_agent_dev
+push_agent_dev:
+	@echo "Pushing agent DEV"
+	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_AGENT):$(AGENT_VERSION)
 
 .PHONY: prepare
 prepare:
@@ -126,6 +172,8 @@ stackl_cli:
 
 build: build_prepare build_core build_agent build_opa build_redis
 push: push_prepare push_core push_agent
+build_dev: build_prepare_dev build_core_dev build_agent_dev build_opa_dev build_redis_dev
+push_dev: push_prepare_dev push_agent_dev push_core_dev
 install: build prepare start
 full_install: install openapi stackl_cli
 dev: kaniko-warmer skaffold
