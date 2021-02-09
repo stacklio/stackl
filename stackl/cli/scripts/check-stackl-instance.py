@@ -30,6 +30,7 @@ if "STACKL_INSTANCE" in os.environ:
         for status in stack_instance.status:
             if status.status == "FAILED":
                 print(f"Stack instance {stack_instance.name}: service {status.service} on functional-requirement {status.functional_requirement} failed!")
+                print(f"Error {status.error_message}")
                 exit(1)
             elif status.status == "in_progress":
                 print(f"Stack instance {stack_instance.name}: service {status.service} on functional-requirement {status.functional_requirement} not ready, still waiting")
