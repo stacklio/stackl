@@ -25,7 +25,7 @@ async def create_job_for_agent(stack_instance,
     success = True
     success = await create_job_per_service(stack_instance.services,
                                            document_manager, action, redis,
-                                           stack_instance)
+                                           stack_instance, force_delete)
 
     if action == "delete" and (success or force_delete):
         document_manager.delete_stack_instance(stack_instance.name)
@@ -45,7 +45,8 @@ async def create_job_per_service(services,
                                  action,
                                  redis,
                                  stack_instance,
-                                 to_be_deleted=None):
+                                 to_be_deleted=None,
+                                 force_delete=False):
     success = True
     for service_name, service_list in services.items():
         for service in service_list:
@@ -106,7 +107,7 @@ async def create_job_per_service(services,
                     if automation_result["status"] == "FAILED":
                         success = False
 
-                if not success:
+                if not force_delete and not success:
                     logger.debug("Not all fr's succeeded, stopping execution")
                     break
 
