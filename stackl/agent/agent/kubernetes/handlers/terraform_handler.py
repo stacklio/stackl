@@ -45,7 +45,26 @@ class TerraformHandler(Handler):
         }
         """
         self._volumes = [self.variables_volume_mount]
-        self._env_list = {"TF_IN_AUTOMATION": "1"}
+        self.terraform_backend_enabled = False
+        if 'terraform_backend' in self.provisioning_parameters:
+            self.terraform_backend_enabled = True
+        if self.terraform_backend_enabled:
+            self._volumes.append({
+                "name": "terraform-backend",
+                "type": "config_map",
+                "mount_path": "/tmp/backend",
+                'data': {
+                    'backend.tf.json':
+                    json.dumps(
+                        self.provisioning_parameters['terraform_backend'])
+                }
+            })
+        self._env_list = {
+            "TF_IN_AUTOMATION": "1",
+            "KUBE_NAMESPACE": {
+                "field_ref": 'metadata.namespace'
+            }
+        }
         self.secret_variables_file = '/tmp/secrets/secret.json'
         self.variables_file = '/tmp/variables/variables.json'
 
@@ -78,7 +97,7 @@ class TerraformHandler(Handler):
     @property
     def create_command_args(self) -> list:
         command_args = super().create_command_args
-        if self._secret_handler.terraform_backend_enabled:
+        if self._secret_handler.terraform_backend_enabled or self.terraform_backend_enabled:
             command_args[
                 0] += 'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
         else:
@@ -105,7 +124,7 @@ class TerraformHandler(Handler):
         Constructs the delete command to destroy resources with terraform
         """
         command_args = []
-        if self._secret_handler.terraform_backend_enabled:
+        if self._secret_handler.terraform_backend_enabled or self.terraform_backend_enabled:
             command_args.append(
                 'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
             )
