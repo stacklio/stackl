@@ -74,6 +74,14 @@ async def create_job_per_service(services,
                     cloud_provider].before_command
                 invoc['infrastructure_target'] = infrastructure_target
                 invoc['stack_instance'] = stack_instance.name
+                invoc['create_command'] = fr_doc.invocation[
+                    cloud_provider].create_command
+                invoc['delete_command'] = fr_doc.invocation[
+                    cloud_provider].delete_command
+                invoc['create_command_args'] = fr_doc.invocation[
+                    cloud_provider].create_command_args
+                invoc['delete_command_args'] = fr_doc.invocation[
+                    cloud_provider].delete_command_args
 
                 tool = fr_doc.invocation[cloud_provider].tool
                 invoc['tool'] = tool

@@ -4,6 +4,7 @@ Module for kubernets tool factory
 from .handlers.ansible_handler import AnsibleHandler
 from .handlers.packer_handler import PackerHandler
 from .handlers.terraform_handler import TerraformHandler
+from .handlers.generic_handler import GenericHandler
 from ..tool_factory import ToolFactory
 
 
@@ -21,6 +22,8 @@ class KubernetesToolFactory(ToolFactory):
             return AnsibleHandler(invoc)
         if invoc.tool == "packer":
             return PackerHandler(invoc)
+        if invoc.tool == "generic":
+            return GenericHandler(invoc)
         raise ValueError(
             "[ToolFactory] Tool '{}' is not recognized".format(
                 invoc["tool"]))

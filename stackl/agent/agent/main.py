@@ -36,6 +36,10 @@ class Invocation:
     hosts: List
     playbook_path: str = None
     serial: int = 10
+    create_command: List[str] = None
+    delete_command: List[str] = None
+    create_command_args: List[str] = None
+    delete_command_args: List[str] = None
 
 
 async def run_in_executor(func, *args):

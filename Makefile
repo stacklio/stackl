@@ -120,6 +120,11 @@ push_agent_dev:
 	@echo "Pushing agent DEV"
 	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_AGENT):$(AGENT_VERSION)
 
+.PHONY: push_cli_dev
+push_cli_dev:
+	@echo "Pushing agent DEV"
+	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_CLI):$(CLI_VERSION)
+
 .PHONY: prepare
 prepare:
 	@echo "Creating docker-compose"
@@ -163,7 +168,7 @@ skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 
 .PHONY: openapi
 openapi:
-	openapi-generator generate -i http://localhost:8000/openapi.json -g python -t build/openapi-generator --package-name stackl_client --additional-properties=packageVersion=${CORE_VERSION} -o /tmp/stackl-client
+	openapi-generator generate -i https://stackl-stef.dome.dev/openapi.json -g python -t build/openapi-generator --package-name stackl_client --additional-properties=packageVersion=${CORE_VERSION} -o /tmp/stackl-client
 	pip3 install /tmp/stackl-client
 
 .PHONY: stackl_cli

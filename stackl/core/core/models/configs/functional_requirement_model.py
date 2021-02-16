@@ -1,7 +1,7 @@
 """
 Module containing functional requirement classes
 """
-from typing import Dict
+from typing import Dict, List
 
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
 
@@ -16,6 +16,10 @@ class Invocation(BaseModel):
     before_command: str = None
     playbook_path: str = None
     serial: int = None
+    create_command: List[str] = None
+    delete_command: List[str] = None
+    create_command_args: List[str] = None
+    delete_command_args: List[str] = None
 
 
 class FunctionalRequirement(BaseDocument):
