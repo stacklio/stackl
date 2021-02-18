@@ -12,6 +12,7 @@ class StackInstanceInvocation(BaseModel):
     """
     params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}
+    service_secrets: Dict[str, Dict[str, Any]] = {}
     tags: Dict[str, str] = {}
     stack_infrastructure_template: str = "stackl"
     stack_application_template: str = "web"
@@ -27,6 +28,7 @@ class StackInstanceUpdate(BaseModel):
     """
     params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}
+    service_secrets: Dict[str, Dict[str, Any]] = {}
     stack_instance_name: str = "default_test_instance"
     secrets: Dict[str, Any] = {}
     tags: Dict[str, str] = {}
