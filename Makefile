@@ -120,6 +120,11 @@ push_agent_dev:
 	@echo "Pushing agent DEV"
 	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_AGENT):$(AGENT_VERSION)
 
+.PHONY: push_cli_dev
+push_cli_dev:
+	@echo "Pushing agent DEV"
+	${CONTAINER_ENGINE} push ${DOCKER_DEV_REPO}/$(DOCKER_IMAGE_CLI):$(CLI_VERSION)
+
 .PHONY: prepare
 prepare:
 	@echo "Creating docker-compose"

@@ -44,7 +44,8 @@ class StackInstanceService(BaseModel):
             counter_match = re.match(r'.*{ *counter\((\w+) *, *(\d+) *\) *}.*',
                                      stackl_hostname)
             new_instances = instances - len(self.hosts)
-            for i in range(new_instances, instances + 1):
+            for i in range(len(self.hosts), new_instances):
+                replaced_hostname = stackl_hostname
                 if counter_match:
                     variable_name = counter_match.group(1)
                     default_counter = int(counter_match.group(2))
@@ -52,10 +53,14 @@ class StackInstanceService(BaseModel):
                         value = redis.incr(variable_name)
                     else:
                         value = redis.incr(variable_name, default_counter)
-                    stackl_hostname = re.sub(r'{ *counter\(\w+ *, \d+ *\) *}',
+                    replaced_hostname = re.sub(r'{ *counter\(\w+ *, \d+ *\) *}',
                                              str(value), stackl_hostname)
-                replaced_hostname = stackl_hostname \
+                replaced_hostname = replaced_hostname \
                     .replace('{ri}', "{:02d}".format(infra_target_counter)) \
                     .replace('{hi}', "{:02d}".format(i + 1))
                 self.hosts.append(replaced_hostname)
         self.provisioning_parameters['machine_names'] = self.hosts
+        if "opa_bmv_vm_name" in self.opa_outputs and "opa_vmnameliteral" in self.opa_outputs:
+            machine_name = self.hosts[0].split(".")
+            self.provisioning_parameters['bmv_vm_name'] = machine_name[0]
+            self.provisioning_parameters['vmnameliteral'] = machine_name[0]

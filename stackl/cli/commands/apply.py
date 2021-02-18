@@ -84,6 +84,39 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         show_progress_bar(stackl_context, instance_name)
 
 
+def upload_file(stackl_doc, stackl_context, path):
+    if 'name' in stackl_doc:
+        click.echo(
+            f"Applying stackl document: {str(path) + ' ' + stackl_doc['name']}"
+        )
+    else:
+        click.echo(f"Error in stackl document, no 'name' found: {path}")
+    try:
+        if stackl_doc["type"] in ["environment", "location", "zone"]:
+            stackl_context.infrastructure_base_api.put_infrastructure_base(
+                stackl_doc)
+        if stackl_doc["type"] == "functional_requirement":
+            stackl_context.functional_requirements_api.put_functional_requirement(
+                stackl_doc)
+        if stackl_doc["type"] == "service":
+            stackl_context.services_api.put_service(stackl_doc)
+        if stackl_doc["type"] == "stack_application_template":
+            stackl_context.sat_api.put_stack_application_template(stackl_doc)
+        if stackl_doc["type"] == "stack_infrastructure_template":
+            stackl_context.sit_api.put_stack_infrastructure_template(
+                stackl_doc)
+        if stackl_doc["type"] == "policy_template":
+            stackl_context.policy_templates_api.put_policy_template(stackl_doc)
+        click.echo(
+            f"Succesfully applied {stackl_doc['name']} with type {stackl_doc['type']}"
+        )
+    except stackl_client.exceptions.ApiException as e:
+        click.echo(
+            f"Failed to apply {stackl_doc['name']} with type {stackl_doc['type']}: {e.body}"
+        )
+        exit(1)
+
+
 def upload_files(directory, stackl_context):
     for path in Path(directory).rglob('*.yml'):
         with open(path, 'r') as doc:
@@ -92,36 +125,12 @@ def upload_files(directory, stackl_context):
                 continue
             click.echo(f"Reading document: {str(path)}")
             stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
-            if 'name' in stackl_doc:
-                click.echo(
-                    f"Applying stackl document: {str(path) + ' ' + stackl_doc['name']}"
-                )
-            else:
-                click.echo(
-                    f"Error in stackl document, no 'name' found: {path}")
-            try:
-                if stackl_doc["type"] in ["environment", "location", "zone"]:
-                    stackl_context.infrastructure_base_api.put_infrastructure_base(
-                        stackl_doc)
-                if stackl_doc["type"] == "functional_requirement":
-                    stackl_context.functional_requirements_api.put_functional_requirement(
-                        stackl_doc)
-                if stackl_doc["type"] == "service":
-                    stackl_context.services_api.put_service(stackl_doc)
-                if stackl_doc["type"] == "stack_application_template":
-                    stackl_context.sat_api.put_stack_application_template(
-                        stackl_doc)
-                if stackl_doc["type"] == "stack_infrastructure_template":
-                    stackl_context.sit_api.put_stack_infrastructure_template(
-                        stackl_doc)
-                if stackl_doc["type"] == "policy_template":
-                    stackl_context.policy_templates_api.put_policy_template(
-                        stackl_doc)
-                click.echo(
-                    f"Succesfully applied {stackl_doc['name']} with type {stackl_doc['type']}"
-                )
-            except stackl_client.exceptions.ApiException as e:
-                click.echo(
-                    f"Failed to apply {stackl_doc['name']} with type {stackl_doc['type']}: {e.body}"
-                )
-                exit(1)
+            upload_file(stackl_doc, stackl_context, path)
+    for path in Path(directory).rglob('*.json'):
+        with open(path, 'r') as doc:
+            # ignore dotfiles
+            if path.name.startswith('.'):
+                continue
+            click.echo(f"Reading document: {str(path)}")
+            stackl_doc = yaml.load(doc.read(), Loader=yaml.FullLoader)
+            upload_file(stackl_doc, stackl_context, path)

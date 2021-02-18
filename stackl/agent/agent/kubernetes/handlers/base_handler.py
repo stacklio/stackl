@@ -52,7 +52,6 @@ def create_job_object(name: str,
                       command: List[str],
                       command_args: List[str],
                       volumes: List[Dict],
-                      image_pull_secrets: List[str],
                       init_containers: List[Dict],
                       output: Output,
                       namespace: str = "stackl",
@@ -64,6 +63,7 @@ def create_job_object(name: str,
                       backoff_limit: int = 0,
                       active_deadline_seconds: int = 3600,
                       service_account: str = "stackl-agent-stackl-agent",
+                      image_pull_secrets: List[str] = [],
                       labels=None) -> client.V1Job:
     # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
     """Creates a Job object using the Kubernetes client
@@ -352,7 +352,6 @@ class Handler(ABC):
 
         container_image = self._invoc.image
         name = "stackl-job"
-        image_pull_secrets = ["dome-nexus"]
         labels = {
             "app.kubernetes.io/managed-by": "stackl",
             "stackl.io/stack-instance": self._invoc.stack_instance,
@@ -366,7 +365,6 @@ class Handler(ABC):
                                       command=self.command,
                                       command_args=self.command_args,
                                       volumes=self.volumes,
-                                      image_pull_secrets=image_pull_secrets,
                                       init_containers=self.init_containers,
                                       namespace=self.stackl_namespace,
                                       service_account=self.service_account,
