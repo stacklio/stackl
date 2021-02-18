@@ -112,8 +112,12 @@ class VaultSecretHandler(SecretHandler):
             self.terraform_backend_enabled = True
             backend_secret_path = self.secrets['backend_secret_path']
         for _, (_, value) in enumerate(self.secrets.items()):
-            content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}
-            {{ scratch.MapSet "secrets" $key $value }}{{ end }}{{ end }}""" % value
+            if self._secret_format == "env":
+                content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}
+{{ $key }}={{ $value }}{{ end }}{{ end }}""" % value
+            else:
+                content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}
+{{ scratch.MapSet "secrets" $key $value }}{{ end }}{{ end }}""" % value
         if self._secret_format == "json":
             content_string += '{{ scratch.Get "secrets" | toJSON }}'
         elif self._secret_format == "yaml":
@@ -128,5 +132,4 @@ class VaultSecretHandler(SecretHandler):
                                 % backend_secret_path
             va_config += EXTRA_TEMPLATE % ("/tmp/backend/backend.tf.json",
                                            content_string)
-
         return va_config
