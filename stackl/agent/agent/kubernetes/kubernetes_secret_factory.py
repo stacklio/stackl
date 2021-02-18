@@ -41,8 +41,9 @@ def get_secret_handler(invoc, stack_instance, secret_format) -> SecretHandler:
         vault_role = config.settings.vault_role
         vault_addr = config.settings.vault_addr
         vault_mount_point = config.settings.vault_mount_point
+        vault_image = config.settings.vault_image
         return VaultSecretHandler(invoc, stack_instance, vault_addr,
-                                  secret_format, vault_role, vault_mount_point)
+                                  secret_format, vault_role, vault_mount_point, vault_image)
     if secret_handler.lower() == "base64":
         return Base64SecretHandler(invoc, stack_instance, secret_format)
     if secret_handler.lower() == "conjur":

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     vault_role: str = None
     vault_addr: str = None
     vault_mount_point: str = None
+    vault_image: str = "vault:latest"
 
     # Settings for Conjur
     authenticator_client_container_name: str = None

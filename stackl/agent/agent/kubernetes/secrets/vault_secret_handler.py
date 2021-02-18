@@ -50,7 +50,7 @@ class VaultSecretHandler(SecretHandler):
     Implementation of a secrethandler using Hashicorp Vault
     """
     def __init__(self, invoc, stack_instance, vault_addr: str,
-                 secret_format: str, vault_role: str, vault_mount_point: str):
+                 secret_format: str, vault_role: str, vault_mount_point: str, vault_image: str):
         # pylint: disable=too-many-arguments
         # We just need more than 5 for vault
         super().__init__(invoc, stack_instance, secret_format)
@@ -90,7 +90,7 @@ class VaultSecretHandler(SecretHandler):
             "name":
             "vault-agent",
             "image":
-            "vault:latest",
+            vault_image,
             "args": [
                 "agent", "-config=/etc/vault-config/vault-agent-config.hcl",
                 "-exit-after-auth"
