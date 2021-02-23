@@ -337,7 +337,7 @@ class Handler(ABC):
                 error, msg = check_container_status(cs)
                 if error:
                     return False, msg, cs.name
-                if cs.state.terminated is not None or \
+                if cs.state.terminated is None or \
                     cs.state.terminated.reason != 'Completed':
                     containers_ready = False
             if containers_ready:
