@@ -119,7 +119,7 @@ def delete_stack_instance(
     """Delete a stack instance with a specific name"""
     stack_instance = document_manager.get_stack_instance(name)
     if stack_instance is None:
-        return {"result": f"Stack instance {name} can't be delete because it already exists"}
+        return {"result": f"Stack instance {name} can't be delete because it does not exist"}
     else:
         background_tasks.add_task(create_job_for_agent,
                                 stack_instance,
