@@ -27,6 +27,7 @@ class StackInstance(BaseModel):
     groups: Dict[str, List[HostTarget]] = {}
     instance_params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}
+    service_secrets: Dict[str, Dict[str, Any]] = {}
     instance_secrets: Dict[str, Any] = {}
     services: Dict[str, List[StackInstanceService]] = {}
     stack_infrastructure_template: str
