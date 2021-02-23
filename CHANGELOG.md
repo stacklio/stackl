@@ -9,18 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.3] - 2021-02-18
 
-## Fixed
+### Fixed
 
-- Wait for all containers in a stackl job pod to be ready (#198)
+- Wait for all containers in a Stackl job pod to be ready (#198)
 - Check if stack instance exists before deleting it (#199)
 
-## Added
+### Added
 
-- Configurable vault image for vault secret handler (#200)
+- Configurable Vault image for Vault secret handler (#200)
 - Secrets can now be supplied for each service (#201)
 - Terraform backend can now be set with params
 
-## Changed
+### Changed
 
 - Force delete now tries to delete every functional requirement (#213)
 - Error message now also gets logged in agent
