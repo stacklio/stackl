@@ -113,9 +113,10 @@ class OPABroker:
                                 services: List[Service]):
         """Converts SAT to data for OPA policy evaluation"""
         logger.debug(
-            f"[OPABroker] convert_sat_to_opa_data. For sat_doc '{sat_doc}'")
+            f"[OPABroker] convert_sat_to_opa_data. For sat_doc '{sat_doc}' and services '{services}'")
         services_as_data = {}
         sat_as_opa_data = {"services": services_as_data}
+
         for service in services:
             frs = {}
             params = service['service'].params
