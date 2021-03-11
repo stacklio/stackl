@@ -371,7 +371,6 @@ class Handler(ABC):
                                       service_account=self.service_account,
                                       output=self._output,
                                       labels=labels)
-
         try:
             for cm in cms:
                 self._api_instance_core.create_namespaced_config_map(

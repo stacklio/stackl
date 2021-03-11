@@ -1,6 +1,6 @@
-ANSIBLE_CALLBACK_PLUGIN="""
+ANSIBLE_CALLBACK_PLUGIN = """
 DOCUMENTATION = '''
-    author: @GBrawl
+    author: GBrawl
     name: stackl
     type: notification
     requirements:
@@ -11,6 +11,7 @@ DOCUMENTATION = '''
     options:
       stackl_url:
         required: True
+        type: string
         description: Stackl api url
         env:
           - name: STACKL_URL
@@ -58,29 +59,38 @@ import stackl_client
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
     CALLBACK_TYPE = 'aggregate'
+    CALLBACK_NAME = 'stackl'
+    CALLBACK_NEEDS_WHITELIST = False
 
     def __init__(self):
         super(CallbackModule, self).__init__()
-        configuration = stackl_client.Configuration()
-        configuration.host = self.get_option("stackl_url")
 
-        api_client = stackl_client.ApiClient(configuration=configuration)
-        self.fr_api = stackl_client.FunctionalRequirementsApi(
-            api_client=api_client)
-        self.outputs_api = stackl_client.OutputsApi(api_client=api_client)
-        ###
+
+    def set_options(self, task_keys=None, var_options=None, direct=None):
+        super(CallbackModule, self).set_options(task_keys=task_keys,
+                                                var_options=var_options,
+                                                direct=direct)
+
+        self.stackl_url = self.get_option('stackl_url')
         self.functional_requirement = self.get_option("functional_requirement")
         self.service = self.get_option("service")
         self.stack_instance = self.get_option("stack_instance")
         self.infrastructure_target = self.get_option("infrastructure_target")
 
+
     def v2_playbook_on_stats(self, stats):
+        configuration = stackl_client.Configuration()
+        configuration.host = self.stackl_url
+        api_client = stackl_client.ApiClient(configuration=configuration)
+        self.fr_api = stackl_client.FunctionalRequirementsApi(
+            api_client=api_client)
+        self.outputs_api = stackl_client.OutputsApi(api_client=api_client)
         functional_requirement = self.fr_api.get_functional_requirement_by_name(
             self.functional_requirement)
         if "_run" in stats.custom:
             outputs = stats.custom["_run"]
         else:
-            outputs = {}
+            outputs = stats.custom
 
         outputs_update = stackl_client.OutputsUpdate(
             outputs=outputs,
@@ -89,5 +99,4 @@ class CallbackModule(CallbackBase):
             stack_instance=self.stack_instance)
         self.outputs_api.add_outputs(outputs_update)
         self._display.display(str(stats.custom))
-        self._display.display("Hallo callback module")
 """

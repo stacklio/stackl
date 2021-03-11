@@ -470,7 +470,8 @@ class StackHandler(Handler):
                         policy_name)
 
                     # Make sure the policy is in OPA
-                    self.opa_broker.add_policy(policy.name, policy.policy)
+                    if policy.policy:
+                        self.opa_broker.add_policy(policy.name, policy.policy)
 
                     policy_input = {
                         "parameters": policy_attributes,
@@ -522,7 +523,8 @@ class StackHandler(Handler):
         }
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
-        self.opa_broker.add_policy(policy.name, policy.policy)
+        if policy.policy:
+            self.opa_broker.add_policy(policy.name, policy.policy)
         # And verify it
         new_solution = self.opa_broker.ask_opa_policy_decision(
             policy.name, "solutions", opa_data_with_inputs)
