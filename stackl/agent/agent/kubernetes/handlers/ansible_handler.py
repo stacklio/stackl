@@ -9,7 +9,6 @@ from agent.kubernetes.handlers.ansible_plugins.callback import ANSIBLE_CALLBACK_
 from typing import List
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
-from agent.kubernetes.outputs.ansible_output import AnsibleOutput
 
 from .base_handler import Handler
 
@@ -49,12 +48,6 @@ class Invocation():
         super().__init__(invoc)
         self._secret_handler = get_secret_handler(invoc, self._stack_instance,
                                                   "yaml")
-        if self._functional_requirement_obj.outputs:
-            self._output = AnsibleOutput(self._service,
-                                         self._functional_requirement_obj,
-                                         self._invoc.stack_instance,
-                                         self._invoc.infrastructure_target,
-                                         self.hosts)
         self._env_list = {
             "ANSIBLE_INVENTORY_PLUGINS": "/opt/ansible/plugins/inventory",
             "ANSIBLE_CALLBACK_PLUGINS":
@@ -134,28 +127,14 @@ class Invocation():
                         {self._invoc.playbook_path} \
                         -v -i /opt/ansible/playbooks/inventory/stackl.yml'
 
-        elif self._output:
-            if self.hosts is not None:
-                pattern = ",".join(self.hosts)
-            else:
-                pattern = self._service + "_" + str(self.index)
-            self._command_args[
-                0] += f' && ansible-playbook /opt/ansible/playbooks/stackl/playbook-role.yml \
-                        -e ansible_role={self._functional_requirement} \
-                        -i /opt/ansible/playbooks/inventory/stackl.yml -e pattern={pattern} \
-                        -e serial={self._invoc.serial} '
-
-            self._command_args[
-                0] += f'-e outputs_path={self._output.output_file} '
+        if self.hosts is not None:
+            pattern = ",".join(self.hosts)
         else:
-            if self.hosts is not None:
-                pattern = ",".join(self.hosts)
-            else:
-                pattern = self._service + "_" + str(self.index)
-            self._command_args[
-                0] += f' && ansible {pattern} -m include_role -v \
-                        -i /opt/ansible/playbooks/inventory/stackl.yml \
-                        -a name={self._functional_requirement}'
+            pattern = self._service + "_" + str(self.index)
+        self._command_args[
+            0] += f' && ansible {pattern} -m include_role -v \
+                    -i /opt/ansible/playbooks/inventory/stackl.yml \
+                    -a name={self._functional_requirement}'
 
         return self._command_args
 
