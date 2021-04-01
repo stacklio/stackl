@@ -102,9 +102,6 @@ class TerraformHandler(Handler):
                 0] += 'cp /tmp/backend/backend.tf.json /opt/terraform/plan/ && terraform init'
         else:
             command_args[0] += 'terraform init'
-        # if self._secret_handler and self._secret_handler.terraform_backend_enabled:
-        #     command_args[
-        #         0] += f' -backend-config=key={self._stack_instance.name}'
         command_args[
             0] += f' && terraform apply -auto-approve -var-file {self.variables_file}'
 

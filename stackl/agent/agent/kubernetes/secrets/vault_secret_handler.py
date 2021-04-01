@@ -106,6 +106,10 @@ class VaultSecretHandler(SecretHandler):
             "secret_handler": "vault"
         }
 
+    @property
+    def destination(self):
+        return self._destination
+
     def _format_template(self):
         content_string = ""
         if "backend_secret_path" in self.secrets:
@@ -113,6 +117,7 @@ class VaultSecretHandler(SecretHandler):
             backend_secret_path = self.secrets['backend_secret_path']
         for _, (_, value) in enumerate(self.secrets.items()):
             if self._secret_format == "env":
+                self._destination = "/tmp/secrets/secret"
                 content_string += """{{ with secret "%s" }}{{ range $key, $value := .Data.data }}
 {{ $key }}={{ $value }}{{ end }}{{ end }}""" % value
             else:
