@@ -22,6 +22,6 @@ class MockHandler:
         print(
             "This is a fake handler, nothing is actually provisioned, sleeping 5 seconds"
         )
-        time.sleep(5)
+        time.sleep(10)
         print("fake provisioning done")
         return 0, "mock fake"

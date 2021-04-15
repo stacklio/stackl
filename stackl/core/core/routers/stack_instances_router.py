@@ -72,7 +72,7 @@ async def post_stack_instance(
     document_manager.write_stack_instance(stack_instance)
     # Perform invocations
     background_tasks.add_task(create_job_for_agent, stack_instance, "create",
-                              document_manager, redis)
+                              redis)
     return return_result
 
 
@@ -102,7 +102,7 @@ async def put_stack_instance(
         copy_stack_instance = stack_instance.copy(deep=True)
         delete_services(to_be_deleted, copy_stack_instance)
         background_tasks.add_task(create_job_for_agent, copy_stack_instance,
-                                  "update", document_manager, redis)
+                                  "update", redis)
 
     document_manager.write_stack_instance(stack_instance)
 
@@ -119,12 +119,15 @@ def delete_stack_instance(
     """Delete a stack instance with a specific name"""
     stack_instance = document_manager.get_stack_instance(name)
     if stack_instance is None:
-        return {"result": f"Stack instance {name} can't be delete because it does not exist"}
+        return {
+            "result":
+            f"Stack instance {name} can't be delete because it does not exist"
+        }
     else:
         background_tasks.add_task(create_job_for_agent,
-                                stack_instance,
-                                "delete",
-                                document_manager,
-                                redis,
-                                force_delete=force)
+                                  stack_instance,
+                                  "delete",
+                                  document_manager,
+                                  redis,
+                                  force_delete=force)
         return {"result": f"Stack instance {name} is being deleted"}
