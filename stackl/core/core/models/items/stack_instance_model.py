@@ -1,6 +1,7 @@
 """
 StackInstance model
 """
+from core.models.configs.stack_application_template_model import StackStage
 from typing import Dict, Any, List
 
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylin
@@ -34,3 +35,4 @@ class StackInstance(BaseModel):
     stack_application_template: str
     category = "items"
     status: List[StackInstanceStatus] = None
+    stages: List[StackStage] = None

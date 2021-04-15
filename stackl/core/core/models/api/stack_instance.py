@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from core.models.configs.stack_application_template_model import \
     StackApplicationTemplateService
+from core.models.configs.stack_application_template_model import StackStage
 
 
 class StackInstanceInvocation(BaseModel):
@@ -20,6 +21,7 @@ class StackInstanceInvocation(BaseModel):
     secrets: Dict[str, Any] = {}
     replicas: Dict[str, int] = {}
     services: List[StackApplicationTemplateService] = []
+    stages: List[StackStage] = None
 
 
 class StackInstanceUpdate(BaseModel):
@@ -35,3 +37,4 @@ class StackInstanceUpdate(BaseModel):
     replicas: Dict[str, int] = {}
     disable_invocation: bool = False
     services: List[StackApplicationTemplateService] = []
+    stages: List[StackStage] = None

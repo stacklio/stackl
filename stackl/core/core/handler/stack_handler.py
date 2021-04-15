@@ -3,6 +3,7 @@ Module containing all logic for creating and updating Stack instances
 """
 
 from collections import OrderedDict
+from core.models.configs.stack_application_template_model import StackApplicationTemplate
 
 from loguru import logger
 
@@ -77,9 +78,10 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-            self, item, opa_decision,
-            stack_infrastructure_template: StackInfrastructureTemplate,
-            opa_service_params):
+        self, item, opa_decision,
+        stack_infrastructure_template: StackInfrastructureTemplate,
+        stack_application_template: StackApplicationTemplate,
+        opa_service_params):
         """
         function for creating the stack instance object
         """
@@ -91,6 +93,10 @@ class StackHandler(Handler):
         stack_instance_doc.service_params = item.service_params
         stack_instance_doc.instance_secrets = item.secrets
         stack_instance_doc.service_secrets = item.service_secrets
+        if item.stages:
+            stack_instance_doc.stages = item.stages
+        else:
+            stack_instance_doc.stages = stack_application_template.stages
         services = OrderedDict()
         stack_instance_statuses = []
         for svc, opa_result in opa_decision.items():
@@ -216,6 +222,8 @@ class StackHandler(Handler):
         This method takes a stack instance and an item
         which contains the extra parameters and secrets
         """
+        if item.stages:
+            stack_instance.stages = item.stages
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
         stack_infrastructure_template = self._update_infr_capabilities(
@@ -443,6 +451,7 @@ class StackHandler(Handler):
 
         return self._create_stack_instance(
             item, service_targets['result']['services'], stack_infr,
+            stack_app_template,
             opa_service_params), service_targets['result']['services']
 
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr,
