@@ -10,14 +10,36 @@ from core import config
 from core.handler.stack_handler import delete_services
 from core.manager.stackl_manager import get_snapshot_manager, get_document_manager
 from core.models.items.stack_instance_model import StackInstance
+from core.opa_broker.opa_broker_factory import OPABrokerFactory
 
 
 async def create_service(action, redis, stack_instance, to_be_deleted,
                          force_delete, service_name, service):
+    opa_broker_factory = OPABrokerFactory()
+    opa_broker = opa_broker_factory.get_opa_broker()
     success = True
     document_manager = get_document_manager()
     service_doc = document_manager.get_service(service_name)
-    functional_requirements = service_doc.functional_requirements
+
+    if service_doc.service_policies:
+        logger.debug(f"Evaluating service policies: {service_doc.service_policies}")
+        for svc_policy in service_doc.service_policies:
+            logger.debug(f"Evaluating service policy: {svc_policy}")
+            opa_data = {}
+            opa_data['inputs'] = svc_policy['inputs']
+            opa_data['functional_requirements'] = service_doc.functional_requirements
+            opa_data['infrastructure_target'] = service.infrastructure_target
+            opa_data['service'] = service_name
+            opa_data['stack_instance'] = stack_instance.dict()
+            policy = document_manager.get_policy_template(svc_policy['name'])
+            # Make sure the policy is in OPA
+            opa_broker.add_policy(policy.name, policy.policy)
+            opa_result = opa_broker.ask_opa_policy_decision(
+                        svc_policy['name'], "filter", opa_data)
+            logger.debug(f"OPA result for service policy {svc_policy}: {opa_result}")
+            functional_requirements = opa_result['result']
+    else:
+        functional_requirements = service_doc.functional_requirements
     if action == "delete":
         functional_requirements = reversed(functional_requirements)
     for fr in functional_requirements:
