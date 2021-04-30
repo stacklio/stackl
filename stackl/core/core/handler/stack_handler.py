@@ -375,11 +375,11 @@ class StackHandler(Handler):
                     **service_definition.outputs,
                     **outputs_update.outputs
                 }
-                service_definition.provisioning_parameters = {
-                    **service_definition.provisioning_parameters,
-                    **stack_instance.instance_outputs,
-                    **service_definition.outputs
-                }
+            service_definition.provisioning_parameters = {
+                **service_definition.provisioning_parameters,
+                **stack_instance.instance_outputs,
+                **service_definition.outputs
+            }
 
         return stack_instance
 
