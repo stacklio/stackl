@@ -4,8 +4,8 @@
 
 CONTAINER_ENGINE=$(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null)
 DOCKER_IMAGE_PREPARE=stacklio/stackl-prepare
-DOCKER_IMAGE_CORE=nexus-dockerint.dome.dev/stackl/stackl-core
-DOCKER_IMAGE_AGENT=nexus-dockerint.dome.dev/stackl/stackl-agent
+DOCKER_IMAGE_CORE=stacklio/stackl-core
+DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_CLI=stacklio/stackl-cli
 DOCKER_IMAGE_OPA=stacklio/opa
 DOCKER_IMAGE_REDIS=stacklio/redis

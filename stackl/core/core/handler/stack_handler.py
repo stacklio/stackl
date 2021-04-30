@@ -364,6 +364,10 @@ class StackHandler(Handler):
         logger.debug("Adding outputs to stack_instance")
         stack_instance = self.document_manager.get_stack_instance(
             outputs_update.stack_instance)
+        stack_instance.instance_outputs = {
+            **stack_instance.instance_outputs,
+            **outputs_update.outputs
+        }
         service = stack_instance.services[outputs_update.service]
         for service_definition in service:
             if service_definition.infrastructure_target == outputs_update.infrastructure_target:
@@ -373,11 +377,9 @@ class StackHandler(Handler):
                 }
                 service_definition.provisioning_parameters = {
                     **service_definition.provisioning_parameters,
+                    **stack_instance.instance_outputs,
                     **service_definition.outputs
                 }
-                if "stackl_hostname" in service_definition.outputs:
-                    service_definition.hostname = service_definition.outputs[
-                        "stackl_hostname"]
 
         return stack_instance
 
