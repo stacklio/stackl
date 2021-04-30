@@ -30,6 +30,7 @@ class StackInstance(BaseModel):
     service_params: Dict[str, Dict[str, Any]] = {}
     service_secrets: Dict[str, Dict[str, Any]] = {}
     instance_secrets: Dict[str, Any] = {}
+    instance_outputs: Dict[str, Any] = {}
     services: Dict[str, List[StackInstanceService]] = {}
     stack_infrastructure_template: str
     stack_application_template: str

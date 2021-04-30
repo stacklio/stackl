@@ -44,6 +44,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     final_params = {**config_doc['params'], **final_params}
     tags = json.loads(tags)
     replicas = json.loads(replicas)
+    stages = []
     if "replicas" in config_doc:
         replicas = {**config_doc['replicas'], **replicas}
     secrets = json.loads(secrets)

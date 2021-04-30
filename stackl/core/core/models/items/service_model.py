@@ -15,3 +15,4 @@ class Service(BaseDocument):
     name: str
     functional_requirements: List[str]
     resource_requirements: Dict[str, Any] = None
+    service_policies: List[Any] = None
