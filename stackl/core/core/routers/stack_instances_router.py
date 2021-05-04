@@ -121,7 +121,7 @@ def delete_stack_instance(
     if stack_instance is None:
         return {
             "result":
-            f"Stack instance {name} can't be delete because it does not exist"
+            f"Stack instance {name} can't be deleted because it does not exist"
         }
     else:
         background_tasks.add_task(create_job_for_agent,
