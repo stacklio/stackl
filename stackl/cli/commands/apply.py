@@ -62,7 +62,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         services = config_doc['services']
     if "stages" in config_doc:
         stages = config_doc['stages']
-    invocation = stackl_client.StackInstanceInvocation(
+    invocation = stackl_client.models.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
             "stack_infrastructure_template"],
@@ -76,16 +76,23 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         stages=stages,
         tags=tags)
     try:
-        stackl_context.stack_instances_api.get_stack_instance(instance_name)
+        instance = stackl_context.stack_instances_api.get_stack_instance(instance_name)
         res = stackl_context.stack_instances_api.put_stack_instance(invocation)
-    except stackl_client.exceptions.ApiException:
-        res = stackl_context.stack_instances_api.post_stack_instance(
-            invocation)
+    except stackl_client.exceptions.NotFoundException as e:
+        try:
+            res = stackl_context.stack_instances_api.post_stack_instance(invocation)
+        except stackl_client.exceptions.ApiException as e:
+            click.echo(e)
+            exit(1)
+    except stackl_client.exceptions.ApiException as e:
+        click.echo(e)
+        exit(1)
 
     click.echo(res)
 
     if show_progress:
         show_progress_bar(stackl_context, instance_name)
+
 
 
 def upload_file(stackl_doc, stackl_context, path):

@@ -35,4 +35,4 @@ class StackInstance(BaseModel):
     stack_application_template: str
     category = "items"
     status: List[StackInstanceStatus] = None
-    stages: List[StackStage] = None
+    stages: List[StackStage] = []

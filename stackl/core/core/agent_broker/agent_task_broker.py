@@ -63,7 +63,7 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
             if fr_doc.invocation[cloud_provider].playbook_path is not None:
                 invoc['playbook_path'] = fr_doc.invocation[
                     cloud_provider].playbook_path
-            if fr_doc.invocation[cloud_provider].serial is not None:
+            if fr_doc.invocation[cloud_provider].serial:
                 invoc['serial'] = fr_doc.invocation[cloud_provider].serial
         invoc['service'] = service_name
         invoc["hosts"] = service.hosts
