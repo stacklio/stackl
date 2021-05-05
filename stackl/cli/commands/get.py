@@ -4,7 +4,8 @@ import click
 import yaml
 from commands.autocomplete import get_stack_instances, get_environments, get_locations, get_zones, get_sats, get_sits, \
     get_services, get_functional_requirements, get_policy_templates
-from stackl_client import StackInfrastructureTemplate, ApiException
+from stackl_client.models import StackInfrastructureTemplate
+from stackl_client.exceptions import ApiException, ApiValueError
 from tabulate import tabulate
 
 try:
@@ -83,6 +84,8 @@ def instance(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+    except ApiValueError as e:
+        click.echo(e)
 
 
 @get.command()

@@ -2,7 +2,7 @@
 StackInstanceService model
 """
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 from redis import Redis
@@ -19,19 +19,19 @@ class StackInstanceService(BaseModel):
     """
     StackInstanceService model
     """
-    infrastructure_target: str = None
-    provisioning_parameters: Dict[str, Any] = None
+    infrastructure_target: str = ""
+    provisioning_parameters: Dict[str, Any] = {}
     cloud_provider: str = "generic"
-    secrets: Dict[str, Any] = None
-    hosts: List[str] = None
-    resources: Dict[str, str] = None
-    service: str = None
+    secrets: Dict[str, Any] = {}
+    hosts: Optional[List[str]] = []
+    resources: Dict[str, str] = {}
+    service: str = ""
     agent: str = ""
     opa_outputs: Dict[str, Any] = {}
     outputs: Dict[str, Any] = {}
-    packages: List[str] = None
-    tags: Dict[str, str] = None
-    service: str = None
+    packages: List[str] = []
+    tags: Dict[str, str] = {}
+    service: str = ""
 
     def template_hosts(self, stackl_hostname, instances, infra_target_counter):
         """Templates the host field in a stack instance"""

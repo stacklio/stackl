@@ -21,7 +21,7 @@ class StackInstanceInvocation(BaseModel):
     secrets: Dict[str, Any] = {}
     replicas: Dict[str, int] = {}
     services: List[StackApplicationTemplateService] = []
-    stages: List[StackStage] = None
+    stages: List[StackStage] = []
 
 
 class StackInstanceUpdate(BaseModel):
@@ -37,4 +37,4 @@ class StackInstanceUpdate(BaseModel):
     replicas: Dict[str, int] = {}
     disable_invocation: bool = False
     services: List[StackApplicationTemplateService] = []
-    stages: List[StackStage] = None
+    stages: List[StackStage] = []
