@@ -23,7 +23,7 @@ class StackInstanceService(BaseModel):
     provisioning_parameters: Dict[str, Any] = None
     cloud_provider: str = "generic"
     secrets: Dict[str, Any] = None
-    hosts: List[str] = None
+    hosts: List[str] = []
     resources: Dict[str, str] = None
     service: str = None
     agent: str = ""

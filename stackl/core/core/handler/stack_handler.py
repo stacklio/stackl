@@ -350,6 +350,7 @@ class StackHandler(Handler):
             **stack_instance.service_secrets.get(svc, {})
         }
         service_definition.agent = agent
+        # TODO delete this
         if "stackl_hostname" in service_definition.provisioning_parameters:
             service_definition.template_hosts(
                 service_definition.provisioning_parameters["stackl_hostname"],
@@ -375,9 +376,9 @@ class StackHandler(Handler):
                     **service_definition.provisioning_parameters,
                     **service_definition.outputs
                 }
-                if "stackl_hostname" in service_definition.outputs:
-                    service_definition.hostname = service_definition.outputs[
-                        "stackl_hostname"]
+                if "stackl_hosts" in service_definition.outputs:
+                    service_definition.hosts = service_definition.outputs[
+                        "stackl_hosts"]
 
         return stack_instance
 
