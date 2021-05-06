@@ -4,6 +4,8 @@ import click
 import stackl_client
 from commands.autocomplete import show_progress_bar
 from context import pass_stackl_context, StacklContext
+from urllib3.exceptions import NewConnectionError, MaxRetryError
+from stackl_client.exceptions import ApiException, ApiValueError
 
 
 @click.group()
@@ -22,20 +24,31 @@ def update(ctx):
 @pass_stackl_context
 def instance(stackl_context: StacklContext, params, secrets, replicas, show_progress,
              disable_invocation, instance_name):
-    final_params = {}
-    for item in params:
-        final_params = {**final_params, **json.loads(item)}
-    invocation = stackl_client.StackInstanceUpdate(
-        stack_instance_name=instance_name,
-        params=final_params,
-        secrets=json.loads(secrets),
-        replicas=json.loads(replicas))
-    if disable_invocation:
-        invocation.disable_invocation = True
-    res = stackl_context.stack_instances_api.put_stack_instance(invocation)
-    click.echo(res)
-    if show_progress:
-        show_progress_bar(stackl_context, instance_name)
+    try:
+        final_params = {}
+        for item in params:
+            final_params = {**final_params, **json.loads(item)}
+        invocation = stackl_client.models.StackInstanceUpdate(
+            stack_instance_name=instance_name,
+            params=final_params,
+            secrets=json.loads(secrets),
+            replicas=json.loads(replicas))
+        if disable_invocation:
+            invocation.disable_invocation = True
+        res = stackl_context.stack_instances_api.put_stack_instance(invocation)
+        click.echo(res)
+        if show_progress:
+            show_progress_bar(stackl_context, instance_name)
+    except ApiException as e:
+        click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @update.command()
@@ -45,7 +58,18 @@ def instance(stackl_context: StacklContext, params, secrets, replicas, show_prog
 @click.argument('instance-name')
 @pass_stackl_context
 def outputs(stackl_context: StacklContext, params, infrastructure_target, service, instance_name):
-    outputs_update = stackl_client.OutputsUpdate(outputs=json.loads(params), infrastructure_target=infrastructure_target,
-                                                 service=service, stack_instance=instance_name)
-    stackl_context.outputs_api.add_outputs(outputs_update)
-    click.echo("Updated outputs")
+    try:
+        outputs_update = stackl_client.models.OutputsUpdate(outputs=json.loads(params), infrastructure_target=infrastructure_target,
+                                                    service=service, stack_instance=instance_name)
+        stackl_context.outputs_api.add_outputs(outputs_update)
+        click.echo("Updated outputs")
+    except ApiException as e:
+        click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
