@@ -44,6 +44,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     final_params = {**config_doc['params'], **final_params}
     tags = json.loads(tags)
     replicas = json.loads(replicas)
+    stages = []
     if "replicas" in config_doc:
         replicas = {**config_doc['replicas'], **replicas}
     secrets = json.loads(secrets)
@@ -59,6 +60,8 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         tags = {**config_doc['tags'], **tags}
     if "services" in config_doc:
         services = config_doc['services']
+    if "stages" in config_doc:
+        stages = config_doc['stages']
     invocation = stackl_client.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
@@ -70,6 +73,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         service_secrets=service_secrets,
         secrets=secrets,
         services=services,
+        stages=stages,
         tags=tags)
     try:
         stackl_context.stack_instances_api.get_stack_instance(instance_name)

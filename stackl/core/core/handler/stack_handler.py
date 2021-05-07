@@ -3,6 +3,7 @@ Module containing all logic for creating and updating Stack instances
 """
 
 from collections import OrderedDict
+from core.models.configs.stack_application_template_model import StackApplicationTemplate
 
 from loguru import logger
 
@@ -77,9 +78,10 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-            self, item, opa_decision,
-            stack_infrastructure_template: StackInfrastructureTemplate,
-            opa_service_params):
+        self, item, opa_decision,
+        stack_infrastructure_template: StackInfrastructureTemplate,
+        stack_application_template: StackApplicationTemplate,
+        opa_service_params):
         """
         function for creating the stack instance object
         """
@@ -91,6 +93,10 @@ class StackHandler(Handler):
         stack_instance_doc.service_params = item.service_params
         stack_instance_doc.instance_secrets = item.secrets
         stack_instance_doc.service_secrets = item.service_secrets
+        if item.stages:
+            stack_instance_doc.stages = item.stages
+        else:
+            stack_instance_doc.stages = stack_application_template.stages
         services = OrderedDict()
         stack_instance_statuses = []
         for svc, opa_result in opa_decision.items():
@@ -216,6 +222,8 @@ class StackHandler(Handler):
         This method takes a stack instance and an item
         which contains the extra parameters and secrets
         """
+        if item.stages:
+            stack_instance.stages = item.stages
         stack_infr_template = self.document_manager.get_stack_infrastructure_template(
             stack_instance.stack_infrastructure_template)
         stack_infrastructure_template = self._update_infr_capabilities(
@@ -356,6 +364,10 @@ class StackHandler(Handler):
         logger.debug("Adding outputs to stack_instance")
         stack_instance = self.document_manager.get_stack_instance(
             outputs_update.stack_instance)
+        stack_instance.instance_outputs = {
+            **stack_instance.instance_outputs,
+            **outputs_update.outputs
+        }
         service = stack_instance.services[outputs_update.service]
         for service_definition in service:
             if service_definition.infrastructure_target == outputs_update.infrastructure_target:
@@ -363,13 +375,11 @@ class StackHandler(Handler):
                     **service_definition.outputs,
                     **outputs_update.outputs
                 }
-                service_definition.provisioning_parameters = {
-                    **service_definition.provisioning_parameters,
-                    **service_definition.outputs
-                }
-                if "stackl_hostname" in service_definition.outputs:
-                    service_definition.hostname = service_definition.outputs[
-                        "stackl_hostname"]
+            service_definition.provisioning_parameters = {
+                **service_definition.provisioning_parameters,
+                **stack_instance.instance_outputs,
+                **service_definition.outputs
+            }
 
         return stack_instance
 
@@ -443,6 +453,7 @@ class StackHandler(Handler):
 
         return self._create_stack_instance(
             item, service_targets['result']['services'], stack_infr,
+            stack_app_template,
             opa_service_params), service_targets['result']['services']
 
     def evaluate_sit_policies(self, opa_data, service_targets, stack_infr,
@@ -461,7 +472,8 @@ class StackHandler(Handler):
                         policy_name)
 
                     # Make sure the policy is in OPA
-                    self.opa_broker.add_policy(policy.name, policy.policy)
+                    if policy.policy:
+                        self.opa_broker.add_policy(policy.name, policy.policy)
 
                     policy_input = {
                         "parameters": policy_attributes,
@@ -513,7 +525,8 @@ class StackHandler(Handler):
         }
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
-        self.opa_broker.add_policy(policy.name, policy.policy)
+        if policy.policy:
+            self.opa_broker.add_policy(policy.name, policy.policy)
         # And verify it
         new_solution = self.opa_broker.ask_opa_policy_decision(
             policy.name, "solutions", opa_data_with_inputs)
