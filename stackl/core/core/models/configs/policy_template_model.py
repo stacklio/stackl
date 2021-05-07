@@ -14,6 +14,6 @@ class PolicyTemplate(BaseModel):
     description: Optional[str]
     category: str = "configs"
     type: str = "policy_template"
-    policy: str
     inputs: List[str]
     outputs: List[str] = None
+    policy: str = ""
