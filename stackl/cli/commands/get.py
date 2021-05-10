@@ -1,10 +1,12 @@
 import json
 
+from urllib3.exceptions import NewConnectionError, MaxRetryError
 import click
 import yaml
 from commands.autocomplete import get_stack_instances, get_environments, get_locations, get_zones, get_sats, get_sits, \
     get_services, get_functional_requirements, get_policy_templates
-from stackl_client import StackInfrastructureTemplate, ApiException
+from stackl_client.models import StackInfrastructureTemplate
+from stackl_client.exceptions import ApiException, ApiValueError
 from tabulate import tabulate
 
 try:
@@ -83,7 +85,14 @@ def instance(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
-
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 @get.command()
 @click.option('-o', '--output')
@@ -101,6 +110,14 @@ def environment(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -119,6 +136,14 @@ def location(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -137,6 +162,14 @@ def zone(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -153,6 +186,14 @@ def sat(stackl_context: StacklContext, output, name):
         click.echo(parse(sat, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -169,6 +210,14 @@ def sit(stackl_context: StacklContext, output, name):
         click.echo(parse(sit, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -184,6 +233,14 @@ def service(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -201,6 +258,14 @@ def functional_requirement(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -217,6 +282,14 @@ def policy_template(stackl_context: StacklContext, output, name):
         click.echo(parse(env, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -230,6 +303,14 @@ def snapshots(stackl_context: StacklContext, type, name, output):
         click.echo(parse(snapshots, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 @get.command()
@@ -242,3 +323,11 @@ def snapshot(stackl_context: StacklContext, name, output):
         click.echo(parse(snapshot, output))
     except ApiException as e:
         click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)

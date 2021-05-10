@@ -5,6 +5,8 @@ from sys import exit
 import click
 import stackl_client
 import yaml
+from urllib3.exceptions import NewConnectionError, MaxRetryError
+from stackl_client.exceptions import ApiException, ApiValueError
 from commands.autocomplete import show_progress_bar
 from context import StacklContext
 from mergedeep import merge
@@ -24,14 +26,25 @@ from mergedeep import merge
 @click.argument('instance-name', required=False)
 def apply(directory, config_file, params, tags, secrets, service_params,
           service_secrets, replicas, services, instance_name, show_progress):
-    stackl_context = StacklContext()
-    if instance_name is None:
-        upload_files(directory, stackl_context)
-    else:
-        apply_stack_instance(config_file, params, tags, secrets,
-                             service_params, service_secrets, replicas,
-                             services, stackl_context, instance_name,
-                             show_progress)
+    try:
+        stackl_context = StacklContext()
+        if instance_name is None:
+            upload_files(directory, stackl_context)
+        else:
+            apply_stack_instance(config_file, params, tags, secrets,
+                                service_params, service_secrets, replicas,
+                                services, stackl_context, instance_name,
+                                show_progress)
+    except ApiException as e:
+        click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
 
 def apply_stack_instance(config_file, params, tags, secrets, service_params,
@@ -62,7 +75,7 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         services = config_doc['services']
     if "stages" in config_doc:
         stages = config_doc['stages']
-    invocation = stackl_client.StackInstanceInvocation(
+    invocation = stackl_client.models.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
             "stack_infrastructure_template"],
@@ -76,11 +89,47 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         stages=stages,
         tags=tags)
     try:
+        invocation = stackl_client.models.StackInstanceUpdate(
+        stack_instance_name=instance_name,
+        params=final_params,
+        replicas=replicas,
+        service_params=service_params,
+        service_secrets=service_secrets,
+        secrets=secrets,
+        services=services,
+        stages=stages,
+        tags=tags)
         stackl_context.stack_instances_api.get_stack_instance(instance_name)
         res = stackl_context.stack_instances_api.put_stack_instance(invocation)
-    except stackl_client.exceptions.ApiException:
-        res = stackl_context.stack_instances_api.post_stack_instance(
-            invocation)
+    except stackl_client.exceptions.NotFoundException as e:
+        try:
+            invocation = stackl_client.models.StackInstanceInvocation(
+            stack_instance_name=instance_name,
+            stack_infrastructure_template=config_doc[
+                "stack_infrastructure_template"],
+            stack_application_template=config_doc["stack_application_template"],
+            params=final_params,
+            replicas=replicas,
+            service_params=service_params,
+            service_secrets=service_secrets,
+            secrets=secrets,
+            services=services,
+            stages=stages,
+            tags=tags)
+            res = stackl_context.stack_instances_api.post_stack_instance(invocation)
+        except ApiException as e:
+            click.echo(e)
+            exit(1)
+    except ApiException as e:
+        click.echo(e.body)
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
+        exit(1)
 
     click.echo(res)
 
@@ -114,10 +163,17 @@ def upload_file(stackl_doc, stackl_context, path):
         click.echo(
             f"Succesfully applied {stackl_doc['name']} with type {stackl_doc['type']}"
         )
-    except stackl_client.exceptions.ApiException as e:
+    except ApiException as e:
         click.echo(
             f"Failed to apply {stackl_doc['name']} with type {stackl_doc['type']}: {e.body}"
         )
+        exit(1)
+    except ApiValueError as e:
+        click.echo(e.body)
+        exit(1)
+    except (NewConnectionError, MaxRetryError) as e:
+        click.echo("Unable to connect to Stackl host")
+        click.echo(e)
         exit(1)
 
 
