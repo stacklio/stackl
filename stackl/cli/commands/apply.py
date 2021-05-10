@@ -89,10 +89,33 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
         stages=stages,
         tags=tags)
     try:
+        invocation = stackl_client.models.StackInstanceUpdate(
+        stack_instance_name=instance_name,
+        params=final_params,
+        replicas=replicas,
+        service_params=service_params,
+        service_secrets=service_secrets,
+        secrets=secrets,
+        services=services,
+        stages=stages,
+        tags=tags)
         stackl_context.stack_instances_api.get_stack_instance(instance_name)
         res = stackl_context.stack_instances_api.put_stack_instance(invocation)
     except stackl_client.exceptions.NotFoundException as e:
         try:
+            invocation = stackl_client.models.StackInstanceInvocation(
+            stack_instance_name=instance_name,
+            stack_infrastructure_template=config_doc[
+                "stack_infrastructure_template"],
+            stack_application_template=config_doc["stack_application_template"],
+            params=final_params,
+            replicas=replicas,
+            service_params=service_params,
+            service_secrets=service_secrets,
+            secrets=secrets,
+            services=services,
+            stages=stages,
+            tags=tags)
             res = stackl_context.stack_instances_api.post_stack_instance(invocation)
         except ApiException as e:
             click.echo(e)
