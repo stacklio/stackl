@@ -3,10 +3,9 @@ Module for handling invocation with Ansible
 """
 import json
 import os
+from typing import List
 from agent.kubernetes.handlers.ansible_plugins.inventory import STACKL_PLUGIN
 from agent.kubernetes.handlers.ansible_plugins.callback import ANSIBLE_CALLBACK_PLUGIN
-
-from typing import List
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 
