@@ -67,7 +67,7 @@ async def post_stack_instance(
     (stack_instance, return_result) = stack_manager.process_stack_request(
         stack_instance_invocation, "create")
     if stack_instance is None:
-        return HTTPException(422, return_result)
+        raise HTTPException(422, return_result)
 
     document_manager.write_stack_instance(stack_instance)
     # Perform invocations
@@ -91,7 +91,7 @@ async def put_stack_instance(
     (stack_instance, return_result) = stack_manager.process_stack_request(
         stack_instance_update, "update")
     if stack_instance is None:
-        return HTTPException(422, return_result)
+        raise HTTPException(422, return_result)
 
     # Perform invocations
     if not stack_instance_update.disable_invocation:

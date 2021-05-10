@@ -77,7 +77,6 @@ def check_groups(stackl_groups, stackl_inventory_groups, host_list):
     for group in stackl_inventory_groups:
         for tag in group['tags']:
             count_group_dict[tag] += group['count']
-
     for tag, count in count_group_dict.items():
         if not tag in stackl_groups or not len(
                 stackl_groups[tag]) == count * target_count:
@@ -108,8 +107,15 @@ def get_vault_secrets(service, address, token_path):
     token = f.readline()
     client = hvac.Client(url=address, token=token)
     secret_dict = {}
-    for _, value in service.secrets.items():
+    for key, value in service.secrets.items():
         secret_value = client.read(value)
+        if key == "stackl_private_key":
+            # Write the private key to a file
+            private_key = secret_value['data']['data']['private_key']
+            with open("/tmp/private.key", 'w') as private_key_file:
+                private_key_file.write(private_key)
+                secret_dict[
+                    'ansible_ssh_private_key_file'] = "/tmp/private.key"
         for key, value in secret_value['data']['data'].items():
             secret_dict[key] = value
     return secret_dict
@@ -134,7 +140,6 @@ def get_conjur_secrets(service, address, account, token_path, verify):
         verify = False
     elif isinstance(verify, str) and verify.lower() == "true":
         verify = True
-
     token = json.dumps(token).encode('utf-8')
     secrets = service.secrets
     conjur_secrets = {}
@@ -180,31 +185,25 @@ class InventoryModule(BaseInventoryPlugin):
             configuration = stackl_client.Configuration()
             configuration.host = self.get_option("host")
             api_client = stackl_client.ApiClient(configuration=configuration)
-            api_instance = stackl_client.StackInstancesApi(
-                api_client=api_client)
+            api_instance = stackl_client.StackInstancesApi(api_client=api_client)
             stack_instance_name = self.get_option("stack_instance")
-            stack_instance = api_instance.get_stack_instance(
-                stack_instance_name)
+            stack_instance = api_instance.get_stack_instance(stack_instance_name)
             for service, si_service in stack_instance.services.items():
                 for index, service_definition in enumerate(si_service):
                     if hasattr(
                             service_definition, "hosts"
                     ) and 'stackl_inventory_groups' in service_definition.provisioning_parameters:
                         if not check_groups(
-                                stack_instance.groups,
-                                service_definition.provisioning_parameters[
-                                    'stackl_inventory_groups'],
+                                stack_instance.groups, service_definition.
+                                provisioning_parameters['stackl_inventory_groups'],
                                 service_definition.hosts):
                             stack_instance.groups = create_groups(
-                                service_definition.hosts,
-                                service_definition.provisioning_parameters[
-                                    'stackl_inventory_groups'],
+                                service_definition.hosts, service_definition.
+                                provisioning_parameters['stackl_inventory_groups'],
                                 service_definition.infrastructure_target)
                             stack_update = stackl_client.StackInstanceUpdate(
                                 stack_instance_name=stack_instance.name,
-                                params={
-                                    "stackl_groups": stack_instance.groups
-                                },
+                                params={"stackl_groups": stack_instance.groups},
                                 disable_invocation=True)
                             api_instance.put_stack_instance(stack_update)
                             stack_instance = api_instance.get_stack_instance(
@@ -216,16 +215,14 @@ class InventoryModule(BaseInventoryPlugin):
                                                         group=item)
                                 for key, value in service_definition.provisioning_parameters.items(
                                 ):
-                                    self.inventory.set_variable(
-                                        item, key, value)
+                                    self.inventory.set_variable(item, key, value)
                                 if hasattr(service_definition, "secrets"):
                                     if self.get_option(
                                             "secret_handler") == "vault":
                                         secrets = get_vault_secrets(
                                             service_definition,
                                             self.get_option("vault_addr"),
-                                            self.get_option(
-                                                "vault_token_path"))
+                                            self.get_option("vault_token_path"))
                                     elif self.get_option(
                                             "secret_handler") == "base64":
                                         secrets = get_base64_secrets(
@@ -236,8 +233,7 @@ class InventoryModule(BaseInventoryPlugin):
                                             service_definition,
                                             self.get_option("conjur_addr"),
                                             self.get_option("conjur_account"),
-                                            self.get_option(
-                                                "conjur_token_path"),
+                                            self.get_option("conjur_token_path"),
                                             self.get_option("conjur_verify"))
                                     for key, value in secrets.items():
                                         self.inventory.set_variable(
@@ -264,8 +260,7 @@ class InventoryModule(BaseInventoryPlugin):
                                     self.get_option("vault_addr"),
                                     self.get_option("vault_token_path"))
                             elif self.get_option("secret_handler") == "base64":
-                                secrets = get_base64_secrets(
-                                    service_definition)
+                                secrets = get_base64_secrets(service_definition)
                             elif self.get_option("secret_handler") == "conjur":
                                 secrets = get_conjur_secrets(
                                     service_definition,
@@ -274,8 +269,7 @@ class InventoryModule(BaseInventoryPlugin):
                                     self.get_option("conjur_token_path"),
                                     self.get_option("conjur_verify"))
                             for key, value in secrets.items():
-                                self.inventory.set_variable(
-                                    service, key, value)
+                                self.inventory.set_variable(service, key, value)
         except Exception as e:
             raise AnsibleError('Error: this was original exception: %s' %
                                to_native(e))
