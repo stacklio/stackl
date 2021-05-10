@@ -365,6 +365,10 @@ class StackHandler(Handler):
         logger.debug("Adding outputs to stack_instance")
         stack_instance = self.document_manager.get_stack_instance(
             outputs_update.stack_instance)
+        stack_instance.instance_outputs = {
+            **stack_instance.instance_outputs,
+            **outputs_update.outputs
+        }
         service = stack_instance.services[outputs_update.service]
         for service_definition in service:
             if service_definition.infrastructure_target == outputs_update.infrastructure_target:
@@ -372,13 +376,14 @@ class StackHandler(Handler):
                     **service_definition.outputs,
                     **outputs_update.outputs
                 }
-                service_definition.provisioning_parameters = {
-                    **service_definition.provisioning_parameters,
-                    **service_definition.outputs
-                }
-                if "stackl_hosts" in service_definition.outputs:
-                    service_definition.hosts = service_definition.outputs[
-                        "stackl_hosts"]
+            service_definition.provisioning_parameters = {
+                **service_definition.provisioning_parameters,
+                **stack_instance.instance_outputs,
+                **service_definition.outputs
+            }
+            if "stackl_hosts" in service_definition.outputs:
+                                service_definition.hosts = service_definition.outputs[
+                                    "stackl_hosts"]
 
         return stack_instance
 
@@ -471,7 +476,8 @@ class StackHandler(Handler):
                         policy_name)
 
                     # Make sure the policy is in OPA
-                    self.opa_broker.add_policy(policy.name, policy.policy)
+                    if policy.policy:
+                        self.opa_broker.add_policy(policy.name, policy.policy)
 
                     policy_input = {
                         "parameters": policy_attributes,
@@ -523,7 +529,8 @@ class StackHandler(Handler):
         }
         opa_data_with_inputs = {**opa_data, **policy_input}
         # Make sure the policy is in OPA
-        self.opa_broker.add_policy(policy.name, policy.policy)
+        if policy.policy:
+            self.opa_broker.add_policy(policy.name, policy.policy)
         # And verify it
         new_solution = self.opa_broker.ask_opa_policy_decision(
             policy.name, "solutions", opa_data_with_inputs)
