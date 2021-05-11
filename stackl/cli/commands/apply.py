@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from stackl_client.models import StackStage
 from sys import exit
 
 import click
@@ -74,7 +75,10 @@ def apply_stack_instance(config_file, params, tags, secrets, service_params,
     if "services" in config_doc:
         services = config_doc['services']
     if "stages" in config_doc:
-        stages = config_doc['stages']
+        stages_list = config_doc['stages']
+        for stage in stages_list:
+            stage_obj = StackStage(name=stage['name'], services=stage['services'])
+            stages.append(stage_obj)
     invocation = stackl_client.models.StackInstanceInvocation(
         stack_instance_name=instance_name,
         stack_infrastructure_template=config_doc[
