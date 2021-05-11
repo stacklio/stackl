@@ -127,8 +127,12 @@ class Invocation():
                         {self._invoc.playbook_path} \
                         -v -i /opt/ansible/playbooks/inventory/stackl.yml'
 
-        elif self.hosts is not None:
+        elif self.hosts:
             pattern = ",".join(self.hosts)
+            self._command_args[
+                0] += f' && ansible {pattern} -m include_role -v \
+                        -i /opt/ansible/playbooks/inventory/stackl.yml \
+                        -a name={self._functional_requirement}'
         else:
             pattern = self._service + "_" + str(self.index)
             self._command_args[
