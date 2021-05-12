@@ -64,6 +64,7 @@ import stackl_client
 import base64
 import requests
 import logging
+import os
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.module_utils._text import to_native
@@ -114,8 +115,9 @@ def get_vault_secrets(service, address, token_path):
             private_key = secret_value['data']['data']['private_key']
             with open("/tmp/private.key", 'w') as private_key_file:
                 private_key_file.write(private_key)
-                secret_dict[
-                    'ansible_ssh_private_key_file'] = "/tmp/private.key"
+            os.chmod("/tmp/private.key", 0o600)
+            secret_dict[
+                'ansible_ssh_private_key_file'] = "/tmp/private.key"
         for key, value in secret_value['data']['data'].items():
             secret_dict[key] = value
     return secret_dict

@@ -97,7 +97,7 @@ async def put_stack_instance(
     if not stack_instance_update.disable_invocation:
         for service in to_be_deleted:
             background_tasks.add_task(create_job_per_service, service,
-                                      document_manager, "delete", redis,
+                                      "delete", redis,
                                       stack_instance, to_be_deleted)
         copy_stack_instance = stack_instance.copy(deep=True)
         delete_services(to_be_deleted, copy_stack_instance)
@@ -127,7 +127,6 @@ def delete_stack_instance(
         background_tasks.add_task(create_job_for_agent,
                                   stack_instance,
                                   "delete",
-                                  document_manager,
                                   redis,
                                   force_delete=force)
         return {"result": f"Stack instance {name} is being deleted"}
