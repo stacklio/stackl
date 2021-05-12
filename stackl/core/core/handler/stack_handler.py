@@ -350,11 +350,7 @@ class StackHandler(Handler):
             **stack_instance.service_secrets.get(svc, {})
         }
         service_definition.agent = agent
-        if "stackl_hostname" in service_definition.provisioning_parameters:
-            service_definition.template_hosts(
-                service_definition.provisioning_parameters["stackl_hostname"],
-                service_definition.provisioning_parameters.get(
-                    "instances", None), count + 1)
+
         return service_definition
 
     def add_outputs(self, outputs_update):
@@ -375,11 +371,14 @@ class StackHandler(Handler):
                     **service_definition.outputs,
                     **outputs_update.outputs
                 }
-            service_definition.provisioning_parameters = {
-                **service_definition.provisioning_parameters,
-                **stack_instance.instance_outputs,
-                **service_definition.outputs
-            }
+                service_definition.provisioning_parameters = {
+                    **service_definition.provisioning_parameters,
+                    **stack_instance.instance_outputs,
+                    **service_definition.outputs
+                }
+                if "stackl_hosts" in service_definition.outputs:
+                            service_definition.hosts = service_definition.outputs[
+                                "stackl_hosts"]
 
         return stack_instance
 

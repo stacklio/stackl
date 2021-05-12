@@ -1,3 +1,6 @@
+"""
+Stackl callback plugin for Ansible
+"""
 ANSIBLE_CALLBACK_PLUGIN = """
 DOCUMENTATION = '''
     author: GBrawl

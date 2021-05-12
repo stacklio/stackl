@@ -1,4 +1,6 @@
-
+"""
+Stackl inventory script for Ansible
+"""
 STACKL_PLUGIN = """
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
