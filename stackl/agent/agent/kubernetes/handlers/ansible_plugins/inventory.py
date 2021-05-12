@@ -65,6 +65,7 @@ import base64
 import requests
 import logging
 import os
+import stackl_client.apis as stackl_apis
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.module_utils._text import to_native
@@ -187,7 +188,7 @@ class InventoryModule(BaseInventoryPlugin):
             configuration = stackl_client.Configuration()
             configuration.host = self.get_option("host")
             api_client = stackl_client.ApiClient(configuration=configuration)
-            api_instance = stackl_client.StackInstancesApi(api_client=api_client)
+            api_instance = stackl_apis.StackInstancesApi(api_client=api_client)
             stack_instance_name = self.get_option("stack_instance")
             stack_instance = api_instance.get_stack_instance(stack_instance_name)
             for service, si_service in stack_instance.services.items():
@@ -203,7 +204,7 @@ class InventoryModule(BaseInventoryPlugin):
                                 service_definition.hosts, service_definition.
                                 provisioning_parameters['stackl_inventory_groups'],
                                 service_definition.infrastructure_target)
-                            stack_update = stackl_client.StackInstanceUpdate(
+                            stack_update = stackl_client.models.StackInstanceUpdate(
                                 stack_instance_name=stack_instance.name,
                                 params={"stackl_groups": stack_instance.groups},
                                 disable_invocation=True)
