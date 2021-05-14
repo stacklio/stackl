@@ -57,7 +57,7 @@ DOCUMENTATION = '''
 
 from ansible.plugins.callback import CallbackBase
 import stackl_client
-
+from stackl_client import models
 
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
@@ -85,9 +85,9 @@ class CallbackModule(CallbackBase):
         configuration = stackl_client.Configuration()
         configuration.host = self.stackl_url
         api_client = stackl_client.ApiClient(configuration=configuration)
-        self.fr_api = stackl_client.FunctionalRequirementsApi(
+        self.fr_api = stackl_client.apis.FunctionalRequirementsApi(
             api_client=api_client)
-        self.outputs_api = stackl_client.OutputsApi(api_client=api_client)
+        self.outputs_api = stackl_client.apis.OutputsApi(api_client=api_client)
         functional_requirement = self.fr_api.get_functional_requirement_by_name(
             self.functional_requirement)
         if "_run" in stats.custom:
@@ -95,7 +95,7 @@ class CallbackModule(CallbackBase):
         else:
             outputs = stats.custom
 
-        outputs_update = stackl_client.OutputsUpdate(
+        outputs_update = models.OutputsUpdate(
             outputs=outputs,
             infrastructure_target=self.infrastructure_target,
             service=self.service,
