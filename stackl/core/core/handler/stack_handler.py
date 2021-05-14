@@ -577,6 +577,7 @@ class StackHandler(Handler):
         required_tags = {}
         required_tags["required_tags"] = item.tags
         opa_data = {**required_tags, **sat_as_opa_data, **sit_as_opa_data}
+        opa_data["stack_instance"] = item.stack_instance_name
         return opa_data
 
     def _update_infr_capabilities(
