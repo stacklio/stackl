@@ -52,6 +52,20 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
         invoc = {}
         invoc['action'] = action
         invoc['functional_requirement'] = fr
+        if cloud_provider in fr_doc.invocation:
+            pass
+        elif "generic" in fr_doc.invocation:
+            cloud_provider = "generic"
+        else:
+            automation_result = {}
+            automation_result["functional_requirement"] = fr
+            automation_result["infrastructure_target"] = infrastructure_target
+            automation_result["service"] = service_name
+            automation_result["error_message"] = "No cloud provider for this invocation"
+            automation_result["status"] = "Failed"
+            await update_status(automation_result, stack_instance, action,
+                                to_be_deleted)
+            return False
         invoc['image'] = fr_doc.invocation[cloud_provider].image
         invoc['before_command'] = fr_doc.invocation[
             cloud_provider].before_command
