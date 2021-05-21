@@ -371,14 +371,17 @@ class StackHandler(Handler):
                     **service_definition.outputs,
                     **outputs_update.outputs
                 }
+                if "stackl_hosts" in service_definition.outputs:
+                        service_definition.hosts = service_definition.outputs[
+                            "stackl_hosts"]
+                break
+        for _, service_list in stack_instance.services.items():
+            for service_definition in service_list:
                 service_definition.provisioning_parameters = {
                     **service_definition.provisioning_parameters,
                     **stack_instance.instance_outputs,
                     **service_definition.outputs
                 }
-                if "stackl_hosts" in service_definition.outputs:
-                            service_definition.hosts = service_definition.outputs[
-                                "stackl_hosts"]
 
         return stack_instance
 
