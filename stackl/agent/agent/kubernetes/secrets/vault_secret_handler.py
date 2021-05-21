@@ -3,6 +3,7 @@ Module containing all logic for retrieving secrets from Hashicorp Vault
 """
 
 import os
+from jinja2 import Template
 from .base_secret_handler import SecretHandler
 
 VAULT_AGENT_CONFIG = """
@@ -42,6 +43,17 @@ EOH
 }
 """
 
+ENVCONSUL_CONFIG = """
+vault {
+    vault_agent_token_file = "{{ vault_token_path }}"
+}
+{% for secret_path in secret_paths %}
+secret {
+    no_prefix = true,
+    path = "{{ secret_path }}"
+}
+{% endfor %}
+"""
 
 class VaultSecretHandler(SecretHandler):
     # pylint: disable=too-many-instance-attributes
@@ -70,6 +82,13 @@ class VaultSecretHandler(SecretHandler):
             'type': 'config_map',
             'data': {
                 'vault-agent-config.hcl': self._format_template()
+            }
+        }, {
+            'name': 'envconsul-config',
+            'mount_path': '/etc/envconsul-config',
+            'type': 'config_map',
+            'data': {
+                'envconsul-config.hcl': self._format_envconsul_config()
             }
         }, {
             "name": "secrets",
@@ -106,6 +125,9 @@ class VaultSecretHandler(SecretHandler):
             "secret_handler": "vault"
         }
 
+    def _format_envconsul_config(self):
+        return  Template(ENVCONSUL_CONFIG).render(vault_token_path=self._vault_token_path, secret_paths=self.secrets.values())
+
     def _format_template(self):
         content_string = ""
         if "backend_secret_path" in self.secrets:
@@ -128,5 +150,14 @@ class VaultSecretHandler(SecretHandler):
                                 % backend_secret_path
             va_config += EXTRA_TEMPLATE % ("/tmp/backend/backend.tf.json",
                                            content_string)
-
         return va_config
+
+    @staticmethod
+    def add_extra_commands(current_command):
+        """
+        Add extra commands to make secrets
+        accessible as environment variables
+        """
+        return current_command.replace(
+            "&&",
+            "&& envconsul -config=/etc/envconsul-config/envconsul-config.hcl")

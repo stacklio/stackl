@@ -2,11 +2,13 @@
 Module for Terraform automation through stackl
 """
 import json
+from jinja2 import Template
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.terraform_output import TerraformOutput
 
 from ..secrets.conjur_secret_handler import ConjurSecretHandler
+from ..secrets.vault_secret_handler import VaultSecretHandler
 from .base_handler import Handler
 
 
@@ -49,14 +51,14 @@ class TerraformHandler(Handler):
         if 'terraform_backend' in self.provisioning_parameters:
             self.terraform_backend_enabled = True
         if self.terraform_backend_enabled:
+            backend_template = json.dumps(self.provisioning_parameters['terraform_backend'])
+            parameters = {**self._invoc.__dict__, **self.provisioning_parameters}
             self._volumes.append({
                 "name": "terraform-backend",
                 "type": "config_map",
                 "mount_path": "/tmp/backend",
                 'data': {
-                    'backend.tf.json':
-                    json.dumps(
-                        self.provisioning_parameters['terraform_backend'])
+                    'backend.tf.json': Template(backend_template).render(parameters)
                 }
             })
         self._env_list = {
@@ -111,9 +113,8 @@ class TerraformHandler(Handler):
         if self._secret_handler and not isinstance(self._secret_handler,
                                                    ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
-        elif isinstance(self._secret_handler, ConjurSecretHandler):
-            command_args[0] = ConjurSecretHandler.add_extra_commands(
-                command_args[0])
+        if self._secret_handler:
+            command_args[0] = self._secret_handler.add_extra_commands(command_args[0])
         if self._output:
             command_args[0] += f' {self._output.command_args}'
         return command_args

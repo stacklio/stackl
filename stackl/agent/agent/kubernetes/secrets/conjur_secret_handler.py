@@ -103,7 +103,8 @@ class ConjurSecretHandler(SecretHandler):
     @staticmethod
     def add_extra_commands(current_command):
         """
-        Adds extra commands used by conjur
+        Add extra commands to make secrets
+        accessible as environment variables
         """
         return current_command.replace(
             "&&",
