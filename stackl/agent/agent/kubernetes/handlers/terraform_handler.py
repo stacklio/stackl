@@ -51,14 +51,19 @@ class TerraformHandler(Handler):
         if 'terraform_backend' in self.provisioning_parameters:
             self.terraform_backend_enabled = True
         if self.terraform_backend_enabled:
-            backend_template = json.dumps(self.provisioning_parameters['terraform_backend'])
-            parameters = {**self._invoc.__dict__, **self.provisioning_parameters}
+            backend_template = json.dumps(
+                self.provisioning_parameters['terraform_backend'])
+            parameters = {
+                **self._invoc.__dict__,
+                **self.provisioning_parameters
+            }
             self._volumes.append({
                 "name": "terraform-backend",
                 "type": "config_map",
                 "mount_path": "/tmp/backend",
                 'data': {
-                    'backend.tf.json': Template(backend_template).render(parameters)
+                    'backend.tf.json':
+                    Template(backend_template).render(parameters)
                 }
             })
         self._env_list = {
@@ -114,7 +119,8 @@ class TerraformHandler(Handler):
                                                    ConjurSecretHandler):
             command_args[0] += f' -var-file {self.secret_variables_file}'
         if self._secret_handler:
-            command_args[0] = self._secret_handler.add_extra_commands(command_args[0])
+            command_args[0] = self._secret_handler.add_extra_commands(
+                command_args[0])
         if self._output:
             command_args[0] += f' {self._output.command_args}'
         return command_args

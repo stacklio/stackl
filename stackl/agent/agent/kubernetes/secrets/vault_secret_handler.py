@@ -55,6 +55,7 @@ secret {
 {% endfor %}
 """
 
+
 class VaultSecretHandler(SecretHandler):
     # pylint: disable=too-many-instance-attributes
     # We just need a lot of fields for vault
@@ -62,7 +63,8 @@ class VaultSecretHandler(SecretHandler):
     Implementation of a secrethandler using Hashicorp Vault
     """
     def __init__(self, invoc, stack_instance, vault_addr: str,
-                 secret_format: str, vault_role: str, vault_mount_point: str, vault_image: str):
+                 secret_format: str, vault_role: str, vault_mount_point: str,
+                 vault_image: str):
         # pylint: disable=too-many-arguments
         # We just need more than 5 for vault
         super().__init__(invoc, stack_instance, secret_format)
@@ -126,7 +128,9 @@ class VaultSecretHandler(SecretHandler):
         }
 
     def _format_envconsul_config(self):
-        return  Template(ENVCONSUL_CONFIG).render(vault_token_path=self._vault_token_path, secret_paths=self.secrets.values())
+        return Template(ENVCONSUL_CONFIG).render(
+            vault_token_path=self._vault_token_path,
+            secret_paths=self.secrets.values())
 
     def _format_template(self):
         content_string = ""
