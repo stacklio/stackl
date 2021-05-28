@@ -100,8 +100,7 @@ class ConjurSecretHandler(SecretHandler):
             return self.secrets['terraform_statefile_config']
         return None
 
-    @staticmethod
-    def add_extra_commands(current_command):
+    def add_extra_commands(self, current_command):
         """
         Add extra commands to make secrets
         accessible as environment variables

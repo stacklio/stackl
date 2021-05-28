@@ -156,8 +156,7 @@ class VaultSecretHandler(SecretHandler):
                                            content_string)
         return va_config
 
-    @staticmethod
-    def add_extra_commands(current_command):
+    def add_extra_commands(self, current_command):
         """
         Add extra commands to make secrets
         accessible as environment variables

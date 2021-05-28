@@ -63,8 +63,7 @@ class SecretHandler(ABC):
     def volumes(self, value):
         self._volumes = value
 
-    @staticmethod
-    def add_extra_commands(current_command):
+    def add_extra_commands(self, current_command):
         """
         Adds extra commands used by the secret handler
         """
