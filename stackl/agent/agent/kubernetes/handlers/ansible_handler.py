@@ -102,12 +102,6 @@ class Invocation():
         # If any outputs are defined in the functional requirement set in base_handler
 
         self._init_containers = []
-        self._command = ["/bin/sh", "-c"]
-        self._command_args = [
-            self._service, "-m", "include_role", "-v", "-i",
-            "/opt/ansible/playbooks/inventory/stackl.yml", "-a",
-            "name=" + self._functional_requirement
-        ]
 
     @property
     def create_command_args(self) -> List[str]:
@@ -116,30 +110,25 @@ class Invocation():
         :return: A list with strings containing shell commands
         :rtype: List[str]
         """
-        self._command_args = [
-            'echo "${USER_NAME:-runner}:x:$(id -u):$(id -g):${USER_NAME:-runner} \
-            user:${HOME}:/sbin/nologin" >> /etc/passwd'
-        ]
-
         if self._invoc.playbook_path:
-            self._command_args[0] += f' && ansible-playbook \
-                        {self._invoc.playbook_path} \
-                        -v -i /opt/ansible/playbooks/inventory/stackl.yml'
+            ansible_commands = [
+                'ansible-playbook', self._invoc.playbook_path, '-v', '-i',
+                '/opt/ansible/playbooks/inventory/stackl.yml'
+            ]
 
-        elif self.hosts:
-            pattern = ",".join(self.hosts)
-            self._command_args[
-                0] += f' && ansible {pattern} -m include_role -v \
-                        -i /opt/ansible/playbooks/inventory/stackl.yml \
-                        -a name={self._functional_requirement}'
         else:
-            pattern = self._service + "_" + str(self.index)
-            self._command_args[
-                0] += f' && ansible {pattern} -m include_role -v \
-                        -i /opt/ansible/playbooks/inventory/stackl.yml \
-                        -a name={self._functional_requirement}'
+            if self.hosts:
+                pattern = ",".join(self.hosts)
+            else:
+                pattern = self._service + "_" + str(self.index)
 
-        return self._command_args
+            ansible_commands = [
+                'ansible', pattern, '-m', 'include_role', '-v', '-i',
+                '/opt/ansible/playbooks/inventory/stackl.yml', '-a',
+                f'name={self._functional_requirement}'
+            ]
+
+        return ansible_commands
 
     @property
     def delete_command_args(self) -> List[str]:
@@ -149,5 +138,5 @@ class Invocation():
         :rtype: List[str]
         """
         delete_command_args = self.create_command_args
-        delete_command_args[0] += ' -e state=absent'
+        delete_command_args.extend(['-e', 'state=absent'])
         return delete_command_args
