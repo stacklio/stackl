@@ -71,12 +71,10 @@ class PackerHandler(Handler):
         command_args[
             0] += "packer build -force -var-file /tmp/variables/variables.json"
 
-        if self._secret_handler and not isinstance(self._secret_handler,
-                                                   ConjurSecretHandler):
+        if self._secret_handler and not isinstance(self._secret_handler, ConjurSecretHandler):
             command_args[0] += ' -var-file /tmp/secrets/secret.json'
-        elif isinstance(self._secret_handler, ConjurSecretHandler):
-            command_args[0] = ConjurSecretHandler.add_extra_commands(
-                command_args[0])
+        if self._secret_handler:
+            command_args[0] = self._secret_handler.add_extra_commands(command_args[0])
         if self._output:
             command_args[0] += f'{self._output.command_args}'
         command_args[0] += ' /opt/packer/src/packer.json'

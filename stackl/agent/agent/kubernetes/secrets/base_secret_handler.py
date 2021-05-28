@@ -33,7 +33,7 @@ class SecretHandler(ABC):
     @property
     def init_containers(self):
         """
-        return all init containers used by secret handler
+        Return all init containers used by secret handler
         """
         return self._init_containers
 
@@ -62,3 +62,9 @@ class SecretHandler(ABC):
     @volumes.setter
     def volumes(self, value):
         self._volumes = value
+
+    def add_extra_commands(self, current_command):
+        """
+        Adds extra commands used by the secret handler
+        """
+        return current_command

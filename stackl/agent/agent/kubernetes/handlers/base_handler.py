@@ -528,18 +528,14 @@ class Handler(ABC):
     @property
     def create_command_args(self) -> List[str]:
         """
-        returns the command args to be run in the container
+        Returns the command args to be run in the container
         """
-        if isinstance(self.secret_handler, ConjurSecretHandler):
-            return [
-                "summon --provider summon-conjur -f /tmp/conjur/secrets.yml "
-            ]
         return [""]
 
     @property
     def delete_command_args(self) -> List[str]:
         """
-        returns the command args to be run in the container
+        Returns the command args to be run in the container
         for deleting
         """
         return [""]
