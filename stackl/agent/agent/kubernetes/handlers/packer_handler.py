@@ -2,6 +2,7 @@
 Module for Packer automation through stackl
 """
 from json import dumps
+from typing import List
 
 from agent.kubernetes.kubernetes_secret_factory import get_secret_handler
 from agent.kubernetes.outputs.packer_output import PackerOutput
@@ -37,16 +38,15 @@ class PackerHandler(Handler):
             "type": "config_map",
             "mount_path": "/tmp/variables",
             "data": {
-                "variables.json": dumps(self.packer_variables())
+                "variables.json": dumps(self._packer_variables())
             }
         }]
         if self._output:
             self._volumes.append(self._output.spec_mount)
-        self._command = ["/bin/sh", "-c"]
 
-    def packer_variables(self):
+    def _packer_variables(self):
         """
-        this method converts all values to string, because packer can't
+        This method converts all values to string, because packer can't
         handle other types
         """
         d = {}
@@ -59,29 +59,33 @@ class PackerHandler(Handler):
         return d
 
     @property
-    def create_command_args(self) -> list:
+    def create_command_args(self) -> List[str]:
         """
         This method returns the command args needed to run packer including
         all variables and secrets and optionally outputs
         """
-        command_args = [""]
+        command_args = ["/bin/sh", "-c"]
+        packer_commands = ""
         if self._invoc.before_command is not None:
-            command_args[0] += f"{self._invoc.before_command}  && "
+            packer_commands += f"{self._invoc.before_command} && "
 
-        command_args[
-            0] += "packer build -force -var-file /tmp/variables/variables.json"
+        packer_commands += "packer build -force -var-file /tmp/variables/variables.json"
 
-        if self._secret_handler and not isinstance(self._secret_handler, ConjurSecretHandler):
-            command_args[0] += ' -var-file /tmp/secrets/secret.json'
-        if self._secret_handler:
-            command_args[0] = self._secret_handler.add_extra_commands(command_args[0])
+        if self._secret_handler.secret_variables_file:
+            packer_commands += f' -var-file {self._secret_handler.secret_variables_file}'
+
+        packer_commands = self._secret_handler.customize_commands(packer_commands)
         if self._output:
-            command_args[0] += f'{self._output.command_args}'
-        command_args[0] += ' /opt/packer/src/packer.json'
+            packer_commands = self._output.customize_commands(
+                packer_commands)
+
+        packer_commands += ' /opt/packer/src/packer.json'
+
+        command_args.append(packer_commands)
         return command_args
 
     @property
-    def delete_command_args(self) -> list:
+    def delete_command_args(self) -> List[str]:
         """
         Packer doesn't support deleting, so this is just a stub
         """

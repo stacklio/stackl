@@ -77,8 +77,8 @@ class VaultSecretHandler(SecretHandler):
         self._pid_file = "/home/vault/pidfile"
         self._vault_token_path = "/tmp/vault/.vault-token"
         self._stack_instance = stack_instance
-        self._destination = f"/tmp/secrets/secret.{self._secret_format}"
-        self._volumes = [{
+        self.secret_variables_file = f"/tmp/secrets/secret.{self._secret_format}"
+        self.volumes = [{
             'name': 'vault-agent-config',
             'mount_path': '/etc/vault-config',
             'type': 'config_map',
@@ -102,12 +102,12 @@ class VaultSecretHandler(SecretHandler):
             "mount_path": "/tmp/vault"
         }]
         if self.terraform_backend_enabled:
-            self._volumes.append({
+            self.volumes.append({
                 "name": "terraform-backend-secrets",
                 "type": "empty_dir",
                 "mount_path": "/tmp/backend"
             })
-        self._init_containers = [{
+        self.init_containers = [{
             "name":
             "vault-agent",
             "image":
@@ -117,7 +117,7 @@ class VaultSecretHandler(SecretHandler):
                 "-exit-after-auth"
             ]
         }]
-        self._env_list = {"VAULT_ADDR": self._vault_addr}
+        self.env_list = {"VAULT_ADDR": self._vault_addr}
         self.stackl_inv = {
             "plugin": "stackl",
             "host": os.environ['STACKL_HOST'],
@@ -148,7 +148,7 @@ class VaultSecretHandler(SecretHandler):
             content_string += '{{ scratch.Get "secrets" | toTOML }}'
         va_config = VAULT_AGENT_CONFIG % (
             self._pid_file, self._vault_mount_point, self._vault_role,
-            self._vault_token_path, self._destination, content_string)
+            self._vault_token_path, self.secret_variables_file, content_string)
         if self.terraform_backend_enabled:
             content_string = """{{ with secret "%s" }}{{ .Data.data | toJSON }}{{ end }}""" \
                                 % backend_secret_path
@@ -156,9 +156,9 @@ class VaultSecretHandler(SecretHandler):
                                            content_string)
         return va_config
 
-    def add_extra_commands(self, current_command):
+    def customize_commands(self, current_command):
         """
-        Add extra commands to make secrets
+        Customize commands to make secrets
         accessible as environment variables
         """
         return current_command.replace(

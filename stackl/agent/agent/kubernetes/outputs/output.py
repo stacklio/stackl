@@ -23,7 +23,7 @@ class Output:
         self.service = service
         self.functional_requirement = functional_requirement
         self.infrastructure_target = infrastructure_target
-        self._env_list = {}
+        self.env_list = {}
         self.stackl_instance_name = stackl_instance_name
         self._spec_mount = {
             "name": "outputs-spec",
@@ -33,7 +33,7 @@ class Output:
                 "spec.json": dumps(self.functional_requirement.outputs)
             }
         }
-        self._volumes = [self._spec_mount]
+        self.volumes = [self._spec_mount]
         self.init_containers = []
 
     @property
@@ -84,16 +84,8 @@ class Output:
         """
         return self._spec_mount
 
-    @property
-    def env_list(self):
+    def customize_commands(self, current_command):
         """
-        Returns a list of environment variables
+        Customize commands to make outputs available to Stackl
         """
-        return self._env_list
-
-    @property
-    def volumes(self):
-        """
-        Returns volumes used by outputs
-        """
-        return self._volumes
+        return current_command

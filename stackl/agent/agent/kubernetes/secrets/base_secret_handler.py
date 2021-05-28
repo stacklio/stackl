@@ -1,7 +1,7 @@
 """
 Module for the abstract SecretHandler class
 """
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from stackl_client import StackInstance
 
@@ -17,8 +17,10 @@ class SecretHandler(ABC):
         self._secret_format = secret_format.lower()
         self._stack_instance = stack_instance
         self._service = self._invoc.service
-        self._env_list = {}
-        self._init_containers = []
+        self.secret_variables_file = None
+        self.env_list = {}
+        self.init_containers = []
+        self.volumes = []
 
     @property
     def secrets(self):
@@ -30,41 +32,8 @@ class SecretHandler(ABC):
                 return service_definition.secrets
         return None
 
-    @property
-    def init_containers(self):
+    def customize_commands(self, current_command):
         """
-        Return all init containers used by secret handler
-        """
-        return self._init_containers
-
-    @init_containers.setter
-    def init_containers(self, value):
-        self._init_containers = value
-
-    @property
-    def env_list(self):
-        """
-        Returns the list of environment variables
-        """
-        return self._env_list
-
-    @env_list.setter
-    def env_list(self, value):
-        self._env_list = value
-
-    @property
-    def volumes(self):
-        """
-        Returns all volumes (configmaps, pvs, etc...)
-        """
-        return self._volumes
-
-    @volumes.setter
-    def volumes(self, value):
-        self._volumes = value
-
-    def add_extra_commands(self, current_command):
-        """
-        Adds extra commands used by the secret handler
+        Customize commands used by the secret handler, by default just return commands
         """
         return current_command

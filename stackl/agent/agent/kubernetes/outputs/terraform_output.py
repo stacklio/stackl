@@ -14,11 +14,9 @@ class TerraformOutput(Output):
         super().__init__(service, functional_requirement, stackl_instance_name,
                          infrastructure_target)
         self.output_file = '/mnt/terraform/output/result.json'
-        self._command_args = f'&& terraform show -json > {self.output_file} \
-                                && ls -lh {self.output_file}'
 
-        self._env_list = {"TF_IN_AUTOMATION": "1"}
-        self._volumes.append({
+        self.env_list = {"TF_IN_AUTOMATION": "1"}
+        self.volumes.append({
             "name": "outputs",
             "type": "empty_dir",
             "mount_path": "/mnt/terraform/output"
@@ -42,3 +40,10 @@ class TerraformOutput(Output):
             stackl update outputs {self.stackl_instance_name} -p "$outputs" -s {self.service} \
             -i {self.infrastructure_target} && \
             stackl get instance {self.stackl_instance_name} -o yaml '
+
+    def customize_commands(self, current_command):
+        """
+        Customize commands to make outputs available to Stackl
+        """
+        return current_command + f' && terraform show -json > {self.output_file} \
+                                && ls -lh {self.output_file}'

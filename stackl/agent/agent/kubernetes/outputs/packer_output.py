@@ -14,11 +14,16 @@ class PackerOutput(Output):
                          infrastructure_target)
 
         self.output_file = '/mnt/packer/output/result.json'
-        self._command_args = ' -var manifest_path={}'.format(self.output_file)
-        self._volumes.append({
+        self.volumes.append({
             "name": "outputs",
             "type": "empty_dir",
             "mount_path": "/mnt/packer/output/"
         })
         self.secret_variables_file = '/tmp/secrets/secret.json'
         self.variables_file = '/tmp/variables/variables.json'
+
+    def customize_commands(self, current_command):
+        """
+        Customize commands to make outputs available to Stackl
+        """
+        return current_command + f' -var manifest_path={self.output_file}'
