@@ -1,9 +1,12 @@
 import logging
-from random import random
+import random
 from string import ascii_lowercase, digits
 from typing import Dict, List
+
 from kubernetes import client
+
 from agent.kubernetes.outputs.output import Output
+
 
 def check_container_status(container_status):
     """
