@@ -74,10 +74,11 @@ class PackerHandler(Handler):
         if self._secret_handler.secret_variables_file:
             packer_commands += f' -var-file {self._secret_handler.secret_variables_file}'
 
-        packer_commands = self._secret_handler.customize_commands(packer_commands)
         if self._output:
             packer_commands = self._output.customize_commands(
                 packer_commands)
+
+        packer_commands = self._secret_handler.customize_commands(packer_commands)
 
         packer_commands += ' /opt/packer/src/packer.json'
 

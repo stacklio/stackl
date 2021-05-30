@@ -101,12 +101,14 @@ class TerraformHandler(Handler):
         if self._secret_handler.secret_variables_file:
             terraform_commands += f' -var-file {self._secret_handler.secret_variables_file}'
 
-        terraform_commands = self._secret_handler.customize_commands(
-            terraform_commands)
-
         if self._output:
             terraform_commands = self._output.customize_commands(
                 terraform_commands)
+                
+        terraform_commands = self._secret_handler.customize_commands(
+            terraform_commands)
+
+
 
         command_args.append(terraform_commands)
         return command_args
