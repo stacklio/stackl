@@ -14,7 +14,7 @@ from core.opa_broker.opa_broker_factory import OPABrokerFactory
 
 
 async def create_service(action, redis, stack_instance, to_be_deleted,
-                         force_delete, service_name, service):
+                         force_delete, service_name, service, index):
     opa_broker_factory = OPABrokerFactory()
     opa_broker = opa_broker_factory.get_opa_broker()
     success = True
@@ -43,6 +43,10 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
     if action == "delete":
         functional_requirements = reversed(functional_requirements)
     for fr in functional_requirements:
+        stack_instance = document_manager.get_stack_instance(stack_instance.name)
+        service = stack_instance.services[service_name][index]
+        logger.debug(
+            f"Debug for service'{service}'")
         fr_doc = document_manager.get_functional_requirement(fr)
         fr_jobs = []
         infrastructure_target = service.infrastructure_target
@@ -135,15 +139,14 @@ async def create_job_per_service(services,
                                  force_delete=False):
     success = True
     stage_jobs = []
-    document_mananger = get_document_manager()
     # do stages
     if stack_instance.stages:
         for stage in stack_instance.stages:
             for service_name in stage.services:
-                for service in stack_instance.services[service_name]:
+                for idx, service in enumerate(stack_instance.services[service_name]):
                     success = create_service(action, redis, stack_instance,
                                              to_be_deleted, force_delete,
-                                             service_name, service)
+                                             service_name, service, idx)
                     stage_jobs.append(asyncio.create_task(success))
 
             await asyncio.gather(*stage_jobs)
@@ -152,10 +155,10 @@ async def create_job_per_service(services,
     # not using stages
     else:
         for service_name, service_list in services.items():
-            for service in service_list:
+            for idx, service in enumerate(service_list):
                 success = await create_service(action, redis, stack_instance,
                                                to_be_deleted, force_delete,
-                                               service_name, service)
+                                               service_name, service, idx)
 
     return success
 
