@@ -61,6 +61,7 @@ stack_instance: "test_vm"
 import json
 import hvac
 import stackl_client
+from stackl_client import models
 import base64
 import requests
 import logging
@@ -204,7 +205,7 @@ class InventoryModule(BaseInventoryPlugin):
                                 service_definition.hosts, service_definition.
                                 provisioning_parameters['stackl_inventory_groups'],
                                 service_definition.infrastructure_target)
-                            stack_update = stackl_client.models.StackInstanceUpdate(
+                            stack_update = models.StackInstanceUpdate(
                                 stack_instance_name=stack_instance.name,
                                 params={"stackl_groups": stack_instance.groups},
                                 disable_invocation=True)

@@ -19,8 +19,8 @@ class Base64SecretHandler(SecretHandler):
     def __init__(self, invoc, stack_instance: StackInstance,
                  secret_format: str):
         super().__init__(invoc, stack_instance, secret_format)
-        self._destination = f"/tmp/secrets/secret.{self._secret_format}"
-        self._volumes = [{
+        self.secret_variables_file = f"/tmp/secrets/secret.{self._secret_format}"
+        self.volumes = [{
             "name": "secrets",
             "type": "config_map",
             "mount_path": "/tmp/secrets",

@@ -31,7 +31,7 @@ class ConjurSecretHandler(SecretHandler):
         self._conjur_ssl_config_map = conjur_ssl_config_map
         self._conjur_ssl_config_map_key = conjur_ssl_config_map_key
         self._conjur_verify = conjur_verify
-        self._volumes = [{
+        self.volumes = [{
             "name": "conjur-access-token",
             "type": "empty_dir",
             "mount_path": "/run/conjur"
@@ -50,11 +50,11 @@ class ConjurSecretHandler(SecretHandler):
                 'backend.tf.json': json.dumps(self._format_template())
             }
         }]
-        self._init_containers = [{
+        self.init_containers = [{
             "name": self._authenticator_client_container_name,
             "image": "cyberark/conjur-authn-k8s-client",
         }]
-        self._env_list = {
+        self.env_list = {
             "CONTAINER_MODE": "init",
             "CONJUR_AUTHN_TOKEN_FILE": "/run/conjur/access-token",
             "CONJUR_APPLIANCE_URL": self._conjur_appliance_url,
@@ -100,9 +100,9 @@ class ConjurSecretHandler(SecretHandler):
             return self.secrets['terraform_statefile_config']
         return None
 
-    def add_extra_commands(self, current_command):
+    def customize_commands(self, current_command):
         """
-        Add extra commands to make secrets
+        Customize commands to make secrets
         accessible as environment variables
         """
         return current_command.replace(
