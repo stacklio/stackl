@@ -15,6 +15,7 @@ class Invocation(BaseModel):
     image: str
     before_command: Optional[str] = ""
     playbook_path: str = ""
+    ansible_role: str = ""
     serial: int = 10
 
 

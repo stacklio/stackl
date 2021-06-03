@@ -83,6 +83,8 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
                     cloud_provider].playbook_path
             if fr_doc.invocation[cloud_provider].serial:
                 invoc['serial'] = fr_doc.invocation[cloud_provider].serial
+            if fr_doc.invocation[cloud_provider].ansible_role:
+                invoc['ansible_role'] = fr_doc.invocation[cloud_provider].ansible_role
         invoc['service'] = service_name
         invoc["hosts"] = service.hosts
         logger.debug("Appending job")

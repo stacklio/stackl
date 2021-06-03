@@ -35,6 +35,7 @@ class Invocation:
     tool: str
     hosts: List
     playbook_path: str = None
+    ansible_role: str = None
     serial: int = 10
 
 
