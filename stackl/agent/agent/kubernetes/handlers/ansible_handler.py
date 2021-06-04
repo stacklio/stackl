@@ -13,6 +13,7 @@ from .base_handler import Handler
 
 PLAYBOOK_INCLUDE_ROLE = """
 - hosts: "{{ pattern }}"
+  serial: "{{ serial }}"
   tasks:
     - include_role:
         name: "{{ ansible_role }}"
@@ -118,7 +119,8 @@ class Invocation():
 
             ansible_commands = [
                 'ansible-playbook', '/opt/ansible/playbooks/stackl/playbook-role.yml', '-i',
-                '/opt/ansible/playbooks/inventory/stackl.yml', '-e', f'pattern={pattern}', '-e', f'ansible_role={ansible_role}'
+                '/opt/ansible/playbooks/inventory/stackl.yml', '-e', f'pattern={pattern}', '-e', f'ansible_role={ansible_role}',
+                '-e', f'serial={self._invoc.serial}'
             ]
 
         return ansible_commands
