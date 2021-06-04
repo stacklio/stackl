@@ -647,14 +647,12 @@ class StackHandler(Handler):
             else:
                 infr_target_cloud_provider = "generic"
 
-            infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
             infr_targets_capabilities[
                 infr_target_key] = StackInfrastructureTarget(
                     provisioning_parameters=infr_target_capability,
                     tags=infr_target_tags,
-                    packages=infr_target_packages,
                     resources=infr_target_resources,
                     secrets=infr_target_secrets,
                     policies=infr_target_policies,

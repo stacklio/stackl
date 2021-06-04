@@ -13,9 +13,6 @@ environment = {
     },
     "resources": {},
     "policies": {},
-    "packages": [
-        "test",
-    ],
     "outputs": {},
     "cloud_provider": "aws",
     "tags": {
@@ -30,7 +27,6 @@ environment = {
 
 environment_update = environment.copy()
 environment_update['description'] = "Update description"
-environment_update['packages'] = ['update']
 environment_update['secrets'] = {}
 environment_update['tags'] = {'environment': 'prod'}
 environment_update['params'] = {'update': 'update'}
@@ -92,7 +88,6 @@ location = {
     'outputs': {},
     'resources': {},
     'policies': {},
-    'packages': [],
     'tags': {},
     'agent': '',
     'description': 'Belgium DC'
@@ -158,7 +153,6 @@ zone = {
     'outputs': {},
     'resources': {},
     'policies': {},
-    'packages': [],
     'tags': {},
     'agent': '',
     'description': 'Dome AWS zone'

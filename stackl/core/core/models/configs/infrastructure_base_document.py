@@ -18,6 +18,5 @@ class InfrastructureBaseDocument(BaseModel):
     outputs: dict = {}
     resources: dict = {}
     policies: dict = {}
-    packages: List[str] = []
     tags: dict = {}
     agent: str = ""

@@ -29,7 +29,6 @@ class StackInstanceService(BaseModel):
     agent: str = ""
     opa_outputs: Dict[str, Any] = {}
     outputs: Dict[str, Any] = {}
-    packages: List[str] = []
     tags: Dict[str, str] = {}
     service: str = ""
 
