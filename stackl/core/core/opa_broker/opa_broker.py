@@ -25,8 +25,6 @@ def convert_sit_to_opa_data(sit_doc: StackInfrastructureTemplate):
         target_data = {
             "resources":
             sit_doc.infrastructure_capabilities[target].resources,
-            "packages":
-            sit_doc.infrastructure_capabilities[target].packages,
             "tags":
             sit_doc.infrastructure_capabilities[target].tags,
             "params":

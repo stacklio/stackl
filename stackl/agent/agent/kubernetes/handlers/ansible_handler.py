@@ -14,19 +14,16 @@ from .base_handler import Handler
 PLAYBOOK_INCLUDE_ROLE = """
 - hosts: "{{ pattern }}"
   serial: "{{ serial }}"
-  gather_facts: no
+  connection: "{{ connection }}"
+  gather_facts: "{{ stackl_gather_facts }}"
+  pre_tasks:
+    - wait_for:     
+        port: "{{ wait_for_port | int }}"     
+        timeout: 60
+      when: wait_for_port is defined
   tasks:
     - include_role:
         name: "{{ ansible_role }}"
-- hosts: localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - set_fact:
-        output_dict: "{{ hostvars }}"
-    - copy:
-        content: "{{ output_dict | to_nice_json }}"
-        dest: "{{ outputs_path | default('/tmp/outputs.json') }}"
 """
 
 
@@ -122,12 +119,24 @@ class Invocation():
             else:
                 pattern = self._service + "_" + str(self.index)
 
+            if self._invoc.ansible_role:
+                ansible_role = self._invoc.ansible_role
+            else:
+                ansible_role = self._functional_requirement
+
             ansible_commands = [
-                'ansible', pattern, '-m', 'include_role', '-v', '-i',
-                '/opt/ansible/playbooks/inventory/stackl.yml', '-a',
-                f'name={self._functional_requirement}'
+                'ansible-playbook', '/opt/ansible/playbooks/stackl/playbook-role.yml', '-i',
+                '/opt/ansible/playbooks/inventory/stackl.yml', '-e', f'pattern={pattern}', '-e', f'ansible_role={ansible_role}',
+                '-e', f'serial={self._invoc.serial}', '-e', f'stackl_gather_facts={self._invoc.gather_facts}'
             ]
 
+            if self._invoc.wait_for_port:
+                ansible_commands.extend(['-e', f'wait_for_port={self._invoc.wait_for_port}'])
+            
+            if self._invoc.connection:
+                ansible_commands.extend(['-e', f'connection={self._invoc.connection}'])
+
+            ansible_commands.extend(['-e', f'state=present'])
         return ansible_commands
 
     @property

@@ -371,14 +371,17 @@ class StackHandler(Handler):
                     **service_definition.outputs,
                     **outputs_update.outputs
                 }
+                if "stackl_hosts" in service_definition.outputs:
+                        service_definition.hosts = service_definition.outputs[
+                            "stackl_hosts"]
+                break
+        for _, service_list in stack_instance.services.items():
+            for service_definition in service_list:
                 service_definition.provisioning_parameters = {
                     **service_definition.provisioning_parameters,
                     **stack_instance.instance_outputs,
                     **service_definition.outputs
                 }
-                if "stackl_hosts" in service_definition.outputs:
-                            service_definition.hosts = service_definition.outputs[
-                                "stackl_hosts"]
 
         return stack_instance
 
@@ -644,14 +647,12 @@ class StackHandler(Handler):
             else:
                 infr_target_cloud_provider = "generic"
 
-            infr_target_packages = environment.packages + location.packages + zone.packages
             infr_target_key = ".".join(
                 [environment.name, location.name, zone.name])
             infr_targets_capabilities[
                 infr_target_key] = StackInfrastructureTarget(
                     provisioning_parameters=infr_target_capability,
                     tags=infr_target_tags,
-                    packages=infr_target_packages,
                     resources=infr_target_resources,
                     secrets=infr_target_secrets,
                     policies=infr_target_policies,

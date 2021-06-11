@@ -16,5 +16,4 @@ class StackInfrastructureTarget(BaseModel):
     resources: Dict[str, str] = None
     policies: Dict[str, Any] = None
     agent: str = ""
-    packages: List[str] = None
     tags: Dict[str, str] = None

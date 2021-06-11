@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2021-06-11
+
+### Added
+
+- Now possible to execute services in stages (#227)
+- Service policies (#236)
+- Supply private key to ansible using `stackl_private_key` (#248)
+
+### Changed
+
+- Ansible outputs now make use of callback plugin (#242)
+- New way of supplying command args for all the handlers
+- Terraform backend can now be a jinja template (#265)
+- Vault secrets also can be used as env variables with envconsul 
+
+### Fixed
+
+- Generic invocation now gets chosen by default
+
 ## [0.3.3] - 2021-02-18
 
 ### Fixed
@@ -93,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add reporting policies
 - Add codeql-analysis
 
-[unreleased]: https://github.com/stacklio/stackl/compare/v0.3.3...HEAD
+[unreleased]: https://github.com/stacklio/stackl/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/stacklio/stackl/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/stacklio/stackl/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/stacklio/stackl/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/stacklio/stackl/compare/v0.3.0...v0.3.1

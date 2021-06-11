@@ -35,6 +35,10 @@ class Invocation:
     tool: str
     hosts: List
     playbook_path: str = None
+    ansible_role: str = None
+    gather_facts: bool = True
+    connection: str = "remote"
+    wait_for_port: int = None
     serial: int = 10
 
 
