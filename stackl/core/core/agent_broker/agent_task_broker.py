@@ -85,6 +85,11 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
                 invoc['serial'] = fr_doc.invocation[cloud_provider].serial
             if fr_doc.invocation[cloud_provider].ansible_role:
                 invoc['ansible_role'] = fr_doc.invocation[cloud_provider].ansible_role
+            if fr_doc.invocation[cloud_provider].connection:
+                invoc['connection'] = fr_doc.invocation[cloud_provider].connection
+            if fr_doc.invocation[cloud_provider].wait_for_port:
+                invoc['wait_for_port'] = fr_doc.invocation[cloud_provider].wait_for_port
+            invoc['gather_facts'] = fr_doc.invocation[cloud_provider].gather_facts
         invoc['service'] = service_name
         invoc["hosts"] = service.hosts
         logger.debug("Appending job")

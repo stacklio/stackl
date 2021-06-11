@@ -1,7 +1,7 @@
 """
 Module containing functional requirement classes
 """
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel  # pylint: disable=E0611 #error in pylint
 
@@ -16,7 +16,10 @@ class Invocation(BaseModel):
     before_command: Optional[str] = ""
     playbook_path: str = ""
     ansible_role: str = ""
+    gather_facts: bool = True
     serial: int = 10
+    connection: str = "ssh"
+    wait_for_port: Any = None
 
 
 class FunctionalRequirement(BaseDocument):
