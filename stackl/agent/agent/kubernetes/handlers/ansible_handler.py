@@ -17,9 +17,8 @@ PLAYBOOK_INCLUDE_ROLE = """
   connection: "{{ connection }}"
   gather_facts: "{{ stackl_gather_facts }}"
   pre_tasks:
-    - wait_for:     
-        port: "{{ wait_for_port | int }}"     
-        timeout: 60
+    - wait_for_connection:
+        timeout: "{{ wait_for_port }}"
       when: wait_for_port is defined
   tasks:
     - include_role:
