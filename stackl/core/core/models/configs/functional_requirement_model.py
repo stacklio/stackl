@@ -19,7 +19,7 @@ class Invocation(BaseModel):
     gather_facts: bool = True
     serial: int = 10
     connection: str = "ssh"
-    wait_for_port: Any = None
+    wait_for_connection: bool = True
 
 
 class FunctionalRequirement(BaseDocument):

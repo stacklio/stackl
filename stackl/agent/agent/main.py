@@ -38,7 +38,7 @@ class Invocation:
     ansible_role: str = None
     gather_facts: bool = True
     connection: str = "remote"
-    wait_for_port: int = None
+    wait_for_connection: bool = True
     serial: int = 10
 
 

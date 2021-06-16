@@ -13,13 +13,12 @@ from .base_handler import Handler
 
 PLAYBOOK_INCLUDE_ROLE = """
 - hosts: "{{ pattern }}"
-  serial: "{{ serial }}"
-  connection: "{{ connection }}"
+  serial: "{{ stackl_serial }}"
+  connection: "{{ stackl_connection }}"
   gather_facts: "{{ stackl_gather_facts }}"
   pre_tasks:
     - wait_for_connection:
-        timeout: "{{ wait_for_port }}"
-      when: wait_for_port is defined
+      when: stackl_wait_for_connection is defined
   tasks:
     - include_role:
         name: "{{ ansible_role }}"
@@ -126,14 +125,14 @@ class Invocation():
             ansible_commands = [
                 'ansible-playbook', '/opt/ansible/playbooks/stackl/playbook-role.yml', '-i',
                 '/opt/ansible/playbooks/inventory/stackl.yml', '-e', f'pattern={pattern}', '-e', f'ansible_role={ansible_role}',
-                '-e', f'serial={self._invoc.serial}', '-e', f'stackl_gather_facts={self._invoc.gather_facts}'
+                '-e', f'stackl_serial={self._invoc.serial}', '-e', f'stackl_gather_facts={self._invoc.gather_facts}'
             ]
 
-            if self._invoc.wait_for_port:
-                ansible_commands.extend(['-e', f'wait_for_port={self._invoc.wait_for_port}'])
+            if self._invoc.wait_for_connection:
+                ansible_commands.extend(['-e', f'stackl_wait_for_connection={self._invoc.wait_for_connection}'])
             
             if self._invoc.connection:
-                ansible_commands.extend(['-e', f'connection={self._invoc.connection}'])
+                ansible_commands.extend(['-e', f'stackl_connection={self._invoc.connection}'])
 
             ansible_commands.extend(['-e', f'state=present'])
         return ansible_commands
