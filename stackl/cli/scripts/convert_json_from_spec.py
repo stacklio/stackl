@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 
 from glom import glom
+from glom.core import PathAccessError
 
 
 class Converter(ABC):
@@ -48,7 +49,10 @@ class JsonConverter(Converter):
     def convert(self):
         result = {}
         for field_name, field_spec in self.json_spec.items():
-            result[field_name] = glom(self.json_doc, field_spec)
+            try:
+                result[field_name] = glom(self.json_doc, field_spec)
+            except PathAccessError as e:
+                result[field_name] = None
         return result
 
 
