@@ -124,19 +124,24 @@ class Invocation():
                 ansible_role = self._functional_requirement
 
             ansible_commands = [
-                'ansible-playbook', '/opt/ansible/playbooks/stackl/playbook-role.yml', '-i',
-                '/opt/ansible/playbooks/inventory/stackl.yml', '-e', f'pattern={pattern}', '-e', f'ansible_role={ansible_role}',
-                '-e', f'stackl_serial={self._invoc.serial}', '-e', f'stackl_gather_facts={self._invoc.gather_facts}'
+                'ansible-playbook',
+                '/opt/ansible/playbooks/stackl/playbook-role.yml', '-i',
+                '/opt/ansible/playbooks/inventory/stackl.yml', '-e',
+                f'pattern={pattern}', '-e', f'ansible_role={ansible_role}',
+                '-e', f'stackl_serial={self._invoc.serial}', '-e',
+                f'stackl_gather_facts={self._invoc.gather_facts}', '-e',
+                f'stackl_become={self._invoc.become}'
             ]
 
             if self._invoc.wait_for_connection:
-                ansible_commands.extend(['-e', f'stackl_wait_for_connection={self._invoc.wait_for_connection}'])
+                ansible_commands.extend([
+                    '-e',
+                    f'stackl_wait_for_connection={self._invoc.wait_for_connection}'
+                ])
 
-            if self._invoc.become:
-                ansible_commands.extend(['-e', f'stackl_become={self._invoc.become}'])
-            
             if self._invoc.connection:
-                ansible_commands.extend(['-e', f'stackl_connection={self._invoc.connection}'])
+                ansible_commands.extend(
+                    ['-e', f'stackl_connection={self._invoc.connection}'])
 
             ansible_commands.extend(['-e', f'state=present'])
         return ansible_commands
