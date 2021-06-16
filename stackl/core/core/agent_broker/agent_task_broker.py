@@ -89,6 +89,8 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
                 invoc['connection'] = fr_doc.invocation[cloud_provider].connection
             if fr_doc.invocation[cloud_provider].wait_for_connection:
                 invoc['wait_for_connection'] = fr_doc.invocation[cloud_provider].wait_for_connection
+            if fr_doc.invocation[cloud_provider].become:
+                invoc['become'] = fr_doc.invocation[cloud_provider].become
             invoc['gather_facts'] = fr_doc.invocation[cloud_provider].gather_facts
         invoc['service'] = service_name
         invoc["hosts"] = service.hosts

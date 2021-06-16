@@ -16,6 +16,7 @@ PLAYBOOK_INCLUDE_ROLE = """
   serial: "{{ stackl_serial }}"
   connection: "{{ stackl_connection }}"
   gather_facts: "{{ stackl_gather_facts }}"
+  become: "{{ stackl_become }}"
   pre_tasks:
     - wait_for_connection:
       when: stackl_wait_for_connection is defined
@@ -130,6 +131,9 @@ class Invocation():
 
             if self._invoc.wait_for_connection:
                 ansible_commands.extend(['-e', f'stackl_wait_for_connection={self._invoc.wait_for_connection}'])
+
+            if self._invoc.become:
+                ansible_commands.extend(['-e', f'stackl_become={self._invoc.become}'])
             
             if self._invoc.connection:
                 ansible_commands.extend(['-e', f'stackl_connection={self._invoc.connection}'])
