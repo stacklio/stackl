@@ -130,7 +130,8 @@ class Invocation():
                 f'pattern={pattern}', '-e', f'ansible_role={ansible_role}',
                 '-e', f'stackl_serial={self._invoc.serial}', '-e',
                 f'stackl_gather_facts={self._invoc.gather_facts}', '-e',
-                f'stackl_become={self._invoc.become}'
+                f'stackl_become={self._invoc.become}', '-e',
+                f'stackl_connection={self._invoc.connection}'
             ]
 
             if self._invoc.wait_for_connection:
@@ -138,10 +139,6 @@ class Invocation():
                     '-e',
                     f'stackl_wait_for_connection={self._invoc.wait_for_connection}'
                 ])
-
-            if self._invoc.connection:
-                ansible_commands.extend(
-                    ['-e', f'stackl_connection={self._invoc.connection}'])
 
             ansible_commands.extend(['-e', f'state=present'])
         return ansible_commands

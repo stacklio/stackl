@@ -37,7 +37,7 @@ class Invocation:
     playbook_path: str = None
     ansible_role: str = None
     gather_facts: bool = True
-    connection: str = "remote"
+    connection: str = "ssh"
     become: bool = False
     wait_for_connection: bool = False
     serial: int = 10
