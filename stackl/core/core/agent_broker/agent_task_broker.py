@@ -26,12 +26,13 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
         for svc_policy in service_doc.service_policies:
             logger.debug(f"Evaluating service policy: {svc_policy}")
             opa_data = {}
-            opa_data['inputs'] = svc_policy['inputs']
+            opa_data['inputs'] = svc_policy.inputs
             opa_data['functional_requirements'] = service_doc.functional_requirements
             opa_data['infrastructure_target'] = service.infrastructure_target
             opa_data['service'] = service_name
+            opa_data['action'] = action
             opa_data['stack_instance'] = stack_instance.dict()
-            policy = document_manager.get_policy_template(svc_policy['name'])
+            policy = document_manager.get_policy_template(svc_policy.name)
             # Make sure the policy is in OPA
             opa_broker.add_policy(policy.name, policy.policy)
             opa_result = opa_broker.ask_opa_policy_decision(

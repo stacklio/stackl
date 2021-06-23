@@ -209,7 +209,7 @@ class Handler(ABC):
         # A secret handler has been set and is not None
         if self.secret_handler:
             volumes += self.secret_handler.volumes
-        if self._output:
+        if self._output and self._invoc.action != "delete":
             volumes += self._output.volumes
         return volumes
 
