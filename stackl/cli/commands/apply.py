@@ -19,7 +19,7 @@ from mergedeep import merge
 @click.option('-p', '--params', default=[], multiple=True)
 @click.option('-t', '--tags', default="{}")
 @click.option('-r', '--replicas', default="{}")
-@click.option('-s', '--secrets', default="{}")
+@click.option('--secrets', default="{}")
 @click.option('-e', '--service-params', default="{}")
 @click.option('--service-secrets', default="{}")
 @click.option('--services', default=[])
