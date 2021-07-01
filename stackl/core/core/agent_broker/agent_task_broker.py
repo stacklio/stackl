@@ -21,6 +21,7 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
     document_manager = get_document_manager()
     service_doc = document_manager.get_service(service_name)
 
+    functional_requirements = []
     if service_doc.service_policies:
         logger.debug(f"Evaluating service policies: {service_doc.service_policies}")
         for svc_policy in service_doc.service_policies:
@@ -36,9 +37,19 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
             # Make sure the policy is in OPA
             opa_broker.add_policy(policy.name, policy.policy)
             opa_result = opa_broker.ask_opa_policy_decision(
-                        svc_policy['name'], "filter", opa_data)
-            logger.debug(f"OPA result for service policy {svc_policy}: {opa_result}")
+                        svc_policy.name, "filter", opa_data)
+            logger.debug(f"OPA result for service policy {svc_policy.name}: {opa_result}")
             functional_requirements = opa_result['result']
+        skipped_frs = list(set(service_doc.functional_requirements) - set(functional_requirements))
+        for skipped_fr in skipped_frs:
+            automation_result = {}
+            automation_result["functional_requirement"] = skipped_fr
+            automation_result["infrastructure_target"] = service.infrastructure_target
+            automation_result["service"] = service_name
+            automation_result["error_message"] = ""
+            automation_result["status"] = "SKIPPED"
+            await update_status(automation_result, stack_instance, action,
+                    to_be_deleted)
     else:
         functional_requirements = service_doc.functional_requirements
     if action == "delete":
