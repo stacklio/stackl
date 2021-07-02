@@ -56,8 +56,6 @@ class Output:
         """
         return client.V1Container(name='stackl-output',
                                   image=self.stackl_cli_image,
-                                  env=self.env,
-                                  volume_mounts=self.volume_mounts,
                                   image_pull_policy='Always',
                                   command=self.stackl_cli_command,
                                   args=[self.stackl_cli_command_args])

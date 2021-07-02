@@ -49,7 +49,7 @@ def create_job_object(name: str,
                       command_args: List[str],
                       volumes: List[Dict],
                       init_containers: List[Dict],
-                      output: Output,
+                      sidecar_containers: List[client.V1Container],
                       namespace: str = "stackl",
                       container_name: str = "jobcontainer",
                       api_version: str = "batch/v1",
@@ -218,11 +218,11 @@ def create_job_object(name: str,
     logging.debug(f"Secret list created for job {name}: {k8s_secrets}")
 
     containers = [container]
-    if output:
-        output.volume_mounts = k8s_volume_mounts
-        output.env = k8s_env_list
-        output_containers = output.containers
-        containers = containers + output_containers
+    if sidecar_containers:
+        for sc in sidecar_containers:
+            sc.env = k8s_env_list
+            sc.volume_mounts = k8s_volume_mounts
+            containers.append(sc)
 
     template.template.metadata = client.V1ObjectMeta(labels=labels)
     template.template.spec = client.V1PodSpec(
