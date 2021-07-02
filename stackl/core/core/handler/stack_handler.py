@@ -357,7 +357,7 @@ class StackHandler(Handler):
         """
         Adds outputs on the right service definition of a stack instance
         """
-        logger.debug("Adding outputs to stack_instance")
+        logger.debug(f"Adding outputs to stack_instance {outputs_update}")
         stack_instance = self.document_manager.get_stack_instance(
             outputs_update.stack_instance)
         stack_instance.instance_outputs = {

@@ -104,6 +104,9 @@ class Handler(ABC):
             "stackl.io/functional-requirement":
             self._invoc.functional_requirement
         }
+        sidecar_containers = []
+        if self._invoc.action != "delete" and self._output:
+            sidecar_containers = self._output.containers
         body, cms = create_job_object(name=name,
                                       container_image=container_image,
                                       env_list=self.env_list,
@@ -111,9 +114,9 @@ class Handler(ABC):
                                       command_args=self.command_args,
                                       volumes=self.volumes,
                                       init_containers=self.init_containers,
+                                      sidecar_containers=sidecar_containers,
                                       namespace=self.stackl_namespace,
                                       service_account=self.service_account,
-                                      output=self._output,
                                       labels=labels)
         try:
             for cm in cms:
