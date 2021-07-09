@@ -174,9 +174,9 @@ class StackHandler(Handler):
         }
         service_definition.provisioning_parameters = {
             **merged_capabilities,
-            **service_definition.opa_outputs,
             **item.params,
-            **item.service_params.get(svc, {})
+            **item.service_params.get(svc, {}),
+            **service_definition.opa_outputs
         }
         if "stackl_hostname" in service_definition.provisioning_parameters:
             service_definition.template_hosts(
@@ -340,9 +340,9 @@ class StackHandler(Handler):
         }
         service_definition.provisioning_parameters = {
             **merged_capabilities,
-            **opa_outputs,
             **stack_instance.instance_params,
-            **stack_instance.service_params.get(svc, {})
+            **stack_instance.service_params.get(svc, {}),
+            **opa_outputs
         }
         service_definition.secrets = {
             **merged_secrets,
