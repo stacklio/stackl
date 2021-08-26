@@ -24,7 +24,6 @@ class StackInstance(BaseModel):
     """
     name: str
     type = "stack_instance"
-    deleted: bool = False
     groups: Dict[str, List[HostTarget]] = {}
     instance_params: Dict[str, Any] = {}
     service_params: Dict[str, Dict[str, Any]] = {}

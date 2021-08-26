@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.3-230
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4-208
 
 COPY --chown=1001:0 . /opt/stackl-cli
 
