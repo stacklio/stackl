@@ -85,7 +85,13 @@ class AgentSettings:
     queue_name = config.settings.agent_name
     job_timeout = config.settings.job_timeout
     max_jobs = config.settings.max_jobs
-    redis_settings = RedisSettings(host=config.settings.redis_host,
-                                   password=config.settings.redis_password,
-                                   sentinel_master=config.settings.redis_sentinel_master,
-                                   sentinel=config.settings.redis_sentinel)
+    if config.settings.redis_hosts:
+        redis_settings = RedisSettings(
+            host=config.settings.redis_hosts,
+            password=config.settings.redis_password,
+            sentinel_master=config.settings.redis_sentinel_master,
+            sentinel=config.settings.redis_sentinel)
+    else:
+        redis_settings = RedisSettings(host=config.settings.redis_host,
+                                       port=config.settings.redis_port,
+                                       password=config.settings.redis_password)
