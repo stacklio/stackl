@@ -4,6 +4,7 @@ Redis datastore module
 import json
 
 import redis
+from redis.sentinel import Sentinel
 from loguru import logger
 from redislite import Redis
 
@@ -14,18 +15,32 @@ from .datastore import DataStore
 
 class RedisStore(DataStore):
     """Implementation of Redis datastore"""
-
     def __init__(self):
         super().__init__()
         if config.settings.stackl_redis_type == "fake":
             logger.info("Using fake client")
 
             self.redis = Redis()
+        elif config.settings.stackl_redis_type == "sentinel":
+            logger.info("Using Sentinel to discover Redis")
+            sentinel = Sentinel(config.settings.stackl_redis_hosts)
+            redis_connection = sentinel.discover_master(
+                config.settings.stackl_redis_sentinel_master)
+            logger.info(f"Connecting to Redis at {redis_connection}")
+            self.redis = redis.Redis(
+                host=redis_connection[0],
+                port=redis_connection[1],
+                password=config.settings.stackl_redis_password,
+                db=0)
+            logger.info("Connection successful")
+
         else:
-            self.redis = redis.Redis(host=config.settings.stackl_redis_host,
-                                     port=config.settings.stackl_redis_port,
-                                     password=config.settings.stackl_redis_password,
-                                     db=0)
+            logger.info("Using single Redis instance")
+            self.redis = redis.Redis(
+                host=config.settings.stackl_redis_host,
+                port=config.settings.stackl_redis_port,
+                password=config.settings.stackl_redis_password,
+                db=0)
 
     def get(self, **keys):
         """Gets a document from a redis instance"""
@@ -48,7 +63,8 @@ class RedisStore(DataStore):
         """Gets all documents of a type from a Redis"""
         document_key = f"{category}/{document_type}/{wildcard_prefix}*"
         logger.debug(
-            f"[RedisStore] get_all in '{document_key}' for type '{document_type}'")
+            f"[RedisStore] get_all in '{document_key}' for type '{document_type}'"
+        )
         content = []
         for key in self.redis.scan_iter(document_key):
             content.append(json.loads(self.redis.get(key)))
@@ -61,7 +77,8 @@ class RedisStore(DataStore):
         """Gets the snapshots of document from Redis"""
         document_key = category + '/' + document_type + '/' + name
         logger.debug(
-            f"[RedisStore] get_history in '{document_key}' for type '{document_type}'")
+            f"[RedisStore] get_history in '{document_key}' for type '{document_type}'"
+        )
         content = []
         for key in self.redis.scan_iter(document_key):
             content.append(json.loads(self.redis.get(key)))

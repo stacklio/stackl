@@ -8,6 +8,7 @@ except ImportError:
     import importlib_metadata as metadata
 
 from pydantic import BaseSettings
+from typing import List, Tuple
 
 
 class Settings(BaseSettings):
@@ -19,8 +20,11 @@ class Settings(BaseSettings):
     agent_name: str = "common"
     agent_type: str = "mock"
     redis_host: str = "localhost"
+    redis_hosts: List[Tuple[str, int]] = []  # '[["localhost", 26379]]'
     redis_port: int = 6379
     redis_password: str = None
+    redis_sentinel: bool = False
+    redis_sentinel_master: str = ""
     secret_handler: str = "base64"
     loglevel: str = "INFO"
     max_jobs: int = 10
