@@ -8,13 +8,13 @@ DOCKER_IMAGE_CORE=stacklio/stackl-core
 DOCKER_IMAGE_AGENT=stacklio/stackl-agent
 DOCKER_IMAGE_CLI=stacklio/stackl-cli
 DOCKER_IMAGE_OPA=stacklio/opa
-DOCKER_IMAGE_REDIS=stacklio/redis
+DOCKER_IMAGE_REDIS=quay.io/stackl/stackl-redis
 
 CORE_VERSION=v$(shell sed -n 's/.*version = "\([^"]*\)".*/\1/p' stackl/core/pyproject.toml)
 AGENT_VERSION=v$(shell sed -n 's/.*version = "\([^"]*\)".*/\1/p' stackl/agent/pyproject.toml)
 CLI_VERSION=v$(shell sed -n 's/.*__version__ = "\([^"]*\)".*/\1/p' stackl/cli/setup.py)
-OPA_VERSION=v0.21.1
-REDIS_VERSION=v5.0.3
+OPA_VERSION=v0.31.0
+REDIS_VERSION=v6.2.5
 PREPARE_VERSION=latest
 
 ######################################################
@@ -57,7 +57,7 @@ build_opa:
 .PHONY: build_redis
 build_redis:
 	@echo "Building redis"
-	${CONTAINER_ENGINE} build -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(REDIS_VERSION) stackl/redis
+	${CONTAINER_ENGINE} build --no-cache -f stackl/redis/Dockerfile -t $(DOCKER_IMAGE_REDIS):$(REDIS_VERSION) stackl/redis
 
 .PHONY: build_prepare_dev
 build_prepare_dev:

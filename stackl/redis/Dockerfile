@@ -1,10 +1,9 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4-208
 
-COPY CentOS-AppStream.repo /etc/yum.repos.d/CentOS-AppStream.repo
-COPY RPM-GPG-KEY-centosofficial /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-
-RUN microdnf install -y redis-5.0.3-2.module_el8.2.0+318+3d7e67ea && redis-server --version
+RUN curl https://download.redis.io/releases/redis-6.2.5.tar.gz -O && \ 
+      microdnf install tar gzip logrotate shadow-utils systemd gcc make && \
+      tar zxf redis-6.2.5.tar.gz && cd redis-6.2.5 && make MALLOC=libc
 
 COPY redis.conf /usr/local/etc/redis/redis.conf
 
-CMD ["redis-server", "/usr/local/etc/redis/redis.conf", "--appendonly", "yes"]
+CMD ["./src/redis-server", "/usr/local/etc/redis/redis.conf", "--appendonly", "yes"]
