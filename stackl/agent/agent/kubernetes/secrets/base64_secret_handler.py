@@ -44,7 +44,7 @@ class Base64SecretHandler(SecretHandler):
                 decoded_secrets[key] = base64.b64decode(secret +
                                                         "===").decode("utf-8")
             except TypeError:
-                logging.error(f"Could not decode secret {secret}")
+                logging.error(f"Base64 decode error")
         if secret_format == "json":
             return json.dumps(decoded_secrets)
         if secret_format == "yaml":

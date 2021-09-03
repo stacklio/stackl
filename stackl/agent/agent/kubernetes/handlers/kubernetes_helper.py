@@ -215,8 +215,6 @@ def create_job_object(name: str,
     for secret in image_pull_secrets:
         k8s_secrets.append(client.V1LocalObjectReference(name=secret))
 
-    logging.debug(f"Secret list created for job {name}: {k8s_secrets}")
-
     containers = [container]
     if sidecar_containers:
         for sc in sidecar_containers:
