@@ -107,6 +107,23 @@ class OPABroker:
         logger.debug(f"[OPABroker] get_opa_data. Result: {result}")
         return result
 
+    def convert_service_to_opa_data(self, service: Service):
+        frs = {}
+        params = service.params
+        for fr in service.functional_requirements:
+            fr_doc = self.document_manager.get_functional_requirement(fr)
+            frs[fr] = {
+                key: value.dict()
+                for (key, value) in fr_doc.invocation.items()
+            }
+            params = {**params, **fr_doc.params}
+        service_data = {
+            "functional_requirements": frs,
+            "params": params,
+            "service": service.name
+        }
+        return {"service": service_data}
+
     def convert_sat_to_opa_data(self, sat_doc: StackApplicationTemplate,
                                 services: List[Service]):
         """Converts SAT to data for OPA policy evaluation"""

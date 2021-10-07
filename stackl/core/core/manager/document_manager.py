@@ -142,7 +142,7 @@ class DocumentManager(Manager):
                                            name=name)
         return store_response
 
-    def get_policy_template(self, policy_name):
+    def get_policy_template(self, policy_name) -> PolicyTemplate:
         """gets a PolicyTemplate from the store"""
         store_response = self.store.get(type="policy_template",
                                         name=policy_name,
@@ -153,7 +153,7 @@ class DocumentManager(Manager):
         policy = PolicyTemplate.parse_obj(store_response.content)
         return policy
 
-    def get_policy_templates(self):
+    def get_policy_templates(self) -> List[PolicyTemplate]:
         """gets all PolicyTemplate from the store"""
         store_response = self.store.get_all(document_type="policy_template",
                                             category="configs")
@@ -210,7 +210,7 @@ class DocumentManager(Manager):
         return store_response
 
     def get_stack_infrastructure_template(self,
-                                          stack_infrastructure_template_name):
+                                          stack_infrastructure_template_name) -> StackInfrastructureTemplate:
         """gets a StackInfrastructureTemplate Object from the store"""
         store_response = self.store.get(
             type="stack_infrastructure_template",
@@ -281,7 +281,7 @@ class DocumentManager(Manager):
                                            name=name)
         return store_response
 
-    def get_environment(self, environment_name):
+    def get_environment(self, environment_name) -> Environment:
         """gets a Environment Object from the store"""
         store_response = self.store.get(type="environment",
                                         name=environment_name,
@@ -292,14 +292,14 @@ class DocumentManager(Manager):
         environment = Environment.parse_obj(store_response.content)
         return environment
 
-    def get_environments(self):
+    def get_environments(self) -> List[Environment]:
         """Get all environments from the store"""
         store_response = self.store.get_all(document_type="environment",
                                             category="configs")
         environments = parse_obj_as(List[Environment], store_response.content)
         return environments
 
-    def get_location(self, location_name):
+    def get_location(self, location_name) -> Location:
         """gets a Location Object from the store"""
         store_response = self.store.get(type="location",
                                         name=location_name,
@@ -310,14 +310,14 @@ class DocumentManager(Manager):
         location = Location.parse_obj(store_response.content)
         return location
 
-    def get_locations(self):
+    def get_locations(self) -> List[Location]:
         """Gets all locations from the store"""
         store_response = self.store.get_all(document_type="location",
                                             category="configs")
         locations = parse_obj_as(List[Location], store_response.content)
         return locations
 
-    def get_zone(self, zone_name):
+    def get_zone(self, zone_name) -> Zone:
         """gets a Zone Object from the store"""
         store_response = self.store.get(type="zone",
                                         name=zone_name,
@@ -328,13 +328,13 @@ class DocumentManager(Manager):
         zone = Zone.parse_obj(store_response.content)
         return zone
 
-    def get_zones(self):
+    def get_zones(self) -> List[Zone]:
         """Gets all zones from the store"""
         store_response = self.store.get_all(document_type="zone", category="configs")
         zone = parse_obj_as(List[Zone], store_response.content)
         return zone
 
-    def get_service(self, service_name):
+    def get_service(self, service_name) -> Service:
         """gets a Service Object from the store"""
         store_response = self.store.get(type="service",
                                         name=service_name,
@@ -345,7 +345,7 @@ class DocumentManager(Manager):
         service = Service.parse_obj(store_response.content)
         return service
 
-    def get_services(self):
+    def get_services(self) -> List[Service]:
         """Gets all the services from the store"""
         store_response = self.store.get_all(document_type="service", category="items")
         services = parse_obj_as(List[Service], store_response.content)

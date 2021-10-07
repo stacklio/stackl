@@ -30,5 +30,4 @@ class StackApplicationTemplate(BaseModel):
     description: str = ""
     type = "stack_application_template"
     services: List[StackApplicationTemplateService]
-    policies: Dict[str, List[Any]] = {}
     stages: List[StackStage] = []

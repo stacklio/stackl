@@ -3,11 +3,16 @@ Module containing all logic for creating and updating Stack instances
 """
 
 from collections import OrderedDict
-from core.models.configs.stack_application_template_model import StackApplicationTemplate
+from typing import List
 
 from loguru import logger
 
 from core.enums.stackl_codes import StatusCode
+from core.manager.document_manager import DocumentManager
+from core.models.api.stack_instance import StackInstanceUpdate
+from core.models.configs.infrastructure_base_document import PolicyDefinition
+from core.models.configs.stack_application_template_model import \
+    StackApplicationTemplate
 from core.models.configs.stack_infrastructure_template_model import \
     StackInfrastructureTemplate
 from core.models.items.stack_infrastructure_target_model import \
@@ -15,10 +20,9 @@ from core.models.items.stack_infrastructure_target_model import \
 from core.models.items.stack_instance_model import StackInstance
 from core.models.items.stack_instance_service_model import StackInstanceService
 from core.models.items.stack_instance_status_model import StackInstanceStatus
-from core.models.api.stack_instance import StackInstanceUpdate
 from core.utils.general_utils import get_timestamp, tree
 
-from ..opa_broker.opa_broker import convert_sit_to_opa_data
+from core.opa_broker.opa_broker import OPABroker, convert_sit_to_opa_data
 from .handler import Handler
 
 
@@ -55,7 +59,8 @@ def delete_services(to_be_deleted, stack_instance):
 
 class StackHandler(Handler):
     """Handler responsible for all actions on Stack Instances"""
-    def __init__(self, document_manager, opa_broker):
+    def __init__(self, document_manager: DocumentManager,
+                 opa_broker: OPABroker):
         super().__init__()
         self.document_manager = document_manager
         self.opa_broker = opa_broker
@@ -78,10 +83,10 @@ class StackHandler(Handler):
         return StatusCode.BAD_REQUEST
 
     def _create_stack_instance(
-        self, item, opa_decision,
-        stack_infrastructure_template: StackInfrastructureTemplate,
-        stack_application_template: StackApplicationTemplate,
-        opa_service_params):
+            self, item, opa_decision,
+            stack_infrastructure_template: StackInfrastructureTemplate,
+            stack_application_template: StackApplicationTemplate,
+            opa_service_params):
         """
         function for creating the stack instance object
         """
@@ -372,8 +377,8 @@ class StackHandler(Handler):
                     **outputs_update.outputs
                 }
                 if "stackl_hosts" in service_definition.outputs:
-                        service_definition.hosts = service_definition.outputs[
-                            "stackl_hosts"]
+                    service_definition.hosts = service_definition.outputs[
+                        "stackl_hosts"]
                 break
         for _, service_list in stack_instance.services.items():
             for service_definition in service_list:
@@ -399,59 +404,69 @@ class StackHandler(Handler):
 
         stack_infr = self._update_infr_capabilities(stack_infr_template, "yes")
 
-        # Transform to OPA format
-        opa_data = self.transform_opa_data(item, stack_app_template,
-                                           stack_infr, item.services)
+        services = [
+            self.document_manager.get_service(s)
+            for s in stack_app_template.services
+        ]
+        possible_targets = {}
+        for s in services:
+            possible_targets[s.name] = [{"target": t, "params": {}} for t in stack_infr_template.infrastructure_targets]
+        for infra_target in stack_infr_template.infrastructure_targets:
+            enviroment = self.document_manager.get_environment(
+                infra_target.environment)
+            location = self.document_manager.get_location(
+                infra_target.location)
+            zone = self.document_manager.get_zone(infra_target.zone)
+            policies: List[PolicyDefinition] = []
+            policies += enviroment.policies + location.policies + zone.policies
+            infra_target_data = {
+                "infrastructure_target": {
+                    "tags":
+                    stack_infr.infrastructure_capabilities[
+                        f"{enviroment}.{location}.{zone}"].tags,
+                    "params":
+                    stack_infr.infrastructure_capabilities[
+                        f"{enviroment}.{location}.{zone}"].
+                    provisioning_parameters
+                }
+            }
+            for policy in policies:
+                policy_doc = self.document_manager.get_policy_template(
+                    policy.name)
+                self.opa_broker.add_policy(policy_doc.name, policy_doc.policy)
+                service_kind = policy.service_kind
+                services_to_evaluate = [
+                    s for s in services if service_kind in s.kinds
+                ]
+                for service in services_to_evaluate:
+                    service_opa_data = self.opa_broker.convert_service_to_opa_data(
+                        service)
+                    opa_data = {
+                        **infra_target_data,
+                        **service_opa_data,
+                        **{
+                            "stack_parameters": item.params
+                        },
+                        **{
+                            "policy_parameters": policy.parameters
+                        }
+                    }
+                    opa_result = self.opa_broker.ask_opa_policy_decision(
+                        policy.name, "resolve", opa_data)
 
-        # Evaluate orchestration policy
-        opa_solution = self.evaluate_orchestration_policy(opa_data)
+                    if not opa_result[
+                            "params"] and infra_target in possible_targets[
+                                service.name]:
+                        possible_targets[service.name].remove(infra_target)
+                    else:
+                        possible_targets[service.name]["params"] = {
+                            **possible_targets[service.name]["params"],
+                            **opa_result["params"]
+                        }
 
-        if not opa_solution['fulfilled']:
-            logger.error(
-                f"[StackHandler]: Opa result message: {opa_solution['msg']}")
-            return None, opa_solution['msg']
 
-        service_targets = opa_solution['services']
-
-        opa_service_params = tree()
-        # Verify the SAT policies
-        if stack_app_template.policies:
-            for policy_name, attributes in stack_app_template.policies.items():
-                policy = self.document_manager.get_policy_template(policy_name)
-                for policy_params in attributes:
-                    new_result = self.evaluate_sat_policy(
-                        policy_params, opa_data, policy, item.params,
-                        item.replicas)
-
-                    if not new_result['fulfilled']:
-                        logger.error(
-                            f"[StackHandler]: Opa result message: {new_result['msg']}"
-                        )
-                        return None, new_result['msg']
-
-                    process_service_targets(policy_params,
-                                            new_result,
-                                            service_targets,
-                                            opa_service_params,
-                                            outputs=policy.outputs)
-
-        service_targets = self.evaluate_replica_policy(item, service_targets)
-
-        if not service_targets['result']['fulfilled']:
-            logger.error(
-                f"replica_policy not satisfied: {service_targets['result']['msg']}"
-            )
-            return None, service_targets['result']['msg']
-
-        # Verify that each of the SIT policies doesn't violate
-
-        infringment_messages = self.evaluate_sit_policies(
-            opa_data, service_targets, stack_infr, item.params)
-
-        if infringment_messages:
-            logger.error(f"sit policies not satisfied {infringment_messages}")
-            message = "\n".join([x['msg'] for x in infringment_messages])
-            return None, message
+        for s in services:
+            pass
 
         return self._create_stack_instance(
             item, service_targets['result']['services'], stack_infr,
