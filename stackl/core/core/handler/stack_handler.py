@@ -246,11 +246,7 @@ class StackHandler(Handler):
                 svc_doc = self.document_manager.get_service(
                     service_definition.service)
                 found = False
-                logger.debug(f"NUBERA: {possible_targets[svc]}")
                 for ti in possible_targets[svc].copy():
-                    logger.debug(
-                        f"TI: {ti['target']} and service definition: {service_definition.infrastructure_target}"
-                    )
                     if service_definition.infrastructure_target == concat_infra_target(
                             ti['target']):
                         found = True
