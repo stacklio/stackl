@@ -14,6 +14,6 @@ class StackInfrastructureTarget(BaseModel):
     cloud_provider: str = "generic"
     secrets: Dict[str, Any] = None
     resources: Dict[str, str] = None
-    policies: Dict[str, Any] = None
+    policies: List[Any] = None
     agent: str = ""
     tags: Dict[str, str] = None

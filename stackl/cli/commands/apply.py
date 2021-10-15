@@ -146,6 +146,7 @@ def upload_file(stackl_doc, stackl_context, path):
         click.echo(
             f"Applying stackl document: {str(path) + ' ' + stackl_doc['name']}"
         )
+        click.echo(stackl_doc)
     else:
         click.echo(f"Error in stackl document, no 'name' found: {path}")
     try:

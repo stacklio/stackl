@@ -17,7 +17,7 @@ class Service(BaseDocument):
     category = "items"
     type = "service"
     name: str
-    kinds: List[str]
+    kinds: List[str] = []
     functional_requirements: List[str]
     resource_requirements: Dict[str, Any] = {}
     service_policies: List[ServicePolicyDescription] = []

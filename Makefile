@@ -168,7 +168,7 @@ skaffold: config-microk8s-registry build_grpc_base_dev push_grpc_base_dev
 
 .PHONY: openapi
 openapi:
-	openapi-generator generate -i http://localhost:8000/openapi.json -g python -t build/openapi-generator --package-name stackl_client --additional-properties=packageVersion=${CORE_VERSION} -o /tmp/stackl-client
+	openapi-generator generate -i http://localhost:8000/openapi.json -g python --package-name stackl_client --additional-properties=packageVersion=${CORE_VERSION} -o /tmp/stackl-client
 	pip3 install /tmp/stackl-client
 
 .PHONY: stackl_cli
