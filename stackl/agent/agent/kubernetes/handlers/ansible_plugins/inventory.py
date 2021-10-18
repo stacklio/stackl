@@ -73,6 +73,10 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils._text import to_text
 from collections import defaultdict
 
+config.load_incluster_config()
+configuration = client.Configuration()
+api_instance_core = client.CoreV1Api(client.ApiClient(configuration))
+
 
 def check_groups(stackl_groups, stackl_inventory_groups, host_list):
     count_group_dict = defaultdict(int)
@@ -135,6 +139,20 @@ def get_base64_secrets(service):
         except Exception:
             raise AnsibleParserError("Could not decode secret")
     return decoded_secrets
+
+def get_kubernetes_secrets(service):
+    secrets = service.secrets
+    k8s_secrets = {}
+    for _, secret in secrets.items():
+        try:
+            api_response = api_instance_core.read_namespaced_secret(
+                secret, agent_config.settings.stackl_namespace)
+            for k, v in api_response.data.items():
+                k8s_secrets[k] = base64.b64decode(v +
+                                                    "===").decode("utf-8")
+        except ApiException as e:
+            raise AnsibleParserError("Could not read k8s secret")
+    return k8s_secrets
 
 
 def get_conjur_secrets(service, address, account, token_path, verify):
@@ -231,6 +249,8 @@ class InventoryModule(BaseInventoryPlugin):
                                             "secret_handler") == "base64":
                                         secrets = get_base64_secrets(
                                             service_definition)
+                                    elif self.get_option("secret_handler") == "kubernetes":
+                                        secrets = get_k8s_secrets(service_definition)
                                     elif self.get_option(
                                             "secret_handler") == "conjur":
                                         secrets = get_conjur_secrets(
@@ -265,6 +285,8 @@ class InventoryModule(BaseInventoryPlugin):
                                     self.get_option("vault_token_path"))
                             elif self.get_option("secret_handler") == "base64":
                                 secrets = get_base64_secrets(service_definition)
+                            elif self.get_option("secret_handler") == "kubernetes":
+                                secrets = get_k8s_secrets(service_definition)
                             elif self.get_option("secret_handler") == "conjur":
                                 secrets = get_conjur_secrets(
                                     service_definition,
