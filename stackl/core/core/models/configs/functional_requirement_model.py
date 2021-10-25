@@ -13,6 +13,7 @@ class Invocation(BaseModel):
     description: str = ""
     tool: str
     image: str
+    tag: str
     before_command: Optional[str] = ""
     playbook_path: str = ""
     ansible_role: str = ""

@@ -82,7 +82,10 @@ async def create_service(action, redis, stack_instance, to_be_deleted,
             await update_status(automation_result, stack_instance, action,
                                 to_be_deleted)
             return False
-        invoc['image'] = fr_doc.invocation[cloud_provider].image
+        if fr_doc.invocation[cloud_provider].tag:
+            invoc['image'] = fr_doc.invocation[cloud_provider].image + ":" + fr_doc.invocation[cloud_provider].tag
+        else:
+            invoc['image'] = fr_doc.invocation[cloud_provider].image + ":latest"
         invoc['before_command'] = fr_doc.invocation[
             cloud_provider].before_command
         invoc['infrastructure_target'] = infrastructure_target
