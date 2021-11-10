@@ -148,8 +148,10 @@ def get_kubernetes_secrets(service):
             api_response = api_instance_core.read_namespaced_secret(
                 secret, agent_config.settings.stackl_namespace)
             for k, v in api_response.data.items():
-                k8s_secrets[k] = base64.b64decode(v +
-                                                    "===").decode("utf-8")
+                try:
+                    k8s_secrets[k] = base64.b64decode(v).decode("utf-8")
+                except UnicodeDecodeError as e:
+                    logging.warn(f"Failed to decode secret {k}")
         except ApiException as e:
             raise AnsibleParserError("Could not read k8s secret")
     return k8s_secrets

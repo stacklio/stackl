@@ -56,8 +56,16 @@ class K8sSecretHandler(SecretHandler):
                     secret, agent_config.settings.stackl_namespace)
                 logging.info(f"api_response: {api_response}")
                 for k, v in api_response.data.items():
-                    k8s_secrets[k] = base64.b64decode(v +
-                                                      "===").decode("utf-8")
+                    try:
+                        k8s_secrets[k] = base64.b64decode(v).decode("utf-8")
+                        self.env_list[k] = {
+                            "secret_key_ref": {
+                                "key": k,
+                                "name": secret
+                            }
+                        }
+                    except UnicodeDecodeError:
+                        logging.warn(f"Could not decode secret {k}")
             except ApiException as e:
                 logging.error(f"k8s secret error: {e}")
         if secret_format == "json":

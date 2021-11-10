@@ -161,6 +161,14 @@ def create_job_object(name: str,
                                 name=value['config_map_key_ref']["name"],
                                 key=value['config_map_key_ref']["key"])))
                     k8s_env_list.append(k8s_env_from)
+                if 'secret_key_ref' in value:
+                    k8s_env_from = client.V1EnvVar(
+                        name=key,
+                        value_from=client.V1EnvVarSource(
+                            secret_key_ref=client.V1SecretKeySelector(
+                                name=value['secret_key_ref']["name"],
+                                key=value['secret_key_ref']["key"])))
+                    k8s_env_list.append(k8s_env_from)
                 elif 'field_ref' in value:
                     k8s_env_from = client.V1EnvVar(
                         name=key,
